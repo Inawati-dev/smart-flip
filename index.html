@@ -5,933 +5,140 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Perpustakaan Digital</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:      #09090B;
-  --surface: #18181B;
-  --border:  rgba(255,255,255,0.07);
-  --accent:  #6366F1;
-  --accent2: #818CF8;
-  --txt:     #FAFAFA;
-  --txt2:    #A1A1AA;
-  --txt3:    #52525B;
-}
-html, body { height: 100%; }
-body {
-  background: var(--bg);
-  font-family: 'Outfit', system-ui, sans-serif;
-  color: var(--txt);
-  display: flex; flex-direction: column;
-  overflow: hidden;
-}
-
-/* ── TOPBAR ── */
-.topbar {
-  height: 52px; flex-shrink: 0;
-  display: flex; align-items: center; padding: 0 24px; gap: 12px;
-  border-bottom: 1px solid var(--border);
-  background: rgba(9,9,11,.92); backdrop-filter: blur(20px);
-  z-index: 50; position: relative;
-}
-.top-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 8px var(--accent); flex-shrink: 0; }
-.top-brand { font-size: 13px; font-weight: 500; color: var(--txt2); letter-spacing: .05em; text-transform: uppercase; }
-.top-sep { flex: 1; }
-.top-title { font-size: 13px; font-weight: 500; color: var(--txt); opacity: 0; transition: opacity .3s; }
-.top-title.show { opacity: 1; }
-.btn-back {
-  display: none; align-items: center; gap: 6px;
-  font-size: 12px; color: var(--txt2); background: none;
-  border: 1px solid var(--border); padding: 5px 12px; border-radius: 20px;
-  cursor: pointer; transition: all .2s; font-family: inherit;
-}
-.btn-back:hover { color: var(--txt); border-color: var(--accent2); }
-.btn-back.show { display: flex; }
-
-.main { flex: 1; overflow: hidden; position: relative; }
-
-/* ══════════════════════════
-   CATALOG
-══════════════════════════ */
-#catalog {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column;
-  padding: 32px; overflow-y: auto;
-  transition: opacity .35s, transform .35s;
-}
-#catalog.hide { opacity: 0; transform: scale(.97); pointer-events: none; }
-
-.cat-header { margin-bottom: 28px; }
-.cat-title { font-size: 24px; font-weight: 700; }
-.cat-title span { color: var(--accent2); }
-.cat-sub { font-size: 13px; color: var(--txt3); margin-top: 5px; }
-
-.state-box { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; flex: 1; text-align: center; padding: 40px; }
-.spinner { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin .7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.state-msg { font-size: 14px; color: var(--txt2); }
-.state-hint { font-size: 12px; color: var(--txt3); max-width: 320px; line-height: 1.6; }
-
-.book-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; }
-
-.book-card { display: flex; flex-direction: column; gap: 10px; cursor: pointer; transition: transform .25s; }
-.book-card:hover { transform: translateY(-5px); }
-.book-card:hover .card-cover { box-shadow: 0 24px 60px rgba(0,0,0,.75), 0 0 0 1px rgba(99,102,241,.35); }
-
-.card-cover {
-  position: relative; aspect-ratio: 2/3;
-  border-radius: 3px 8px 8px 3px; overflow: hidden;
-  background: var(--surface);
-  box-shadow: 0 10px 30px rgba(0,0,0,.5), -4px 0 0 rgba(0,0,0,.4);
-  transition: box-shadow .25s;
-}
-.card-cover canvas, .card-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.card-cover::before { content: ''; position: absolute; left:0; top:0; bottom:0; width:12px; background: linear-gradient(to right, rgba(0,0,0,.5), transparent); z-index: 1; }
-.cover-spin { position: absolute; inset:0; display:flex; align-items:center; justify-content:center; background: var(--surface); }
-.cover-spin .spinner { width:22px; height:22px; }
-
-.card-info { padding: 0 2px; }
-.card-name { font-size: 13px; font-weight: 500; color: var(--txt); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.card-pages { font-size: 11px; color: var(--txt3); margin-top: 3px; }
-
-/* ══════════════════════════
-   READER
-══════════════════════════ */
-#reader {
-  position: absolute; inset: 0;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none; transition: opacity .35s;
-}
-#reader.show { opacity: 1; pointer-events: all; }
-
-/* Opening loader */
-#openLoader {
-  position: absolute; inset: 0; z-index: 30;
-  background: var(--bg);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-  transition: opacity .4s;
-}
-#openLoader.hide { opacity: 0; pointer-events: none; }
-.ol-spinner { width: 42px; height: 42px; border-radius: 50%; border: 2px solid var(--border); border-top-color: var(--accent); animation: spin .75s linear infinite; }
-.ol-text { font-size: 14px; color: var(--txt2); }
-.ol-bar { width: 200px; height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
-.ol-fill { height:100%; width:0%; background: linear-gradient(to right, var(--accent), var(--accent2)); transition: width .25s; border-radius: 2px; }
-.ol-detail { font-size: 11px; color: var(--txt3); }
-
-/* Background render indicator */
-.bg-progress {
-  position: fixed; bottom: 62px; right: 20px;
-  font-size: 11px; color: var(--txt3);
-  background: rgba(9,9,11,.8); border: 1px solid var(--border);
-  padding: 5px 10px; border-radius: 20px;
-  display: none; gap: 6px; align-items: center;
-  backdrop-filter: blur(10px); z-index: 20;
-}
-.bg-progress.show { display: flex; }
-.bg-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 1s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
-
-/* Stage */
-.stage {
-  flex: 1; width: 100%;
-  display: flex; align-items: center; justify-content: center;
-  position: relative; overflow: hidden;
-}
-.stage::before { content:''; position:absolute; width:60%; height:50%; background: radial-gradient(ellipse, rgba(99,102,241,.07), transparent 70%); border-radius:50%; pointer-events:none; }
-
-/* Zoom outer wrapper — receives scale/translate transforms */
-.zoom-outer {
-  display: flex; align-items: center; justify-content: center;
-  transform-origin: center center;
-  will-change: transform;
-  user-select: none;
-}
-
-/* Book */
-.book-wrap { perspective: 4000px; }
-.book {
-  display: flex; position: relative;
-  width: min(84vw, 860px); height: min(56vw, 574px);
-  border-radius: 2px 6px 6px 2px;
-  box-shadow: 0 0 0 1px rgba(255,255,255,.04), 0 40px 80px rgba(0,0,0,.75), 0 20px 40px rgba(0,0,0,.4);
-  transform: rotateX(1.5deg); transform-style: preserve-3d;
-}
-.pg { flex: 1; position: relative; overflow: hidden; background: #F9F9F7; }
-.pg.pg-l { border-radius: 2px 0 0 2px; box-shadow: inset -10px 0 24px rgba(0,0,0,.1); }
-.pg.pg-r { border-radius: 0 2px 2px 0; box-shadow: inset 10px 0 24px rgba(0,0,0,.1); }
-.pg img { width:100%; height:100%; object-fit:contain; display:block; }
-.pg-blank { width:100%; height:100%; background: linear-gradient(155deg,#F8F8F6,#EFEFEC); }
-.pg-loading { width:100%; height:100%; background:#F9F9F7; display:flex; align-items:center; justify-content:center; }
-.pg-loading .spinner { border-color: rgba(0,0,0,.1); border-top-color: rgba(99,102,241,.4); }
-
-.spine {
-  width: 22px; flex-shrink: 0; z-index: 5;
-  background: linear-gradient(to right, #111 0%, #2A2A2A 20%, #333 50%, #2A2A2A 80%, #111 100%);
-  box-shadow: 2px 0 8px rgba(0,0,0,.4), -2px 0 8px rgba(0,0,0,.4);
-}
-
-/* Flipper */
-.flipper { display:none; position:absolute; top:0; bottom:0; transform-style:preserve-3d; z-index:20; }
-.f-face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; overflow:hidden; background:#F9F9F7; }
-.f-back { transform: rotateY(180deg); }
-.f-face img { width:100%; height:100%; object-fit:contain; display:block; }
-.f-front::after { content:''; position:absolute; inset:0; background: linear-gradient(to left, rgba(0,0,0,.18) 0%, transparent 18%); pointer-events:none; }
-.f-back::after  { content:''; position:absolute; inset:0; background: linear-gradient(to right, rgba(0,0,0,.18) 0%, transparent 18%); pointer-events:none; }
-
-/* Toolbar */
-.toolbar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
-.tb {
-  display: flex; align-items: center; gap: 4px;
-  background: rgba(255,255,255,.04); border: 1px solid var(--border);
-  border-radius: 40px; padding: 6px 8px; backdrop-filter: blur(16px);
-}
-.btn-n { width:34px; height:34px; border-radius:50%; background:none; border:none; color:var(--txt2); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s; font-family:inherit; }
-.btn-n:hover:not(:disabled) { background: rgba(99,102,241,.15); color: var(--accent2); }
-.btn-n:disabled { opacity:.22; cursor:not-allowed; }
-.btn-n.active { color: var(--accent2); background: rgba(99,102,241,.12); }
-.tb-sep { width:1px; height:18px; background:var(--border); margin:0 4px; }
-.pg-counter { font-size:12px; color:var(--txt2); min-width:80px; text-align:center; }
-.pg-counter b { color:var(--txt); font-weight:500; }
-
-/* Zoom label in toolbar */
-.zoom-label {
-  font-size: 11px; color: var(--txt3); min-width: 38px; text-align: center;
-  cursor: pointer; border-radius: 4px; padding: 2px 4px;
-  transition: color .2s;
-  font-variant-numeric: tabular-nums;
-}
-.zoom-label:hover { color: var(--txt2); }
-
-/* Zoom tooltip hint */
-.zoom-hint {
-  position: fixed; bottom: 62px; left: 50%; transform: translateX(-50%);
-  font-size: 11px; color: var(--txt2);
-  background: rgba(9,9,11,.9); border: 1px solid var(--border);
-  padding: 5px 14px; border-radius: 20px;
-  backdrop-filter: blur(10px); z-index: 20;
-  opacity: 0; pointer-events: none;
-  transition: opacity .3s;
-  white-space: nowrap;
-}
-.zoom-hint.show { opacity: 1; }
-
-/* Thumbnails */
-#thumbRow { position:fixed; bottom:0; left:0; right:0; display:none; justify-content:center; padding:0 16px 58px; pointer-events:none; z-index:40; }
-#thumbRow.show { display:flex; }
-.thumblist { display:flex; gap:5px; overflow-x:auto; max-width:860px; padding:10px 12px; background:rgba(9,9,11,.92); border:1px solid var(--border); border-radius:10px; backdrop-filter:blur(20px); pointer-events:all; scrollbar-width:none; }
-.thumblist::-webkit-scrollbar { display:none; }
-.thumb { flex-shrink:0; width:44px; height:60px; border-radius:3px; overflow:hidden; cursor:pointer; border:1.5px solid transparent; transition:border-color .2s,transform .2s; background:var(--surface); }
-.thumb:hover { transform:translateY(-3px); }
-.thumb.active { border-color:var(--accent); }
-.thumb img { width:100%; height:100%; object-fit:cover; display:block; }
-.thumb-blank { width:100%; height:100%; background:#2A2A2A; }
-
-@media (max-width:600px) {
-  .topbar { padding:0 14px; }
-  #catalog { padding:20px 16px; }
-  .book-grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:16px; }
-  .spine { width:14px; }
-  .zoom-label { min-width:30px; }
-}
-</style>
 </head>
 <body>
 
-<header class="topbar">
-  <div class="top-dot"></div>
-  <div class="top-brand" id="topBrand">Perpustakaan Digital</div>
-  <div class="top-sep"></div>
-  <div class="top-title" id="topTitle"></div>
-  <button class="btn-back" id="btnBack">← Katalog</button>
-</header>
+<!-- ══════════════ CATALOG VIEW ══════════════ -->
+<div id="catalogView">
 
-<div class="main">
-
-  <!-- CATALOG -->
-  <div id="catalog">
-    <div class="cat-header">
-      <div class="cat-title">Koleksi <span>Buku</span></div>
-      <div class="cat-sub" id="catSub">Memuat…</div>
+  <header class="topbar" id="topbar">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">✦</span>
+        <span class="logo-text" id="siteName">Perpustakaan</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#" class="nav-link active">Pustaka</a>
+        <a href="#" class="nav-link">Koleksi</a>
+        <a href="#" class="nav-link">Tentang</a>
+      </nav>
+      <div class="header-right">
+        <button class="btn-nav-search"><i class="fas fa-search"></i> Cari</button>
+        <button class="hamburger" id="hamburger" aria-label="Buka menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </div>
-    <div class="state-box" id="stateLoading"><div class="spinner"></div><div class="state-msg">Memuat katalog…</div></div>
-    <div class="state-box" id="stateError" style="display:none"><div style="font-size:2rem">📭</div><div class="state-msg">Tidak ada buku</div><div class="state-hint" id="stateHint"></div></div>
-    <div class="book-grid" id="bookGrid" style="display:none"></div>
+    <div class="mobile-menu" id="mobileMenu">
+      <a href="#" class="nav-link">Pustaka</a>
+      <a href="#" class="nav-link">Koleksi</a>
+      <a href="#" class="nav-link">Tentang</a>
+      <a href="#" class="nav-link">Cari</a>
+    </div>
+  </header>
+
+  <main class="catalog-main">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="hero-text">
+        <div class="hero-badge"><span class="badge-dot"></span>Koleksi Terbaru</div>
+        <h1 class="hero-title">Katalog <em>Buku</em><br>Pilihan</h1>
+        <p class="hero-sub" id="catSub">Memuat koleksi…</p>
+      </div>
+      <div class="hero-deco" aria-hidden="true">🍂</div>
+    </section>
+
+    <!-- Catalog grid -->
+    <section class="catalog-section">
+      <div class="section-bar">
+        <h2 class="section-title">Semua Buku</h2>
+      </div>
+
+      <div id="stateLoading" class="state-box">
+        <div class="spinner"></div>
+        <p class="state-msg">Memuat koleksi buku…</p>
+      </div>
+      <div id="stateError" class="state-box" style="display:none">
+        <p class="state-icon">📭</p>
+        <p class="state-msg">Tidak ada buku ditemukan</p>
+        <p class="state-hint" id="stateHint"></p>
+      </div>
+      <div class="book-grid" id="bookGrid" style="display:none"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ══════════════ READER VIEW ══════════════ -->
+<div id="readerView">
+
+  <!-- Loading overlay -->
+  <div id="openLoader" class="open-loader">
+    <div class="ol-icon">📖</div>
+    <div class="ol-spinner"></div>
+    <p class="ol-title" id="olText">Membuka buku…</p>
+    <div class="ol-bar"><div class="ol-fill" id="olFill"></div></div>
+    <p class="ol-detail" id="olDetail">Memuat PDF…</p>
   </div>
 
-  <!-- READER -->
-  <div id="reader">
-    <div id="openLoader">
-      <div class="ol-spinner"></div>
-      <div class="ol-text" id="olText">Membuka buku…</div>
-      <div class="ol-bar"><div class="ol-fill" id="olFill"></div></div>
-      <div class="ol-detail" id="olDetail">Memuat PDF…</div>
+  <!-- Top bar -->
+  <div class="reader-topbar">
+    <button class="btn-back" id="btnBack">
+      <i class="fas fa-arrow-left"></i><span class="back-label">Katalog</span>
+    </button>
+    <div class="reader-title" id="topTitle"></div>
+    <div class="bg-progress" id="bgProgress">
+      <span class="bg-dot"></span>
+      <span id="bgText">Memuat…</span>
     </div>
+  </div>
 
-    <div class="stage" id="stage">
-      <div class="zoom-outer" id="zoomOuter">
-        <div class="book-wrap">
-          <div class="book" id="book">
-            <div class="pg pg-l" id="pgL"><div class="pg-blank"></div></div>
-            <div class="spine"></div>
-            <div class="pg pg-r" id="pgR"><div class="pg-blank"></div></div>
-            <div class="flipper" id="flipper">
-              <div class="f-face f-front" id="fFront"></div>
-              <div class="f-face f-back"  id="fBack"></div>
-            </div>
+  <!-- Stage -->
+  <div class="stage" id="stage">
+    <div class="zoom-outer" id="zoomOuter">
+      <div class="book-wrap">
+        <div class="book" id="book">
+          <div class="pg pg-l" id="pgL"><div class="pg-blank"></div></div>
+          <div class="spine"></div>
+          <div class="pg pg-r" id="pgR"><div class="pg-blank"></div></div>
+          <div class="flipper" id="flipper">
+            <div class="f-face f-front" id="fFront"></div>
+            <div class="f-face f-back"  id="fBack"></div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="toolbar">
-      <div class="tb">
-        <button class="btn-n" id="btnFirst">⏮</button>
-        <button class="btn-n" id="btnPrev">‹</button>
-        <div class="tb-sep"></div>
-        <div class="pg-counter" id="pgCounter"><b>—</b> / —</div>
-        <div class="tb-sep"></div>
-        <button class="btn-n" id="btnNext">›</button>
-        <button class="btn-n" id="btnLast">⏭</button>
-        <div class="tb-sep"></div>
-        <button class="btn-n" id="btnThumb">⊞</button>
-        <div class="tb-sep"></div>
-        <button class="btn-n" id="btnZoomOut" title="Perkecil (−)">−</button>
-        <div class="zoom-label" id="zoomLabel" title="Klik 2x untuk reset">100%</div>
-        <button class="btn-n" id="btnZoomIn" title="Perbesar (+)">+</button>
-      </div>
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="tb">
+      <button class="btn-tb" id="btnFirst"   title="Halaman pertama"><i class="fas fa-backward-step"></i></button>
+      <button class="btn-tb" id="btnPrev"    title="Sebelumnya"><i class="fas fa-chevron-left"></i></button>
+      <div class="tb-sep"></div>
+      <div class="pg-counter" id="pgCounter"><b>—</b> / —</div>
+      <div class="tb-sep"></div>
+      <button class="btn-tb" id="btnNext"    title="Berikutnya"><i class="fas fa-chevron-right"></i></button>
+      <button class="btn-tb" id="btnLast"    title="Halaman terakhir"><i class="fas fa-forward-step"></i></button>
+      <div class="tb-sep"></div>
+      <button class="btn-tb" id="btnThumb"   title="Semua halaman"><i class="fas fa-border-all"></i></button>
+      <div class="tb-sep"></div>
+      <button class="btn-tb" id="btnZoomOut" title="Perkecil (−)"><i class="fas fa-minus"></i></button>
+      <div class="zoom-label" id="zoomLabel" title="Klik 2× untuk reset">100%</div>
+      <button class="btn-tb" id="btnZoomIn"  title="Perbesar (+)"><i class="fas fa-plus"></i></button>
     </div>
   </div>
 </div>
 
-<!-- Background render progress -->
-<div class="bg-progress" id="bgProgress">
-  <div class="bg-dot"></div>
-  <span id="bgText">Memuat halaman…</span>
-</div>
-
-<!-- Thumbnails -->
+<!-- Thumbnails (fixed overlay) -->
 <div id="thumbRow"><div class="thumblist" id="thumbList"></div></div>
 
 <!-- Zoom hint -->
-<div class="zoom-hint" id="zoomHint">Scroll untuk zoom · Drag untuk geser · Klik 2× untuk reset</div>
+<div class="zoom-hint" id="zoomHint">Scroll untuk zoom &middot; Drag untuk geser &middot; 2× klik untuk reset</div>
 
-<script>
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
-// ── INDEXEDDB CACHE ──
-const DB_NAME = 'FlipbookCache', DB_VER = 1;
-
-function openDB() {
-  return new Promise((res, rej) => {
-    const r = indexedDB.open(DB_NAME, DB_VER);
-    r.onupgradeneeded = e => {
-      const db = e.target.result;
-      if (!db.objectStoreNames.contains('pages')) db.createObjectStore('pages');
-      if (!db.objectStoreNames.contains('meta'))  db.createObjectStore('meta');
-    };
-    r.onsuccess = e => res(e.target.result);
-    r.onerror   = e => rej(e.target.error);
-  });
-}
-function dbGet(db, store, key) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store,'readonly').objectStore(store).get(key);
-    r.onsuccess = e => res(e.target.result);
-    r.onerror   = e => rej(e.target.error);
-  });
-}
-function dbPut(db, store, key, val) {
-  return new Promise((res, rej) => {
-    const r = db.transaction(store,'readwrite').objectStore(store).put(val, key);
-    r.onsuccess = e => res(e.target.result);
-    r.onerror   = e => rej(e.target.error);
-  });
-}
-async function loadCache(relPath) {
-  try {
-    const db   = await openDB();
-    const meta = await dbGet(db, 'meta', relPath);
-    if (!meta || meta.scale !== SCALE) return null;
-    const head = await fetch(relPath, { method: 'HEAD' }).catch(() => null);
-    const size = head ? head.headers.get('content-length') : null;
-    if (size && meta.size && size !== meta.size) return null;
-    const data = await dbGet(db, 'pages', relPath);
-    return data || null;
-  } catch { return null; }
-}
-async function saveCache(relPath, pdfSize, pagesArr) {
-  try {
-    const db = await openDB();
-    await dbPut(db, 'meta', relPath, { scale: SCALE, size: pdfSize, ts: Date.now() });
-    await dbPut(db, 'pages', relPath, pagesArr);
-  } catch (e) { console.warn('Cache save failed:', e); }
-}
-
-// ── STATE ──
-let pages     = [];
-let pdfDoc    = null;
-let cur       = 0;
-let total     = 0;
-let busy      = false;
-let thumbOpen = false;
-let bgRunning = false;
-const FLIP    = 550;
-const SCALE   = 1.5;
-const INITIAL = 6;
-
-// ── ZOOM STATE ──
-let zoomLevel  = 1;
-let panX = 0, panY = 0;
-let isDragging = false;
-let dragMoved  = false;
-let dragStartX = 0, dragStartY = 0;
-let panStartX  = 0, panStartY  = 0;
-let pinchDist  = 0;
-let zoomHintTimer = null;
-const ZOOM_MIN  = 1;
-const ZOOM_MAX  = 4;
-const ZOOM_STEP = 0.25;
-
-// ── DOM ──
-const $     = id => document.getElementById(id);
-const catalog    = $('catalog');
-const reader     = $('reader');
-const openLoader = $('openLoader');
-const stateLoading=$('stateLoading');
-const stateError =$('stateError');
-const stateHint  =$('stateHint');
-const bookGrid   =$('bookGrid');
-const catSub     =$('catSub');
-const topTitle   =$('topTitle');
-const topBrand   =$('topBrand');
-const btnBack    =$('btnBack');
-const pgL        =$('pgL');
-const pgR        =$('pgR');
-const pgCounter  =$('pgCounter');
-const olFill     =$('olFill');
-const olDetail   =$('olDetail');
-const olText     =$('olText');
-const btnFirst   =$('btnFirst');
-const btnPrev    =$('btnPrev');
-const btnNext    =$('btnNext');
-const btnLast    =$('btnLast');
-const btnThumb   =$('btnThumb');
-const thumbRow   =$('thumbRow');
-const thumbList  =$('thumbList');
-const flipper    =$('flipper');
-const fFront     =$('fFront');
-const fBack      =$('fBack');
-const book       =$('book');
-const bgProgress =$('bgProgress');
-const bgText     =$('bgText');
-const stage      =$('stage');
-const zoomOuter  =$('zoomOuter');
-const btnZoomIn  =$('btnZoomIn');
-const btnZoomOut =$('btnZoomOut');
-const zoomLabel  =$('zoomLabel');
-const zoomHintEl =$('zoomHint');
-
-// ── ZOOM FUNCTIONS ──
-function applyZoom(animate) {
-  if (animate) {
-    zoomOuter.style.transition = 'transform .2s cubic-bezier(0.4,0,0.2,1)';
-    clearTimeout(applyZoom._t);
-    applyZoom._t = setTimeout(() => { zoomOuter.style.transition = ''; }, 250);
-  }
-  zoomOuter.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
-  zoomLabel.textContent = Math.round(zoomLevel * 100) + '%';
-  btnZoomIn.disabled  = zoomLevel >= ZOOM_MAX;
-  btnZoomOut.disabled = zoomLevel <= ZOOM_MIN;
-  btnZoomIn.classList.toggle('active', zoomLevel > 1);
-  btnZoomOut.classList.toggle('active', zoomLevel > 1);
-  stage.style.cursor = zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : '';
-}
-
-function resetZoom(animate) {
-  zoomLevel = 1; panX = 0; panY = 0;
-  applyZoom(animate !== false);
-}
-
-function clampPan() {
-  // Allow some overflow — generous limits so user can reach edges
-  const maxPan = 400 * (zoomLevel - 1);
-  panX = Math.max(-maxPan, Math.min(maxPan, panX));
-  panY = Math.max(-maxPan, Math.min(maxPan, panY));
-}
-
-function showZoomHint() {
-  clearTimeout(zoomHintTimer);
-  zoomHintEl.classList.add('show');
-  zoomHintTimer = setTimeout(() => { zoomHintEl.classList.remove('show'); }, 2000);
-}
-
-// ── ZOOM BUTTONS ──
-btnZoomIn.addEventListener('click', e => {
-  e.stopPropagation();
-  zoomLevel = Math.min(ZOOM_MAX, parseFloat((zoomLevel + ZOOM_STEP).toFixed(2)));
-  applyZoom(true);
-  showZoomHint();
-});
-btnZoomOut.addEventListener('click', e => {
-  e.stopPropagation();
-  zoomLevel = Math.max(ZOOM_MIN, parseFloat((zoomLevel - ZOOM_STEP).toFixed(2)));
-  if (zoomLevel <= ZOOM_MIN) { panX = 0; panY = 0; }
-  applyZoom(true);
-  if (zoomLevel <= ZOOM_MIN) { zoomHintEl.classList.remove('show'); }
-  else showZoomHint();
-});
-zoomLabel.addEventListener('dblclick', e => {
-  e.stopPropagation();
-  resetZoom();
-  zoomHintEl.classList.remove('show');
-});
-
-// ── SCROLL WHEEL ZOOM ──
-stage.addEventListener('wheel', e => {
-  if (!reader.classList.contains('show')) return;
-  e.preventDefault();
-  const delta  = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
-  const newZ   = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, parseFloat((zoomLevel + delta).toFixed(2))));
-  if (newZ === zoomLevel) return;
-
-  // Zoom toward cursor position
-  const rect = stage.getBoundingClientRect();
-  const cx   = e.clientX - rect.left  - rect.width  / 2;
-  const cy   = e.clientY - rect.top   - rect.height / 2;
-  panX = cx + (panX - cx) * (newZ / zoomLevel);
-  panY = cy + (panY - cy) * (newZ / zoomLevel);
-  zoomLevel = newZ;
-
-  if (zoomLevel <= ZOOM_MIN) { panX = 0; panY = 0; }
-  else clampPan();
-  applyZoom();
-  if (zoomLevel > ZOOM_MIN) showZoomHint();
-  else zoomHintEl.classList.remove('show');
-}, { passive: false });
-
-// ── DRAG TO PAN ──
-stage.addEventListener('mousedown', e => {
-  if (zoomLevel <= 1) return;
-  if (e.target.closest('.toolbar, .btn-n')) return;
-  isDragging = true; dragMoved = false;
-  dragStartX = e.clientX; dragStartY = e.clientY;
-  panStartX  = panX;      panStartY  = panY;
-  stage.style.cursor = 'grabbing';
-  e.preventDefault();
-});
-window.addEventListener('mousemove', e => {
-  if (!isDragging) return;
-  const dx = e.clientX - dragStartX;
-  const dy = e.clientY - dragStartY;
-  if (Math.abs(dx) + Math.abs(dy) > 4) dragMoved = true;
-  panX = panStartX + dx;
-  panY = panStartY + dy;
-  clampPan();
-  applyZoom();
-});
-window.addEventListener('mouseup', () => {
-  if (!isDragging) return;
-  isDragging = false;
-  stage.style.cursor = zoomLevel > 1 ? 'grab' : '';
-});
-
-// ── PINCH TO ZOOM (mobile) ──
-stage.addEventListener('touchstart', e => {
-  if (e.touches.length === 2) {
-    pinchDist = Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-  }
-}, { passive: true });
-stage.addEventListener('touchmove', e => {
-  if (e.touches.length !== 2) return;
-  e.preventDefault();
-  const d = Math.hypot(
-    e.touches[0].clientX - e.touches[1].clientX,
-    e.touches[0].clientY - e.touches[1].clientY
-  );
-  if (pinchDist > 0) {
-    const newZ = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX,
-      parseFloat((zoomLevel * (d / pinchDist)).toFixed(2))
-    ));
-    if (newZ !== zoomLevel) {
-      zoomLevel = newZ;
-      if (zoomLevel <= ZOOM_MIN) { panX = 0; panY = 0; }
-      else clampPan();
-      applyZoom();
-    }
-  }
-  pinchDist = d;
-}, { passive: false });
-
-// ── DOUBLE-CLICK: zoom in / reset ──
-stage.addEventListener('dblclick', e => {
-  if (!reader.classList.contains('show')) return;
-  if (e.target.closest('.toolbar, .btn-n, .zoom-label')) return;
-
-  if (zoomLevel > 1) {
-    resetZoom();
-    zoomHintEl.classList.remove('show');
-  } else {
-    const rect = stage.getBoundingClientRect();
-    const cx   = e.clientX - rect.left  - rect.width  / 2;
-    const cy   = e.clientY - rect.top   - rect.height / 2;
-    const newZ = 2;
-    panX = cx + (panX - cx) * (newZ / zoomLevel);
-    panY = cy + (panY - cy) * (newZ / zoomLevel);
-    zoomLevel = newZ;
-    clampPan();
-    applyZoom(true);
-    showZoomHint();
-  }
-});
-
-// ── BOOT ──
-async function boot() {
-  const cfg = await fetch('config.json').then(r => r.json()).catch(() => ({}));
-  if (cfg.subtitle) { topBrand.textContent = cfg.subtitle; document.title = cfg.subtitle; }
-
-  const folder = cfg.booksFolder || 'books';
-  const pdfList = cfg.pdfs;
-
-  if (pdfList && pdfList.length) {
-    showGrid(folder, pdfList);
-  } else {
-    await apiScan(folder);
-  }
-}
-
-function showGrid(folder, names) {
-  stateLoading.style.display = 'none';
-  bookGrid.style.display = 'grid';
-  catSub.textContent = `${names.length} buku`;
-  names.forEach(name => {
-    const relPath = `${folder}/${name}`;
-    const title   = name.replace(/\.pdf$/i,'').replace(/[-_]/g,' ');
-    addCard(name, relPath, title);
-  });
-}
-
-async function apiScan(folder) {
-  try {
-    const host  = location.hostname;
-    const owner = host.endsWith('.github.io') ? host.split('.')[0] : 'JIAkbar';
-    const repo  = location.pathname.split('/').filter(Boolean)[0] || 'Flipbook';
-    const res   = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${folder}`);
-    if (!res.ok) throw new Error('API ' + res.status);
-    const files = await res.json();
-    const pdfs  = files.filter(f => f.name.toLowerCase().endsWith('.pdf'));
-    if (!pdfs.length) throw new Error('empty');
-    showGrid(folder, pdfs.map(f => f.name));
-  } catch (e) {
-    stateLoading.style.display = 'none';
-    stateError.style.display   = 'flex';
-    stateHint.textContent = `Tidak ada PDF ditemukan di folder "${folder}". Upload PDF lalu push, Actions akan update config.json otomatis.`;
-  }
-}
-
-// ── CATALOG CARD ──
-function addCard(filename, relPath, title) {
-  const card = document.createElement('div');
-  card.className = 'book-card';
-  card.dataset.path = relPath;
-  card.innerHTML = `
-    <div class="card-cover"><div class="cover-spin"><div class="spinner"></div></div></div>
-    <div class="card-info">
-      <div class="card-name">${title}</div>
-      <div class="card-pages">…</div>
-    </div>`;
-  const coverEl = card.querySelector('.card-cover');
-  const pagesEl = card.querySelector('.card-pages');
-  renderCover(relPath, coverEl, pagesEl);
-  card.addEventListener('click', () => openBook(relPath, title));
-  bookGrid.appendChild(card);
-}
-
-async function renderCover(relPath, el, pagesEl) {
-  try {
-    const buf = await fetch(relPath).then(r => { if(!r.ok) throw new Error(r.status); return r.arrayBuffer(); });
-    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    pagesEl.textContent = `${pdf.numPages} halaman`;
-    const page = await pdf.getPage(1);
-    const vp   = page.getViewport({ scale: 0.8 });
-    const c    = document.createElement('canvas');
-    c.width = vp.width; c.height = vp.height;
-    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-    el.innerHTML = '';
-    el.appendChild(c);
-    el._pdf = pdf; el._buf = buf;
-  } catch {
-    el.innerHTML = '<div class="pg-blank"></div>';
-  }
-}
-
-// ── OPEN BOOK ──
-async function openBook(relPath, title) {
-  catalog.classList.add('hide');
-  reader.classList.add('show');
-  openLoader.classList.remove('hide');
-  topTitle.textContent = title;
-  topTitle.classList.add('show');
-  btnBack.classList.add('show');
-  document.title = title;
-
-  setOL(5, 'Membuka PDF…');
-  pages = []; pdfDoc = null;
-  bgRunning = false;
-  resetZoom(false); // reset zoom when opening new book
-
-  try {
-    const card   = bookGrid.querySelector(`[data-path="${relPath}"] .card-cover`);
-    let   pdf    = card?._pdf || null;
-
-    if (!pdf) {
-      setOL(10, 'Mengunduh PDF…');
-      const buf = await fetch(relPath).then(r => { if(!r.ok) throw new Error(`HTTP ${r.status}`); return r.arrayBuffer(); });
-      setOL(25, 'Membuka PDF…');
-      pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-    } else {
-      setOL(25, 'Menggunakan cache…');
-    }
-
-    pdfDoc = pdf;
-    const n = pdf.numPages;
-
-    setOL(30, 'Memeriksa cache…');
-    const pdfSize = card?._buf ? String(card._buf.byteLength) : null;
-    const cached  = await loadCache(relPath);
-
-    if (cached && cached.length === n + 1) {
-      pages = cached;
-      total = pages.length;
-      cur   = 0;
-      buildThumbs();
-      openLoader.classList.add('hide');
-      renderSpread();
-      showCacheBadge();
-      return;
-    }
-
-    pages = new Array(n + 1).fill(null);
-    total = n + 1;
-
-    const first = Math.min(INITIAL, n);
-    for (let i = 1; i <= first; i++) {
-      pages[i] = await renderPage(pdf, i);
-      setOL(30 + Math.round((i / first) * 65), `Halaman ${i} dari ${n}…`);
-    }
-
-    cur = 0;
-    buildThumbs();
-    openLoader.classList.add('hide');
-    renderSpread();
-
-    if (n > first) renderBackground(pdf, first + 1, n, relPath, pdfSize);
-
-  } catch (e) {
-    olText.textContent = '⚠ ' + e.message;
-  }
-}
-
-async function renderPage(pdf, i) {
-  const page = await pdf.getPage(i);
-  const vp   = page.getViewport({ scale: SCALE });
-  const c    = document.createElement('canvas');
-  c.width = vp.width; c.height = vp.height;
-  await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-  return c.toDataURL('image/jpeg', 0.85);
-}
-
-async function renderBackground(pdf, from, to, relPath, pdfSize) {
-  bgRunning = true;
-  bgProgress.classList.add('show');
-  for (let i = from; i <= to; i++) {
-    if (!bgRunning) break;
-    pages[i] = await renderPage(pdf, i);
-    bgText.textContent = `Menyimpan ${i} / ${to}`;
-    const thumb = thumbList.querySelector(`[data-idx="${i}"]`);
-    if (thumb) thumb.innerHTML = `<img src="${pages[i]}" loading="lazy">`;
-    if (i === cur || i === cur + 1) renderSpread();
-    if (i % 8 === 0) await new Promise(r => setTimeout(r, 5));
-  }
-  bgProgress.classList.remove('show');
-  bgRunning = false;
-  if (relPath && pages.every(p => p === null || typeof p === 'string')) {
-    bgText.textContent = 'Menyimpan cache…';
-    bgProgress.classList.add('show');
-    await saveCache(relPath, pdfSize, pages);
-    bgProgress.classList.remove('show');
-    showCacheBadge();
-  }
-}
-
-function showCacheBadge() {
-  const b = document.createElement('div');
-  b.style.cssText = 'position:fixed;bottom:70px;right:16px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#818CF8;font-size:11px;padding:4px 10px;border-radius:20px;z-index:50;transition:opacity .5s;font-family:Outfit,sans-serif';
-  b.textContent = '⚡ Tersimpan di cache';
-  document.body.appendChild(b);
-  setTimeout(() => { b.style.opacity='0'; setTimeout(()=>b.remove(),500); }, 2500);
-}
-
-function setOL(pct, msg) {
-  olFill.style.width   = pct + '%';
-  olDetail.textContent = msg;
-}
-
-// ── RENDER SPREAD ──
-function setPage(el, idx) {
-  el.innerHTML = '';
-  if (idx < 0 || idx >= total) {
-    el.innerHTML = '<div class="pg-blank"></div>'; return;
-  }
-  if (idx === 0 || pages[idx] === null) {
-    if (idx === 0) {
-      el.innerHTML = '<div class="pg-blank"></div>';
-    } else {
-      el.innerHTML = '<div class="pg-loading"><div class="spinner"></div></div>';
-      renderOnDemand(idx, el);
-    }
-    return;
-  }
-  const img = document.createElement('img');
-  img.src = pages[idx]; el.appendChild(img);
-}
-
-async function renderOnDemand(idx, el) {
-  if (!pdfDoc || pages[idx]) return;
-  pages[idx] = await renderPage(pdfDoc, idx);
-  if (idx === cur || idx === cur + 1) renderSpread();
-}
-
-function renderSpread() {
-  setPage(pgL, cur);
-  setPage(pgR, cur + 1);
-  const lNum = cur === 0 ? 'Cover' : String(cur);
-  const rNum = cur + 1 < total ? (cur + 1 === 1 ? 'Cover' : String(cur + 1)) : null;
-  pgCounter.innerHTML = rNum
-    ? `<b>${lNum} – ${rNum}</b> / ${total - 1}`
-    : `<b>${lNum}</b> / ${total - 1}`;
-  btnFirst.disabled = cur <= 0;
-  btnPrev.disabled  = cur <= 0;
-  btnNext.disabled  = cur + 2 >= total;
-  btnLast.disabled  = cur + 2 >= total;
-  syncThumbs();
-}
-
-// ── FLIP ──
-function flip(dir) {
-  if (busy) return;
-  if (dir > 0 && cur + 2 >= total) return;
-  if (dir < 0 && cur <= 0) return;
-  busy = true;
-  const pgW = (book.clientWidth - 22) / 2;
-  const frontSrc = dir > 0 ? pages[cur+1] : pages[cur];
-  const backSrc  = dir > 0 ? pages[cur+2] : pages[cur-1];
-  fFront.innerHTML = frontSrc ? `<img src="${frontSrc}">` : '<div class="pg-blank"></div>';
-  fBack.innerHTML  = backSrc  ? `<img src="${backSrc}">` : '<div class="pg-blank"></div>';
-  if (dir > 0) {
-    Object.assign(flipper.style, { display:'block', right:'0', left:'auto', width:pgW+'px', transformOrigin:'left center', transform:'rotateY(0deg)', transition:'none' });
-  } else {
-    Object.assign(flipper.style, { display:'block', left:'0', right:'auto', width:pgW+'px', transformOrigin:'right center', transform:'rotateY(0deg)', transition:'none' });
-  }
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    flipper.style.transition = `transform ${FLIP}ms cubic-bezier(0.4,0,0.2,1)`;
-    flipper.style.transform  = dir > 0 ? 'rotateY(-180deg)' : 'rotateY(180deg)';
-  }));
-  setTimeout(() => {
-    cur += dir * 2;
-    renderSpread();
-    Object.assign(flipper.style, { display:'none', transition:'none', left:'auto', right:'0' });
-    busy = false;
-  }, FLIP + 40);
-}
-
-function jumpTo(idx) {
-  let s = Math.floor(idx / 2) * 2;
-  s = Math.max(0, Math.min(s, total - 1));
-  if (s !== cur) { cur = s; renderSpread(); }
-}
-
-// ── THUMBNAILS ──
-function buildThumbs() {
-  thumbList.innerHTML = '';
-  for (let i = 1; i < total; i++) {
-    const d = document.createElement('div');
-    d.className = 'thumb'; d.dataset.idx = i;
-    if (pages[i]) d.innerHTML = `<img src="${pages[i]}" loading="lazy">`;
-    else d.innerHTML = '<div class="thumb-blank"></div>';
-    d.addEventListener('click', () => jumpTo(i));
-    thumbList.appendChild(d);
-  }
-}
-function syncThumbs() {
-  thumbList.querySelectorAll('.thumb').forEach(t => {
-    const i = +t.dataset.idx;
-    t.classList.toggle('active', i === cur || i === cur+1);
-  });
-  const a = thumbList.querySelector('.thumb.active');
-  if (a) a.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
-}
-
-// ── EVENTS ──
-btnNext.addEventListener('click',  () => flip(+1));
-btnPrev.addEventListener('click',  () => flip(-1));
-btnFirst.addEventListener('click', () => jumpTo(0));
-btnLast.addEventListener('click',  () => jumpTo(total-1));
-btnThumb.addEventListener('click', () => {
-  thumbOpen = !thumbOpen;
-  thumbRow.classList.toggle('show', thumbOpen);
-  btnThumb.style.color = thumbOpen ? 'var(--accent2)' : '';
-});
-btnBack.addEventListener('click', () => {
-  bgRunning = false;
-  reader.classList.remove('show');
-  catalog.classList.remove('hide');
-  topTitle.classList.remove('show');
-  btnBack.classList.remove('show');
-  thumbRow.classList.remove('show');
-  bgProgress.classList.remove('show');
-  zoomHintEl.classList.remove('show');
-  thumbOpen = false; pages = []; pdfDoc = null;
-  resetZoom(false);
-  document.title = topBrand.textContent;
-});
-
-// Book click — only flip if not dragging
-book.addEventListener('click', e => {
-  if (dragMoved) { dragMoved = false; return; }
-  flip(e.clientX - book.getBoundingClientRect().left < book.clientWidth/2 ? -1 : +1);
-});
-
-document.addEventListener('keydown', e => {
-  if (!reader.classList.contains('show')) return;
-  if (e.key==='ArrowRight'||e.key===' ') { e.preventDefault(); flip(+1); }
-  if (e.key==='ArrowLeft')               { e.preventDefault(); flip(-1); }
-  if (e.key==='Home') jumpTo(0);
-  if (e.key==='End')  jumpTo(total-1);
-  if (e.key==='+' || e.key==='=') { e.preventDefault(); btnZoomIn.click(); }
-  if (e.key==='-')                { e.preventDefault(); btnZoomOut.click(); }
-  if (e.key==='0')                { e.preventDefault(); resetZoom(); zoomHintEl.classList.remove('show'); }
-  if (e.key==='Escape') {
-    if (zoomLevel > 1) { resetZoom(); zoomHintEl.classList.remove('show'); }
-    else btnBack.click();
-  }
-});
-
-let tx=0;
-book.addEventListener('touchstart', e=>{ if(e.touches.length===1) tx=e.changedTouches[0].clientX; },{passive:true});
-book.addEventListener('touchend',   e=>{
-  if(e.changedTouches.length===1 && zoomLevel<=1) {
-    const dx=e.changedTouches[0].clientX-tx;
-    if(Math.abs(dx)>44) flip(dx<0?+1:-1);
-  }
-});
-
-boot();
-</script>
+<script src="script.js"></script>
 </body>
 </html>
