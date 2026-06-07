@@ -134,8 +134,20 @@ body {
 @keyframes pulse { 0%,100%{opacity:.3} 50%{opacity:1} }
 
 /* Stage */
-.stage { flex: 1; width: 100%; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.stage {
+  flex: 1; width: 100%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; overflow: hidden;
+}
 .stage::before { content:''; position:absolute; width:60%; height:50%; background: radial-gradient(ellipse, rgba(99,102,241,.07), transparent 70%); border-radius:50%; pointer-events:none; }
+
+/* Zoom outer wrapper — receives scale/translate transforms */
+.zoom-outer {
+  display: flex; align-items: center; justify-content: center;
+  transform-origin: center center;
+  will-change: transform;
+  user-select: none;
+}
 
 /* Book */
 .book-wrap { perspective: 4000px; }
@@ -178,9 +190,32 @@ body {
 .btn-n { width:34px; height:34px; border-radius:50%; background:none; border:none; color:var(--txt2); font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s,color .2s; font-family:inherit; }
 .btn-n:hover:not(:disabled) { background: rgba(99,102,241,.15); color: var(--accent2); }
 .btn-n:disabled { opacity:.22; cursor:not-allowed; }
+.btn-n.active { color: var(--accent2); background: rgba(99,102,241,.12); }
 .tb-sep { width:1px; height:18px; background:var(--border); margin:0 4px; }
 .pg-counter { font-size:12px; color:var(--txt2); min-width:80px; text-align:center; }
 .pg-counter b { color:var(--txt); font-weight:500; }
+
+/* Zoom label in toolbar */
+.zoom-label {
+  font-size: 11px; color: var(--txt3); min-width: 38px; text-align: center;
+  cursor: pointer; border-radius: 4px; padding: 2px 4px;
+  transition: color .2s;
+  font-variant-numeric: tabular-nums;
+}
+.zoom-label:hover { color: var(--txt2); }
+
+/* Zoom tooltip hint */
+.zoom-hint {
+  position: fixed; bottom: 62px; left: 50%; transform: translateX(-50%);
+  font-size: 11px; color: var(--txt2);
+  background: rgba(9,9,11,.9); border: 1px solid var(--border);
+  padding: 5px 14px; border-radius: 20px;
+  backdrop-filter: blur(10px); z-index: 20;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+  white-space: nowrap;
+}
+.zoom-hint.show { opacity: 1; }
 
 /* Thumbnails */
 #thumbRow { position:fixed; bottom:0; left:0; right:0; display:none; justify-content:center; padding:0 16px 58px; pointer-events:none; z-index:40; }
@@ -198,6 +233,7 @@ body {
   #catalog { padding:20px 16px; }
   .book-grid { grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:16px; }
   .spine { width:14px; }
+  .zoom-label { min-width:30px; }
 }
 </style>
 </head>
@@ -233,15 +269,17 @@ body {
       <div class="ol-detail" id="olDetail">Memuat PDF…</div>
     </div>
 
-    <div class="stage">
-      <div class="book-wrap">
-        <div class="book" id="book">
-          <div class="pg pg-l" id="pgL"><div class="pg-blank"></div></div>
-          <div class="spine"></div>
-          <div class="pg pg-r" id="pgR"><div class="pg-blank"></div></div>
-          <div class="flipper" id="flipper">
-            <div class="f-face f-front" id="fFront"></div>
-            <div class="f-face f-back"  id="fBack"></div>
+    <div class="stage" id="stage">
+      <div class="zoom-outer" id="zoomOuter">
+        <div class="book-wrap">
+          <div class="book" id="book">
+            <div class="pg pg-l" id="pgL"><div class="pg-blank"></div></div>
+            <div class="spine"></div>
+            <div class="pg pg-r" id="pgR"><div class="pg-blank"></div></div>
+            <div class="flipper" id="flipper">
+              <div class="f-face f-front" id="fFront"></div>
+              <div class="f-face f-back"  id="fBack"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -258,6 +296,10 @@ body {
         <button class="btn-n" id="btnLast">⏭</button>
         <div class="tb-sep"></div>
         <button class="btn-n" id="btnThumb">⊞</button>
+        <div class="tb-sep"></div>
+        <button class="btn-n" id="btnZoomOut" title="Perkecil (−)">−</button>
+        <div class="zoom-label" id="zoomLabel" title="Klik 2x untuk reset">100%</div>
+        <button class="btn-n" id="btnZoomIn" title="Perbesar (+)">+</button>
       </div>
     </div>
   </div>
@@ -271,6 +313,9 @@ body {
 
 <!-- Thumbnails -->
 <div id="thumbRow"><div class="thumblist" id="thumbList"></div></div>
+
+<!-- Zoom hint -->
+<div class="zoom-hint" id="zoomHint">Scroll untuk zoom · Drag untuk geser · Klik 2× untuk reset</div>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -310,10 +355,9 @@ async function loadCache(relPath) {
     const db   = await openDB();
     const meta = await dbGet(db, 'meta', relPath);
     if (!meta || meta.scale !== SCALE) return null;
-    // Validate: check if PDF size still matches
     const head = await fetch(relPath, { method: 'HEAD' }).catch(() => null);
     const size = head ? head.headers.get('content-length') : null;
-    if (size && meta.size && size !== meta.size) return null; // PDF changed
+    if (size && meta.size && size !== meta.size) return null;
     const data = await dbGet(db, 'pages', relPath);
     return data || null;
   } catch { return null; }
@@ -327,7 +371,7 @@ async function saveCache(relPath, pdfSize, pagesArr) {
 }
 
 // ── STATE ──
-let pages     = [];   // null = not rendered, string = dataURL
+let pages     = [];
 let pdfDoc    = null;
 let cur       = 0;
 let total     = 0;
@@ -337,6 +381,19 @@ let bgRunning = false;
 const FLIP    = 550;
 const SCALE   = 1.5;
 const INITIAL = 6;
+
+// ── ZOOM STATE ──
+let zoomLevel  = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let dragMoved  = false;
+let dragStartX = 0, dragStartY = 0;
+let panStartX  = 0, panStartY  = 0;
+let pinchDist  = 0;
+let zoomHintTimer = null;
+const ZOOM_MIN  = 1;
+const ZOOM_MAX  = 4;
+const ZOOM_STEP = 0.25;
 
 // ── DOM ──
 const $     = id => document.getElementById(id);
@@ -370,6 +427,168 @@ const fBack      =$('fBack');
 const book       =$('book');
 const bgProgress =$('bgProgress');
 const bgText     =$('bgText');
+const stage      =$('stage');
+const zoomOuter  =$('zoomOuter');
+const btnZoomIn  =$('btnZoomIn');
+const btnZoomOut =$('btnZoomOut');
+const zoomLabel  =$('zoomLabel');
+const zoomHintEl =$('zoomHint');
+
+// ── ZOOM FUNCTIONS ──
+function applyZoom(animate) {
+  if (animate) {
+    zoomOuter.style.transition = 'transform .2s cubic-bezier(0.4,0,0.2,1)';
+    clearTimeout(applyZoom._t);
+    applyZoom._t = setTimeout(() => { zoomOuter.style.transition = ''; }, 250);
+  }
+  zoomOuter.style.transform = `translate(${panX}px, ${panY}px) scale(${zoomLevel})`;
+  zoomLabel.textContent = Math.round(zoomLevel * 100) + '%';
+  btnZoomIn.disabled  = zoomLevel >= ZOOM_MAX;
+  btnZoomOut.disabled = zoomLevel <= ZOOM_MIN;
+  btnZoomIn.classList.toggle('active', zoomLevel > 1);
+  btnZoomOut.classList.toggle('active', zoomLevel > 1);
+  stage.style.cursor = zoomLevel > 1 ? (isDragging ? 'grabbing' : 'grab') : '';
+}
+
+function resetZoom(animate) {
+  zoomLevel = 1; panX = 0; panY = 0;
+  applyZoom(animate !== false);
+}
+
+function clampPan() {
+  // Allow some overflow — generous limits so user can reach edges
+  const maxPan = 400 * (zoomLevel - 1);
+  panX = Math.max(-maxPan, Math.min(maxPan, panX));
+  panY = Math.max(-maxPan, Math.min(maxPan, panY));
+}
+
+function showZoomHint() {
+  clearTimeout(zoomHintTimer);
+  zoomHintEl.classList.add('show');
+  zoomHintTimer = setTimeout(() => { zoomHintEl.classList.remove('show'); }, 2000);
+}
+
+// ── ZOOM BUTTONS ──
+btnZoomIn.addEventListener('click', e => {
+  e.stopPropagation();
+  zoomLevel = Math.min(ZOOM_MAX, parseFloat((zoomLevel + ZOOM_STEP).toFixed(2)));
+  applyZoom(true);
+  showZoomHint();
+});
+btnZoomOut.addEventListener('click', e => {
+  e.stopPropagation();
+  zoomLevel = Math.max(ZOOM_MIN, parseFloat((zoomLevel - ZOOM_STEP).toFixed(2)));
+  if (zoomLevel <= ZOOM_MIN) { panX = 0; panY = 0; }
+  applyZoom(true);
+  if (zoomLevel <= ZOOM_MIN) { zoomHintEl.classList.remove('show'); }
+  else showZoomHint();
+});
+zoomLabel.addEventListener('dblclick', e => {
+  e.stopPropagation();
+  resetZoom();
+  zoomHintEl.classList.remove('show');
+});
+
+// ── SCROLL WHEEL ZOOM ──
+stage.addEventListener('wheel', e => {
+  if (!reader.classList.contains('show')) return;
+  e.preventDefault();
+  const delta  = e.deltaY < 0 ? ZOOM_STEP : -ZOOM_STEP;
+  const newZ   = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, parseFloat((zoomLevel + delta).toFixed(2))));
+  if (newZ === zoomLevel) return;
+
+  // Zoom toward cursor position
+  const rect = stage.getBoundingClientRect();
+  const cx   = e.clientX - rect.left  - rect.width  / 2;
+  const cy   = e.clientY - rect.top   - rect.height / 2;
+  panX = cx + (panX - cx) * (newZ / zoomLevel);
+  panY = cy + (panY - cy) * (newZ / zoomLevel);
+  zoomLevel = newZ;
+
+  if (zoomLevel <= ZOOM_MIN) { panX = 0; panY = 0; }
+  else clampPan();
+  applyZoom();
+  if (zoomLevel > ZOOM_MIN) showZoomHint();
+  else zoomHintEl.classList.remove('show');
+}, { passive: false });
+
+// ── DRAG TO PAN ──
+stage.addEventListener('mousedown', e => {
+  if (zoomLevel <= 1) return;
+  if (e.target.closest('.toolbar, .btn-n')) return;
+  isDragging = true; dragMoved = false;
+  dragStartX = e.clientX; dragStartY = e.clientY;
+  panStartX  = panX;      panStartY  = panY;
+  stage.style.cursor = 'grabbing';
+  e.preventDefault();
+});
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = e.clientX - dragStartX;
+  const dy = e.clientY - dragStartY;
+  if (Math.abs(dx) + Math.abs(dy) > 4) dragMoved = true;
+  panX = panStartX + dx;
+  panY = panStartY + dy;
+  clampPan();
+  applyZoom();
+});
+window.addEventListener('mouseup', () => {
+  if (!isDragging) return;
+  isDragging = false;
+  stage.style.cursor = zoomLevel > 1 ? 'grab' : '';
+});
+
+// ── PINCH TO ZOOM (mobile) ──
+stage.addEventListener('touchstart', e => {
+  if (e.touches.length === 2) {
+    pinchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+}, { passive: true });
+stage.addEventListener('touchmove', e => {
+  if (e.touches.length !== 2) return;
+  e.preventDefault();
+  const d = Math.hypot(
+    e.touches[0].clientX - e.touches[1].clientX,
+    e.touches[0].clientY - e.touches[1].clientY
+  );
+  if (pinchDist > 0) {
+    const newZ = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX,
+      parseFloat((zoomLevel * (d / pinchDist)).toFixed(2))
+    ));
+    if (newZ !== zoomLevel) {
+      zoomLevel = newZ;
+      if (zoomLevel <= ZOOM_MIN) { panX = 0; panY = 0; }
+      else clampPan();
+      applyZoom();
+    }
+  }
+  pinchDist = d;
+}, { passive: false });
+
+// ── DOUBLE-CLICK: zoom in / reset ──
+stage.addEventListener('dblclick', e => {
+  if (!reader.classList.contains('show')) return;
+  if (e.target.closest('.toolbar, .btn-n, .zoom-label')) return;
+
+  if (zoomLevel > 1) {
+    resetZoom();
+    zoomHintEl.classList.remove('show');
+  } else {
+    const rect = stage.getBoundingClientRect();
+    const cx   = e.clientX - rect.left  - rect.width  / 2;
+    const cy   = e.clientY - rect.top   - rect.height / 2;
+    const newZ = 2;
+    panX = cx + (panX - cx) * (newZ / zoomLevel);
+    panY = cy + (panY - cy) * (newZ / zoomLevel);
+    zoomLevel = newZ;
+    clampPan();
+    applyZoom(true);
+    showZoomHint();
+  }
+});
 
 // ── BOOT ──
 async function boot() {
@@ -382,7 +601,6 @@ async function boot() {
   if (pdfList && pdfList.length) {
     showGrid(folder, pdfList);
   } else {
-    // Fallback: GitHub API scan
     await apiScan(folder);
   }
 }
@@ -446,7 +664,6 @@ async function renderCover(relPath, el, pagesEl) {
     await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
     el.innerHTML = '';
     el.appendChild(c);
-    // Cache for reader
     el._pdf = pdf; el._buf = buf;
   } catch {
     el.innerHTML = '<div class="pg-blank"></div>';
@@ -466,9 +683,9 @@ async function openBook(relPath, title) {
   setOL(5, 'Membuka PDF…');
   pages = []; pdfDoc = null;
   bgRunning = false;
+  resetZoom(false); // reset zoom when opening new book
 
   try {
-    // Try to reuse cover's cached PDF
     const card   = bookGrid.querySelector(`[data-path="${relPath}"] .card-cover`);
     let   pdf    = card?._pdf || null;
 
@@ -484,13 +701,11 @@ async function openBook(relPath, title) {
     pdfDoc = pdf;
     const n = pdf.numPages;
 
-    // ── Try cache first ──
     setOL(30, 'Memeriksa cache…');
     const pdfSize = card?._buf ? String(card._buf.byteLength) : null;
     const cached  = await loadCache(relPath);
 
     if (cached && cached.length === n + 1) {
-      // ✅ Cache hit — instant load
       pages = cached;
       total = pages.length;
       cur   = 0;
@@ -498,10 +713,9 @@ async function openBook(relPath, title) {
       openLoader.classList.add('hide');
       renderSpread();
       showCacheBadge();
-      return; // done!
+      return;
     }
 
-    // ── Cache miss — lazy render ──
     pages = new Array(n + 1).fill(null);
     total = n + 1;
 
@@ -516,7 +730,6 @@ async function openBook(relPath, title) {
     openLoader.classList.add('hide');
     renderSpread();
 
-    // ── Render rest in background + save cache ──
     if (n > first) renderBackground(pdf, first + 1, n, relPath, pdfSize);
 
   } catch (e) {
@@ -547,7 +760,6 @@ async function renderBackground(pdf, from, to, relPath, pdfSize) {
   }
   bgProgress.classList.remove('show');
   bgRunning = false;
-  // ── Save to IndexedDB ──
   if (relPath && pages.every(p => p === null || typeof p === 'string')) {
     bgText.textContent = 'Menyimpan cache…';
     bgProgress.classList.add('show');
@@ -558,7 +770,6 @@ async function renderBackground(pdf, from, to, relPath, pdfSize) {
 }
 
 function showCacheBadge() {
-  // Show a small "⚡ Cached" indicator briefly
   const b = document.createElement('div');
   b.style.cssText = 'position:fixed;bottom:70px;right:16px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#818CF8;font-size:11px;padding:4px 10px;border-radius:20px;z-index:50;transition:opacity .5s;font-family:Outfit,sans-serif';
   b.textContent = '⚡ Tersimpan di cache';
@@ -581,7 +792,6 @@ function setPage(el, idx) {
     if (idx === 0) {
       el.innerHTML = '<div class="pg-blank"></div>';
     } else {
-      // Not rendered yet — show spinner, render on demand
       el.innerHTML = '<div class="pg-loading"><div class="spinner"></div></div>';
       renderOnDemand(idx, el);
     }
@@ -594,7 +804,6 @@ function setPage(el, idx) {
 async function renderOnDemand(idx, el) {
   if (!pdfDoc || pages[idx]) return;
   pages[idx] = await renderPage(pdfDoc, idx);
-  // Re-render spread if still visible
   if (idx === cur || idx === cur + 1) renderSpread();
 }
 
@@ -686,23 +895,41 @@ btnBack.addEventListener('click', () => {
   btnBack.classList.remove('show');
   thumbRow.classList.remove('show');
   bgProgress.classList.remove('show');
+  zoomHintEl.classList.remove('show');
   thumbOpen = false; pages = []; pdfDoc = null;
+  resetZoom(false);
   document.title = topBrand.textContent;
 });
+
+// Book click — only flip if not dragging
 book.addEventListener('click', e => {
+  if (dragMoved) { dragMoved = false; return; }
   flip(e.clientX - book.getBoundingClientRect().left < book.clientWidth/2 ? -1 : +1);
 });
+
 document.addEventListener('keydown', e => {
   if (!reader.classList.contains('show')) return;
   if (e.key==='ArrowRight'||e.key===' ') { e.preventDefault(); flip(+1); }
   if (e.key==='ArrowLeft')               { e.preventDefault(); flip(-1); }
   if (e.key==='Home') jumpTo(0);
   if (e.key==='End')  jumpTo(total-1);
-  if (e.key==='Escape') btnBack.click();
+  if (e.key==='+' || e.key==='=') { e.preventDefault(); btnZoomIn.click(); }
+  if (e.key==='-')                { e.preventDefault(); btnZoomOut.click(); }
+  if (e.key==='0')                { e.preventDefault(); resetZoom(); zoomHintEl.classList.remove('show'); }
+  if (e.key==='Escape') {
+    if (zoomLevel > 1) { resetZoom(); zoomHintEl.classList.remove('show'); }
+    else btnBack.click();
+  }
 });
+
 let tx=0;
-book.addEventListener('touchstart', e=>{tx=e.changedTouches[0].clientX;},{passive:true});
-book.addEventListener('touchend',   e=>{const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>44) flip(dx<0?+1:-1);});
+book.addEventListener('touchstart', e=>{ if(e.touches.length===1) tx=e.changedTouches[0].clientX; },{passive:true});
+book.addEventListener('touchend',   e=>{
+  if(e.changedTouches.length===1 && zoomLevel<=1) {
+    const dx=e.changedTouches[0].clientX-tx;
+    if(Math.abs(dx)>44) flip(dx<0?+1:-1);
+  }
+});
 
 boot();
 </script>
