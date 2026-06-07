@@ -1,4 +1,8 @@
 {
   "subtitle": "Perpustakaan Digital",
-  "booksFolder": "books"
+  "booksFolder": "books",
+  "pdfs": [
+    "Investasi-Saham.pdf"
+  ],
+  "lastScanned": "2026-06-07T00:00:00Z"
 }
