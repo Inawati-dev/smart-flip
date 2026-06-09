@@ -173,6 +173,9 @@ body{
       <a class="left-link" href="changelog.html">📋 Changelog</a>
       <a class="left-link" href="checklist.html">✅ Checklist</a>
     </div>
+    <div id="demoBadge" style="display:none;margin-top:.4rem;background:rgba(212,163,115,.15);border:1px solid rgba(212,163,115,.35);border-radius:8px;padding:.45rem .8rem;font-size:.65rem;color:var(--terra);text-align:center;line-height:1.5">
+      🔓 Demo Mode<br><span style="opacity:.7;color:var(--brown3)">Tanpa koneksi database</span>
+    </div>
   </div>
 
   <!-- ── RIGHT ── -->
@@ -243,7 +246,17 @@ body{
 
 <script src="supabase.js"></script>
 <script>
+const DEMO_MODE = typeof sb === 'undefined';
 let selectedRole = 'mahasiswa';
+
+// Tampilkan badge demo mode jika sb tidak tersedia
+if (DEMO_MODE) {
+  document.getElementById('demoBadge').style.display = 'block';
+  document.querySelector('.form-sub').textContent = 'Pilih peran, lalu klik Masuk untuk demo';
+  document.getElementById('email').value = 'demo@smartflip.id';
+  document.getElementById('email').placeholder = 'demo@smartflip.id';
+  document.querySelector('#password').value = 'demo1234';
+}
 
 function setRole(role) {
   selectedRole = role;
@@ -269,39 +282,39 @@ function hideAlert() {
 async function handleLogin(e) {
   e.preventDefault();
   hideAlert();
-  const btn   = document.getElementById('submitBtn');
-  const email = document.getElementById('email').value.trim();
-  const pw    = document.getElementById('password').value;
-
+  const btn = document.getElementById('submitBtn');
   btn.classList.add('loading');
   btn.disabled = true;
 
+  // ── DEMO MODE: langsung ke dashboard dummy ──
+  if (DEMO_MODE) {
+    showAlert(`Demo: masuk sebagai ${selectedRole === 'dosen' ? 'Dosen' : 'Mahasiswa'}…`, 'success');
+    setTimeout(() => {
+      window.location.href = selectedRole === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+    }, 700);
+    return;
+  }
+
+  // ── LIVE MODE: autentikasi Supabase ──
+  const email = document.getElementById('email').value.trim();
+  const pw    = document.getElementById('password').value;
+
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
-
     if (error) throw error;
 
-    // Ambil profile untuk cek role
     const { data: profile, error: pErr } = await sb
-      .from('profiles')
-      .select('role, full_name')
-      .eq('id', data.user.id)
-      .single();
-
+      .from('profiles').select('role, full_name').eq('id', data.user.id).single();
     if (pErr) throw pErr;
 
-    // Cek role sesuai pilihan
     if (profile.role !== selectedRole) {
       await sb.auth.signOut();
-      throw new Error(`Akun ini terdaftar sebagai ${profile.role === 'dosen' ? 'Dosen' : 'Mahasiswa'}. Silakan pilih peran yang sesuai.`);
+      throw new Error(`Akun ini terdaftar sebagai ${profile.role === 'dosen' ? 'Dosen' : 'Mahasiswa'}. Pilih peran yang sesuai.`);
     }
 
     showAlert(`Selamat datang, ${profile.full_name}! Mengalihkan…`, 'success');
-
     setTimeout(() => {
-      window.location.href = profile.role === 'dosen'
-        ? 'dashboard-dos.html'
-        : 'dashboard-mhs.html';
+      window.location.href = profile.role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
     }, 800);
 
   } catch (err) {
@@ -316,6 +329,7 @@ async function handleLogin(e) {
 
 async function handleForgot(e) {
   e.preventDefault();
+  if (DEMO_MODE) { showAlert('Reset kata sandi tidak tersedia di demo mode.'); return; }
   const email = document.getElementById('email').value.trim();
   if (!email) { showAlert('Masukkan email kamu dulu.'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email, {
@@ -325,14 +339,18 @@ async function handleForgot(e) {
   else showAlert('Link reset kata sandi sudah dikirim ke email kamu.', 'success');
 }
 
-// Kalau sudah login, redirect langsung
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (data.session) {
-    const { data: p } = await sb.from('profiles').select('role').eq('id', data.session.user.id).single();
-    if (p) window.location.href = p.role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
-  }
-})();
+// Auto-redirect jika sudah login (live mode only)
+if (!DEMO_MODE) {
+  (async () => {
+    try {
+      const { data } = await sb.auth.getSession();
+      if (data.session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', data.session.user.id).single();
+        if (p) window.location.href = p.role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+      }
+    } catch(e) {}
+  })();
+}
 </script>
 </body>
 </html>
