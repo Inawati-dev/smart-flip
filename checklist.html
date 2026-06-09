@@ -335,6 +335,23 @@
     </div>
   </div>
 
+  <!-- ═══ FASE 2e — Ebook UX & Reader Fixes (v0.7.1–v0.7.2) ═══ -->
+  <div class="fase-block" id="f2e">
+    <div class="fase-head" onclick="toggleFase('f2e')">
+      <div class="collapse-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="fase-title">FASE 2e — Ebook UX &amp; Reader Fixes (v0.7.1–v0.7.2)</div>
+      <span class="fase-badge" id="f2e-badge">—</span>
+    </div>
+    <div class="fase-progress"><div class="fase-progress-fill" id="f2e-bar" style="width:0%"></div></div>
+    <div class="fase-items" id="f2e-items">
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7.1</strong> — Ebook: catalog sebagai full-screen overlay drawer (CSS transform, zero grid manipulation)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7.1</strong> — Ebook: two-step book selection — klik cover → highlight, klik "Mulai Baca" → buka</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7.1</strong> — script.js: generation token (<code>loadGen</code>) untuk abort background loop lama saat buku berganti</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7.1</strong> — Ebook: spinner "Memuat…" untuk halaman yang belum ter-render (bukan blank putih)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7.2</strong> — Rewrite <code>script.js</code>: hapus IndexedDB, ganti <code>pages[]</code> → <code>Map</code> cache, sequential bg pre-render</div></div>
+    </div>
+  </div>
+
   <!-- ═══ FASE 3–10 collapsed ═══ -->
   <div class="fase-block collapsed" id="f3">
     <div class="fase-head" onclick="toggleFase('f3')">
@@ -424,7 +441,7 @@
     </div>
   </div>
 
-  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.7</p>
+  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.7.2</p>
 
 </div><!-- /.page -->
 
@@ -432,12 +449,13 @@
 // Count checked/unchecked per fase and compute overall
 const fases = [
   { id: 'f0',  checked: 5,  total: 7  },
-  { id: 'f0b', checked: 8,  total: 8  },
+  { id: 'f0b', checked: 10, total: 10 },
   { id: 'f1',  checked: 6,  total: 8  },
-  { id: 'f2',  checked: 5,  total: 6  },
-  { id: 'f2b', checked: 5,  total: 5  },
+  { id: 'f2',  checked: 10, total: 11 },
+  { id: 'f2b', checked: 9,  total: 9  },
   { id: 'f2c', checked: 7,  total: 7  },
   { id: 'f2d', checked: 9,  total: 9  },
+  { id: 'f2e', checked: 5,  total: 5  },
   { id: 'f3',  checked: 0,  total: 6  },
   { id: 'f4',  checked: 0,  total: 5  },
   { id: 'f5',  checked: 0,  total: 12 },
