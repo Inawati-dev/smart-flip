@@ -223,13 +223,20 @@ body{
 
 <script src="supabase.js"></script>
 <script>
+const DEMO_MODE = typeof sb === 'undefined';
 let selectedRole = 'mahasiswa';
+
+// Tampilkan info demo mode
+if (DEMO_MODE) {
+  document.querySelector('.form-sub').textContent = 'Pendaftaran belum tersedia di demo mode';
+  document.getElementById('submitBtn').querySelector('.btn-text').textContent = 'Daftar (Demo)';
+}
 
 function setRole(r) {
   selectedRole = r;
   document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === r));
-  document.getElementById('nimLabel').textContent    = r === 'dosen' ? 'NIDN' : 'NIM';
-  document.getElementById('nimNidn').placeholder     = r === 'dosen' ? 'Nomor Induk Dosen Nasional' : 'Nomor Induk Mahasiswa';
+  document.getElementById('nimLabel').textContent = r === 'dosen' ? 'NIDN' : 'NIM';
+  document.getElementById('nimNidn').placeholder  = r === 'dosen' ? 'Nomor Induk Dosen Nasional' : 'Nomor Induk Mahasiswa';
 }
 
 function showAlert(msg, type = 'error') {
@@ -240,6 +247,14 @@ function showAlert(msg, type = 'error') {
 
 async function handleRegister(e) {
   e.preventDefault();
+
+  // Demo mode: tidak bisa daftar, arahkan ke login
+  if (DEMO_MODE) {
+    showAlert('Pendaftaran memerlukan koneksi database. Gunakan tombol Demo di halaman Masuk.', 'error');
+    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+    return;
+  }
+
   const btn      = document.getElementById('submitBtn');
   const fullName = document.getElementById('fullName').value.trim();
   const nimNidn  = document.getElementById('nimNidn').value.trim();
@@ -256,13 +271,9 @@ async function handleRegister(e) {
     });
     if (error) throw error;
 
-    // Upsert profile — simpan role, nama, NIM/NIDN
     if (data.user) {
       const { error: pErr } = await sb.from('profiles').upsert({
-        id:        data.user.id,
-        full_name: fullName,
-        nim_nidn:  nimNidn,
-        role:      selectedRole
+        id: data.user.id, full_name: fullName, nim_nidn: nimNidn, role: selectedRole
       });
       if (pErr) console.warn('Profile upsert:', pErr.message);
     }
@@ -272,9 +283,9 @@ async function handleRegister(e) {
 
   } catch(err) {
     let msg = err.message || 'Terjadi kesalahan.';
-    if (msg.includes('already registered'))      msg = 'Email ini sudah terdaftar. Silakan masuk.';
+    if (msg.includes('already registered'))        msg = 'Email ini sudah terdaftar. Silakan masuk.';
     if (msg.includes('Email signups are disabled')) msg = 'Pendaftaran email belum diaktifkan. Hubungi admin.';
-    if (msg.includes('Password should be'))      msg = 'Kata sandi minimal 8 karakter.';
+    if (msg.includes('Password should be'))        msg = 'Kata sandi minimal 8 karakter.';
     showAlert(msg);
   }
 
