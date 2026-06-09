@@ -143,7 +143,10 @@ function renderCatalog(books) {
     card.style.animationDelay = `${i * 0.04}s`;
     card.dataset.path  = b.path;
     card.dataset.title = b.title;
-    card.innerHTML = `<div class="bc-thumb">📄</div>
+    card.innerHTML = `<div class="bc-thumb" id="thumb-${i}">
+        <canvas class="bc-cover" id="cover-${i}" style="display:none"></canvas>
+        <span class="bc-thumb-icon" id="icon-${i}">📄</span>
+      </div>
       <div class="bc-body"><div class="bc-title">${escHtml(b.title)}</div></div>`;
     card.addEventListener('click', () => {
       document.querySelectorAll('.book-card').forEach(c => c.classList.remove('active'));
@@ -151,11 +154,30 @@ function renderCatalog(books) {
       openBook(b.path, b.title);
     });
     bookGrid.appendChild(card);
+    // Render cover async
+    renderCover(b.path, i);
   });
   // Auto-open first book on desktop
   if (!isMobile() && books.length) {
     setTimeout(() => bookGrid.firstElementChild.click(), 300);
   }
+}
+
+/* ─── RENDER PDF COVER ─── */
+async function renderCover(path, idx) {
+  try {
+    const pdf = await pdfjsLib.getDocument(path).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 0.4 });
+    const canvas = document.getElementById(`cover-${idx}`);
+    if (!canvas) return;
+    canvas.width  = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+    canvas.style.display = 'block';
+    const icon = document.getElementById(`icon-${idx}`);
+    if (icon) icon.style.display = 'none';
+  } catch(e) { /* cover tidak tersedia, tetap tampilkan ikon */ }
 }
 
 /* ─── OPEN BOOK ─── */
