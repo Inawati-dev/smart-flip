@@ -247,10 +247,31 @@
     <div class="legend-item"><span class="tag tag-doc">DOC</span> Dokumentasi</div>
   </div>
 
-  <!-- ═══ v0.5.2 (current) ═══ -->
+  <!-- ═══ v0.7 (current) ═══ -->
   <div class="version-block">
     <div class="vb-head">
-      <span class="vb-badge current">v0.5.2 ✦</span>
+      <span class="vb-badge current">v0.7 ✦</span>
+      <span class="vb-title">Modul Detail + Kuis Formatif + Progress Tracking</span>
+      <span class="vb-date">09 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>modules-data.js: 9 modul RPS + 45 soal kuis dummy pilihan ganda</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>modul.html: halaman detail modul — cover PDF, capaian, materi sesi, progress, riwayat kuis</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>kuis.html: kuis formatif 5 soal/modul — satu per satu, feedback langsung, pembahasan soal</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Skor kuis: verdict adaptif — Sangat Baik (≥80%) / Lulus (≥60%) / Perlu Mengulang (&lt;60%)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>localStorage progress baca: halaman terakhir, persentase, tanggal terakhir buka</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>localStorage riwayat kuis: simpan max 10 percobaan, tampil di modul.html</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>dashboard-mhs: tombol ▶ Mulai/Lanjut/Baca Ulang mengarah ke modul.html?id=X</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>ebook.html: URL param ?book= untuk auto-open modul tertentu dari link eksternal</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.5.2 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.5.2</span>
       <span class="vb-title">Ebook Overhaul + Demo Login + Sidebar Links</span>
       <span class="vb-date">09 Jun 2026</span>
     </div>
@@ -413,28 +434,39 @@
       </div>
       <div class="rm-card">
         <div class="rm-ver">v0.6</div>
-        <div class="rm-title">Modul + Flipbook Terintegrasi</div>
+        <div class="rm-title">Modul + Progress Tracking</div>
         <div class="rm-items">
-          · Halaman detail modul<br>
-          · Embed flipbook reader di dashboard<br>
-          · Tombol "Lanjut Belajar"<br>
-          · Tracking time-on-task
+          · modul.html detail lengkap<br>
+          · localStorage progress baca<br>
+          · URL param ?book= auto-open<br>
+          · Tombol Lanjut Belajar
+        </div>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.7</div>
+        <div class="rm-title">Kuis Formatif + Riwayat</div>
+        <div class="rm-items">
+          · kuis.html per modul (45 soal dummy)<br>
+          · Skor tersimpan localStorage<br>
+          · Umpan balik instan + pembahasan<br>
+          · Adaptive verdict ≥80/60/&lt;60
+        </div>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.8</div>
+        <div class="rm-title">Supabase Live + Auth</div>
+        <div class="rm-items">
+          · Login mahasiswa/dosen real<br>
+          · Progress baca ke database<br>
+          · Skor kuis tersimpan permanen<br>
+          · Dashboard dosen: analytics kelas
         </div>
         <span class="rm-status current">Sprint 3 →</span>
       </div>
       <div class="rm-card">
-        <div class="rm-ver">v0.6</div>
-        <div class="rm-title">Kuis Formatif</div>
-        <div class="rm-items">
-          · Kuis setelah tiap modul<br>
-          · Skor tersimpan ke database<br>
-          · Umpan balik instan per skor<br>
-          · Rekomendasi "ulangi" jika &lt; 60
-        </div>
-        <span class="rm-status planned">Sprint 3</span>
-      </div>
-      <div class="rm-card">
-        <div class="rm-ver">v0.7</div>
+        <div class="rm-ver">v0.9</div>
         <div class="rm-title">AI Adaptif + VARK</div>
         <div class="rm-items">
           · Asesmen VARK 12 soal<br>
@@ -444,7 +476,7 @@
         <span class="rm-status planned">Sprint 4</span>
       </div>
       <div class="rm-card">
-        <div class="rm-ver">v0.8</div>
+        <div class="rm-ver">v1.0</div>
         <div class="rm-title">Forum + Asistensi Draf</div>
         <div class="rm-items">
           · Forum peer-review per modul<br>

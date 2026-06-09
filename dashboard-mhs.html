@@ -203,6 +203,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);display:flex;flex-
 .mod-sub{font-size:.71rem;color:var(--brown3);margin-top:.1rem}
 .mod-prog-wrap{height:4px;background:var(--line);border-radius:2px;margin-top:.5rem}
 .mod-prog-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.btn-buka-modul{display:inline-block;margin-top:.55rem;padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;background:var(--terra);color:#fff;text-decoration:none;transition:background .15s}
+.btn-buka-modul:hover{background:var(--terra-dark)}
+.mod-card.locked .btn-buka-modul{display:none}
 .mod-right{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0}
 .badge{font-size:.67rem;font-weight:600;padding:.22rem .65rem;border-radius:100px;white-space:nowrap}
 .bd-selesai{background:#C0DD97;color:#27500A}
@@ -651,16 +654,21 @@ const DUMMY = {
 };
 
 const MODULES = [
-  { id:1, no:1,  title:'Dasar & Konsep R&D',           sub:'Model ADDIE · 12 hal', status:'completed', pct:100, color:'#8FA287' },
-  { id:2, no:2,  title:'Model Pengembangan ADDIE & 4D', sub:'Tahapan ADDIE · 15 hal', status:'completed', pct:100, color:'#8FA287' },
-  { id:3, no:3,  title:'Needs Assessment & Gap Analysis',sub:'Gap Analysis · 10 hal', status:'completed', pct:100, color:'#8FA287' },
-  { id:4, no:4,  title:'Penyusunan Bab 1 Proposal',     sub:'Identifikasi Masalah · 18 hal', status:'completed', pct:100, color:'#8FA287' },
-  { id:5, no:5,  title:'Blueprint & Storyboard Produk', sub:'Needs Assessment · 8 hal',  status:'in_progress', pct:65, color:'#C8925A' },
-  { id:6, no:6,  title:'Instrumen Validasi Ahli',        sub:'Validasi Ahli · 10 hal',status:'locked', pct:0,  color:'#9B8B7A' },
-  { id:7, no:7,  title:'Analisis Data Validasi',         sub:'Statistik Deskriptif · 14 hal', status:'locked', pct:0,  color:'#9B8B7A' },
-  { id:8, no:8,  title:'Uji Coba & Implementasi',       sub:'Field Testing · 12 hal', status:'locked', pct:0,  color:'#9B8B7A' },
-  { id:9, no:9,  title:'Evaluasi & Diseminasi',          sub:'Laporan Akhir · 16 hal', status:'locked', pct:0,  color:'#9B8B7A' },
+  { id:1, no:1, title:'Dasar & Konsep R&D',            sub:'Konsep dasar penelitian pengembangan',   path:'books/modul-01.pdf', status:'completed',   pct:100, color:'#8FA287' },
+  { id:2, no:2, title:'Model Pengembangan ADDIE & 4D', sub:'Tahapan dan prosedur model R&D',          path:'books/modul-02.pdf', status:'completed',   pct:100, color:'#8FA287' },
+  { id:3, no:3, title:'Needs Assessment & Gap Analysis',sub:'Identifikasi kebutuhan pengembangan',   path:'books/modul-03.pdf', status:'completed',   pct:100, color:'#8FA287' },
+  { id:4, no:4, title:'Penyusunan Bab 1 Proposal',     sub:'Identifikasi masalah dan tujuan',        path:'books/modul-04.pdf', status:'completed',   pct:100, color:'#8FA287' },
+  { id:5, no:5, title:'Blueprint & Storyboard Produk', sub:'Desain produk awal dan storyboard',      path:'books/modul-05.pdf', status:'in_progress', pct:65,  color:'#C8925A' },
+  { id:6, no:6, title:'Instrumen Validasi Ahli',       sub:'Penyusunan dan pengujian instrumen',     path:'books/modul-06.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
+  { id:7, no:7, title:'Analisis Data Validasi',        sub:'Teknik analisis data kuantitatif',       path:'books/modul-07.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
+  { id:8, no:8, title:'Uji Coba & Implementasi',       sub:'Prosedur uji coba produk di lapangan',   path:'books/modul-08.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
+  { id:9, no:9, title:'Evaluasi & Diseminasi',         sub:'Pelaporan hasil dan diseminasi',         path:'books/modul-09.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
 ];
+
+function readProgress(path) {
+  try { const r = localStorage.getItem('sfp_' + path); return r ? JSON.parse(r) : null; }
+  catch(e) { return null; }
+}
 
 const QUIZZES = [
   { mod:'Dasar & Konsep R&D',         score:85, lulus:true,  tgl:'2 Jun 2026' },
@@ -765,15 +773,26 @@ function renderModulFull() {
 }
 
 function modCardHTML(m) {
-  const locked = m.status === 'locked';
-  const badgeCls = m.status === 'completed' ? 'bd-selesai' : m.status === 'in_progress' ? 'bd-sedang' : 'bd-terkunci';
-  const badgeTxt = m.status === 'completed' ? 'Selesai' : m.status === 'in_progress' ? 'Sedang' : 'Terkunci';
-  const progBar  = m.status !== 'locked'
-    ? `<div class="mod-prog-wrap"><div class="mod-prog-fill" style="width:${m.pct}%;background:${m.status === 'completed' ? 'var(--sage)' : 'var(--terra)'}"></div></div>` : '';
+  // Baca progress nyata dari localStorage (override dummy data)
+  const saved   = readProgress(m.path);
+  const pct     = saved !== null ? saved.pct    : m.pct;
+  const status  = m.status === 'locked' ? 'locked'
+                : saved !== null ? (pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : m.status)
+                : m.status;
+
+  const locked   = status === 'locked';
+  const badgeCls = status === 'completed' ? 'bd-selesai' : status === 'in_progress' ? 'bd-sedang' : 'bd-terkunci';
+  const badgeTxt = status === 'completed' ? 'Selesai'    : status === 'in_progress' ? 'Sedang'    : 'Terkunci';
+  const progBar  = status !== 'locked'
+    ? `<div class="mod-prog-wrap"><div class="mod-prog-fill" style="width:${pct}%;background:${status==='completed'?'var(--sage)':'var(--terra)'}"></div></div>` : '';
+
+  const btnLabel = pct >= 100 ? '📖 Baca Ulang' : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar';
+  const bukaBtn  = !locked
+    ? `<a class="btn-buka-modul" href="modul.html?id=${m.id}">${btnLabel}</a>` : '';
 
   const lockIcon = locked
     ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`
-    : m.status === 'completed'
+    : status === 'completed'
       ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
 
@@ -783,10 +802,11 @@ function modCardHTML(m) {
       <div class="mod-title">${m.no}. ${m.title}</div>
       <div class="mod-sub">${m.sub}</div>
       ${progBar}
+      ${bukaBtn}
     </div>
     <div class="mod-right">
       <span class="badge ${badgeCls}">${badgeTxt}</span>
-      ${m.status !== 'locked' ? `<span class="mod-pct">${m.pct}%</span>` : ''}
+      ${status !== 'locked' ? `<span class="mod-pct">${pct}%</span>` : ''}
     </div>
   </div>`;
 }

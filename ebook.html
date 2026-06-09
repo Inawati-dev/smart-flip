@@ -18,6 +18,7 @@
       <span class="logo-text" id="siteName">Perpustakaan Digital</span>
     </a>
     <div class="topbar-right">
+      <button class="topbar-cat-btn" id="topbarCatBtn" onclick="toggleCatalog()" title="Buka/tutup katalog">📚 Katalog</button>
       <a class="topbar-link" id="dashboardBack" href="index.html" title="Kembali ke Dashboard">← Dashboard</a>
       <a class="topbar-link" href="changelog.html" title="Changelog">📋 Changelog</a>
       <a class="topbar-link" href="checklist.html" title="Checklist">✅ Checklist</a>
@@ -27,11 +28,13 @@
 
 <div class="app" id="app">
 
-  <!-- ═══ LEFT: CATALOG PANE ═══ -->
+  <!-- ═══ CATALOG DRAWER (overlay, CSS-only toggle) ═══ -->
+  <div class="cat-backdrop" id="catBackdrop" onclick="closeCatalog()"></div>
   <aside class="cat-pane" id="catPane">
     <div class="cp-head">
       <h2>Katalog Buku</h2>
       <p class="cp-sub" id="catSub">Memuat…</p>
+      <button class="cp-close-btn" onclick="closeCatalog()" title="Tutup katalog">×</button>
     </div>
     <div class="cp-loading" id="cpLoading">
       <div class="cp-ring"></div>
@@ -43,12 +46,11 @@
     </div>
     <div class="cp-grid" id="bookGrid"></div>
     <div class="cp-footer">
-      <button class="btn-lanjut" id="btnLanjut">‹ Sembunyikan Katalog</button>
+      <button class="btn-lanjut" id="btnLanjut" onclick="startReading()">‹ Mulai Baca</button>
     </div>
   </aside>
 
-  <!-- ═══ RIGHT: FLIP PANE ═══ -->
-  <button class="cat-expand-btn" id="expandCatBtn" title="Tampilkan katalog" onclick="toggleCatalog()" style="display:none">›</button>
+  <!-- ═══ FLIP PANE (full width) ═══ -->
   <section class="flip-pane" id="flipPane">
 
     <!-- Welcome screen (shown before any book is opened) -->
@@ -140,38 +142,117 @@
 })();
 </script>
 <style>
-.cat-expand-btn {
-  position:fixed;left:0;top:50%;transform:translateY(-50%);
-  z-index:60;width:28px;height:72px;border-radius:0 10px 10px 0;
-  border:1px solid var(--border,rgba(62,54,46,.18));border-left:none;
-  background:var(--terra,#D4A373);cursor:pointer;
-  font-size:16px;color:#fff;font-weight:700;
-  box-shadow:2px 0 8px rgba(62,54,46,.15);
-  transition:background .15s,box-shadow .15s;
-  align-items:center;justify-content:center;
+/* ── CATALOG DRAWER (overlay approach, no grid manipulation) ── */
+.cat-backdrop { display:none!important; }
+@keyframes pgSpin { to { transform:rotate(360deg); } }
+
+.cat-pane {
+  position:fixed!important;
+  top:var(--topbar-h,58px);left:0;right:0;bottom:0;
+  width:100%!important;
+  z-index:190;
+  transform:translateY(-100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 8px 32px rgba(62,54,46,.18);
+  overflow-y:auto;
 }
-.cat-expand-btn:hover{background:var(--terra-dark,#B8855A);box-shadow:2px 0 12px rgba(62,54,46,.25);}
+.cat-pane.open { transform:translateY(0); }
+
+/* grid buku lebih lebar ketika full-screen */
+.cat-pane.open .cp-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  max-width:900px;margin:0 auto;
+}
+
+/* flip-pane fills full width now (no grid column sharing) */
+.app { display:block!important; }
+.flip-pane { width:100%!important; height:calc(100vh - var(--topbar-h,58px))!important; }
+
+/* thumbnail strip: mulai dari kiri (bukan offset catalog 320px) */
+#thumbRow { left:0!important; }
+
+/* expanded mode tidak relevan lagi — sembunyikan btnExpand */
+#btnExpand { display:none!important; }
+
+/* close button di cp-head */
+.cp-head { position:relative; }
+.cp-close-btn {
+  position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--border,rgba(62,54,46,.15));
+  background:var(--bg3,#FAF7F0);cursor:pointer;
+  font-size:16px;font-weight:700;color:var(--brown2,#6B5D4F);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.cp-close-btn:hover{background:var(--terra,#D4A373);color:#fff;}
+
+/* footer mulai baca — sticky di bawah */
+.cp-footer {
+  position:sticky;bottom:0;
+  background:var(--bg2,#FFFDF8);
+  border-top:1px solid var(--border,rgba(62,54,46,.1));
+  padding:12px 24px;
+  display:flex;justify-content:center;
+}
+.btn-lanjut {
+  width:100%;max-width:400px;
+  padding:13px 0;border-radius:100px;
+  background:var(--terra,#D4A373);color:#fff;
+  font-size:15px;font-weight:700;border:none;cursor:pointer;
+  transition:background .15s;font-family:inherit;
+}
+.btn-lanjut:hover{background:var(--terra-dark,#B8855A);}
+
+/* cp-head: tampilkan judul di tengah dengan close di kanan */
+.cp-head {
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border,rgba(62,54,46,.1));
+  text-align:center;
+}
+.cp-head h2 { font-size:1.3rem; }
+
+/* topbar catalog toggle button */
+.topbar-cat-btn {
+  display:flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:100px;
+  border:1px solid var(--border,rgba(62,54,46,.15));
+  background:var(--terra,#D4A373);color:#fff;
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:background .15s;
+  font-family:inherit;
+}
+.topbar-cat-btn:hover{background:var(--terra-dark,#B8855A);}
 </style>
 <!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 <script>
-function toggleCatalog() {
-  const appEl = document.getElementById('app');
-  const expBtn = document.getElementById('expandCatBtn');
-  const catPane = document.getElementById('catPane');
-  const collapsed = appEl.classList.toggle('cat-collapsed');
-  if (collapsed) {
-    catPane.style.display = 'none';
-    appEl.style.gridTemplateColumns = '0 1fr';
-    expBtn.style.cssText = 'display:flex';
-  } else {
-    catPane.style.display = 'flex';
-    appEl.style.gridTemplateColumns = '';
-    expBtn.style.display = 'none';
-  }
+function openCatalog() {
+  document.getElementById('catPane').classList.add('open');
+  document.getElementById('catBackdrop').classList.add('visible');
+}
+function closeCatalog() {
+  document.getElementById('catPane').classList.remove('open');
+  document.getElementById('catBackdrop').classList.remove('visible');
   if (typeof buildBook === 'function') setTimeout(buildBook, 60);
 }
+function toggleCatalog() {
+  const open = document.getElementById('catPane').classList.contains('open');
+  open ? closeCatalog() : openCatalog();
+}
+function startReading() {
+  const sel = document.getElementById('btnLanjut')._selectedBook;
+  closeCatalog();
+  if (!sel) return;
+  // Paksa buka dari halaman 1 (clear currentPath agar openBook tidak skip)
+  if (typeof openBook === 'function') {
+    window._sfpCurrentPath = null; // sinyal ke script.js
+    openBook(sel.path, sel.title);
+  }
+}
+// Buka katalog saat load (user perlu pilih buku)
+openCatalog();
 </script>
 <script src="script.js"></script>
 </body>

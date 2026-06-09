@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detail Modul</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #F5F2E9; --bg2: #FFFDF8; --bg3: #FAF7F0;
+      --sage: #8FA287; --sage-d: #6B7E64;
+      --terra: #D4A373; --terra-d: #B8855A;
+      --brown: #3E362E; --brown2: #6B5D4F; --brown3: #9B8B7A; --brown4: #C5B8AD;
+      --line: #DDD5C4; --border: rgba(62,54,46,.10);
+      --shadow-sm: 0 2px 10px rgba(62,54,46,.09);
+      --shadow-md: 0 8px 28px rgba(62,54,46,.13);
+      --r: 12px; --r-sm: 8px; --r-pill: 100px;
+      --topbar-h: 58px;
+    }
+    html, body { min-height: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--brown); background: var(--bg); -webkit-font-smoothing: antialiased; }
+
+    /* ── TOPBAR ── */
+    .topbar { position: sticky; top: 0; z-index: 100; height: var(--topbar-h); background: rgba(245,242,233,.92); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .header-inner { height: 100%; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+    .logo-mark { font-size: 20px; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--brown); }
+    .topbar-right { display: flex; align-items: center; gap: 10px; }
+    .topbar-link { font-size: 12px; font-weight: 600; color: var(--brown3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid var(--border); transition: color .2s, border-color .2s; }
+    .topbar-link:hover { color: var(--terra-d); border-color: var(--terra); }
+
+    /* ── LAYOUT ── */
+    .page-wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
+
+    /* ── BACK CRUMB ── */
+    .crumb { display: inline-flex; align-items: center; gap: 6px; color: var(--brown3); font-size: 13px; text-decoration: none; margin-bottom: 24px; }
+    .crumb:hover { color: var(--terra-d); }
+    .crumb svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+    /* ── HERO ── */
+    .hero { display: grid; grid-template-columns: 180px 1fr; gap: 28px; align-items: start; margin-bottom: 32px; }
+    @media (max-width: 600px) { .hero { grid-template-columns: 1fr; } }
+
+    .cover-wrap { position: relative; }
+    .cover-canvas { width: 180px; height: 240px; border-radius: var(--r); object-fit: cover; background: linear-gradient(135deg, var(--sage) 0%, var(--bg3) 100%); display: flex; align-items: center; justify-content: center; font-size: 48px; box-shadow: var(--shadow-md); overflow: hidden; }
+    .cover-canvas canvas { display: block; width: 100%; height: 100%; object-fit: cover; }
+    .cover-icon { font-size: 48px; }
+
+    .hero-info { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+    .modul-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--terra); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--r-pill); width: fit-content; }
+    .modul-title { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; line-height: 1.3; color: var(--brown); }
+    .modul-sub { font-size: 14px; color: var(--brown3); }
+    .modul-desc { font-size: 14px; line-height: 1.65; color: var(--brown2); }
+
+    /* progress inline */
+    .prog-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+    .prog-bar { flex: 1; height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; }
+    .prog-fill { height: 100%; border-radius: 3px; transition: width .5s ease; }
+    .prog-label { font-size: 12px; font-weight: 600; color: var(--brown3); flex-shrink: 0; }
+
+    /* CTA buttons */
+    .cta-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .btn-primary { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border-radius: var(--r-pill); background: var(--terra); color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; border: none; cursor: pointer; transition: background .15s; }
+    .btn-primary:hover { background: var(--terra-d); }
+    .btn-secondary { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border-radius: var(--r-pill); background: transparent; color: var(--brown2); font-size: 14px; font-weight: 600; text-decoration: none; border: 1.5px solid var(--line); cursor: pointer; transition: border-color .15s, color .15s; }
+    .btn-secondary:hover { border-color: var(--terra); color: var(--terra-d); }
+    .btn-locked { opacity: .45; pointer-events: none; }
+
+    /* ── SECTIONS ── */
+    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 22px 24px; margin-bottom: 16px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--brown); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title span { font-size: 16px; }
+
+    /* capaian */
+    .capaian-list { display: flex; flex-direction: column; gap: 8px; }
+    .capaian-item { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; line-height: 1.5; color: var(--brown2); }
+    .capaian-check { width: 18px; height: 18px; border-radius: 50%; background: var(--sage); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+    .capaian-check svg { width: 10px; height: 10px; stroke: #fff; fill: none; stroke-width: 3; }
+
+    /* materi sesi */
+    .materi-list { display: flex; flex-direction: column; gap: 0; }
+    .materi-item { display: flex; align-items: center; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--brown2); }
+    .materi-item:last-child { border-bottom: none; }
+    .sesi-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--bg3); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brown3); flex-shrink: 0; }
+
+    /* riwayat */
+    .riwayat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    @media (max-width: 500px) { .riwayat-grid { grid-template-columns: 1fr 1fr; } }
+    .stat-card { background: var(--bg3); border-radius: var(--r-sm); padding: 14px 16px; }
+    .stat-val { font-size: 22px; font-weight: 700; color: var(--brown); font-family: 'Playfair Display', serif; }
+    .stat-lbl { font-size: 11px; color: var(--brown3); margin-top: 2px; }
+
+    /* kuis riwayat */
+    .kuis-hist { display: flex; flex-direction: column; gap: 8px; }
+    .kuis-hist-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 12px; background: var(--bg3); border-radius: var(--r-sm); font-size: 13px; }
+    .kuis-score { font-weight: 700; }
+    .kuis-score.lulus { color: var(--sage-d); }
+    .kuis-score.gagal { color: #c0392b; }
+    .kuis-empty { font-size: 13px; color: var(--brown3); text-align: center; padding: 16px; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <span class="logo-mark">📖</span>
+      <span class="logo-text">E-Modul Adaptif</span>
+    </a>
+    <div class="topbar-right">
+      <a class="topbar-link" id="dashboardBack" href="index.html">← Dashboard</a>
+      <a class="topbar-link" href="changelog.html">📋 Changelog</a>
+      <a class="topbar-link" href="checklist.html">✅ Checklist</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-wrap">
+
+  <a class="crumb" id="backLink" href="dashboard-mhs.html">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Kembali ke Dashboard
+  </a>
+
+  <!-- ── HERO ── -->
+  <div class="hero" id="heroSection">
+    <div class="cover-wrap">
+      <div class="cover-canvas" id="coverBox">
+        <span class="cover-icon" id="coverIcon">📄</span>
+      </div>
+    </div>
+    <div class="hero-info">
+      <div class="modul-badge" id="modulBadge">Modul —</div>
+      <div class="modul-title" id="modulTitle">Memuat…</div>
+      <div class="modul-sub"  id="modulSub"></div>
+      <div class="modul-desc" id="modulDesc"></div>
+
+      <div class="prog-row" id="progRow" style="display:none">
+        <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+        <div class="prog-label" id="progLabel">0%</div>
+      </div>
+
+      <div class="cta-row">
+        <a class="btn-primary" id="btnBaca" href="#">📖 Mulai Belajar</a>
+        <a class="btn-secondary" id="btnKuis" href="#">✏️ Mulai Kuis</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CAPAIAN ── -->
+  <div class="section">
+    <div class="section-title"><span>🎯</span> Capaian Pembelajaran</div>
+    <div class="capaian-list" id="capaianList"></div>
+  </div>
+
+  <!-- ── MATERI ── -->
+  <div class="section">
+    <div class="section-title"><span>📚</span> Materi per Sesi</div>
+    <div class="materi-list" id="materiList"></div>
+  </div>
+
+  <!-- ── RIWAYAT ── -->
+  <div class="section">
+    <div class="section-title"><span>📊</span> Riwayat Belajar</div>
+    <div class="riwayat-grid" id="riwayatGrid">
+      <div class="stat-card"><div class="stat-val" id="statPct">—</div><div class="stat-lbl">Progress baca</div></div>
+      <div class="stat-card"><div class="stat-val" id="statScore">—</div><div class="stat-lbl">Skor kuis terbaik</div></div>
+      <div class="stat-card"><div class="stat-val" id="statDate">—</div><div class="stat-lbl">Terakhir dibuka</div></div>
+    </div>
+  </div>
+
+  <!-- ── RIWAYAT KUIS ── -->
+  <div class="section">
+    <div class="section-title"><span>📝</span> Riwayat Kuis</div>
+    <div id="kuisHistList"></div>
+  </div>
+
+</div><!-- /.page-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase.js"></script>
+<script>
+// Auth-aware dashboard back button
+(async function() {
+  try {
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+        const href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        document.getElementById('dashboardBack').href = href;
+        document.getElementById('backLink').href = href;
+        return;
+      }
+    }
+  } catch(e) {}
+  document.getElementById('dashboardBack').href = 'index.html';
+  document.getElementById('backLink').href = 'index.html';
+})();
+</script>
+<script src="modules-data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ── helpers ── */
+function readProgress(path) {
+  try { const r = localStorage.getItem('sfp_' + path); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+}
+function readKuisHist(id) {
+  try { const r = localStorage.getItem('sfp_kuis_' + id); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+}
+
+/* ── init ── */
+const params = new URLSearchParams(location.search);
+const modulId = parseInt(params.get('id')) || 1;
+const modul = MODULES_DATA.find(m => m.id === modulId);
+
+if (!modul) {
+  document.getElementById('modulTitle').textContent = 'Modul tidak ditemukan';
+} else {
+  // Title & meta
+  document.title = `Modul ${modul.id} — ${modul.title}`;
+  document.getElementById('modulBadge').textContent = `Modul ${modul.id}`;
+  document.getElementById('modulTitle').textContent = modul.title;
+  document.getElementById('modulSub').textContent   = modul.sub;
+  document.getElementById('modulDesc').textContent  = modul.description;
+
+  // Progress
+  const prog = readProgress(modul.path);
+  if (prog) {
+    const pct = prog.pct || 0;
+    document.getElementById('progRow').style.display = 'flex';
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progFill').style.background = pct >= 100 ? 'var(--sage)' : 'var(--terra)';
+    document.getElementById('progLabel').textContent = pct + '%';
+    document.getElementById('statPct').textContent  = pct + '%';
+    document.getElementById('statDate').textContent = prog.lastOpened || '—';
+    // Change button label
+    const btnBaca = document.getElementById('btnBaca');
+    btnBaca.textContent = pct >= 100 ? '📖 Baca Ulang' : '▶ Lanjut Belajar';
+  } else {
+    document.getElementById('statPct').textContent  = '0%';
+    document.getElementById('statDate').textContent = '—';
+  }
+
+  // CTA links
+  document.getElementById('btnBaca').href = `ebook.html?book=${encodeURIComponent(modul.path)}`;
+  document.getElementById('btnKuis').href = `kuis.html?modul=${modul.id}`;
+
+  // Kuis history
+  const hist = readKuisHist(modul.id);
+  if (hist.length) {
+    const best = Math.max(...hist.map(h => h.score));
+    document.getElementById('statScore').textContent = best + '%';
+    const histHTML = hist.slice().reverse().map(h => `
+      <div class="kuis-hist-row">
+        <span>${h.date}</span>
+        <span class="kuis-score ${h.score >= 60 ? 'lulus' : 'gagal'}">${h.score}% — ${h.score >= 80 ? 'Sangat Baik' : h.score >= 60 ? 'Lulus' : 'Perlu Ulang'}</span>
+      </div>`).join('');
+    document.getElementById('kuisHistList').innerHTML = `<div class="kuis-hist">${histHTML}</div>`;
+  } else {
+    document.getElementById('statScore').textContent = '—';
+    document.getElementById('kuisHistList').innerHTML = '<div class="kuis-empty">Belum pernah mengerjakan kuis</div>';
+  }
+
+  // Capaian
+  document.getElementById('capaianList').innerHTML = modul.capaian.map(c => `
+    <div class="capaian-item">
+      <div class="capaian-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+      <span>${c}</span>
+    </div>`).join('');
+
+  // Materi
+  document.getElementById('materiList').innerHTML = modul.materi.map(m => `
+    <div class="materi-item">
+      <div class="sesi-badge">${m.sesi}</div>
+      <span>${m.topik}</span>
+    </div>`).join('');
+
+  // Cover PDF
+  (async function() {
+    try {
+      const pdf = await pdfjsLib.getDocument(modul.path).promise;
+      const page = await pdf.getPage(1);
+      const viewport = page.getViewport({ scale: 0.6 });
+      const canvas = document.createElement('canvas');
+      canvas.width  = viewport.width;
+      canvas.height = viewport.height;
+      canvas.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;';
+      await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+      const box = document.getElementById('coverBox');
+      box.innerHTML = '';
+      box.appendChild(canvas);
+    } catch(e) { /* fallback icon already showing */ }
+  })();
+}
+</script>
+</body>
+</html>

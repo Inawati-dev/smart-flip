@@ -314,6 +314,27 @@
     </div>
   </div>
 
+  <!-- ═══ FASE 2d — Modul, Kuis & Progress (v0.6–v0.7) ═══ -->
+  <div class="fase-block" id="f2d">
+    <div class="fase-head" onclick="toggleFase('f2d')">
+      <div class="collapse-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="fase-title">FASE 2d — Modul, Kuis &amp; Progress (v0.6–v0.7)</div>
+      <span class="fase-badge done" id="f2d-badge">9 / 9</span>
+    </div>
+    <div class="fase-progress"><div class="fase-progress-fill" id="f2d-bar" style="width:100%"></div></div>
+    <div class="fase-items" id="f2d-items">
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.6</strong> — modules-data.js: 9 modul + 45 soal kuis dummy sesuai RPS</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.6</strong> — modul.html: halaman detail modul (cover PDF, capaian, materi sesi, progress, riwayat kuis)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7</strong> — kuis.html: kuis formatif 5 soal/modul, satu per satu, feedback langsung</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7</strong> — Hasil kuis: skor, verdict (Sangat Baik / Lulus / Perlu Ulang), pembahasan soal</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.6</strong> — localStorage progress baca: simpan halaman terakhir, persentase, tanggal</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7</strong> — localStorage riwayat kuis: max 10 percobaan per modul</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.6</strong> — ebook.html: URL param ?book= untuk auto-open modul dari dashboard</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.6</strong> — dashboard-mhs: tombol ▶ Mulai/Lanjut/Baca Ulang → modul.html?id=X</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.7</strong> — Ebook collapse button: ganti "Buka Penuh" → Sembunyikan Katalog</div></div>
+    </div>
+  </div>
+
   <!-- ═══ FASE 3–10 collapsed ═══ -->
   <div class="fase-block collapsed" id="f3">
     <div class="fase-head" onclick="toggleFase('f3')">
@@ -403,22 +424,24 @@
     </div>
   </div>
 
-  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.5.2</p>
+  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.7</p>
 
 </div><!-- /.page -->
 
 <script>
 // Count checked/unchecked per fase and compute overall
 const fases = [
-  { id: 'f0',  checked: 5, total: 7  },
-  { id: 'f0b', checked: 8, total: 8  },
-  { id: 'f1',  checked: 6, total: 8  },
-  { id: 'f2',  checked: 5, total: 6  },
-  { id: 'f2b', checked: 5, total: 5  },
-  { id: 'f3',  checked: 0, total: 6  },
-  { id: 'f4',  checked: 0, total: 5  },
-  { id: 'f5',  checked: 0, total: 12 },
-  { id: 'f9',  checked: 0, total: 10 },
+  { id: 'f0',  checked: 5,  total: 7  },
+  { id: 'f0b', checked: 8,  total: 8  },
+  { id: 'f1',  checked: 6,  total: 8  },
+  { id: 'f2',  checked: 5,  total: 6  },
+  { id: 'f2b', checked: 5,  total: 5  },
+  { id: 'f2c', checked: 7,  total: 7  },
+  { id: 'f2d', checked: 9,  total: 9  },
+  { id: 'f3',  checked: 0,  total: 6  },
+  { id: 'f4',  checked: 0,  total: 5  },
+  { id: 'f5',  checked: 0,  total: 12 },
+  { id: 'f9',  checked: 0,  total: 10 },
 ];
 
 let totalDone = 0, totalAll = 0;
