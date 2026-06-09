@@ -145,6 +145,17 @@ body{
 .alert.success{background:#EAF3DE;border:1px solid #C0DD97;color:#27500A}
 .alert.show{display:block}
 
+/* demo buttons */
+.demo-btn{
+  flex:1;height:40px;border-radius:8px;
+  border:1.5px dashed var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;
+  color:var(--brown2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  transition:border-color .2s,color .2s,background .2s;
+}
+.demo-btn:hover{border-color:var(--terra);color:var(--terra);background:rgba(212,163,115,.06)}
+
 /* ── MOBILE ── */
 @media(max-width:640px){
   .card{flex-direction:column;min-height:unset}
@@ -236,6 +247,20 @@ body{
       <div class="or-line"></div>
       <div class="or-text">atau</div>
       <div class="or-line"></div>
+    </div>
+
+    <div style="display:flex;gap:.6rem">
+      <button type="button" class="demo-btn" onclick="demoLogin('mahasiswa')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M12 14l9-5-9-5-9 5 9 5z"/><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+        Demo Mahasiswa
+      </button>
+      <button type="button" class="demo-btn" onclick="demoLogin('dosen')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M19 8l2 2-2 2"/></svg>
+        Demo Dosen
+      </button>
+    </div>
+    <div style="text-align:center;font-size:.68rem;color:var(--brown3);opacity:.7;margin-top:-.6rem">
+      ⚠ Data dummy — tidak terhubung ke database
     </div>
 
     <div class="register-row">
@@ -337,6 +362,10 @@ async function handleForgot(e) {
   });
   if (error) showAlert(error.message);
   else showAlert('Link reset kata sandi sudah dikirim ke email kamu.', 'success');
+}
+
+function demoLogin(role) {
+  window.location.href = role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
 }
 
 // Auto-redirect jika sudah login (live mode only)
