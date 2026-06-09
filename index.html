@@ -138,8 +138,7 @@ body{
 .or-text{font-size:.75rem;color:var(--brown3);font-weight:500}
 
 /* demo buttons — localhost only */
-.demo-row{display:none;gap:.5rem}
-.demo-row.show{display:flex}
+.demo-row{display:flex;gap:.5rem}
 .demo-btn{
   flex:1;height:38px;border-radius:9px;
   border:1.5px dashed var(--line);background:transparent;
@@ -279,12 +278,11 @@ body{
 const DEMO_MODE = typeof sb === 'undefined';
 let selectedRole = 'mahasiswa';
 
-// Tampilkan demo buttons jika sb tidak tersedia (termasuk GitHub Pages)
-if (DEMO_MODE) {
-  document.getElementById('demoRow').classList.add('show');
-  document.getElementById('demoLabel').style.display = 'block';
-  document.getElementById('demoLabel').textContent = '⚠ Data dummy — tidak terhubung ke database';
-}
+// Label demo: teks sesuai mode
+document.getElementById('demoLabel').style.display = 'block';
+document.getElementById('demoLabel').textContent = DEMO_MODE
+  ? '⚠ Data dummy — tidak terhubung ke database'
+  : '⚠ Mode dev lokal — data dummy';
 
 function setRole(role) {
   selectedRole = role;
