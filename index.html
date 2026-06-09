@@ -276,7 +276,15 @@ body{
 
 <script src="supabase.js"></script>
 <script>
+const DEMO_MODE = typeof sb === 'undefined';
 let selectedRole = 'mahasiswa';
+
+// Tampilkan demo buttons jika sb tidak tersedia (termasuk GitHub Pages)
+if (DEMO_MODE) {
+  document.getElementById('demoRow').classList.add('show');
+  document.getElementById('demoLabel').style.display = 'block';
+  document.getElementById('demoLabel').textContent = '⚠ Data dummy — tidak terhubung ke database';
+}
 
 function setRole(role) {
   selectedRole = role;
@@ -299,70 +307,57 @@ function hideAlert() {
   document.getElementById('alertBox').className = 'alert';
 }
 
-// Demo login — bypass Supabase, hanya untuk localhost
 function demoLogin(role) {
   window.location.href = role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
-}
-
-// Tampilkan demo buttons hanya di localhost
-if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-  document.getElementById('demoRow').classList.add('show');
-  document.getElementById('demoLabel').style.display = 'block';
 }
 
 async function handleLogin(e) {
   e.preventDefault();
   hideAlert();
-  const btn   = document.getElementById('submitBtn');
-  const email = document.getElementById('email').value.trim();
-  const pw    = document.getElementById('password').value;
-
+  const btn = document.getElementById('submitBtn');
   btn.classList.add('loading');
   btn.disabled = true;
+
+  // Demo mode: langsung redirect
+  if (DEMO_MODE) {
+    showAlert(`Demo: masuk sebagai ${selectedRole === 'dosen' ? 'Dosen' : 'Mahasiswa'}…`, 'success');
+    setTimeout(() => {
+      window.location.href = selectedRole === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+    }, 700);
+    return;
+  }
+
+  const email = document.getElementById('email').value.trim();
+  const pw    = document.getElementById('password').value;
 
   try {
     const { data, error } = await sb.auth.signInWithPassword({ email, password: pw });
     if (error) throw error;
 
-    // Ambil profile untuk cek role
-    let { data: profile } = await sb
-      .from('profiles')
-      .select('role, full_name')
-      .eq('id', data.user.id)
-      .single();
+    let { data: profile } = await sb.from('profiles').select('role, full_name').eq('id', data.user.id).single();
 
-    // Kalau profile belum ada, buat dari metadata
     if (!profile) {
       const meta = data.user.user_metadata || {};
       await sb.from('profiles').upsert({
-        id:        data.user.id,
+        id: data.user.id,
         full_name: meta.full_name || email.split('@')[0],
-        role:      meta.role || selectedRole,
-        nim_nidn:  meta.nim_nidn || ''
+        role: meta.role || selectedRole,
+        nim_nidn: meta.nim_nidn || ''
       });
-      const { data: p2 } = await sb
-        .from('profiles').select('role, full_name')
-        .eq('id', data.user.id).single();
+      const { data: p2 } = await sb.from('profiles').select('role, full_name').eq('id', data.user.id).single();
       profile = p2;
     }
 
-    // Fallback
-    if (!profile) {
-      profile = { role: selectedRole, full_name: email.split('@')[0] };
-    }
+    if (!profile) profile = { role: selectedRole, full_name: email.split('@')[0] };
 
-    // Cek role sesuai pilihan
     if (profile.role !== selectedRole) {
       await sb.auth.signOut();
       throw new Error(`Akun ini terdaftar sebagai ${profile.role === 'dosen' ? 'Dosen' : 'Mahasiswa'}. Silakan pilih peran yang sesuai.`);
     }
 
     showAlert(`Selamat datang, ${profile.full_name}! Mengalihkan…`, 'success');
-
     setTimeout(() => {
-      window.location.href = profile.role === 'dosen'
-        ? 'dashboard-dos.html'
-        : 'dashboard-mhs.html';
+      window.location.href = profile.role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
     }, 800);
 
   } catch (err) {
@@ -377,6 +372,7 @@ async function handleLogin(e) {
 
 async function handleForgot(e) {
   e.preventDefault();
+  if (DEMO_MODE) { showAlert('Reset kata sandi tidak tersedia di demo mode.'); return; }
   const email = document.getElementById('email').value.trim();
   if (!email) { showAlert('Masukkan email kamu dulu.'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email, {
@@ -386,17 +382,18 @@ async function handleForgot(e) {
   else showAlert('Link reset kata sandi sudah dikirim ke email kamu.', 'success');
 }
 
-// Kalau sudah login, redirect langsung
-(async () => {
-  const { data } = await sb.auth.getSession();
-  if (data.session) {
-    const { data: p } = await sb
-      .from('profiles').select('role')
-      .eq('id', data.session.user.id).single();
-    if (p) window.location.href = p.role === 'dosen'
-      ? 'dashboard-dos.html' : 'dashboard-mhs.html';
-  }
-})();
+// Auto-redirect jika sudah login (live mode only)
+if (!DEMO_MODE) {
+  (async () => {
+    try {
+      const { data } = await sb.auth.getSession();
+      if (data.session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', data.session.user.id).single();
+        if (p) window.location.href = p.role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+      }
+    } catch(e) {}
+  })();
+}
 </script>
 </body>
 </html>
