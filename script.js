@@ -194,7 +194,6 @@ async function openBook(path, title) {
   flFill.style.width = '0%';
 
   if (isMobile()) flipPane.classList.add('active');
-  btnLanjut.disabled = false;
 
   pages = []; currentPage = 0; bgDone = 0; isFlipping = false;
   resetZoom(false);
@@ -221,7 +220,6 @@ async function openBook(path, title) {
     welcome.style.display = '';
     alert('Gagal memuat buku: ' + e.message);
     currentPath = '';
-    btnLanjut.disabled = true;
   }
 }
 
@@ -582,9 +580,7 @@ btnExpand.addEventListener('click', () => {
   setTimeout(buildBook, 60);
 });
 btnLanjut.addEventListener('click', () => {
-  app.classList.add('expanded');
-  btnExpand.textContent = '⤡';
-  setTimeout(buildBook, 60);
+  if (typeof toggleCatalog === 'function') toggleCatalog();
 });
 
 /* ─── MOBILE BACK ─── */
@@ -595,7 +591,6 @@ mobileBack.addEventListener('click', () => {
   toolbar.classList.remove('active');
   flLoader.classList.remove('active');
   currentPath = '';
-  btnLanjut.disabled = true;
   document.querySelectorAll('.book-card').forEach(c => c.classList.remove('active'));
 });
 

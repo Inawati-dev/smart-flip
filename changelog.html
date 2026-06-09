@@ -222,7 +222,7 @@
 
 <header class="topbar">
   <div class="header-inner">
-    <a class="back-btn" href="index.html">← Kembali</a>
+    <a class="back-btn" id="backBtn" href="index.html">← Kembali</a>
     <span class="topbar-title">Changelog</span>
     <div style="margin-left:auto">
       <a class="topbar-link" href="checklist.html">✅ Checklist</a>
@@ -247,10 +247,32 @@
     <div class="legend-item"><span class="tag tag-doc">DOC</span> Dokumentasi</div>
   </div>
 
-  <!-- ═══ v0.5 (current) ═══ -->
+  <!-- ═══ v0.5.2 (current) ═══ -->
   <div class="version-block">
     <div class="vb-head">
-      <span class="vb-badge current">v0.5 ✦</span>
+      <span class="vb-badge current">v0.5.2 ✦</span>
+      <span class="vb-title">Ebook Overhaul + Demo Login + Sidebar Links</span>
+      <span class="vb-date">09 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Ebook: katalog buku pindah ke panel kiri; flipbook reader ke kanan</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Ebook: cover buku dari halaman pertama PDF (render via pdf.js, async per kartu)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Ebook: tombol ← Dashboard auth-aware — redirect ke dashboard-mhs/dos jika login, atau index.html jika demo</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Ebook topbar: ganti tombol v0.4 → link 📋 Changelog + ✅ Checklist</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Mahasiswa &amp; Dosen: link Changelog &amp; Checklist di sidebar footer</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Login (index.html + login.html): tombol Demo Mahasiswa &amp; Demo Dosen selalu tampil di semua environment</li>
+        <li class="fix"><span class="tag tag-fix" style="background:#5BA85A;color:#fff">FIX</span>index.html: error "sb is not defined" — DEMO_MODE guard pada semua panggilan sb.*</li>
+        <li class="fix"><span class="tag tag-fix" style="background:#5BA85A;color:#fff">FIX</span>register.html: error "sb is not defined" — fallback demo mode dengan redirect ke login</li>
+      </ul>
+      <p class="vb-desc">Sprint 2 patch — perbaikan UX login demo, overhaul ebook reader, dan navigasi changelog/checklist di semua halaman.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.5 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.5</span>
       <span class="vb-title">Dashboard Redesign — Mahasiswa &amp; Dosen</span>
       <span class="vb-date">09 Jun 2026</span>
     </div>
@@ -379,7 +401,18 @@
         <span class="rm-status done">✓ Selesai</span>
       </div>
       <div class="rm-card">
-        <div class="rm-ver">v0.5.1</div>
+        <div class="rm-ver">v0.5.2</div>
+        <div class="rm-title">Ebook Overhaul + Demo Fix</div>
+        <div class="rm-items">
+          · Katalog kiri, cover PDF<br>
+          · Demo login semua env<br>
+          · Changelog &amp; Checklist sidebar<br>
+          · Fix sb is not defined
+        </div>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.6</div>
         <div class="rm-title">Modul + Flipbook Terintegrasi</div>
         <div class="rm-items">
           · Halaman detail modul<br>
@@ -387,7 +420,7 @@
           · Tombol "Lanjut Belajar"<br>
           · Tracking time-on-task
         </div>
-        <span class="rm-status current">Sprint 2 →</span>
+        <span class="rm-status current">Sprint 3 →</span>
       </div>
       <div class="rm-card">
         <div class="rm-ver">v0.6</div>
@@ -446,5 +479,25 @@
 
 </div><!-- /.page -->
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase.js"></script>
+<script>
+(async () => {
+  const btn = document.getElementById('backBtn');
+  try {
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+        btn.href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        btn.textContent = '← Dashboard';
+        return;
+      }
+    }
+  } catch(e) {}
+  btn.href = 'index.html';
+  btn.textContent = '← Login';
+})();
+</script>
 </body>
 </html>

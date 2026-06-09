@@ -161,7 +161,7 @@
 
 <header class="topbar">
   <div class="header-inner">
-    <a class="back-btn" href="index.html">← Login</a>
+    <a class="back-btn" id="backBtn" href="index.html">← Login</a>
     <span class="topbar-title">Checklist Dev</span>
     <div class="topbar-right">
       <a class="topbar-link" href="changelog.html">Changelog</a>
@@ -227,6 +227,7 @@
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Halaman <code>checklist.html</code> — versi web checklist ini</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><code>index.html</code> = login (pintu masuk); flipbook di <code>ebook.html</code></div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Update <code>changelog.html</code>: entry v0.5 + roadmap diperbarui</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Update <code>changelog.html</code>: entry v0.5.2 + roadmap v0.6; checklist diperbarui</div></div>
     </div>
   </div>
 
@@ -291,6 +292,25 @@
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Class header: MK Metpen Kelas A · 32 mahasiswa; bar chart distribusi skor kuis</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Halaman Forum + Validasi ahli media &amp; materi; 32 mahasiswa dummy + search</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Avatar dropdown: Edit Profil + Logout; role badge Dosen di topbar</div></div>
+    </div>
+  </div>
+
+  <!-- ═══ FASE 2c — Ebook + Login Fix ═══ -->
+  <div class="fase-block" id="f2c">
+    <div class="fase-head" onclick="toggleFase('f2c')">
+      <div class="collapse-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="fase-title">FASE 2c — Ebook &amp; Login (v0.5.2)</div>
+      <span class="fase-badge done" id="f2c-badge">7 / 7</span>
+    </div>
+    <div class="fase-progress"><div class="fase-progress-fill" id="f2c-bar" style="width:100%"></div></div>
+    <div class="fase-items" id="f2c-items">
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Ebook: katalog buku pindah ke panel kiri</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Ebook: cover buku dari halaman pertama PDF (async render)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Ebook: tombol ← Dashboard auth-aware; ganti v0.4 → Changelog + Checklist</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Dashboard Mahasiswa &amp; Dosen: link Changelog &amp; Checklist di sidebar</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Login: Demo Mahasiswa &amp; Demo Dosen selalu tampil (semua environment)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.1</strong> — Fix "sb is not defined" di index.html + register.html (DEMO_MODE guard)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5.2</strong> — Changelog &amp; Checklist diperbarui ke v0.5.2</div></div>
     </div>
   </div>
 
@@ -383,7 +403,7 @@
     </div>
   </div>
 
-  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.5</p>
+  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.5.2</p>
 
 </div><!-- /.page -->
 
@@ -426,6 +446,26 @@ document.getElementById('faseCount').textContent   = fases.filter(f => f.checked
 function toggleFase(id) {
   document.getElementById(id).classList.toggle('collapsed');
 }
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase.js"></script>
+<script>
+(async () => {
+  const btn = document.getElementById('backBtn');
+  try {
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+        btn.href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        btn.textContent = '← Dashboard';
+        return;
+      }
+    }
+  } catch(e) {}
+  btn.href = 'index.html';
+  btn.textContent = '← Login';
+})();
 </script>
 </body>
 </html>

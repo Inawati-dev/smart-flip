@@ -43,11 +43,12 @@
     </div>
     <div class="cp-grid" id="bookGrid"></div>
     <div class="cp-footer">
-      <button class="btn-lanjut" id="btnLanjut" disabled>Buka Penuh &nbsp;⤢</button>
+      <button class="btn-lanjut" id="btnLanjut">‹ Sembunyikan Katalog</button>
     </div>
   </aside>
 
   <!-- ═══ RIGHT: FLIP PANE ═══ -->
+  <button class="cat-expand-btn" id="expandCatBtn" title="Tampilkan katalog" onclick="toggleCatalog()" style="display:none">›</button>
   <section class="flip-pane" id="flipPane">
 
     <!-- Welcome screen (shown before any book is opened) -->
@@ -138,9 +139,40 @@
   back.href = 'index.html';
 })();
 </script>
+<style>
+.cat-expand-btn {
+  position:fixed;left:0;top:50%;transform:translateY(-50%);
+  z-index:60;width:28px;height:72px;border-radius:0 10px 10px 0;
+  border:1px solid var(--border,rgba(62,54,46,.18));border-left:none;
+  background:var(--terra,#D4A373);cursor:pointer;
+  font-size:16px;color:#fff;font-weight:700;
+  box-shadow:2px 0 8px rgba(62,54,46,.15);
+  transition:background .15s,box-shadow .15s;
+  display:flex;align-items:center;justify-content:center;
+}
+.cat-expand-btn:hover{background:var(--terra-dark,#B8855A);box-shadow:2px 0 12px rgba(62,54,46,.25);}
+</style>
 <!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+<script>
+function toggleCatalog() {
+  const appEl = document.getElementById('app');
+  const expBtn = document.getElementById('expandCatBtn');
+  const catPane = document.getElementById('catPane');
+  const collapsed = appEl.classList.toggle('cat-collapsed');
+  if (collapsed) {
+    catPane.style.display = 'none';
+    appEl.style.gridTemplateColumns = '0 1fr';
+    expBtn.style.display = 'flex';
+  } else {
+    catPane.style.display = 'flex';
+    appEl.style.gridTemplateColumns = '';
+    expBtn.style.display = 'none';
+  }
+  if (typeof buildBook === 'function') setTimeout(buildBook, 60);
+}
+</script>
 <script src="script.js"></script>
 </body>
 </html>
