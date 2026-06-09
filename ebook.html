@@ -148,7 +148,7 @@
   font-size:16px;color:#fff;font-weight:700;
   box-shadow:2px 0 8px rgba(62,54,46,.15);
   transition:background .15s,box-shadow .15s;
-  display:flex;align-items:center;justify-content:center;
+  align-items:center;justify-content:center;
 }
 .cat-expand-btn:hover{background:var(--terra-dark,#B8855A);box-shadow:2px 0 12px rgba(62,54,46,.25);}
 </style>
@@ -164,7 +164,7 @@ function toggleCatalog() {
   if (collapsed) {
     catPane.style.display = 'none';
     appEl.style.gridTemplateColumns = '0 1fr';
-    expBtn.style.display = 'flex';
+    expBtn.style.cssText = 'display:flex';
   } else {
     catPane.style.display = 'flex';
     appEl.style.gridTemplateColumns = '';
