@@ -18,15 +18,36 @@
       <span class="logo-text" id="siteName">Perpustakaan Digital</span>
     </a>
     <div class="topbar-right">
-      <a class="topbar-link" id="dashboardBack" href="dashboard-mhs.html" title="Kembali ke Dashboard">← Dashboard</a>
-      <a class="topbar-link" href="changelog.html" title="Changelog">v0.4</a>
+      <a class="topbar-link" id="dashboardBack" href="index.html" title="Kembali ke Dashboard">← Dashboard</a>
+      <a class="topbar-link" href="changelog.html" title="Changelog">📋 Changelog</a>
+      <a class="topbar-link" href="checklist.html" title="Checklist">✅ Checklist</a>
     </div>
   </div>
 </header>
 
 <div class="app" id="app">
 
-  <!-- ═══ LEFT: FLIP PANE ═══ -->
+  <!-- ═══ LEFT: CATALOG PANE ═══ -->
+  <aside class="cat-pane" id="catPane">
+    <div class="cp-head">
+      <h2>Katalog Buku</h2>
+      <p class="cp-sub" id="catSub">Memuat…</p>
+    </div>
+    <div class="cp-loading" id="cpLoading">
+      <div class="cp-ring"></div>
+    </div>
+    <div class="cp-error" id="cpError">
+      <div class="cp-err-icon">⚠️</div>
+      <p>Gagal memuat katalog</p>
+      <p class="cp-hint" id="stateHint"></p>
+    </div>
+    <div class="cp-grid" id="bookGrid"></div>
+    <div class="cp-footer">
+      <button class="btn-lanjut" id="btnLanjut" disabled>Buka Penuh &nbsp;⤢</button>
+    </div>
+  </aside>
+
+  <!-- ═══ RIGHT: FLIP PANE ═══ -->
   <section class="flip-pane" id="flipPane">
 
     <!-- Welcome screen (shown before any book is opened) -->
@@ -88,25 +109,6 @@
 
   </section>
 
-  <!-- ═══ RIGHT: CATALOG PANE ═══ -->
-  <aside class="cat-pane" id="catPane">
-    <div class="cp-head">
-      <h2>Katalog Buku</h2>
-      <p class="cp-sub" id="catSub">Memuat…</p>
-    </div>
-    <div class="cp-loading" id="cpLoading">
-      <div class="cp-ring"></div>
-    </div>
-    <div class="cp-error" id="cpError">
-      <div class="cp-err-icon">⚠️</div>
-      <p>Gagal memuat katalog</p>
-      <p class="cp-hint" id="stateHint"></p>
-    </div>
-    <div class="cp-grid" id="bookGrid"></div>
-    <div class="cp-footer">
-      <button class="btn-lanjut" id="btnLanjut" disabled>Buka Penuh &nbsp;⤢</button>
-    </div>
-  </aside>
 
 </div><!-- /.app -->
 
@@ -121,15 +123,19 @@
 <script src="supabase.js"></script>
 <script>
 (async function() {
+  const back = document.getElementById('dashboardBack');
   try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
-      const back = document.getElementById('dashboardBack');
-      if (p && p.role === 'dosen') back.href = 'dashboard-dos.html';
-      else back.href = 'dashboard-mhs.html';
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+        back.href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        return;
+      }
     }
   } catch(e) {}
+  // Demo / tidak login → ke halaman utama
+  back.href = 'index.html';
 })();
 </script>
 <!-- pdf.js -->
