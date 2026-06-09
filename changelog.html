@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Changelog — Perpustakaan Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:       #F5F2E9;
+      --bg2:      #FFFDF8;
+      --bg3:      #FAF7F0;
+      --sage:     #8FA287;
+      --terra:    #D4A373;
+      --terra-d:  #B8855A;
+      --brown:    #3E362E;
+      --brown2:   #6B5D4F;
+      --brown3:   #9B8B7A;
+      --border:   rgba(62,54,46,.10);
+      --r:        12px;
+      --r-sm:     7px;
+      --r-pill:   100px;
+      --shadow-sm: 0 2px 10px rgba(62,54,46,.09);
+      --shadow-md: 0 8px 28px rgba(62,54,46,.13);
+    }
+    html, body { min-height: 100%; background: var(--bg); color: var(--brown); font-family: 'DM Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      height: 58px;
+      background: rgba(245,242,233,.9);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    .header-inner {
+      max-width: 760px; margin: 0 auto; height: 100%;
+      padding: 0 24px; display: flex; align-items: center; gap: 12px;
+    }
+    .back-btn {
+      display: flex; align-items: center; gap: 6px;
+      text-decoration: none; color: var(--brown2);
+      font-size: 13px; font-weight: 600;
+      padding: 6px 12px; border-radius: var(--r-pill);
+      border: 1px solid var(--border);
+      transition: background .15s, color .15s;
+    }
+    .back-btn:hover { background: var(--terra); color: #fff; border-color: var(--terra); }
+    .topbar-link {
+      font-size: 12px; font-weight: 600; color: var(--brown3);
+      text-decoration: none; padding: 4px 10px;
+      border-radius: 100px; border: 1px solid var(--border);
+      transition: color .2s, border-color .2s;
+    }
+    .topbar-link:hover { color: var(--terra-d); border-color: var(--terra); }
+    .topbar-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 16px; font-weight: 700;
+      color: var(--brown);
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+    .page-hero { margin-bottom: 48px; }
+    .page-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px; font-weight: 700;
+      color: var(--brown); line-height: 1.2;
+    }
+    .page-hero p { color: var(--brown3); margin-top: 8px; font-size: 14px; }
+
+    /* ── VERSION BLOCK ── */
+    .version-block {
+      margin-bottom: 36px;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      background: var(--bg2);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .version-block + .version-block { }
+
+    .vb-head {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 22px;
+      background: var(--bg3);
+      border-bottom: 1px solid var(--border);
+    }
+    .vb-badge {
+      font-size: 13px; font-weight: 700; letter-spacing: .04em;
+      padding: 4px 12px; border-radius: var(--r-pill);
+      font-family: 'DM Sans', monospace;
+      flex-shrink: 0;
+    }
+    .vb-badge.major {
+      background: var(--terra); color: #fff;
+    }
+    .vb-badge.minor {
+      background: var(--sage); color: #fff;
+    }
+    .vb-badge.patch {
+      background: var(--bg2); color: var(--brown2);
+      border: 1px solid var(--border);
+    }
+    .vb-badge.current {
+      background: var(--terra-d); color: #fff;
+      box-shadow: 0 0 0 3px rgba(212,163,115,.25);
+    }
+
+    .vb-title {
+      font-size: 16px; font-weight: 700;
+      color: var(--brown); flex: 1;
+    }
+    .vb-date {
+      font-size: 12px; color: var(--brown3);
+      white-space: nowrap;
+    }
+
+    .vb-body { padding: 18px 22px; }
+
+    .change-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .change-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14px; line-height: 1.5;
+    }
+    .change-list li::before {
+      content: ''; flex-shrink: 0;
+      width: 7px; height: 7px; border-radius: 50%;
+      margin-top: 5.5px;
+    }
+
+    .change-list li.feat::before  { background: var(--sage-dark, #6B7E64); }
+    .change-list li.fix::before   { background: #c5726b; }
+    .change-list li.imp::before   { background: var(--terra); }
+    .change-list li.sec::before   { background: #8b7cd4; }
+    .change-list li.doc::before   { background: var(--brown3); }
+    .change-list li.refac::before { background: var(--sage); }
+
+    .tag {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      letter-spacing: .05em; text-transform: uppercase;
+      padding: 1px 7px; border-radius: 4px; flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .tag-feat  { background: #e8f2e8; color: #4a7a4a; }
+    .tag-fix   { background: #fae8e8; color: #9a3c3c; }
+    .tag-imp   { background: #fdf2e4; color: #7a5020; }
+    .tag-sec   { background: #ede8fa; color: #5040a0; }
+    .tag-doc   { background: #f0ede8; color: var(--brown2); }
+    .tag-refac { background: #e8f0ea; color: #406040; }
+
+    .vb-desc {
+      font-size: 13px; color: var(--brown3);
+      margin-top: 12px; padding-top: 12px;
+      border-top: 1px solid var(--border2, rgba(62,54,46,.06));
+      font-style: italic;
+    }
+
+    /* ── LEGEND ── */
+    .legend {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin-bottom: 32px;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--brown2);
+      padding: 4px 10px; border-radius: var(--r-pill);
+      background: var(--bg2); border: 1px solid var(--border);
+    }
+
+    /* ── ROAD MAP ── */
+    .roadmap-section { margin-top: 48px; }
+    .roadmap-section h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px; font-weight: 700;
+      color: var(--brown); margin-bottom: 20px;
+    }
+    .roadmap-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .rm-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px;
+    }
+    .rm-ver {
+      font-size: 11px; font-weight: 700; color: var(--terra);
+      letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .rm-title {
+      font-size: 14px; font-weight: 600; color: var(--brown);
+      margin-bottom: 8px;
+    }
+    .rm-items { font-size: 12px; color: var(--brown3); line-height: 1.8; }
+    .rm-status {
+      display: inline-block; margin-top: 8px;
+      font-size: 11px; font-weight: 600; padding: 2px 8px;
+      border-radius: var(--r-pill);
+    }
+    .rm-status.done    { background: #e8f2e8; color: #4a7a4a; }
+    .rm-status.current { background: #fdf2e4; color: #7a5020; }
+    .rm-status.planned { background: var(--bg3); color: var(--brown3); border: 1px solid var(--border); }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    .version-block { animation: fadeIn .3s ease both; }
+    .version-block:nth-child(2) { animation-delay: .05s; }
+    .version-block:nth-child(3) { animation-delay: .10s; }
+    .version-block:nth-child(4) { animation-delay: .15s; }
+
+    @media (max-width: 480px) {
+      .page-hero h1 { font-size: 28px; }
+      .vb-head { flex-wrap: wrap; gap: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="header-inner">
+    <a class="back-btn" href="index.html">← Kembali</a>
+    <span class="topbar-title">Changelog</span>
+    <div style="margin-left:auto">
+      <a class="topbar-link" href="checklist.html">✅ Checklist</a>
+    </div>
+  </div>
+</header>
+
+<div class="page">
+
+  <div class="page-hero">
+    <h1>Changelog 📋</h1>
+    <p>Riwayat perubahan Perpustakaan Digital · SMART-FLIP 5.0 · <a href="https://github.com/JIAkbar/smart-flipbook" target="_blank" style="color:var(--terra-d);text-decoration:none">github.com/JIAkbar/smart-flipbook</a></p>
+  </div>
+
+  <!-- Legend -->
+  <div class="legend">
+    <div class="legend-item"><span class="tag tag-feat">FEAT</span> Fitur baru</div>
+    <div class="legend-item"><span class="tag tag-fix">FIX</span> Perbaikan bug</div>
+    <div class="legend-item"><span class="tag tag-imp">IMP</span> Peningkatan</div>
+    <div class="legend-item"><span class="tag tag-refac">REFAC</span> Refaktor kode</div>
+    <div class="legend-item"><span class="tag tag-sec">SEC</span> Keamanan</div>
+    <div class="legend-item"><span class="tag tag-doc">DOC</span> Dokumentasi</div>
+  </div>
+
+  <!-- ═══ v0.5 (current) ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge current">v0.5 ✦</span>
+      <span class="vb-title">Dashboard Redesign — Mahasiswa &amp; Dosen</span>
+      <span class="vb-date">09 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Mahasiswa — sidebar lengkap: Dashboard, Modul, Video, Kuis, Forum, Draf Saya, Progress, Pengaturan (semua dengan ikon SVG)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Mahasiswa — welcome banner dengan nama + streak belajar; stat cards animasi (modul selesai, rata-rata kuis, waktu belajar)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Mahasiswa — modul aktif dengan progress bar per modul (Selesai / Sedang / Terkunci), warna adaptif</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Mahasiswa — halaman Video (6 video per modul), Kuis (riwayat + skor berwarna), Forum diskusi, Draf Saya, Progress visual, Pengaturan profil</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Dosen — sidebar: Dashboard, Mahasiswa, Modul, Analitik, Forum, Validasi, Pengaturan</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Dosen — class header MK Metpen &amp; Pengembangan Kelas A (32 mahasiswa); stat cards (68% progres, 24 draf, 5 perlu asistensi)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Dosen — bar chart distribusi skor kuis dengan tooltip hover (6 rentang: 40–100)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Dosen — tabel 32 mahasiswa dummy dengan search real-time + export CSV</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Dosen — halaman Analitik (chart distribusi skor + penyelesaian per modul), Forum, Validasi ahli (media &amp; materi dengan skor bar)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Avatar dropdown di kedua dashboard: Edit Profil + Logout (menggantikan klik langsung logout)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Role badge di topbar (Mahasiswa / Dosen) untuk identifikasi cepat</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Dummy data lengkap — seluruh UI bisa dilihat tanpa koneksi database (fallback otomatis)</li>
+        <li class="refac"><span class="tag tag-refac">REFAC</span>Auth guard dipertahankan — fallback ke dummy jika offline/localhost, redirect ke login jika production &amp; tidak ada sesi</li>
+      </ul>
+      <p class="vb-desc">Sprint 2 — fokus UI/UX dashboard sebagai fondasi sebelum integrasi data Supabase live dan modul konten.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.4 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.4</span>
+      <span class="vb-title">Split-Layout + Auth + Dashboard</span>
+      <span class="vb-date">09 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Split-layout baru: flip pane (kiri) + catalog pane (kanan) dengan CSS Grid 1fr 320px</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Autentikasi pengguna via Supabase Auth — login, register, forgot password</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Mahasiswa: stat cards, daftar modul adaptif, progress bar, riwayat kuis</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Dashboard Dosen: monitor progress semua mahasiswa, highlight perlu bantuan, export CSV</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Database Supabase PostgreSQL: 8 tabel (profiles, modules, user_progress, quiz_questions, quiz_attempts, drafts, draft_comments, forum_posts)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Adaptive learning: modul terkunci otomatis sampai modul sebelumnya selesai</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Mobile overlay: flip pane masuk dari kiri, tombol ← Katalog untuk kembali</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Tombol "Buka Penuh" (expanded mode) untuk membaca tanpa gangguan</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Halaman changelog ini (changelog.html)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Catalog pane selalu terlihat di desktop — tidak perlu beralih view</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Auto-load buku pertama di desktop setelah katalog dimuat</li>
+        <li class="refac"><span class="tag tag-refac">REFAC</span>DOM IDs baru: flipPane, catPane, flLoader, stage, toolbar (konsisten dengan split layout)</li>
+        <li class="refac"><span class="tag tag-refac">REFAC</span>IndexedDB cache diperbarui ke FlipbookCache2 (hindari konflik cache lama)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>supabase.js: variabel client diganti dari <code>db</code> ke <code>sb</code> (konsisten dengan semua halaman)</li>
+        <li class="sec"><span class="tag tag-sec">SEC</span>supabase.js masuk .gitignore — credential tidak ter-commit ke repo publik</li>
+        <li class="doc"><span class="tag tag-doc">DOC</span>CHECKLIST.md: 10 fase pengembangan dari setup hingga HKI/diseminasi</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.3 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.3</span>
+      <span class="vb-title">GitHub Actions + IndexedDB Cache</span>
+      <span class="vb-date">07 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>GitHub Actions workflow (<code>scan-books.yml</code>): auto-scan folder books/ setiap push, perbarui config.json otomatis</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>IndexedDB cache (FlipbookCache) — buku langsung terbuka di kunjungan kedua tanpa render ulang</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Cache invalidation: deteksi perubahan PDF via Content-Length header</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Lazy rendering: tampilkan buku setelah 6 halaman pertama selesai, render sisa di background</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Background progress chip di toolbar: tampilkan status render halaman sisa</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>GitHub Actions: tambah <code>git pull --rebase</code> sebelum push untuk cegah konflik remote</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.2 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge patch">v0.2</span>
+      <span class="vb-title">Zoom System + 3D Flip</span>
+      <span class="vb-date">05 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Animasi flip halaman 3D dengan CSS <code>rotateY()</code> dan <code>transform-style: preserve-3d</code></li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Zoom system lengkap: scroll wheel zoom-to-cursor, pinch-to-zoom (mobile), tombol +/−, drag-to-pan</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Double-click: zoom 2× / reset ke 100%</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Keyboard shortcuts: ← → navigasi halaman, +/− zoom, 0 reset zoom, F toggle fullscreen</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Thumbnail strip: klik ⊞ untuk lihat semua halaman, klik thumbnail untuk lompat</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Toolbar lengkap: First/Prev/Next/Last, page counter, zoom controls, expand</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Zoom hint muncul otomatis saat pertama kali buka buku</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.1 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge patch">v0.1</span>
+      <span class="vb-title">MVP — PDF Flipbook Reader</span>
+      <span class="vb-date">01 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Render PDF ke canvas menggunakan pdf.js v3.11.174 (CDN)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Tampilan dua halaman (spread) — baca seperti buku fisik</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Catalog view: grid buku dari config.json, klik untuk buka</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Design warm earth-tone: Playfair Display + DM Sans, palet cream/sage/terra</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Repo GitHub: github.com/JIAkbar/smart-flipbook (sebelumnya: Flipbook)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Local dev server: serve.bat (python -m http.server 8080)</li>
+        <li class="doc"><span class="tag tag-doc">DOC</span>README awal, scan_books.py untuk generate config.json manual</li>
+      </ul>
+      <p class="vb-desc">Versi pertama — fungsionalitas dasar membaca PDF sebagai flipbook dengan katalog sederhana.</p>
+    </div>
+  </div>
+
+  <!-- ═══ ROADMAP ═══ -->
+  <div class="roadmap-section">
+    <h2>Rencana ke Depan 🗺️</h2>
+    <div class="roadmap-grid">
+      <div class="rm-card">
+        <div class="rm-ver">v0.5</div>
+        <div class="rm-title">Dashboard Redesign</div>
+        <div class="rm-items">
+          · Sidebar lengkap mahasiswa &amp; dosen<br>
+          · Bar chart distribusi skor kuis<br>
+          · 32 mahasiswa dummy + export CSV<br>
+          · Halaman Video, Forum, Draf, Validasi
+        </div>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.5.1</div>
+        <div class="rm-title">Modul + Flipbook Terintegrasi</div>
+        <div class="rm-items">
+          · Halaman detail modul<br>
+          · Embed flipbook reader di dashboard<br>
+          · Tombol "Lanjut Belajar"<br>
+          · Tracking time-on-task
+        </div>
+        <span class="rm-status current">Sprint 2 →</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.6</div>
+        <div class="rm-title">Kuis Formatif</div>
+        <div class="rm-items">
+          · Kuis setelah tiap modul<br>
+          · Skor tersimpan ke database<br>
+          · Umpan balik instan per skor<br>
+          · Rekomendasi "ulangi" jika &lt; 60
+        </div>
+        <span class="rm-status planned">Sprint 3</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.7</div>
+        <div class="rm-title">AI Adaptif + VARK</div>
+        <div class="rm-items">
+          · Asesmen VARK 12 soal<br>
+          · Jalur belajar adaptif<br>
+          · Rekomendasi konten per gaya belajar
+        </div>
+        <span class="rm-status planned">Sprint 4</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.8</div>
+        <div class="rm-title">Forum + Asistensi Draf</div>
+        <div class="rm-items">
+          · Forum peer-review per modul<br>
+          · Upload draf mahasiswa<br>
+          · Komentar dosen + versioning
+        </div>
+        <span class="rm-status planned">Sprint 5</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.9</div>
+        <div class="rm-title">Notifikasi + Validasi</div>
+        <div class="rm-items">
+          · Email reminder tidak aktif 3 hari<br>
+          · Instrumen validasi ahli<br>
+          · Uji coba kelompok kecil
+        </div>
+        <span class="rm-status planned">Sprint 6</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v1.0</div>
+        <div class="rm-title">Rilis Penelitian</div>
+        <div class="rm-items">
+          · Uji lapangan (kelas penuh)<br>
+          · Analisis N-Gain SDL<br>
+          · HKI + artikel SINTA 3<br>
+          · Laporan penelitian UM 2026
+        </div>
+        <span class="rm-status planned">Akhir 2026</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /.page -->
+
+</body>
+</html>

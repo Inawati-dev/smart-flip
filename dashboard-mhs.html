@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Mahasiswa — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
+  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
+  --terra:#C8925A;--terra-d:#A87040;
+  --brown:#2C2420;--brown2:#4A3D33;--brown3:#7A6B5E;
+  --line:#DDD5C4;--line2:#EDE8DF;
+  --red:#B03020;--green:#2A5010;--amber:#633806;
+  --hh:54px;--sw:228px;
+  --r:10px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);display:flex;flex-direction:column;color:var(--brown)}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:fixed;top:0;left:0;right:0;height:var(--hh);z-index:200;
+  background:var(--brown);display:flex;align-items:center;gap:.5rem;
+}
+.tb-logo{
+  width:var(--sw);flex-shrink:0;display:flex;align-items:center;
+  gap:.6rem;padding:0 1.2rem;border-right:1px solid rgba(255,255,255,.08);height:100%;
+}
+.lb-icon{font-size:1.15rem}
+.lb-name{font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--terra)}
+.lb-name span{color:var(--sage)}
+.lb-ver{font-size:.6rem;color:var(--terra);opacity:.65;letter-spacing:.12em;margin-left:.2rem;margin-top:2px}
+.tb-spacer{flex:1}
+.tb-role-badge{
+  font-size:.67rem;font-weight:600;letter-spacing:.06em;
+  background:rgba(143,162,135,.25);color:var(--sage);
+  border:1px solid rgba(143,162,135,.3);border-radius:100px;
+  padding:.2rem .65rem;
+}
+.tb-btn{
+  width:34px;height:34px;border-radius:8px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0;
+}
+.tb-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.tb-btn svg{width:18px;height:18px}
+.tb-notif-wrap{position:relative}
+.tb-notif-dot{
+  position:absolute;top:4px;right:4px;width:7px;height:7px;
+  border-radius:50%;background:var(--terra);border:1.5px solid var(--brown);
+}
+.avatar-wrap{position:relative;margin:0 .6rem}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--sage);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;cursor:pointer;
+  border:2px solid rgba(143,162,135,.4);transition:border-color .2s;
+}
+.avatar:hover{border-color:var(--sage)}
+/* Dropdown */
+.avatar-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--ivory);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 8px 32px rgba(44,36,32,.18);min-width:190px;
+  z-index:300;display:none;overflow:hidden;
+}
+.avatar-dropdown.open{display:block}
+.dd-header{padding:.8rem 1rem;border-bottom:1px solid var(--line2)}
+.dd-name{font-size:.85rem;font-weight:600;color:var(--brown)}
+.dd-nim{font-size:.72rem;color:var(--brown3);margin-top:.1rem}
+.dd-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem 1rem;font-size:.82rem;color:var(--brown2);
+  cursor:pointer;transition:background .15s;
+}
+.dd-item:hover{background:var(--cream)}
+.dd-item svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.dd-sep{height:1px;background:var(--line2);margin:.2rem 0}
+.dd-logout{color:var(--red)!important}
+.dd-logout svg{opacity:.7!important}
+
+/* ── LAYOUT ── */
+.layout{display:flex;height:100vh;padding-top:var(--hh)}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:var(--sw);flex-shrink:0;background:var(--ivory2);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.sb-section{
+  padding:.6rem 1rem .25rem;
+  font-size:.62rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--brown3);opacity:.7;
+}
+.nav-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.52rem .75rem;margin:.5px .55rem;border-radius:9px;
+  font-size:.82rem;color:var(--brown3);cursor:pointer;
+  text-decoration:none;transition:all .18s;
+  position:relative;
+}
+.nav-item:hover{background:var(--cream);color:var(--brown2)}
+.nav-item.active{background:var(--brown);color:var(--terra)}
+.nav-item svg{width:16px;height:16px;flex-shrink:0}
+.nav-item.active svg{color:var(--terra)}
+.nav-badge{
+  margin-left:auto;font-size:.62rem;font-weight:600;
+  background:var(--terra);color:#fff;
+  border-radius:100px;padding:.1rem .45rem;min-width:18px;text-align:center;
+}
+.sb-divider{height:1px;background:var(--line);margin:.5rem .75rem}
+.sb-bottom{margin-top:auto;padding-bottom:.5rem}
+
+/* ── MAIN ── */
+.main{flex:1;overflow-y:auto;background:var(--cream)}
+.page{display:none;padding:1.5rem 1.8rem}
+.page.active{display:block}
+
+/* ── PAGE HEADER ── */
+.pg-hd{margin-bottom:1.4rem}
+.pg-hd h1{
+  font-family:'Playfair Display',serif;font-size:1.4rem;
+  font-weight:600;color:var(--brown);line-height:1.2;
+}
+.pg-hd p{font-size:.8rem;color:var(--brown3);margin-top:.25rem}
+
+/* ── WELCOME BANNER ── */
+.welcome-banner{
+  background:var(--brown);border-radius:14px;
+  padding:1.2rem 1.5rem;margin-bottom:1.3rem;
+  display:flex;align-items:center;gap:1rem;
+  position:relative;overflow:hidden;
+}
+.welcome-banner::after{
+  content:'📖';position:absolute;right:1.5rem;top:50%;transform:translateY(-50%);
+  font-size:3.5rem;opacity:.08;pointer-events:none;
+}
+.wb-text h2{
+  font-family:'Playfair Display',serif;
+  font-size:1.25rem;color:#fff;font-weight:600;
+}
+.wb-text p{font-size:.78rem;color:rgba(255,255,255,.55);margin-top:.25rem}
+.wb-streak{
+  margin-left:auto;text-align:center;flex-shrink:0;
+  background:rgba(200,146,90,.2);border-radius:10px;padding:.5rem .9rem;
+}
+.wb-streak .n{font-size:1.3rem;font-weight:700;color:var(--terra);line-height:1}
+.wb-streak .l{font-size:.65rem;color:rgba(255,255,255,.5);margin-top:.15rem}
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.3rem}
+.stat-card{
+  background:var(--ivory);border-radius:12px;border:1px solid var(--line);
+  padding:1rem 1.1rem;position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:12px 12px 0 0;
+}
+.stat-card.c1::before{background:var(--sage)}
+.stat-card.c2::before{background:var(--terra)}
+.stat-card.c3::before{background:#B9A88A}
+.s-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:.6rem;
+}
+.s-icon svg{width:16px;height:16px}
+.s-icon.gi{background:var(--sage-bg);color:var(--sage-d)}
+.s-icon.ti{background:#FAF0E6;color:var(--terra-d)}
+.s-icon.bi{background:#F0EDE6;color:var(--brown3)}
+.s-val{font-size:1.7rem;font-weight:500;color:var(--brown);line-height:1}
+.s-lbl{font-size:.7rem;color:var(--brown3);margin-top:.3rem}
+.s-delta{font-size:.7rem;color:var(--sage-d);margin-top:.25rem;font-weight:500}
+
+/* ── SECTION HEADER ── */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.sec-title{font-size:.9rem;font-weight:600;color:var(--brown)}
+.sec-link{font-size:.75rem;color:var(--sage-d);text-decoration:none;cursor:pointer;padding:.2rem .4rem;border-radius:6px;transition:background .15s}
+.sec-link:hover{background:var(--sage-bg);text-decoration:none}
+
+/* ── MODULE CARDS ── */
+.module-list{display:flex;flex-direction:column;gap:.6rem}
+.mod-card{
+  background:var(--ivory);border-radius:12px;border:1px solid var(--line);
+  padding:.85rem 1.1rem;display:flex;align-items:center;gap:.9rem;
+  cursor:pointer;transition:all .18s;
+}
+.mod-card:hover:not(.locked){border-color:var(--brown3);box-shadow:0 2px 16px rgba(44,36,32,.08)}
+.mod-card.locked{opacity:.5;cursor:not-allowed}
+.mod-icon-wrap{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.mod-icon-wrap svg{width:18px;height:18px;color:#fff}
+.mod-body{flex:1;min-width:0}
+.mod-title{font-size:.85rem;font-weight:600;color:var(--brown)}
+.mod-sub{font-size:.71rem;color:var(--brown3);margin-top:.1rem}
+.mod-prog-wrap{height:4px;background:var(--line);border-radius:2px;margin-top:.5rem}
+.mod-prog-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.mod-right{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0}
+.badge{font-size:.67rem;font-weight:600;padding:.22rem .65rem;border-radius:100px;white-space:nowrap}
+.bd-selesai{background:#C0DD97;color:#27500A}
+.bd-sedang{background:#FAC775;color:#633806}
+.bd-terkunci{background:var(--line);color:var(--brown3)}
+.bd-baru{background:#DDEFFD;color:#1A4A7A}
+.mod-pct{font-size:.72rem;color:var(--brown3)}
+
+/* ── VIDEO PAGE ── */
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.9rem}
+.vid-card{
+  background:var(--ivory);border-radius:12px;border:1px solid var(--line);
+  overflow:hidden;cursor:pointer;transition:all .18s;
+}
+.vid-card:hover{border-color:var(--brown3);box-shadow:0 4px 16px rgba(44,36,32,.1);transform:translateY(-2px)}
+.vid-thumb{
+  width:100%;height:110px;background:var(--brown);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+}
+.vid-thumb .play-btn{
+  width:38px;height:38px;border-radius:50%;background:rgba(200,146,90,.9);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;transition:transform .18s;
+}
+.vid-card:hover .play-btn{transform:scale(1.1)}
+.vid-thumb .play-btn svg{width:16px;height:16px;margin-left:2px}
+.vid-dur{position:absolute;bottom:6px;right:8px;font-size:.65rem;color:#fff;background:rgba(0,0,0,.55);padding:.15rem .4rem;border-radius:4px}
+.vid-body{padding:.7rem .8rem}
+.vid-title{font-size:.8rem;font-weight:600;color:var(--brown);line-height:1.3}
+.vid-meta{font-size:.7rem;color:var(--brown3);margin-top:.25rem}
+
+/* ── QUIZ TABLE ── */
+.data-card{background:var(--ivory);border-radius:12px;border:1px solid var(--line);overflow:hidden}
+.dt-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;border-bottom:1px solid var(--line)}
+.dt-head-title{font-size:.88rem;font-weight:600;color:var(--brown)}
+table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.data-tbl th{text-align:left;padding:.55rem .9rem;font-size:.7rem;font-weight:600;color:var(--brown3);background:var(--ivory2);border-bottom:1px solid var(--line)}
+.data-tbl td{padding:.6rem .9rem;color:var(--brown2);border-bottom:1px solid var(--line2)}
+.data-tbl tr:last-child td{border-bottom:none}
+.data-tbl tr:hover td{background:var(--cream)}
+.score-pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:36px;padding:.18rem .55rem;border-radius:6px;
+  font-weight:600;font-size:.78rem;
+}
+.sp-high{background:#C0DD97;color:#27500A}
+.sp-mid{background:#FAE8A0;color:#705010}
+.sp-low{background:#F7C6C0;color:var(--red)}
+
+/* ── FORUM PAGE ── */
+.forum-list{display:flex;flex-direction:column;gap:.6rem}
+.forum-card{
+  background:var(--ivory);border-radius:12px;border:1px solid var(--line);
+  padding:.9rem 1.1rem;cursor:pointer;transition:all .18s;
+}
+.forum-card:hover{border-color:var(--brown3)}
+.fc-top{display:flex;align-items:flex-start;gap:.8rem}
+.fc-avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;
+}
+.fc-body{flex:1;min-width:0}
+.fc-title{font-size:.84rem;font-weight:600;color:var(--brown);line-height:1.3}
+.fc-meta{font-size:.71rem;color:var(--brown3);margin-top:.15rem}
+.fc-bottom{display:flex;align-items:center;gap:.8rem;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--line2)}
+.fc-tag{font-size:.67rem;background:var(--sage-bg);color:var(--sage-d);border-radius:100px;padding:.15rem .5rem;font-weight:600}
+.fc-stat{display:flex;align-items:center;gap:.25rem;font-size:.71rem;color:var(--brown3)}
+.fc-stat svg{width:13px;height:13px;opacity:.6}
+
+/* ── DRAF PAGE ── */
+.draf-list{display:flex;flex-direction:column;gap:.6rem}
+.draf-card{
+  background:var(--ivory);border-radius:12px;border:1px solid var(--line);
+  padding:.85rem 1.1rem;display:flex;align-items:center;gap:.9rem;
+}
+.draf-icon{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  background:var(--cream);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--brown3);
+}
+.draf-icon svg{width:16px;height:16px}
+.draf-body{flex:1;min-width:0}
+.draf-title{font-size:.84rem;font-weight:600;color:var(--brown)}
+.draf-meta{font-size:.71rem;color:var(--brown3);margin-top:.1rem}
+.draf-status{font-size:.67rem;font-weight:600;padding:.2rem .6rem;border-radius:100px}
+.ds-reviewed{background:#DDEFFD;color:#1A4A7A}
+.ds-pending{background:#FAE8A0;color:#705010}
+.ds-revise{background:#F7C6C0;color:var(--red)}
+
+/* ── PROGRESS PAGE ── */
+.prog-overall{
+  background:var(--ivory);border-radius:12px;border:1px solid var(--line);
+  padding:1.1rem 1.2rem;margin-bottom:1rem;
+  display:flex;align-items:center;gap:1.2rem;
+}
+.prog-circle{
+  width:68px;height:68px;flex-shrink:0;position:relative;
+}
+.prog-circle svg{transform:rotate(-90deg)}
+.prog-circle .pct-text{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:700;color:var(--brown);
+}
+.prog-breakdown{flex:1}
+.pb-row{display:flex;align-items:center;gap:.6rem;padding:.35rem 0;border-bottom:1px solid var(--line2)}
+.pb-row:last-child{border-bottom:none}
+.pb-name{font-size:.78rem;color:var(--brown2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-bar-bg{width:120px;height:6px;background:var(--line);border-radius:3px;flex-shrink:0}
+.pb-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.pb-pct{font-size:.72rem;color:var(--brown3);width:34px;text-align:right;flex-shrink:0}
+
+/* ── PENGATURAN PAGE ── */
+.settings-card{background:var(--ivory);border-radius:12px;border:1px solid var(--line);overflow:hidden;margin-bottom:1rem}
+.sc-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.6rem}
+.sc-head-title{font-size:.88rem;font-weight:600;color:var(--brown)}
+.sc-head svg{width:16px;height:16px;color:var(--brown3)}
+.sc-body{padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.75rem}
+.setting-field{display:flex;flex-direction:column;gap:.3rem}
+.setting-field label{font-size:.75rem;font-weight:600;color:var(--brown2)}
+.setting-input{
+  height:40px;border-radius:8px;border:1.5px solid var(--line);
+  background:var(--ivory2);padding:0 .8rem;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--brown);outline:none;
+  transition:border-color .18s,box-shadow .18s;
+}
+.setting-input:focus{border-color:var(--brown);box-shadow:0 0 0 3px rgba(44,36,32,.07)}
+.setting-input:disabled{opacity:.5;cursor:not-allowed}
+.btn-save{
+  height:38px;padding:0 1.2rem;border-radius:9px;border:none;
+  background:var(--brown);color:var(--terra);
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;
+  transition:all .18s;align-self:flex-start;
+}
+.btn-save:hover{background:var(--terra);color:#fff}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(44,36,32,.45);z-index:500;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{background:var(--ivory);border-radius:16px;padding:1.6rem 1.8rem;max-width:360px;width:90%;text-align:center;box-shadow:0 16px 48px rgba(44,36,32,.2)}
+.modal h3{font-size:1rem;font-weight:600;color:var(--brown);margin-bottom:.4rem}
+.modal p{font-size:.82rem;color:var(--brown3);margin-bottom:1.3rem;line-height:1.5}
+.modal-btns{display:flex;gap:.6rem}
+.btn-cancel{flex:1;height:38px;border-radius:9px;border:1.5px solid var(--line);background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--brown2);cursor:pointer;transition:all .15s}
+.btn-cancel:hover{border-color:var(--brown)}
+.btn-confirm{flex:1;height:38px;border-radius:9px;border:none;background:var(--brown);font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ivory);cursor:pointer;transition:all .15s}
+.btn-confirm:hover{background:var(--terra)}
+
+/* ── LOADING ── */
+.spinner-wrap{display:flex;align-items:center;justify-content:center;padding:2rem;color:var(--brown3);font-size:.82rem;gap:.5rem}
+.sk{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--sage);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:2rem;color:var(--brown3);font-size:.83rem}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  :root{--sw:0px}
+  .tb-logo{display:none}
+  .sidebar{display:none}
+  .page{padding:1rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .video-grid{grid-template-columns:1fr 1fr}
+  .pb-bar-bg{width:80px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══ -->
+<div class="topbar">
+  <div class="tb-logo">
+    <span class="lb-icon">📖</span>
+    <div style="display:flex;align-items:baseline;gap:.15rem">
+      <span class="lb-name">SMART<span>-FLIP</span></span>
+      <span class="lb-ver">5.0</span>
+    </div>
+  </div>
+  <div class="tb-spacer"></div>
+  <span class="tb-role-badge">Mahasiswa</span>
+  <div class="tb-notif-wrap">
+    <button class="tb-btn" title="Notifikasi">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    </button>
+    <div class="tb-notif-dot"></div>
+  </div>
+  <div class="avatar-wrap">
+    <div class="avatar" id="avatarBtn" onclick="toggleDropdown()">AR</div>
+    <div class="avatar-dropdown" id="avatarDropdown">
+      <div class="dd-header">
+        <div class="dd-name" id="ddName">Aryadi Ramadhan</div>
+        <div class="dd-nim" id="ddNim">NIM: 220341806002</div>
+      </div>
+      <div class="dd-item" onclick="showPage('pengaturan');closeDropdown()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Edit Profil
+      </div>
+      <div class="dd-sep"></div>
+      <div class="dd-item dd-logout" onclick="document.getElementById('logoutModal').classList.add('show');closeDropdown()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Keluar
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LAYOUT ══ -->
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div style="padding:.75rem 0">
+      <div class="sb-section">Utama</div>
+      <a class="nav-item active" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a class="nav-item" onclick="showPage('modul')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Modul
+      </a>
+      <a class="nav-item" onclick="showPage('video')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+        Video
+      </a>
+      <a class="nav-item" onclick="showPage('kuis')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+        Kuis
+        <span class="nav-badge">2</span>
+      </a>
+      <div class="sb-section">Kolaborasi</div>
+      <a class="nav-item" onclick="showPage('forum')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Forum
+        <span class="nav-badge">3</span>
+      </a>
+      <a class="nav-item" onclick="showPage('draf')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Draf Saya
+      </a>
+      <div class="sb-section">Analitik</div>
+      <a class="nav-item" onclick="showPage('progress')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Progress
+      </a>
+      <a class="nav-item" href="ebook.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        Perpustakaan
+      </a>
+    </div>
+    <div class="sb-bottom">
+      <div class="sb-divider"></div>
+      <a class="nav-item" onclick="showPage('pengaturan')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Pengaturan
+      </a>
+      <a class="nav-item" style="color:#B03020" onclick="document.getElementById('logoutModal').classList.add('show')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Keluar
+      </a>
+    </div>
+  </nav>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main">
+
+    <!-- ── PAGE: DASHBOARD ── -->
+    <div class="page active" id="page-dashboard">
+      <div class="welcome-banner">
+        <div class="wb-text">
+          <h2>Selamat datang, <span id="greetName">Aryadi</span> 👋</h2>
+          <p id="greetSub">Lanjutkan perjalanan belajar kamu hari ini</p>
+        </div>
+        <div class="wb-streak">
+          <div class="n">7</div>
+          <div class="l">hari berturut</div>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card c1">
+          <div class="s-icon gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+          <div class="s-val" id="statDone">4/9</div>
+          <div class="s-lbl">Modul selesai</div>
+          <div class="s-delta">↑ 1 modul minggu ini</div>
+        </div>
+        <div class="stat-card c2">
+          <div class="s-icon ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="s-val" id="statScore">78%</div>
+          <div class="s-lbl">Rata-rata skor kuis</div>
+          <div class="s-delta" style="color:var(--terra)">↑ +5% dari bulan lalu</div>
+        </div>
+        <div class="stat-card c3">
+          <div class="s-icon bi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="s-val" id="statTime">3.2 jam</div>
+          <div class="s-lbl">Total waktu belajar</div>
+          <div class="s-delta">MK Metpen & Pengembangan</div>
+        </div>
+      </div>
+      <div class="sec-hd">
+        <div class="sec-title">Modul aktif</div>
+        <span class="sec-link" onclick="showPage('modul')">Lihat semua →</span>
+      </div>
+      <div class="module-list" id="modListDash"></div>
+    </div>
+
+    <!-- ── PAGE: MODUL ── -->
+    <div class="page" id="page-modul">
+      <div class="pg-hd">
+        <h1>Modul Belajar</h1>
+        <p>MK Metode Penelitian &amp; Pengembangan — Kelas A · 9 modul</p>
+      </div>
+      <div class="module-list" id="modListFull"></div>
+    </div>
+
+    <!-- ── PAGE: VIDEO ── -->
+    <div class="page" id="page-video">
+      <div class="pg-hd">
+        <h1>Video Pembelajaran</h1>
+        <p>Tonton video perkuliahan untuk mempersiapkan sesi kelas</p>
+      </div>
+      <div class="video-grid" id="videoGrid"></div>
+    </div>
+
+    <!-- ── PAGE: KUIS ── -->
+    <div class="page" id="page-kuis">
+      <div class="pg-hd">
+        <h1>Riwayat Kuis</h1>
+        <p>Semua percobaan kuis kamu tercatat di sini</p>
+      </div>
+      <div class="data-card">
+        <div class="dt-head">
+          <div class="dt-head-title">Percobaan kuis</div>
+          <span style="font-size:.75rem;color:var(--brown3)">6 percobaan</span>
+        </div>
+        <table class="data-tbl">
+          <thead><tr><th>Modul</th><th>Skor</th><th>Status</th><th>Tanggal</th></tr></thead>
+          <tbody id="quizBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PAGE: FORUM ── -->
+    <div class="page" id="page-forum">
+      <div class="pg-hd">
+        <h1>Forum Diskusi</h1>
+        <p>Diskusikan materi bersama teman dan dosen</p>
+      </div>
+      <div class="sec-hd">
+        <div class="sec-title">Diskusi terbaru</div>
+        <span class="sec-link">+ Buat Topik</span>
+      </div>
+      <div class="forum-list" id="forumList"></div>
+    </div>
+
+    <!-- ── PAGE: DRAF ── -->
+    <div class="page" id="page-draf">
+      <div class="pg-hd">
+        <h1>Draf Saya</h1>
+        <p>Draf yang sudah kamu kumpulkan ke dosen</p>
+      </div>
+      <div class="draf-list" id="drafList"></div>
+    </div>
+
+    <!-- ── PAGE: PROGRESS ── -->
+    <div class="page" id="page-progress">
+      <div class="pg-hd">
+        <h1>Progress Saya</h1>
+        <p>Pantau perkembangan belajar per modul</p>
+      </div>
+      <div class="prog-overall">
+        <div class="prog-circle">
+          <svg width="68" height="68" viewBox="0 0 68 68">
+            <circle cx="34" cy="34" r="28" fill="none" stroke="var(--line)" stroke-width="7"/>
+            <circle cx="34" cy="34" r="28" fill="none" stroke="var(--sage)" stroke-width="7"
+              stroke-dasharray="176" stroke-dashoffset="88" stroke-linecap="round"/>
+          </svg>
+          <div class="pct-text">50%</div>
+        </div>
+        <div class="prog-breakdown" id="progBreakdown"></div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: PENGATURAN ── -->
+    <div class="page" id="page-pengaturan">
+      <div class="pg-hd">
+        <h1>Pengaturan</h1>
+        <p>Kelola profil dan preferensi akun kamu</p>
+      </div>
+      <div class="settings-card">
+        <div class="sc-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          <div class="sc-head-title">Data Profil</div>
+        </div>
+        <div class="sc-body">
+          <div class="setting-field"><label>Nama Lengkap</label><input class="setting-input" id="setName" value="Aryadi Ramadhan"></div>
+          <div class="setting-field"><label>NIM</label><input class="setting-input" id="setNim" value="220341806002"></div>
+          <div class="setting-field"><label>Email</label><input class="setting-input" id="setEmail" value="aryadi@student.um.ac.id"></div>
+          <button class="btn-save" onclick="saveProfil()">Simpan Perubahan</button>
+        </div>
+      </div>
+      <div class="settings-card">
+        <div class="sc-head">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          <div class="sc-head-title">Ganti Kata Sandi</div>
+        </div>
+        <div class="sc-body">
+          <div class="setting-field"><label>Kata Sandi Baru</label><input class="setting-input" type="password" placeholder="Min. 8 karakter"></div>
+          <div class="setting-field"><label>Konfirmasi Kata Sandi</label><input class="setting-input" type="password" placeholder="Ulangi kata sandi baru"></div>
+          <button class="btn-save">Ganti Kata Sandi</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ══ LOGOUT MODAL ══ -->
+<div class="modal-bg" id="logoutModal">
+  <div class="modal">
+    <h3>Keluar dari akun?</h3>
+    <p>Sesi belajar kamu akan disimpan secara otomatis.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('logoutModal').classList.remove('show')">Batal</button>
+      <button class="btn-confirm" onclick="doLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase.js"></script>
+<script>
+// ══════════════════════════════════════
+// DUMMY DATA
+// ══════════════════════════════════════
+const DUMMY = {
+  name: 'Aryadi Ramadhan', nim: '220341806002', email: 'aryadi@student.um.ac.id',
+  initials: 'AR', role: 'mahasiswa'
+};
+
+const MODULES = [
+  { id:1, no:1,  title:'Dasar & Konsep R&D',           sub:'Model ADDIE · 12 hal', status:'completed', pct:100, color:'#8FA287' },
+  { id:2, no:2,  title:'Model Pengembangan ADDIE & 4D', sub:'Tahapan ADDIE · 15 hal', status:'completed', pct:100, color:'#8FA287' },
+  { id:3, no:3,  title:'Needs Assessment & Gap Analysis',sub:'Gap Analysis · 10 hal', status:'completed', pct:100, color:'#8FA287' },
+  { id:4, no:4,  title:'Penyusunan Bab 1 Proposal',     sub:'Identifikasi Masalah · 18 hal', status:'completed', pct:100, color:'#8FA287' },
+  { id:5, no:5,  title:'Blueprint & Storyboard Produk', sub:'Needs Assessment · 8 hal',  status:'in_progress', pct:65, color:'#C8925A' },
+  { id:6, no:6,  title:'Instrumen Validasi Ahli',        sub:'Validasi Ahli · 10 hal',status:'locked', pct:0,  color:'#9B8B7A' },
+  { id:7, no:7,  title:'Analisis Data Validasi',         sub:'Statistik Deskriptif · 14 hal', status:'locked', pct:0,  color:'#9B8B7A' },
+  { id:8, no:8,  title:'Uji Coba & Implementasi',       sub:'Field Testing · 12 hal', status:'locked', pct:0,  color:'#9B8B7A' },
+  { id:9, no:9,  title:'Evaluasi & Diseminasi',          sub:'Laporan Akhir · 16 hal', status:'locked', pct:0,  color:'#9B8B7A' },
+];
+
+const QUIZZES = [
+  { mod:'Dasar & Konsep R&D',         score:85, lulus:true,  tgl:'2 Jun 2026' },
+  { mod:'Dasar & Konsep R&D',         score:70, lulus:true,  tgl:'1 Jun 2026' },
+  { mod:'Model ADDIE & 4D',           score:90, lulus:true,  tgl:'28 Mei 2026' },
+  { mod:'Needs Assessment',           score:75, lulus:true,  tgl:'22 Mei 2026' },
+  { mod:'Penyusunan Bab 1 Proposal',  score:80, lulus:true,  tgl:'15 Mei 2026' },
+  { mod:'Blueprint & Storyboard',     score:55, lulus:false, tgl:'8 Jun 2026' },
+];
+
+const VIDEOS = [
+  { no:1, title:'Pengantar Metode R&D', dur:'24:15', modul:'Modul 1' },
+  { no:2, title:'Model ADDIE Lengkap',  dur:'31:40', modul:'Modul 2' },
+  { no:3, title:'Needs Assessment Praktis', dur:'19:22', modul:'Modul 3' },
+  { no:4, title:'Menulis Bab 1 Proposal', dur:'28:05', modul:'Modul 4' },
+  { no:5, title:'Blueprint & Storyboard', dur:'22:50', modul:'Modul 5' },
+  { no:6, title:'Validasi Instrumen Ahli', dur:'17:30', modul:'Modul 6' },
+];
+
+const FORUM_THREADS = [
+  { id:1, author:'Budi Santoso',    ai:'BS', color:'#5A7353', mod:'Modul 2',
+    title:'Apa perbedaan utama antara model ADDIE dan 4D?',
+    time:'2 jam lalu', replies:8, likes:5 },
+  { id:2, author:'Citra Dewi',      ai:'CD', color:'#C8925A', mod:'Modul 1',
+    title:'Bagaimana cara menentukan studi pendahuluan yang efektif?',
+    time:'1 hari lalu', replies:4, likes:3 },
+  { id:3, author:'Denny Pratama',   ai:'DP', color:'#4A7EA0', mod:'Modul 3',
+    title:'Teknik triangulasi dalam Needs Assessment — ada yang bisa jelaskan?',
+    time:'2 hari lalu', replies:12, likes:9 },
+  { id:4, author:'Eka Wulandari',   ai:'EW', color:'#8FA287', mod:'Modul 4',
+    title:'Tips menulis latar belakang masalah yang kuat untuk Bab 1',
+    time:'3 hari lalu', replies:6, likes:7 },
+];
+
+const DRAFTS = [
+  { title:'Proposal Bab 1 — Draft v2', modul:'Modul 4', tgl:'5 Jun 2026', status:'reviewed',  ket:'Reviewed' },
+  { title:'Proposal Bab 1 — Draft v1', modul:'Modul 4', tgl:'1 Jun 2026', status:'revise',    ket:'Perlu Revisi' },
+  { title:'Blueprint Produk v1',        modul:'Modul 5', tgl:'7 Jun 2026', status:'pending',   ket:'Menunggu' },
+];
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+let profile = null;
+
+(async () => {
+  // Try real auth first
+  try {
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        if (location.hostname !== 'localhost') { window.location.href = 'index.html'; return; }
+      } else {
+        const userId = session.user.id;
+        const { data: p } = await sb.from('profiles').select('*').eq('id', userId).single();
+        if (p) {
+          if (p.role === 'dosen') { window.location.href = 'dashboard-dos.html'; return; }
+          profile = p;
+          const name = p.full_name || session.user.email.split('@')[0];
+          const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          document.getElementById('avatarBtn').textContent = initials;
+          document.getElementById('greetName').textContent = name.split(' ')[0];
+          document.getElementById('ddName').textContent = name;
+          document.getElementById('ddNim').textContent = (p.role === 'mahasiswa' ? 'NIM' : 'NIDN') + ': ' + (p.nim_nidn || '—');
+        }
+      }
+    }
+  } catch(e) { /* fall through to dummy */ }
+
+  // Fallback: use dummy data for display
+  if (!profile) {
+    document.getElementById('avatarBtn').textContent = DUMMY.initials;
+    document.getElementById('greetName').textContent = DUMMY.name.split(' ')[0];
+    document.getElementById('ddName').textContent = DUMMY.name;
+    document.getElementById('ddNim').textContent = 'NIM: ' + DUMMY.nim;
+  }
+
+  renderAll();
+})();
+
+function renderAll() {
+  renderModulDash();
+  renderModulFull();
+  renderVideos();
+  renderQuiz();
+  renderForum();
+  renderDraf();
+  renderProgress();
+}
+
+// ══════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════
+
+function renderModulDash() {
+  const list = MODULES.slice(0, 4);
+  document.getElementById('modListDash').innerHTML = list.map(m => modCardHTML(m)).join('');
+}
+
+function renderModulFull() {
+  document.getElementById('modListFull').innerHTML = MODULES.map(m => modCardHTML(m)).join('');
+}
+
+function modCardHTML(m) {
+  const locked = m.status === 'locked';
+  const badgeCls = m.status === 'completed' ? 'bd-selesai' : m.status === 'in_progress' ? 'bd-sedang' : 'bd-terkunci';
+  const badgeTxt = m.status === 'completed' ? 'Selesai' : m.status === 'in_progress' ? 'Sedang' : 'Terkunci';
+  const progBar  = m.status !== 'locked'
+    ? `<div class="mod-prog-wrap"><div class="mod-prog-fill" style="width:${m.pct}%;background:${m.status === 'completed' ? 'var(--sage)' : 'var(--terra)'}"></div></div>` : '';
+
+  const lockIcon = locked
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`
+    : m.status === 'completed'
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
+
+  return `<div class="mod-card ${locked ? 'locked' : ''}">
+    <div class="mod-icon-wrap" style="background:${m.color}">${lockIcon}</div>
+    <div class="mod-body">
+      <div class="mod-title">${m.no}. ${m.title}</div>
+      <div class="mod-sub">${m.sub}</div>
+      ${progBar}
+    </div>
+    <div class="mod-right">
+      <span class="badge ${badgeCls}">${badgeTxt}</span>
+      ${m.status !== 'locked' ? `<span class="mod-pct">${m.pct}%</span>` : ''}
+    </div>
+  </div>`;
+}
+
+function renderVideos() {
+  const colors = ['#2C2420','#3D4A35','#4A3828','#2A3D50','#3D3520','#2A3828'];
+  document.getElementById('videoGrid').innerHTML = VIDEOS.map((v, i) => `
+    <div class="vid-card">
+      <div class="vid-thumb" style="background:${colors[i]}">
+        <div class="play-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+        <span class="vid-dur">${v.dur}</span>
+      </div>
+      <div class="vid-body">
+        <div class="vid-title">${v.title}</div>
+        <div class="vid-meta">${v.modul} · Kelas A</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderQuiz() {
+  document.getElementById('quizBody').innerHTML = QUIZZES.map(q => {
+    const cls = q.score >= 80 ? 'sp-high' : q.score >= 60 ? 'sp-mid' : 'sp-low';
+    return `<tr>
+      <td>${q.mod}</td>
+      <td><span class="score-pill ${cls}">${q.score}</span></td>
+      <td>${q.lulus ? '<span style="color:#2A5010;font-weight:600">✓ Lulus</span>' : '<span style="color:var(--red)">✗ Belum</span>'}</td>
+      <td style="color:var(--brown3)">${q.tgl}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderForum() {
+  document.getElementById('forumList').innerHTML = FORUM_THREADS.map(f => `
+    <div class="forum-card">
+      <div class="fc-top">
+        <div class="fc-avatar" style="background:${f.color}">${f.ai}</div>
+        <div class="fc-body">
+          <div class="fc-title">${f.title}</div>
+          <div class="fc-meta">${f.author} · ${f.time}</div>
+        </div>
+      </div>
+      <div class="fc-bottom">
+        <span class="fc-tag">${f.mod}</span>
+        <span class="fc-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          ${f.replies} balasan
+        </span>
+        <span class="fc-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          ${f.likes}
+        </span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderDraf() {
+  document.getElementById('drafList').innerHTML = DRAFTS.map(d => {
+    const cls = d.status === 'reviewed' ? 'ds-reviewed' : d.status === 'revise' ? 'ds-revise' : 'ds-pending';
+    return `<div class="draf-card">
+      <div class="draf-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="draf-body">
+        <div class="draf-title">${d.title}</div>
+        <div class="draf-meta">${d.modul} · Dikumpulkan ${d.tgl}</div>
+      </div>
+      <span class="draf-status ${cls}">${d.ket}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderProgress() {
+  const progData = MODULES.map(m => ({
+    label: `${m.no}. ${m.title}`,
+    pct: m.pct,
+    color: m.status === 'completed' ? 'var(--sage)' : m.status === 'in_progress' ? 'var(--terra)' : 'var(--line)'
+  }));
+  document.getElementById('progBreakdown').innerHTML = progData.map(p => `
+    <div class="pb-row">
+      <div class="pb-name">${p.label}</div>
+      <div class="pb-bar-bg"><div class="pb-bar-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
+      <div class="pb-pct">${p.pct}%</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const pg = document.getElementById('page-' + name);
+  if (pg) pg.classList.add('active');
+  const nav = document.querySelector(`[onclick="showPage('${name}')"]`);
+  if (nav) nav.classList.add('active');
+}
+
+function toggleDropdown() {
+  document.getElementById('avatarDropdown').classList.toggle('open');
+}
+function closeDropdown() {
+  document.getElementById('avatarDropdown').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.avatar-wrap')) closeDropdown();
+});
+
+// ══════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════
+async function doLogout() {
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
+  window.location.href = 'index.html';
+}
+
+async function saveProfil() {
+  const name = document.getElementById('setName').value.trim();
+  const nim  = document.getElementById('setNim').value.trim();
+  if (!name) return;
+  try {
+    if (typeof sb !== 'undefined' && profile) {
+      await sb.from('profiles').upsert({ id: profile.id, full_name: name, nim_nidn: nim });
+    }
+  } catch(e) {}
+  document.getElementById('greetName').textContent = name.split(' ')[0];
+  document.getElementById('ddName').textContent = name;
+  alert('Profil berhasil disimpan!');
+}
+</script>
+</body>
+</html>
