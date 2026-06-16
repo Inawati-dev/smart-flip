@@ -43,11 +43,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);display:flex;flex-
   padding:.2rem .65rem;
 }
 .tb-btn{
-  width:34px;height:34px;border-radius:8px;border:none;background:transparent;
+  width:40px;height:40px;border-radius:8px;border:none;background:transparent;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0;
 }
 .tb-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.tb-btn:focus-visible{outline:2px solid rgba(200,146,90,.7);outline-offset:2px}
 .tb-btn svg{width:18px;height:18px}
 .tb-notif-wrap{position:relative}
 .tb-notif-dot{
@@ -204,7 +205,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);display:flex;flex-
 .mod-prog-wrap{height:4px;background:var(--line);border-radius:2px;margin-top:.5rem}
 .mod-prog-fill{height:100%;border-radius:2px;transition:width .5s ease}
 .btn-buka-modul{display:inline-block;margin-top:.55rem;padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;background:var(--terra);color:#fff;text-decoration:none;transition:background .15s}
-.btn-buka-modul:hover{background:var(--terra-dark)}
+.btn-buka-modul:hover{background:var(--terra-d)}
 .mod-card.locked .btn-buka-modul{display:none}
 .mod-right{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0}
 .badge{font-size:.67rem;font-weight:600;padding:.22rem .65rem;border-radius:100px;white-space:nowrap}
@@ -361,6 +362,127 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:2rem;color:var(--brown3);font-size:.83rem}
 
+/* ── VARK BANNER ── */
+.vark-banner{
+  display:none;align-items:center;gap:12px;
+  background:var(--ivory);border-radius:10px;
+  border-left:4px solid var(--terra);
+  padding:14px 16px;margin-bottom:16px;
+  box-shadow:0 2px 8px rgba(44,36,32,.06);
+}
+.vb-icon{font-size:1.5rem;flex-shrink:0}
+.vb-text{flex:1;min-width:0}
+.vb-text strong{display:block;font-size:.85rem;font-weight:600;color:var(--brown)}
+.vb-text span{font-size:.76rem;color:var(--brown3);line-height:1.4}
+.vb-btn{
+  flex-shrink:0;height:36px;padding:0 1rem;border-radius:8px;border:none;
+  background:var(--terra);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;
+  cursor:pointer;text-decoration:none;display:flex;align-items:center;
+  transition:background .18s;white-space:nowrap;
+}
+.vb-btn:hover{background:var(--terra-d)}
+@media(max-width:480px){
+  .vark-banner{flex-wrap:wrap;gap:8px}
+  .vb-btn{width:100%;justify-content:center}
+}
+
+/* ── DONUT CHART PROGRESS ── */
+.progress-chart-card{
+  background:var(--ivory);border-radius:14px;border:1px solid var(--line);
+  padding:18px 20px;margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:24px;
+}
+.chart-donut-wrap{flex-shrink:0;position:relative;width:140px;height:140px}
+.chart-donut-wrap svg{display:block}
+.donut-center-text{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.donut-pct{font-size:1.5rem;font-weight:700;color:var(--brown);line-height:1}
+.donut-sub{font-size:.6rem;color:var(--brown3);margin-top:.15rem;letter-spacing:.04em}
+.chart-legend{display:flex;flex-direction:column;gap:10px;flex:1}
+.chart-legend-title{font-size:.82rem;font-weight:600;color:var(--brown);margin-bottom:2px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--brown2)}
+.legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.legend-count{margin-left:auto;font-weight:600;color:var(--brown);font-size:.8rem}
+@media(max-width:600px){
+  .progress-chart-card{flex-direction:column;align-items:center;gap:16px}
+  .chart-legend{width:100%}
+}
+
+/* ── LANJUT BELAJAR BUTTON ── */
+.btn-lanjut-belajar {
+  display:inline-flex;align-items:center;gap:.4rem;
+  margin-top:.6rem;padding:.45rem 1rem;border-radius:100px;
+  background:var(--terra);color:#fff;
+  font-size:.78rem;font-weight:600;text-decoration:none;
+  transition:background .15s;
+}
+.btn-lanjut-belajar:hover{background:var(--terra-d,#A87040)}
+
+/* ── NOTIFIKASI BELL ── */
+.notif-wrapper{position:relative}
+.btn-notif{
+  width:40px;height:40px;border-radius:8px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0;
+  font-size:18px;position:relative;
+}
+.btn-notif:focus-visible{outline:2px solid rgba(200,146,90,.7);outline-offset:2px}
+.btn-notif:hover{background:rgba(255,255,255,.08);color:#fff}
+.notif-badge{
+  position:absolute;top:2px;right:2px;background:#e74c3c;color:#fff;
+  border-radius:50%;font-size:9px;min-width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--brown);font-weight:700;line-height:1;
+  pointer-events:none;
+}
+.notif-dropdown{
+  position:absolute;right:0;top:calc(100% + 8px);width:310px;
+  background:var(--ivory);border-radius:12px;
+  box-shadow:0 8px 32px rgba(44,36,32,.18);
+  border:1px solid var(--line);z-index:300;display:none;overflow:hidden;
+}
+.notif-dropdown.open{display:block}
+.notif-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;border-bottom:1px solid var(--line);
+}
+.notif-header span{font-size:.85rem;font-weight:600;color:var(--brown)}
+.btn-mark-all{
+  background:none;border:none;cursor:pointer;
+  font-size:.72rem;color:var(--sage-d);font-family:'DM Sans',sans-serif;
+  font-weight:500;padding:0;transition:color .15s;
+}
+.btn-mark-all:hover{color:var(--brown)}
+.notif-list{max-height:340px;overflow-y:auto}
+.notif-item{
+  display:flex;gap:10px;padding:11px 14px;
+  border-bottom:1px solid var(--line2);cursor:pointer;transition:background .15s;
+}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:var(--cream)}
+.notif-item.unread{background:rgba(200,146,90,.06)}
+.notif-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:.8rem;font-weight:600;color:var(--brown);line-height:1.3}
+.notif-text{font-size:.75rem;color:var(--brown3);margin-top:.2rem;line-height:1.4}
+.notif-time{font-size:.68rem;color:var(--brown3);margin-top:.25rem;opacity:.8}
+.notif-empty{text-align:center;padding:1.5rem;font-size:.8rem;color:var(--brown3)}
+
+/* ── QUICK LINK CARDS ── */
+.quick-link-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.quick-link-card{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.55rem .9rem;border-radius:10px;
+  background:var(--ivory);border:1px solid var(--line);
+  text-decoration:none;color:var(--brown2);font-size:.8rem;font-weight:500;
+  transition:all .18s;cursor:pointer;
+}
+.quick-link-card:hover{border-color:var(--terra);color:var(--terra);background:#FDF5EE}
+.ql-icon{font-size:16px}
+
 /* ── RESPONSIVE ── */
 @media(max-width:768px){
   :root{--sw:0px}
@@ -370,6 +492,42 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
   .video-grid{grid-template-columns:1fr 1fr}
   .pb-bar-bg{width:80px}
+  /* Notif dropdown: full width on mobile */
+  .notif-dropdown{width:calc(100vw - 32px);right:-8px}
+}
+@media(max-width:480px){
+  .page{padding:.85rem .75rem}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:.6rem}
+  .video-grid{grid-template-columns:1fr}
+  .s-val{font-size:1.4rem}
+  .s-lbl{font-size:.68rem}
+  /* Topbar: tighten spacing */
+  .topbar{gap:.3rem;padding:0 .5rem}
+  .tb-role-badge{display:none}
+  /* Section headers */
+  .sect-hd h2,.section-hd h2{font-size:.9rem}
+  /* Modul cards full width */
+  .modul-card,.modul-item{width:100%}
+  /* Quick link cards: 2 column wrap */
+  .quick-link-row{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  /* Donut chart: single column */
+  .progress-chart-card{flex-direction:column;align-items:center;gap:16px}
+  .chart-legend{width:100%}
+  /* Modal: full width */
+  .modal{width:calc(100vw - 32px);max-width:none}
+  /* Setting inputs: 16px to prevent iOS auto-zoom */
+  .setting-input{font-size:16px}
+  /* Minimum font size */
+  body{font-size:13px}
+  /* Tap target sizes */
+  .tb-btn{width:44px;height:44px}
+  .btn-notif{width:44px;height:44px}
+  .nav-item{min-height:44px}
+}
+@media(max-width:380px){
+  .page{padding:.75rem .6rem}
+  .stat-grid{grid-template-columns:1fr}
+  .s-val{font-size:1.6rem}
 }
 </style>
 </head>
@@ -386,18 +544,25 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
   </div>
   <div class="tb-spacer"></div>
   <span class="tb-role-badge">Mahasiswa</span>
-  <div class="tb-notif-wrap">
-    <button class="tb-btn" title="Notifikasi">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+  <div class="notif-wrapper" id="notifWrapper">
+    <button class="btn-notif" id="btnNotif" aria-label="Notifikasi" onclick="toggleNotif(event)">
+      🔔
+      <span class="notif-badge" id="notifBadge" style="display:none">0</span>
     </button>
-    <div class="tb-notif-dot"></div>
+    <div class="notif-dropdown" id="notifDropdown">
+      <div class="notif-header">
+        <span>Notifikasi</span>
+        <button id="btnMarkAllRead" class="btn-mark-all" onclick="markAllRead()">Tandai semua dibaca</button>
+      </div>
+      <div id="notifList" class="notif-list"></div>
+    </div>
   </div>
   <div class="avatar-wrap">
     <div class="avatar" id="avatarBtn" onclick="toggleDropdown()">AR</div>
     <div class="avatar-dropdown" id="avatarDropdown">
       <div class="dd-header">
-        <div class="dd-name" id="ddName">Aryadi Ramadhan</div>
-        <div class="dd-nim" id="ddNim">NIM: 220341806002</div>
+        <div class="dd-name" id="ddName">—</div>
+        <div class="dd-nim" id="ddNim">NIM: —</div>
       </div>
       <div class="dd-item" onclick="showPage('pengaturan');closeDropdown()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -485,14 +650,41 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
     <div class="page active" id="page-dashboard">
       <div class="welcome-banner">
         <div class="wb-text">
-          <h2>Selamat datang, <span id="greetName">Aryadi</span> 👋</h2>
+          <h2>Selamat datang, <span id="greetName">—</span> 👋</h2>
           <p id="greetSub">Lanjutkan perjalanan belajar kamu hari ini</p>
+          <a id="btnLanjutBelajar" href="modul.html?id=5" class="btn-lanjut-belajar" style="display:none">▶ Lanjut Belajar</a>
         </div>
         <div class="wb-streak">
           <div class="n">7</div>
           <div class="l">hari berturut</div>
         </div>
       </div>
+      <!-- QUICK LINKS -->
+      <div class="quick-link-row" id="quickLinkRow">
+        <a href="draf.html" class="quick-link-card">
+          <span class="ql-icon">📄</span> Draf Saya
+        </a>
+        <a href="forum.html" class="quick-link-card">
+          <span class="ql-icon">💬</span> Forum Diskusi
+        </a>
+        <a href="vark.html" class="quick-link-card">
+          <span class="ql-icon">🎯</span> Asesmen VARK
+        </a>
+        <a href="ebook.html" class="quick-link-card">
+          <span class="ql-icon">📚</span> Perpustakaan
+        </a>
+      </div>
+
+      <!-- VARK Banner -->
+      <div id="varkBanner" class="vark-banner">
+        <div class="vb-icon">🎯</div>
+        <div class="vb-text">
+          <strong>Kenali Gaya Belajarmu!</strong>
+          <span>Isi asesmen VARK singkat (±3 menit) untuk pengalaman belajar yang lebih personal.</span>
+        </div>
+        <a href="vark.html" class="vb-btn">Mulai Asesmen</a>
+      </div>
+
       <div class="stat-grid">
         <div class="stat-card c1">
           <div class="s-icon gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
@@ -513,6 +705,35 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
           <div class="s-delta">MK Metpen & Pengembangan</div>
         </div>
       </div>
+      <!-- DONUT CHART PROGRESS BELAJAR -->
+      <div class="progress-chart-card" id="progressChartCard">
+        <div class="chart-donut-wrap">
+          <svg id="donutSvg" viewBox="0 0 140 140" width="140" height="140"></svg>
+          <div class="donut-center-text">
+            <span class="donut-pct" id="donutPct">0%</span>
+            <span class="donut-sub">selesai</span>
+          </div>
+        </div>
+        <div class="chart-legend">
+          <div class="chart-legend-title">Progress Belajar</div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:var(--sage)"></span>
+            <span>Selesai</span>
+            <span class="legend-count" id="legendDone">0</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:var(--terra)"></span>
+            <span>Sedang berjalan</span>
+            <span class="legend-count" id="legendProgress">0</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-dot" style="background:rgba(62,54,46,.15)"></span>
+            <span>Belum mulai</span>
+            <span class="legend-count" id="legendNotStarted">0</span>
+          </div>
+        </div>
+      </div>
+
       <div class="sec-hd">
         <div class="sec-title">Modul aktif</div>
         <span class="sec-link" onclick="showPage('modul')">Lihat semua →</span>
@@ -609,9 +830,9 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
           <div class="sc-head-title">Data Profil</div>
         </div>
         <div class="sc-body">
-          <div class="setting-field"><label>Nama Lengkap</label><input class="setting-input" id="setName" value="Aryadi Ramadhan"></div>
-          <div class="setting-field"><label>NIM</label><input class="setting-input" id="setNim" value="220341806002"></div>
-          <div class="setting-field"><label>Email</label><input class="setting-input" id="setEmail" value="aryadi@student.um.ac.id"></div>
+          <div class="setting-field"><label>Nama Lengkap</label><input class="setting-input" id="setName" value=""></div>
+          <div class="setting-field"><label>NIM</label><input class="setting-input" id="setNim" value=""></div>
+          <div class="setting-field"><label>Email</label><input class="setting-input" id="setEmail" value="" readonly></div>
           <button class="btn-save" onclick="saveProfil()">Simpan Perubahan</button>
         </div>
       </div>
@@ -644,70 +865,18 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 </div>
 
 <script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
 <script>
-// ══════════════════════════════════════
-// DUMMY DATA
-// ══════════════════════════════════════
-const DUMMY = {
-  name: 'Aryadi Ramadhan', nim: '220341806002', email: 'aryadi@student.um.ac.id',
-  initials: 'AR', role: 'mahasiswa'
-};
+// Semua data modul, kuis, forum, dan draf sekarang diambil dari DataLayer
+// (localStorage sekarang → Supabase nanti)
 
-const MODULES = [
-  { id:1, no:1, title:'Dasar & Konsep R&D',            sub:'Konsep dasar penelitian pengembangan',   path:'books/modul-01.pdf', status:'completed',   pct:100, color:'#8FA287' },
-  { id:2, no:2, title:'Model Pengembangan ADDIE & 4D', sub:'Tahapan dan prosedur model R&D',          path:'books/modul-02.pdf', status:'completed',   pct:100, color:'#8FA287' },
-  { id:3, no:3, title:'Needs Assessment & Gap Analysis',sub:'Identifikasi kebutuhan pengembangan',   path:'books/modul-03.pdf', status:'completed',   pct:100, color:'#8FA287' },
-  { id:4, no:4, title:'Penyusunan Bab 1 Proposal',     sub:'Identifikasi masalah dan tujuan',        path:'books/modul-04.pdf', status:'completed',   pct:100, color:'#8FA287' },
-  { id:5, no:5, title:'Blueprint & Storyboard Produk', sub:'Desain produk awal dan storyboard',      path:'books/modul-05.pdf', status:'in_progress', pct:65,  color:'#C8925A' },
-  { id:6, no:6, title:'Instrumen Validasi Ahli',       sub:'Penyusunan dan pengujian instrumen',     path:'books/modul-06.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
-  { id:7, no:7, title:'Analisis Data Validasi',        sub:'Teknik analisis data kuantitatif',       path:'books/modul-07.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
-  { id:8, no:8, title:'Uji Coba & Implementasi',       sub:'Prosedur uji coba produk di lapangan',   path:'books/modul-08.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
-  { id:9, no:9, title:'Evaluasi & Diseminasi',         sub:'Pelaporan hasil dan diseminasi',         path:'books/modul-09.pdf', status:'locked',      pct:0,   color:'#9B8B7A' },
-];
-
-function readProgress(path) {
-  try { const r = localStorage.getItem('sfp_' + path); return r ? JSON.parse(r) : null; }
-  catch(e) { return null; }
+// ── XSS helper ──
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-const QUIZZES = [
-  { mod:'Dasar & Konsep R&D',         score:85, lulus:true,  tgl:'2 Jun 2026' },
-  { mod:'Dasar & Konsep R&D',         score:70, lulus:true,  tgl:'1 Jun 2026' },
-  { mod:'Model ADDIE & 4D',           score:90, lulus:true,  tgl:'28 Mei 2026' },
-  { mod:'Needs Assessment',           score:75, lulus:true,  tgl:'22 Mei 2026' },
-  { mod:'Penyusunan Bab 1 Proposal',  score:80, lulus:true,  tgl:'15 Mei 2026' },
-  { mod:'Blueprint & Storyboard',     score:55, lulus:false, tgl:'8 Jun 2026' },
-];
-
-const VIDEOS = [
-  { no:1, title:'Pengantar Metode R&D', dur:'24:15', modul:'Modul 1' },
-  { no:2, title:'Model ADDIE Lengkap',  dur:'31:40', modul:'Modul 2' },
-  { no:3, title:'Needs Assessment Praktis', dur:'19:22', modul:'Modul 3' },
-  { no:4, title:'Menulis Bab 1 Proposal', dur:'28:05', modul:'Modul 4' },
-  { no:5, title:'Blueprint & Storyboard', dur:'22:50', modul:'Modul 5' },
-  { no:6, title:'Validasi Instrumen Ahli', dur:'17:30', modul:'Modul 6' },
-];
-
-const FORUM_THREADS = [
-  { id:1, author:'Budi Santoso',    ai:'BS', color:'#5A7353', mod:'Modul 2',
-    title:'Apa perbedaan utama antara model ADDIE dan 4D?',
-    time:'2 jam lalu', replies:8, likes:5 },
-  { id:2, author:'Citra Dewi',      ai:'CD', color:'#C8925A', mod:'Modul 1',
-    title:'Bagaimana cara menentukan studi pendahuluan yang efektif?',
-    time:'1 hari lalu', replies:4, likes:3 },
-  { id:3, author:'Denny Pratama',   ai:'DP', color:'#4A7EA0', mod:'Modul 3',
-    title:'Teknik triangulasi dalam Needs Assessment — ada yang bisa jelaskan?',
-    time:'2 hari lalu', replies:12, likes:9 },
-  { id:4, author:'Eka Wulandari',   ai:'EW', color:'#8FA287', mod:'Modul 4',
-    title:'Tips menulis latar belakang masalah yang kuat untuk Bab 1',
-    time:'3 hari lalu', replies:6, likes:7 },
-];
-
-const DRAFTS = [
-  { title:'Proposal Bab 1 — Draft v2', modul:'Modul 4', tgl:'5 Jun 2026', status:'reviewed',  ket:'Reviewed' },
-  { title:'Proposal Bab 1 — Draft v1', modul:'Modul 4', tgl:'1 Jun 2026', status:'revise',    ket:'Perlu Revisi' },
-  { title:'Blueprint Produk v1',        modul:'Modul 5', tgl:'7 Jun 2026', status:'pending',   ket:'Menunggu' },
-];
 
 // ══════════════════════════════════════
 // INIT
@@ -720,12 +889,12 @@ let profile = null;
     if (typeof sb !== 'undefined') {
       const { data: { session } } = await sb.auth.getSession();
       if (!session) {
-        if (location.hostname !== 'localhost') { window.location.href = 'index.html'; return; }
+        window.location.replace('index.html'); return;
       } else {
         const userId = session.user.id;
         const { data: p } = await sb.from('profiles').select('*').eq('id', userId).single();
         if (p) {
-          if (p.role === 'dosen') { window.location.href = 'dashboard-dos.html'; return; }
+          if (p.role === 'dosen') { window.location.replace('dashboard-dos.html'); return; }
           profile = p;
           const name = p.full_name || session.user.email.split('@')[0];
           const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
@@ -738,46 +907,213 @@ let profile = null;
     }
   } catch(e) { /* fall through to dummy */ }
 
-  // Fallback: use dummy data for display
+  // Fallback: gunakan DataLayer.getProfile() (localStorage demo)
   if (!profile) {
-    document.getElementById('avatarBtn').textContent = DUMMY.initials;
-    document.getElementById('greetName').textContent = DUMMY.name.split(' ')[0];
-    document.getElementById('ddName').textContent = DUMMY.name;
-    document.getElementById('ddNim').textContent = 'NIM: ' + DUMMY.nim;
+    const demoProfile = await DataLayer.getProfile();
+    const name = demoProfile.name || demoProfile.full_name || 'Mahasiswa';
+    const nim  = demoProfile.nim || demoProfile.nim_nidn || '';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || 'M';
+    document.getElementById('avatarBtn').textContent = initials;
+    document.getElementById('greetName').textContent = name.split(' ')[0];
+    document.getElementById('ddName').textContent = name;
+    document.getElementById('ddNim').textContent = 'NIM: ' + (nim || '—');
+    // Isi form pengaturan
+    const setName = document.getElementById('setName');
+    const setNim  = document.getElementById('setNim');
+    const setEmail = document.getElementById('setEmail');
+    if (setName) setName.value = name;
+    if (setNim)  setNim.value = nim;
+    if (setEmail) setEmail.value = demoProfile.email || '';
+  } else {
+    // Isi form pengaturan dari data Supabase
+    const setName = document.getElementById('setName');
+    const setNim  = document.getElementById('setNim');
+    const setEmail = document.getElementById('setEmail');
+    if (setName) setName.value = profile.full_name || '';
+    if (setNim)  setNim.value = profile.nim_nidn || '';
+    if (setEmail) setEmail.value = profile.email || '';
   }
 
   renderAll();
+
+  // Cek apakah VARK sudah diisi — gunakan DataLayer (siap Supabase nanti)
+  const varkResult = await DataLayer.getVarkResult();
+  if (!varkResult) {
+    const banner = document.getElementById('varkBanner');
+    if (banner) banner.style.display = 'flex';
+  }
 })();
 
-function renderAll() {
-  renderModulDash();
-  renderModulFull();
-  renderVideos();
-  renderQuiz();
-  renderForum();
-  renderDraf();
-  renderProgress();
+async function getLanjutBelajar() {
+  // Gunakan DataLayer.getAllProgress() — siap Supabase nanti
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+
+  // Cari modul yang sedang dikerjakan (pct > 0, < 100) dengan lastOpened terbaru
+  let lastMod = null, lastDate = '';
+  modules.forEach(m => {
+    if (m.status === 'locked') return;
+    const p = allProgress[m.path];
+    if (!p) return;
+    if (p.pct > 0 && p.pct < 100 && (p.lastOpened || '') > lastDate) {
+      lastDate = p.lastOpened || '';
+      lastMod = m;
+    }
+  });
+  // Fallback: modul pertama yang tidak locked
+  if (!lastMod) lastMod = modules.find(m => m.status !== 'locked');
+  return lastMod;
+}
+
+async function updateStatDone() {
+  // Hitung jumlah modul selesai dari DataLayer (siap Supabase nanti)
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+  const selesai = modules.filter(m => {
+    const p = allProgress[m.path];
+    return p ? p.pct >= 100 : m.pct >= 100;
+  }).length;
+  const el = document.getElementById('statDone');
+  if (el) el.textContent = `${selesai}/${modules.length}`;
+}
+
+// ══════════════════════════════════════
+// DONUT CHART
+// ══════════════════════════════════════
+
+/**
+ * Bangun donut chart SVG murni dari 3 segmen.
+ * Teknik: 3 <circle> overlapping, stroke-dasharray + stroke-dashoffset.
+ * @param {number} done       - jumlah modul selesai
+ * @param {number} inProgress - jumlah modul sedang berjalan
+ * @param {number} notStarted - jumlah modul belum mulai
+ */
+function buildDonutChart(done, inProgress, notStarted) {
+  const total = done + inProgress + notStarted;
+  if (total === 0) return;
+
+  const r = 54;
+  const cx = 70, cy = 70;
+  const strokeW = 14;
+  const circumference = 2 * Math.PI * r; // ≈ 339.29
+
+  // Arc length per segmen
+  const arcDone        = (done / total) * circumference;
+  const arcInProgress  = (inProgress / total) * circumference;
+  const arcNotStarted  = (notStarted / total) * circumference;
+
+  // Offset kumulatif: SVG mulai dari kanan (3 jam), kita rotate -90° via transform
+  // stroke-dasharray = [arc, sisa], stroke-dashoffset = -offset_kumulatif
+  // Negatif dashoffset = geser awal segmen searah jarum jam
+  const offsetDone        = 0;
+  const offsetInProgress  = arcDone;
+  const offsetNotStarted  = arcDone + arcInProgress;
+
+  function circle(color, dashArc, offset, opacity) {
+    // Gap kecil antar segmen (2px) — hilangkan jika total 1 segmen penuh
+    const gap = (total === done || total === inProgress || total === notStarted) ? 0 : 2;
+    const arc = Math.max(0, dashArc - gap);
+    const dasharray = `${arc} ${circumference - arc}`;
+    const dashoffset = -offset; // negatif = putar searah jarum jam
+    const style = opacity ? `opacity:${opacity}` : '';
+    return `<circle
+      cx="${cx}" cy="${cy}" r="${r}"
+      fill="none"
+      stroke="${color}"
+      stroke-width="${strokeW}"
+      stroke-dasharray="${dasharray}"
+      stroke-dashoffset="${dashoffset}"
+      stroke-linecap="butt"
+      transform="rotate(-90 ${cx} ${cy})"
+      style="${style}"/>`;
+  }
+
+  const svg = document.getElementById('donutSvg');
+  if (!svg) return;
+
+  // Track background
+  const bgCircle = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(62,54,46,.08)" stroke-width="${strokeW}"/>`;
+
+  const segments = [
+    arcNotStarted > 0 ? circle('rgba(62,54,46,.2)', arcNotStarted, offsetNotStarted, null) : '',
+    arcInProgress > 0 ? circle('var(--terra)', arcInProgress, offsetInProgress, null) : '',
+    arcDone > 0       ? circle('var(--sage)', arcDone, offsetDone, null) : '',
+  ];
+
+  svg.innerHTML = bgCircle + segments.join('');
+
+  // Update teks tengah
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const el = document.getElementById('donutPct');
+  if (el) el.textContent = pct + '%';
+}
+
+async function renderDonutChart() {
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+
+  let done = 0, inProgress = 0, notStarted = 0;
+  modules.forEach(m => {
+    if (m.status === 'locked') { notStarted++; return; }
+    const p = allProgress[m.path];
+    const pct = p ? (p.pct || 0) : m.pct;
+    if (pct >= 100) done++;
+    else if (pct > 0) inProgress++;
+    else notStarted++;
+  });
+
+  buildDonutChart(done, inProgress, notStarted);
+
+  const elDone         = document.getElementById('legendDone');
+  const elProgress     = document.getElementById('legendProgress');
+  const elNotStarted   = document.getElementById('legendNotStarted');
+  if (elDone) elDone.textContent = done;
+  if (elProgress) elProgress.textContent = inProgress;
+  if (elNotStarted) elNotStarted.textContent = notStarted;
+}
+
+async function renderAll() {
+  await renderModulDash();
+  await renderModulFull();
+  await renderVideos();
+  await renderQuiz();
+  await renderForum();
+  await renderDraf();
+  await renderProgress();
+  await updateStatDone();
+  await renderDonutChart();
+
+  const lanjut = await getLanjutBelajar();
+  if (lanjut) {
+    const btn = document.getElementById('btnLanjutBelajar');
+    if (btn) { btn.href = `modul.html?id=${lanjut.id}`; btn.style.display = 'inline-flex'; }
+    document.getElementById('greetSub').textContent = `Modul ${lanjut.no}: ${lanjut.title}`;
+  }
 }
 
 // ══════════════════════════════════════
 // RENDER FUNCTIONS
 // ══════════════════════════════════════
 
-function renderModulDash() {
-  const list = MODULES.slice(0, 4);
-  document.getElementById('modListDash').innerHTML = list.map(m => modCardHTML(m)).join('');
+async function renderModulDash() {
+  const modules = await DataLayer.getModules();
+  const allProgress = await DataLayer.getAllProgress();
+  const list = modules.slice(0, 4);
+  document.getElementById('modListDash').innerHTML = list.map(m => modCardHTML(m, allProgress)).join('');
 }
 
-function renderModulFull() {
-  document.getElementById('modListFull').innerHTML = MODULES.map(m => modCardHTML(m)).join('');
+async function renderModulFull() {
+  const modules = await DataLayer.getModules();
+  const allProgress = await DataLayer.getAllProgress();
+  document.getElementById('modListFull').innerHTML = modules.map(m => modCardHTML(m, allProgress)).join('');
 }
 
-function modCardHTML(m) {
-  // Baca progress nyata dari localStorage (override dummy data)
-  const saved   = readProgress(m.path);
-  const pct     = saved !== null ? saved.pct    : m.pct;
+function modCardHTML(m, allProgress) {
+  // Baca progress nyata dari DataLayer (override status statis modul)
+  const saved   = allProgress ? allProgress[m.path] : null;
+  const pct     = saved !== null && saved !== undefined ? (saved.pct || 0) : (m.pct || 0);
   const status  = m.status === 'locked' ? 'locked'
-                : saved !== null ? (pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : m.status)
+                : saved !== null && saved !== undefined ? (pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : m.status)
                 : m.status;
 
   const locked   = status === 'locked';
@@ -811,83 +1147,128 @@ function modCardHTML(m) {
   </div>`;
 }
 
-function renderVideos() {
-  const colors = ['#2C2420','#3D4A35','#4A3828','#2A3D50','#3D3520','#2A3828'];
-  document.getElementById('videoGrid').innerHTML = VIDEOS.map((v, i) => `
+async function renderVideos() {
+  // Video diambil dari modul data (setiap modul memiliki videoId)
+  const modules = await DataLayer.getModules();
+  const colors = ['#2C2420','#3D4A35','#4A3828','#2A3D50','#3D3520','#2A3828','#2C3828','#3D2C20','#2A2C50'];
+  document.getElementById('videoGrid').innerHTML = modules.map((m, i) => `
     <div class="vid-card">
-      <div class="vid-thumb" style="background:${colors[i]}">
+      <div class="vid-thumb" style="background:${colors[i % colors.length]}">
         <div class="play-btn">
           <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
         </div>
-        <span class="vid-dur">${v.dur}</span>
       </div>
       <div class="vid-body">
-        <div class="vid-title">${v.title}</div>
-        <div class="vid-meta">${v.modul} · Kelas A</div>
+        <div class="vid-title">${m.title}</div>
+        <div class="vid-meta">Modul ${m.no} · Kelas A</div>
       </div>
     </div>
   `).join('');
 }
 
-function renderQuiz() {
-  document.getElementById('quizBody').innerHTML = QUIZZES.map(q => {
-    const cls = q.score >= 80 ? 'sp-high' : q.score >= 60 ? 'sp-mid' : 'sp-low';
-    return `<tr>
-      <td>${q.mod}</td>
-      <td><span class="score-pill ${cls}">${q.score}</span></td>
-      <td>${q.lulus ? '<span style="color:#2A5010;font-weight:600">✓ Lulus</span>' : '<span style="color:var(--red)">✗ Belum</span>'}</td>
-      <td style="color:var(--brown3)">${q.tgl}</td>
-    </tr>`;
-  }).join('');
+async function renderQuiz() {
+  // Kumpulkan semua riwayat kuis dari DataLayer (siap Supabase nanti)
+  const modules = await DataLayer.getModules();
+  const rows = [];
+  for (const m of modules) {
+    const attempts = await DataLayer.getQuizAttempts(m.id);
+    for (const a of attempts.slice().reverse()) {
+      const score = a.score || a.pct || 0;
+      const cls = score >= 80 ? 'sp-high' : score >= 60 ? 'sp-mid' : 'sp-low';
+      const lulus = score >= 60;
+      const tgl = a.date || (a.completedAt ? new Date(a.completedAt).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}) : '—');
+      rows.push(`<tr>
+        <td>${m.title}</td>
+        <td><span class="score-pill ${cls}">${score}</span></td>
+        <td>${lulus ? '<span style="color:#2A5010;font-weight:600">✓ Lulus</span>' : '<span style="color:var(--red)">✗ Belum</span>'}</td>
+        <td style="color:var(--brown3)">${tgl}</td>
+      </tr>`);
+    }
+  }
+  document.getElementById('quizBody').innerHTML = rows.length
+    ? rows.join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--brown3);padding:1rem">Belum ada riwayat kuis</td></tr>';
 }
 
-function renderForum() {
-  document.getElementById('forumList').innerHTML = FORUM_THREADS.map(f => `
-    <div class="forum-card">
+async function renderForum() {
+  // Tampilkan post terbaru dari DataLayer (siap Supabase nanti)
+  const posts = (await DataLayer.getPosts()).slice(0, 5);
+  const modules = await DataLayer.getModules();
+  const modMap = Object.fromEntries(modules.map(m => [m.id, m.title]));
+  if (!posts.length) {
+    document.getElementById('forumList').innerHTML = '<div style="color:var(--brown3);font-size:.85rem;padding:.5rem 0">Belum ada diskusi forum.</div>';
+    return;
+  }
+  const COLORS = ['#5A7353','#C8925A','#4A7EA0','#8FA287','#7A6B5E','#4A3828'];
+  document.getElementById('forumList').innerHTML = posts.map((f, i) => {
+    const initials = (f.authorName || 'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color = COLORS[i % COLORS.length];
+    const modTitle = f.moduleId ? `Modul ${f.moduleId}` : '';
+    const timeAgoStr = timeAgo(f.createdAt);
+    return `<div class="forum-card">
       <div class="fc-top">
-        <div class="fc-avatar" style="background:${f.color}">${f.ai}</div>
+        <div class="fc-avatar" style="background:${color}">${escHtml(initials)}</div>
         <div class="fc-body">
-          <div class="fc-title">${f.title}</div>
-          <div class="fc-meta">${f.author} · ${f.time}</div>
+          <div class="fc-title">${f.content ? escHtml(f.content.slice(0, 80)) + (f.content.length > 80 ? '…' : '') : ''}</div>
+          <div class="fc-meta">${escHtml(f.authorName || 'Mahasiswa')} · ${escHtml(timeAgoStr)}</div>
         </div>
       </div>
       <div class="fc-bottom">
-        <span class="fc-tag">${f.mod}</span>
+        ${modTitle ? `<span class="fc-tag">${modTitle}</span>` : ''}
         <span class="fc-stat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          ${f.replies} balasan
+          ${(f.replies || []).length} balasan
         </span>
         <span class="fc-stat">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-          ${f.likes}
+          ${f.likes || 0}
         </span>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-function renderDraf() {
-  document.getElementById('drafList').innerHTML = DRAFTS.map(d => {
-    const cls = d.status === 'reviewed' ? 'ds-reviewed' : d.status === 'revise' ? 'ds-revise' : 'ds-pending';
+async function renderDraf() {
+  // Ambil draf dari DataLayer (siap Supabase nanti)
+  const drafts = (await DataLayer.getDrafts()).slice(0, 5);
+  if (!drafts.length) {
+    document.getElementById('drafList').innerHTML = '<div style="color:var(--brown3);font-size:.85rem;padding:.5rem 0">Belum ada draf yang dikumpulkan.</div>';
+    return;
+  }
+  document.getElementById('drafList').innerHTML = drafts.map(d => {
+    const statusMap = { reviewed: { cls:'ds-reviewed', ket:'Reviewed' }, revision: { cls:'ds-revise', ket:'Perlu Revisi' }, submitted: { cls:'ds-pending', ket:'Menunggu' } };
+    const { cls, ket } = statusMap[d.status] || { cls:'ds-pending', ket:'Menunggu' };
+    const tgl = d.submittedAt ? new Date(d.submittedAt).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}) : '—';
     return `<div class="draf-card">
       <div class="draf-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       </div>
       <div class="draf-body">
-        <div class="draf-title">${d.title}</div>
-        <div class="draf-meta">${d.modul} · Dikumpulkan ${d.tgl}</div>
+        <div class="draf-title">${escHtml(d.title)}</div>
+        <div class="draf-meta">${escHtml(d.moduleName || '')} · Dikumpulkan ${escHtml(tgl)}</div>
       </div>
-      <span class="draf-status ${cls}">${d.ket}</span>
+      <span class="draf-status ${cls}">${ket}</span>
     </div>`;
   }).join('');
 }
 
-function renderProgress() {
-  const progData = MODULES.map(m => ({
-    label: `${m.no}. ${m.title}`,
-    pct: m.pct,
-    color: m.status === 'completed' ? 'var(--sage)' : m.status === 'in_progress' ? 'var(--terra)' : 'var(--line)'
-  }));
+async function renderProgress() {
+  // Gunakan DataLayer.getAllProgress() + getModules() — siap Supabase nanti
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+  const progData = modules.map(m => {
+    const p = allProgress[m.path];
+    const pct = p ? (p.pct || 0) : (m.pct || 0);
+    const status = m.status === 'locked' ? 'locked'
+      : pct >= 100 ? 'completed'
+      : pct > 0 ? 'in_progress'
+      : m.status;
+    return {
+      label: `${m.no}. ${m.title}`,
+      pct,
+      color: status === 'completed' ? 'var(--sage)' : status === 'in_progress' ? 'var(--terra)' : 'var(--line)',
+    };
+  });
   document.getElementById('progBreakdown').innerHTML = progData.map(p => `
     <div class="pb-row">
       <div class="pb-name">${p.label}</div>
@@ -931,15 +1312,91 @@ async function saveProfil() {
   const name = document.getElementById('setName').value.trim();
   const nim  = document.getElementById('setNim').value.trim();
   if (!name) return;
-  try {
-    if (typeof sb !== 'undefined' && profile) {
+  // Gunakan DataLayer.updateProfile() — siap Supabase nanti
+  await DataLayer.updateProfile({ name, full_name: name, nim, nim_nidn: nim });
+  // Jika Supabase aktif, update langsung (dual write)
+  if (typeof sb !== 'undefined' && profile) {
+    try {
       await sb.from('profiles').upsert({ id: profile.id, full_name: name, nim_nidn: nim });
-    }
-  } catch(e) {}
+    } catch(e) {}
+  }
   document.getElementById('greetName').textContent = name.split(' ')[0];
   document.getElementById('ddName').textContent = name;
   alert('Profil berhasil disimpan!');
 }
+
+// ══════════════════════════════════════
+// NOTIFIKASI BELL
+// ══════════════════════════════════════
+function timeAgo(iso) {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff/60000), h = Math.floor(m/60), d = Math.floor(h/24);
+    if (diff < 60000) return 'baru saja';
+    if (m < 60) return m + ' menit lalu';
+    if (h < 24) return h + ' jam lalu';
+    return new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+  } catch(e) { return ''; }
+}
+
+async function loadNotifications() {
+  try {
+    const notifs = await DataLayer.getNotifications();
+    const unread = notifs.filter(n => !n.read).length;
+    const badge  = document.getElementById('notifBadge');
+    if (badge) {
+      badge.textContent = unread > 9 ? '9+' : String(unread);
+      badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    const icons = { kuis:'📝', forum:'💬', draf:'📄', sistem:'ℹ️' };
+    list.innerHTML = notifs.length
+      ? notifs.map(n => `
+          <div class="notif-item${n.read?'':' unread'}" data-id="${escHtml(n.id)}">
+            <div class="notif-icon">${icons[n.type]||'🔔'}</div>
+            <div class="notif-body">
+              <div class="notif-title">${escHtml(n.title)}</div>
+              <div class="notif-text">${escHtml(n.body)}</div>
+              <div class="notif-time">${escHtml(timeAgo(n.createdAt))}</div>
+            </div>
+          </div>`).join('')
+      : '<div class="notif-empty">Tidak ada notifikasi</div>';
+
+    list.querySelectorAll('.notif-item').forEach(el => {
+      el.addEventListener('click', async () => {
+        await DataLayer.markNotificationRead(el.dataset.id);
+        el.classList.remove('unread');
+        await loadNotifications();
+      });
+    });
+  } catch(e) {}
+}
+
+function toggleNotif(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('notifDropdown');
+  if (!dd) return;
+  dd.classList.toggle('open');
+  if (dd.classList.contains('open')) loadNotifications();
+}
+
+async function markAllRead() {
+  try {
+    await DataLayer.markAllRead();
+    await loadNotifications();
+  } catch(e) {}
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.notif-wrapper')) {
+    const dd = document.getElementById('notifDropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+// Load notifikasi saat init
+loadNotifications();
 </script>
 </body>
 </html>

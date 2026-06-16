@@ -202,7 +202,7 @@
   font-size:15px;font-weight:700;border:none;cursor:pointer;
   transition:background .15s;font-family:inherit;
 }
-.btn-lanjut:hover{background:var(--terra-dark,#B8855A);}
+.btn-lanjut:hover{background:var(--terra-d,#B8855A);}
 
 /* cp-head: tampilkan judul di tengah dengan close di kanan */
 .cp-head {
@@ -222,7 +222,7 @@
   transition:background .15s;
   font-family:inherit;
 }
-.topbar-cat-btn:hover{background:var(--terra-dark,#B8855A);}
+.topbar-cat-btn:hover{background:var(--terra-d,#B8855A);}
 </style>
 <!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -251,9 +251,20 @@ function startReading() {
     openBook(sel.path, sel.title);
   }
 }
+// Auth guard — redirect ke login jika belum login
+(async () => {
+  if (typeof sb === 'undefined') return; // demo mode
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+  } catch(e) {}
+})();
+
 // Buka katalog saat load (user perlu pilih buku)
 openCatalog();
 </script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

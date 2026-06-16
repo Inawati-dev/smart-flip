@@ -42,6 +42,12 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ─── FOCUS STATES (Aksesibilitas) ─── */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--terra);
+  outline-offset: 2px;
+}
+
 /* ─── TOPBAR ─── */
 .topbar {
   position: sticky; top: 0; z-index: 200;
@@ -78,7 +84,7 @@ html, body {
   border: 1px solid var(--border);
   transition: color .2s, border-color .2s;
 }
-.topbar-link:hover { color: var(--terra-dark); border-color: var(--terra); }
+.topbar-link:hover { color: var(--terra-d); border-color: var(--terra); }
 
 /* ─── APP SHELL ─── */
 .app {
@@ -153,7 +159,7 @@ html, body {
 }
 .fl-fill {
   height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--terra), var(--terra-dark));
+  background: linear-gradient(90deg, var(--terra), var(--terra-d));
   border-radius: var(--r-pill);
   transition: width .3s ease;
 }
@@ -224,14 +230,14 @@ html, body {
   height: var(--toolbar-h);
   padding: 0 12px; gap: 4px;
   background: rgba(255,253,248,.95);
-  backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid var(--border);
   flex-wrap: wrap;
 }
 .toolbar.active { display: flex; }
 
 .tb-btn {
-  min-width: 32px; height: 32px; padding: 0 8px;
+  min-width: 44px; height: 44px; padding: 0 8px;
   border: 1px solid var(--border); border-radius: var(--r-sm);
   background: transparent;
   color: var(--brown2); font-size: 15px; cursor: pointer;
@@ -275,6 +281,7 @@ html, body {
   color: var(--brown2); font-size: 13px; font-weight: 600;
   cursor: pointer; box-shadow: var(--shadow-sm);
   transition: background .15s;
+  min-height: 44px; display: none; align-items: center;
 }
 .mobile-back:hover { background: var(--terra); color: #fff; border-color: var(--terra); }
 
@@ -346,7 +353,7 @@ html, body {
   border-color: var(--terra);
 }
 .book-card.active {
-  border-color: var(--terra-dark);
+  border-color: var(--terra-d);
   box-shadow: 0 0 0 2px rgba(212,163,115,.3);
 }
 
@@ -381,7 +388,7 @@ html, body {
   font-size: 13px; font-weight: 600; cursor: pointer;
   transition: background .15s, opacity .15s;
 }
-.btn-lanjut:hover:not(:disabled) { background: var(--terra-dark); }
+.btn-lanjut:hover:not(:disabled) { background: var(--terra-d); }
 .btn-lanjut:disabled { opacity: .45; cursor: not-allowed; }
 
 /* ══════════════════════════════════════════════════════
@@ -392,7 +399,7 @@ html, body {
   bottom: var(--toolbar-h); left: var(--cat-w);
   right: 0;
   background: rgba(245,242,233,.96);
-  backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   z-index: 50; padding: 8px 12px;
   overflow-x: auto;
@@ -448,6 +455,9 @@ html, body {
 @media (max-width: 639px) {
   :root { --cat-w: 100vw; }
 
+  /* Minimum font size for readability */
+  body { font-size: 13px; }
+
   .app {
     grid-template-columns: 1fr;
     /* On mobile cat-pane is always visible by default */
@@ -471,11 +481,23 @@ html, body {
     border-left: none;
   }
 
-  .mobile-back { display: block; }
+  .mobile-back { display: flex; }
 
-  #thumbRow { right: 0; }
+  #thumbRow { right: 0; left: 0; }
 
   .cp-grid { grid-template-columns: repeat(3, 1fr); }
+
+  /* Ensure tap targets are 44px minimum */
+  .btn-lanjut { min-height: 44px; font-size: 14px; padding: 12px; }
+
+  /* Toolbar buttons on mobile */
+  .tb-btn { min-width: 44px; height: 44px; }
+
+  /* Topbar link tap target */
+  .topbar-link { padding: 8px 10px; min-height: 44px; display: inline-flex; align-items: center; }
+
+  /* Notif dropdown: prevent overflow beyond screen */
+  .notif-dropdown { width: calc(100vw - 32px) !important; right: -8px !important; }
 }
 
 /* Tablet (640 – 900px) */

@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asesmen Gaya Belajar VARK — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
+  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
+  --terra:#C8925A;--terra-d:#A87040;
+  --brown:#2C2420;--brown2:#4A3D33;--brown3:#7A6B5E;
+  --line:#DDD5C4;--line2:#EDE8DF;
+  --err:#B03020;
+}
+html,body{min-height:100vh}
+body{
+  font-family:'DM Sans',sans-serif;background:var(--cream);
+  color:var(--brown);display:flex;flex-direction:column;align-items:center;
+  padding:1.5rem 1rem 3rem;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  width:100%;max-width:680px;display:flex;align-items:center;
+  justify-content:space-between;margin-bottom:2rem;
+}
+.tb-brand{display:flex;align-items:center;gap:.5rem;text-decoration:none}
+.tb-brand-name{
+  font-family:'Playfair Display',serif;font-size:1rem;color:var(--brown);
+  font-weight:700;
+}
+.tb-brand-name span{color:var(--terra)}
+.tb-brand-ver{font-size:.6rem;color:var(--terra);opacity:.7;letter-spacing:.12em;margin-left:.15rem}
+.tb-skip{
+  font-size:.75rem;color:var(--brown3);text-decoration:none;
+  padding:.3rem .7rem;border-radius:7px;border:1px solid var(--line);
+  transition:all .18s;
+}
+.tb-skip:hover{color:var(--brown2);border-color:var(--brown3)}
+
+/* ── CONTAINER ── */
+.container{width:100%;max-width:580px}
+
+/* ── INTRO SECTION ── */
+.intro-card{
+  background:var(--brown);border-radius:18px;padding:2rem 2rem 1.8rem;
+  text-align:center;margin-bottom:1.5rem;position:relative;overflow:hidden;
+}
+.intro-card::before{
+  content:'🧠';position:absolute;right:1.5rem;top:1.5rem;
+  font-size:4rem;opacity:.07;pointer-events:none;
+}
+.intro-icon{font-size:2.5rem;margin-bottom:.75rem}
+.intro-title{
+  font-family:'Playfair Display',serif;font-size:1.5rem;color:#fff;
+  font-weight:700;margin-bottom:.5rem;
+}
+.intro-desc{font-size:.82rem;color:rgba(255,255,255,.55);line-height:1.6;max-width:400px;margin:0 auto .75rem}
+.intro-meta{
+  display:inline-flex;align-items:center;gap:1rem;
+  background:rgba(255,255,255,.06);border-radius:8px;padding:.5rem 1rem;
+  font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:1.2rem;
+}
+.intro-meta span{display:flex;align-items:center;gap:.3rem}
+.btn-mulai{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:var(--terra);color:#fff;border:none;border-radius:10px;
+  font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:600;
+  padding:.65rem 1.8rem;cursor:pointer;min-height:44px;
+  transition:background .18s,transform .1s;
+}
+.btn-mulai:hover{background:var(--terra-d)}
+.btn-mulai:active{transform:scale(.97)}
+
+/* ── QUIZ SECTION ── */
+#quizSection{display:none}
+
+/* ── PROGRESS BAR ── */
+.prog-bar-wrap{margin-bottom:1.4rem}
+.prog-bar-labels{display:flex;justify-content:space-between;align-items:center;margin-bottom:.45rem}
+.prog-label{font-size:.75rem;color:var(--brown3)}
+.prog-pct-lbl{font-size:.75rem;font-weight:600;color:var(--terra)}
+.prog-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog-fill{
+  height:100%;background:var(--terra);border-radius:3px;
+  transition:width .4s ease;
+}
+
+/* ── QUESTION CARD ── */
+.q-card{
+  background:var(--ivory);border-radius:16px;border:1px solid var(--line);
+  padding:1.6rem 1.8rem;margin-bottom:1rem;
+}
+.q-num{
+  font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--brown3);margin-bottom:.75rem;
+}
+.q-text{
+  font-family:'Playfair Display',serif;font-size:1.05rem;
+  color:var(--brown);font-weight:600;line-height:1.5;margin-bottom:1.1rem;
+}
+
+/* ── ANSWER OPTIONS ── */
+.options{display:flex;flex-direction:column;gap:.5rem}
+.opt-btn{
+  display:flex;align-items:flex-start;gap:.85rem;
+  padding:.75rem .9rem;border-radius:11px;border:1.5px solid var(--line);
+  background:var(--ivory2);cursor:pointer;text-align:left;
+  transition:all .18s;width:100%;
+}
+.opt-btn:hover{border-color:var(--brown3);background:var(--cream)}
+.opt-btn.selected{
+  border-color:var(--terra);background:rgba(200,146,90,.07);
+}
+.opt-letter{
+  width:24px;height:24px;border-radius:6px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;font-weight:700;color:var(--brown3);
+  background:var(--line2);transition:all .18s;margin-top:.05rem;
+}
+.opt-btn.selected .opt-letter{background:var(--terra);color:#fff}
+.opt-text{
+  font-size:.85rem;color:var(--brown2);line-height:1.45;font-family:'DM Sans',sans-serif;
+}
+
+/* ── NAV BUTTONS ── */
+.q-nav{display:flex;gap:.6rem;margin-top:.5rem}
+.btn-prev{
+  height:44px;padding:0 1.1rem;border-radius:10px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+  color:var(--brown2);cursor:pointer;transition:all .18s;
+}
+.btn-prev:hover{border-color:var(--brown);color:var(--brown)}
+.btn-prev:disabled{opacity:.35;cursor:not-allowed}
+.btn-next{
+  flex:1;height:44px;border-radius:10px;border:none;
+  background:var(--brown);
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+  color:#fff;cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+}
+.btn-next:hover{background:var(--terra)}
+.btn-next:disabled{opacity:.35;cursor:not-allowed}
+.btn-next:active{transform:scale(.98)}
+
+/* ── LOADING ── */
+#loadingSection{display:none;flex-direction:column;align-items:center;gap:1rem;padding:3rem 0}
+.sk-ring{
+  width:48px;height:48px;border:4px solid var(--line);
+  border-top-color:var(--terra);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:.85rem;color:var(--brown3)}
+
+/* ── RESULT SECTION ── */
+#resultSection{display:none}
+.result-header{text-align:center;margin-bottom:1.5rem}
+.result-title{
+  font-family:'Playfair Display',serif;font-size:1.4rem;
+  font-weight:700;color:var(--brown);margin-bottom:.35rem;
+}
+.result-dominant{
+  display:inline-flex;align-items:center;gap:.5rem;
+  background:var(--brown);color:var(--terra);
+  font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:600;
+  border-radius:10px;padding:.55rem 1.2rem;margin-bottom:.8rem;
+}
+.result-sub{font-size:.82rem;color:var(--brown3);line-height:1.5}
+
+/* ── BAR CHART ── */
+.chart-card{
+  background:var(--ivory);border-radius:14px;border:1px solid var(--line);
+  padding:1.4rem 1.5rem;margin-bottom:1rem;
+}
+.chart-title{font-size:.82rem;font-weight:600;color:var(--brown);margin-bottom:1.2rem}
+.bar-chart{display:flex;align-items:flex-end;gap:.8rem;height:120px;justify-content:center}
+.bar-col{display:flex;flex-direction:column;align-items:center;gap:.4rem;flex:1;max-width:90px}
+.bar-wrap{width:100%;display:flex;align-items:flex-end;height:100px;justify-content:center}
+.bar{
+  width:100%;border-radius:6px 6px 0 0;
+  min-height:6px;transition:height .6s ease;
+  display:flex;align-items:flex-start;justify-content:center;
+  padding-top:.3rem;position:relative;
+}
+.bar-val{font-size:.75rem;font-weight:700;color:#fff}
+.bar-label{font-size:.72rem;font-weight:600;color:var(--brown2);text-align:center}
+.bar-name{font-size:.65rem;color:var(--brown3);text-align:center}
+
+/* ── STYLE DESCRIPTIONS ── */
+.style-cards{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.2rem}
+.style-item{
+  background:var(--ivory);border-radius:11px;border:1px solid var(--line);
+  padding:.85rem 1rem;display:flex;gap:.8rem;align-items:flex-start;
+  transition:border-color .18s;
+}
+.style-item.dominant{border-color:var(--terra);background:rgba(200,146,90,.04)}
+.style-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:.25rem;
+}
+.style-body{}
+.style-name{font-size:.82rem;font-weight:600;color:var(--brown);margin-bottom:.2rem}
+.style-desc{font-size:.77rem;color:var(--brown3);line-height:1.5}
+
+/* ── START BUTTON ── */
+.btn-dashboard{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  width:100%;height:50px;border-radius:12px;border:none;
+  background:var(--brown);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;
+  cursor:pointer;transition:all .18s;text-decoration:none;
+  box-shadow:0 4px 16px rgba(44,36,32,.18);
+}
+.btn-dashboard:hover{background:var(--terra);box-shadow:0 6px 20px rgba(200,146,90,.3)}
+.btn-dashboard:active{transform:scale(.98)}
+
+/* ── MOBILE ── */
+@media(max-width:640px){
+  body{padding:1rem .75rem 2.5rem}
+  .intro-card{padding:1.5rem 1.2rem 1.4rem;border-radius:14px}
+  .intro-title{font-size:1.25rem}
+  .q-card{padding:1.2rem 1rem}
+  .q-text{font-size:.95rem}
+  .opt-btn{padding:.65rem .75rem;gap:.7rem;min-height:44px}
+  .opt-text{font-size:.82rem}
+  .bar-chart{gap:.5rem;height:100px}
+  .bar-wrap{height:80px}
+}
+@media(max-width:380px){
+  .intro-meta{flex-direction:column;gap:.4rem}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="tb-brand" href="index.html">
+    <span style="font-size:1.1rem">📖</span>
+    <span class="tb-brand-name">SMART<span>-FLIP</span></span>
+    <span class="tb-brand-ver">5.0</span>
+  </a>
+  <a class="tb-skip" href="dashboard-mhs.html">Lewati untuk sekarang</a>
+</div>
+
+<div class="container">
+
+  <!-- ── INTRO ── -->
+  <div id="introSection">
+    <div class="intro-card">
+      <div class="intro-icon">🎯</div>
+      <div class="intro-title">Asesmen Gaya Belajar VARK</div>
+      <div class="intro-desc">Temukan cara belajar yang paling cocok untukmu — Visual, Auditory, Read/Write, atau Kinesthetic — agar pengalaman belajar di SMART-FLIP lebih personal dan efektif.</div>
+      <div class="intro-meta">
+        <span>📝 12 pertanyaan</span>
+        <span>⏱ ± 3 menit</span>
+        <span>🔒 Tersimpan lokal</span>
+      </div>
+      <button class="btn-mulai" onclick="startQuiz()">Mulai Asesmen →</button>
+    </div>
+    <div style="text-align:center;font-size:.75rem;color:var(--brown3);opacity:.7">
+      Hasil asesmen hanya digunakan untuk menyesuaikan urutan konten belajar. Tidak ada jawaban benar atau salah.
+    </div>
+  </div>
+
+  <!-- ── QUIZ ── -->
+  <div id="quizSection">
+    <!-- Progress bar -->
+    <div class="prog-bar-wrap">
+      <div class="prog-bar-labels">
+        <span class="prog-label" id="progLabel">Pertanyaan 1 dari 12</span>
+        <span class="prog-pct-lbl" id="progPct">0%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" id="progFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <!-- Question card -->
+    <div class="q-card">
+      <div class="q-num" id="qNum">1 / 12</div>
+      <div class="q-text" id="qText"></div>
+      <div class="options" id="qOptions"></div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="q-nav">
+      <button class="btn-prev" id="btnPrev" onclick="goBack()" disabled>← Sebelumnya</button>
+      <button class="btn-next" id="btnNext" onclick="goNext()" disabled>Berikutnya →</button>
+    </div>
+  </div>
+
+  <!-- ── LOADING ── -->
+  <div id="loadingSection" style="display:none;flex-direction:column;align-items:center;gap:1rem;padding:3rem 0">
+    <div class="sk-ring"></div>
+    <div class="loading-txt">Menganalisis gaya belajarmu…</div>
+  </div>
+
+  <!-- ── RESULT ── -->
+  <div id="resultSection" style="display:none">
+    <div class="result-header">
+      <div class="result-title">Hasil Asesmen VARK</div>
+      <div class="result-dominant" id="resultDominant">📊 Visual Learner</div>
+      <div class="result-sub" id="resultSub"></div>
+    </div>
+
+    <!-- Bar chart -->
+    <div class="chart-card">
+      <div class="chart-title">Skor per Dimensi Belajar</div>
+      <div class="bar-chart" id="barChart"></div>
+    </div>
+
+    <!-- Style descriptions -->
+    <div class="style-cards" id="styleCards"></div>
+
+    <!-- CTA -->
+    <a class="btn-dashboard" href="dashboard-mhs.html">Mulai Belajar →</a>
+  </div>
+
+</div>
+
+<script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
+<script>
+// ══════════════════════════════════════
+// AUTH GUARD
+// ══════════════════════════════════════
+(async () => {
+  if (typeof sb === 'undefined') return; // demo mode — skip auth
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+  } catch(e) { /* network error — allow demo mode fallback */ }
+})();
+
+// ══════════════════════════════════════
+// VARK DATA
+// ══════════════════════════════════════
+
+// Each question: text + 4 options [V, A, R, K]
+const QUESTIONS = [
+  {
+    text: "Ketika mempelajari konsep penelitian baru, saya lebih suka…",
+    opts: [
+      "Melihat diagram, grafik, atau ilustrasi yang menjelaskan konsep tersebut",
+      "Mendengarkan penjelasan dosen atau menonton video podcast",
+      "Membaca buku teks, artikel ilmiah, atau catatan kuliah",
+      "Langsung mencoba dengan studi kasus atau eksperimen nyata"
+    ]
+  },
+  {
+    text: "Saat perlu mengingat materi kuliah, cara terbaik bagi saya adalah…",
+    opts: [
+      "Membuat mind map berwarna atau poster visual",
+      "Mendiskusikan materi dengan teman atau menjelaskannya secara lisan",
+      "Merangkum dalam catatan tertulis atau membuat daftar poin penting",
+      "Mempraktikkan langsung atau membuat simulasi dari materi tersebut"
+    ]
+  },
+  {
+    text: "Ketika belajar mandiri di luar kelas, saya biasanya…",
+    opts: [
+      "Mencari video tutorial atau infografis yang relevan dengan topik",
+      "Memutar rekaman kuliah atau berdiskusi lewat voice note dengan teman",
+      "Membaca ulang catatan dan merangkum bab per bab secara tertulis",
+      "Mengerjakan latihan soal atau membuat proyek kecil terkait materi"
+    ]
+  },
+  {
+    text: "Saat mengerjakan tugas kuliah, langkah pertama yang saya lakukan adalah…",
+    opts: [
+      "Membuat kerangka visual atau sketsa alur pengerjaan tugas",
+      "Mendiskusikan tugas dengan teman untuk mendapat gambaran awal",
+      "Membaca instruksi tugas dengan teliti dan mencatat poin-poin utama",
+      "Langsung mulai mengerjakan dan belajar dari hasil yang sudah dibuat"
+    ]
+  },
+  {
+    text: "Ketika memahami instruksi dari dosen, saya merasa paling jelas jika…",
+    opts: [
+      "Instruksi disertai diagram alur, tabel, atau contoh visual",
+      "Dosen menjelaskan secara lisan dan saya dapat bertanya langsung",
+      "Instruksi diberikan secara tertulis, rinci, dan terstruktur",
+      "Ada demonstrasi langkah demi langkah yang bisa saya ikuti"
+    ]
+  },
+  {
+    text: "Ketika memilih media belajar untuk mempersiapkan ujian, saya lebih memilih…",
+    opts: [
+      "Slide presentasi dengan banyak gambar, bagan, dan warna",
+      "Rekaman audio penjelasan materi atau podcast akademik",
+      "Buku teks, modul PDF, atau ringkasan teks yang detail",
+      "Kuis latihan interaktif atau flashcard yang bisa langsung dicoba"
+    ]
+  },
+  {
+    text: "Saat harus mempresentasikan hasil penelitian, cara saya yang paling nyaman adalah…",
+    opts: [
+      "Membuat slide visual menarik dengan grafik dan ilustrasi",
+      "Berbicara langsung kepada audiens dengan gaya natural dan interaktif",
+      "Menyiapkan naskah atau poin presentasi yang tertulis lengkap",
+      "Menampilkan demo produk atau simulasi langsung kepada audiens"
+    ]
+  },
+  {
+    text: "Ketika menghadapi kuis atau tes, saya biasanya…",
+    opts: [
+      "Mengingat kembali diagram, tabel, atau gambar yang pernah saya lihat",
+      "Mendengar kembali penjelasan dosen di kepala saya saat menjawab",
+      "Membayangkan catatan atau teks yang pernah saya tulis",
+      "Mempraktikkan cara penyelesaian masalah seperti yang pernah saya coba"
+    ]
+  },
+  {
+    text: "Ketika mencari sumber referensi untuk penelitian, saya lebih suka…",
+    opts: [
+      "Mencari jurnal atau artikel yang memiliki banyak gambar, grafik, dan visualisasi data",
+      "Mencari rekaman seminar, podcast akademik, atau diskusi panel",
+      "Membaca artikel jurnal lengkap dengan teks yang komprehensif",
+      "Mencari laporan studi kasus atau hasil penelitian terapan"
+    ]
+  },
+  {
+    text: "Ketika membuat laporan penelitian, bagian yang paling mudah bagi saya adalah…",
+    opts: [
+      "Membuat visualisasi data seperti grafik, diagram, dan infografis",
+      "Menyusun bagian diskusi yang berisi narasi dan argumen lisan",
+      "Menulis deskripsi metodologi dan kajian pustaka secara rinci",
+      "Mendeskripsikan prosedur praktik dan hasil uji coba lapangan"
+    ]
+  },
+  {
+    text: "Ketika belajar dari kesalahan dalam tugas atau kuis, saya lebih mudah berkembang jika…",
+    opts: [
+      "Melihat perbandingan jawaban saya vs. jawaban benar dalam format visual",
+      "Mendapat penjelasan lisan langsung dari dosen atau teman",
+      "Membaca umpan balik tertulis yang menjelaskan letak kesalahan secara rinci",
+      "Mencoba mengerjakan ulang soal yang sama atau soal serupa secara langsung"
+    ]
+  },
+  {
+    text: "Dalam mempersiapkan ujian akhir, strategi belajar yang paling efektif bagi saya adalah…",
+    opts: [
+      "Membuat poster ringkasan, mind map berwarna, atau diagram konsep",
+      "Berdiskusi intensif bersama kelompok belajar atau mendengarkan rekaman kuliah",
+      "Membaca ulang semua catatan dan modul serta merangkumnya kembali",
+      "Mengerjakan sebanyak mungkin soal latihan dan simulasi ujian"
+    ]
+  }
+];
+
+// V = A (index 0), A = B (index 1), R = C (index 2), K = D (index 3)
+const VARK_KEYS = ['V','A','R','K'];
+const VARK_LABELS = {
+  V: 'Visual Learner',
+  A: 'Auditory Learner',
+  R: 'Read/Write Learner',
+  K: 'Kinesthetic Learner'
+};
+const VARK_ICONS = { V:'📊', A:'🎧', R:'📝', K:'⚙️' };
+const VARK_COLORS = { V:'#8FA287', A:'#C8925A', R:'#4A7EA0', K:'#8B6BA0' };
+const VARK_DESCS = {
+  V: 'Kamu belajar paling baik melalui visual — diagram, grafik, warna, dan ilustrasi membantu kamu memahami dan mengingat informasi. Konten berupa slide visual dan infografis sangat cocok untukmu.',
+  A: 'Kamu belajar paling baik melalui pendengaran dan diskusi. Mendengarkan penjelasan, berdiskusi dengan teman, dan memanfaatkan rekaman audio sangat membantu proses belajarmu.',
+  R: 'Kamu belajar paling baik melalui teks — membaca dan menulis adalah kekuatanmu. Membuat catatan, merangkum, dan membaca buku teks adalah cara belajar yang paling efektif bagimu.',
+  K: 'Kamu belajar paling baik melalui praktik langsung. Mengerjakan soal latihan, simulasi, dan studi kasus nyata membuat pemahaman konsep jauh lebih mudah dan bertahan lama.'
+};
+
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+let currentQ = 0;
+const answers = new Array(QUESTIONS.length).fill(null); // null | 0..3
+
+// ══════════════════════════════════════
+// INTRO → QUIZ
+// ══════════════════════════════════════
+function startQuiz() {
+  document.getElementById('introSection').style.display = 'none';
+  document.getElementById('quizSection').style.display = 'block';
+  renderQuestion();
+}
+
+// ══════════════════════════════════════
+// RENDER QUESTION
+// ══════════════════════════════════════
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const total = QUESTIONS.length;
+  const answered = currentQ; // progress = soal yg sudah dijawab
+  const pct = Math.round((answered / total) * 100);
+
+  // Progress
+  document.getElementById('progLabel').textContent = `Pertanyaan ${currentQ + 1} dari ${total}`;
+  document.getElementById('progPct').textContent = pct + '%';
+  document.getElementById('progFill').style.width = pct + '%';
+
+  // Question
+  document.getElementById('qNum').textContent = `${currentQ + 1} / ${total}`;
+  document.getElementById('qText').textContent = q.text;
+
+  // Options
+  const LETTERS = ['A','B','C','D'];
+  document.getElementById('qOptions').innerHTML = q.opts.map((opt, i) => `
+    <button class="opt-btn ${answers[currentQ] === i ? 'selected' : ''}"
+            onclick="selectAnswer(${i})"
+            type="button">
+      <span class="opt-letter">${LETTERS[i]}</span>
+      <span class="opt-text">${opt}</span>
+    </button>
+  `).join('');
+
+  // Nav buttons
+  document.getElementById('btnPrev').disabled = currentQ === 0;
+  updateNextBtn();
+}
+
+function selectAnswer(idx) {
+  answers[currentQ] = idx;
+
+  // Update visual
+  document.querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.toggle('selected', i === idx);
+    btn.querySelector('.opt-letter').style.background = i === idx ? 'var(--terra)' : '';
+    btn.querySelector('.opt-letter').style.color = i === idx ? '#fff' : '';
+  });
+
+  updateNextBtn();
+}
+
+function updateNextBtn() {
+  const btn = document.getElementById('btnNext');
+  const hasAnswer = answers[currentQ] !== null;
+  btn.disabled = !hasAnswer;
+
+  const isLast = currentQ === QUESTIONS.length - 1;
+  btn.textContent = isLast ? 'Selesai ✓' : 'Berikutnya →';
+}
+
+function goBack() {
+  if (currentQ > 0) {
+    currentQ--;
+    renderQuestion();
+  }
+}
+
+function goNext() {
+  if (answers[currentQ] === null) return;
+
+  const isLast = currentQ === QUESTIONS.length - 1;
+  if (isLast) {
+    finishQuiz();
+  } else {
+    currentQ++;
+    renderQuestion();
+  }
+}
+
+// ══════════════════════════════════════
+// FINISH → COMPUTE → RESULT
+// ══════════════════════════════════════
+async function finishQuiz() {
+  // Hide quiz, show loading
+  document.getElementById('quizSection').style.display = 'none';
+  document.getElementById('loadingSection').style.display = 'flex';
+
+  // Compute scores
+  const scores = { V: 0, A: 0, R: 0, K: 0 };
+  answers.forEach(ans => {
+    if (ans !== null) scores[VARK_KEYS[ans]]++;
+  });
+
+  // Determine dominant
+  let dominant = 'V';
+  let maxScore = -1;
+  VARK_KEYS.forEach(k => {
+    if (scores[k] > maxScore) { maxScore = scores[k]; dominant = k; }
+  });
+
+  // Save via DataLayer (localStorage now → Supabase nanti)
+  const result = {
+    V: scores.V, A: scores.A, R: scores.R, K: scores.K,
+    dominant,
+    completedAt: new Date().toISOString()
+  };
+  try {
+    await DataLayer.saveVarkResult(result);
+  } catch(e) { console.warn('[vark] saveVarkResult gagal:', e); }
+
+  // Simulate brief loading
+  await new Promise(r => setTimeout(r, 1200));
+
+  // Show result
+  document.getElementById('loadingSection').style.display = 'none';
+  renderResult(scores, dominant);
+  document.getElementById('resultSection').style.display = 'block';
+}
+
+// ══════════════════════════════════════
+// RENDER RESULT
+// ══════════════════════════════════════
+function renderResult(scores, dominant) {
+  // Dominant badge
+  document.getElementById('resultDominant').innerHTML =
+    `${VARK_ICONS[dominant]} Gaya Belajar Kamu: ${VARK_LABELS[dominant]}`;
+  document.getElementById('resultSub').textContent =
+    'Berikut adalah profil lengkap gaya belajarmu berdasarkan 12 pertanyaan yang telah kamu jawab.';
+
+  // Bar chart
+  const maxVal = Math.max(...Object.values(scores), 1);
+  document.getElementById('barChart').innerHTML = VARK_KEYS.map(k => {
+    const val = scores[k];
+    const heightPct = Math.round((val / maxVal) * 100);
+    const color = VARK_COLORS[k];
+    const isDom = k === dominant;
+    return `
+      <div class="bar-col">
+        <div class="bar-wrap">
+          <div class="bar" style="height:${heightPct}%;background:${color};${isDom ? 'box-shadow:0 4px 16px rgba(0,0,0,.15)' : ''}">
+            <span class="bar-val" style="${heightPct < 25 ? 'color:' + color + ';position:absolute;margin-top:-1.2rem;' : ''}">${val}</span>
+          </div>
+        </div>
+        <div class="bar-label" style="color:${color};font-weight:${isDom ? '700' : '500'}">${k}</div>
+        <div class="bar-name">${k === 'V' ? 'Visual' : k === 'A' ? 'Auditory' : k === 'R' ? 'Read/Write' : 'Kinestetik'}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Style descriptions — dominant first
+  const orderedKeys = [dominant, ...VARK_KEYS.filter(k => k !== dominant)];
+  document.getElementById('styleCards').innerHTML = orderedKeys.map(k => `
+    <div class="style-item ${k === dominant ? 'dominant' : ''}">
+      <div class="style-dot" style="background:${VARK_COLORS[k]}"></div>
+      <div class="style-body">
+        <div class="style-name">${VARK_ICONS[k]} ${VARK_LABELS[k]} — skor: ${scores[k]}/12${k === dominant ? ' ⭐' : ''}</div>
+        <div class="style-desc">${VARK_DESCS[k]}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+// CHECK: if already completed, show result
+// ══════════════════════════════════════
+(async function checkExisting() {
+  const r = await DataLayer.getVarkResult();
+  if (!r) return;
+  try {
+    // Add a re-take link to intro
+    const introCard = document.querySelector('.intro-card');
+    if (introCard) {
+      const retake = document.createElement('p');
+      retake.style.cssText = 'font-size:.72rem;color:rgba(255,255,255,.4);margin-top:.5rem';
+      retake.innerHTML = `Kamu sudah mengisi asesmen ini. <a href="#" onclick="DataLayer.clearVarkResult().then(()=>location.reload())" style="color:var(--terra)">Isi ulang</a>`;
+      introCard.appendChild(retake);
+
+      // Show brief result reminder
+      const reminder = document.createElement('div');
+      reminder.style.cssText = 'margin-top:.6rem;background:rgba(200,146,90,.15);border-radius:8px;padding:.5rem .8rem;font-size:.75rem;color:var(--terra);display:inline-block';
+      reminder.textContent = `Gaya belajarmu saat ini: ${VARK_ICONS[r.dominant]} ${VARK_LABELS[r.dominant]}`;
+      introCard.insertBefore(reminder, introCard.querySelector('.btn-mulai'));
+    }
+  } catch(e) {}
+})();
+</script>
+</body>
+</html>

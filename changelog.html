@@ -247,10 +247,90 @@
     <div class="legend-item"><span class="tag tag-doc">DOC</span> Dokumentasi</div>
   </div>
 
-  <!-- ═══ v0.7 (current) ═══ -->
+  <!-- ═══ v0.9.1 (current) ═══ -->
   <div class="version-block">
     <div class="vb-head">
-      <span class="vb-badge current">v0.7 ✦</span>
+      <span class="vb-badge current">v0.9.1 ✦</span>
+      <span class="vb-title">Bug Sweep — Fanout Orchestration (Sweep 1–4)</span>
+      <span class="vb-date">16 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="fix"><span class="tag tag-fix">FIX</span>Auth guard konsistensi di semua halaman protected — null guard, role mismatch redirect</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>DataLayer method calls — null checks, fallback values, error handling</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>UI &amp; Mobile — tap targets, font sizes, overflow issues di semua halaman</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>style.css: <code>var(--terra-dark)</code> → <code>var(--terra-d)</code> (4 occurrences)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>changelog.html: tambah entri v0.8, v0.8.1, v0.9, v0.9.1 yang hilang</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>CLAUDE.md: update Sprint Roadmap + Key Files list</li>
+      </ul>
+      <p class="vb-desc">Orchestrated bug sweep (4 fanout agents): Auth &amp; Security, Data &amp; Logic, UI &amp; Mobile, Integration &amp; Cross-file.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.9 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.9</span>
+      <span class="vb-title">DataLayer + VARK + Forum + Draf + Notifikasi + Donut Chart</span>
+      <span class="vb-date">14 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>data-layer.js: abstraksi data layer (localStorage → Supabase toggle via USE_SUPABASE flag)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>vark.html: asesmen gaya belajar VARK (12 pertanyaan, simpan ke DataLayer)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>forum.html: forum peer-review per modul (post + reply + like, avatar warna per nama)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>draf.html: portal asistensi draf — mahasiswa upload, dosen review &amp; komentar</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Notifikasi bell icon di semua dashboard (in-app, markRead, markAllRead)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Donut chart progress modul di dashboard-mhs &amp; dos (SVG animasi)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Checklist metakognitif self-reflection per modul (5 item, simpan ke DataLayer)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Sequential content lock: video → PDF → kuis (unlock bertahap per modul)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>modul.html: embed video YouTube, time-on-task tracking, VARK-adaptive content reorder</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>kuis.html: umpan balik kuis adaptif per rentang skor + navigasi modul berikutnya</li>
+        <li class="refac"><span class="tag tag-refac">REFAC</span>Semua halaman: ganti hardcode langsung ke DataLayer.* calls</li>
+      </ul>
+      <p class="vb-desc">Sprint 4 &amp; 5 — adaptive learning engine, social features (forum + draf), dan donut chart SDL tracking.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.8.1 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge patch">v0.8.1</span>
+      <span class="vb-title">Reset Password + Login Konsolidasi + Fix Distribusi Kuis</span>
+      <span class="vb-date">12 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>reset-password.html: halaman reset password via Supabase email link (3 state: form → loading → success)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Konsolidasi login.html → redirect stub ke index.html (hapus duplikasi form login)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>modules-data.js: fix distribusi jawaban kuis — A:11, B:11, C:11, D:12 (sebelumnya tidak merata)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.8 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.8</span>
+      <span class="vb-title">Auth Guard + Lanjut Belajar + Mobile UI Fix + Bug Sweep</span>
+      <span class="vb-date">11 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Auth guard di semua halaman protected (redirect ke index.html jika tidak ada sesi)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Tombol "Lanjut Belajar" di dashboard-mhs — lanjut ke modul terakhir dikerjakan</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Mobile responsive: index.html, register.html, modul.html, kuis.html, dashboard (360px–768px)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>Bug sweep (10 bugs): null guard spineEl, HTML escaping kuis XSS, CSS var --terra-dark, race condition bgRunning, dan lainnya</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>style.css: tambah <code>-webkit-backdrop-filter</code> untuk Safari compatibility</li>
+      </ul>
+      <p class="vb-desc">Sprint 3 — auth, mobile, dan bug sweep menyeluruh.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.7 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.7</span>
       <span class="vb-title">Modul Detail + Kuis Formatif + Progress Tracking</span>
       <span class="vb-date">09 Jun 2026</span>
     </div>
@@ -456,55 +536,56 @@
       </div>
       <div class="rm-card">
         <div class="rm-ver">v0.8</div>
-        <div class="rm-title">Supabase Live + Auth</div>
+        <div class="rm-title">Auth Guard + Mobile + Bug Sweep</div>
         <div class="rm-items">
-          · Login mahasiswa/dosen real<br>
-          · Progress baca ke database<br>
-          · Skor kuis tersimpan permanen<br>
-          · Dashboard dosen: analytics kelas
+          · Auth guard semua halaman protected<br>
+          · Tombol Lanjut Belajar<br>
+          · Mobile responsive 360px–768px<br>
+          · Bug sweep 10 bugs fixed
         </div>
-        <span class="rm-status current">Sprint 3 →</span>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.8.1</div>
+        <div class="rm-title">Reset Password + Konsolidasi</div>
+        <div class="rm-items">
+          · reset-password.html<br>
+          · Konsolidasi login.html → stub<br>
+          · Fix distribusi jawaban kuis
+        </div>
+        <span class="rm-status done">✓ Selesai</span>
       </div>
       <div class="rm-card">
         <div class="rm-ver">v0.9</div>
-        <div class="rm-title">AI Adaptif + VARK</div>
+        <div class="rm-title">DataLayer + VARK + Forum + SDL</div>
         <div class="rm-items">
-          · Asesmen VARK 12 soal<br>
-          · Jalur belajar adaptif<br>
-          · Rekomendasi konten per gaya belajar
+          · data-layer.js abstraksi data<br>
+          · vark.html asesmen gaya belajar<br>
+          · forum.html + draf.html<br>
+          · Donut chart + notifikasi
         </div>
-        <span class="rm-status planned">Sprint 4</span>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.9.1</div>
+        <div class="rm-title">Orchestrated Bug Sweep</div>
+        <div class="rm-items">
+          · 4 fanout agents (Auth, Data, UI, Integration)<br>
+          · CSS token fixes<br>
+          · Documentation sync
+        </div>
+        <span class="rm-status current">Sekarang ✦</span>
       </div>
       <div class="rm-card">
         <div class="rm-ver">v1.0</div>
-        <div class="rm-title">Forum + Asistensi Draf</div>
+        <div class="rm-title">Supabase Live + Rilis Penelitian</div>
         <div class="rm-items">
-          · Forum peer-review per modul<br>
-          · Upload draf mahasiswa<br>
-          · Komentar dosen + versioning
-        </div>
-        <span class="rm-status planned">Sprint 5</span>
-      </div>
-      <div class="rm-card">
-        <div class="rm-ver">v0.9</div>
-        <div class="rm-title">Notifikasi + Validasi</div>
-        <div class="rm-items">
-          · Email reminder tidak aktif 3 hari<br>
-          · Instrumen validasi ahli<br>
-          · Uji coba kelompok kecil
-        </div>
-        <span class="rm-status planned">Sprint 6</span>
-      </div>
-      <div class="rm-card">
-        <div class="rm-ver">v1.0</div>
-        <div class="rm-title">Rilis Penelitian</div>
-        <div class="rm-items">
+          · Progress sync ke Supabase<br>
           · Uji lapangan (kelas penuh)<br>
           · Analisis N-Gain SDL<br>
-          · HKI + artikel SINTA 3<br>
-          · Laporan penelitian UM 2026
+          · HKI + artikel SINTA 3
         </div>
-        <span class="rm-status planned">Akhir 2026</span>
+        <span class="rm-status planned">Sprint 6 →</span>
       </div>
     </div>
   </div>

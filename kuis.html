@@ -89,6 +89,13 @@
     /* ── RESULT SCREEN ── */
     #resultScreen { display: none; }
     .result-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 36px 32px; text-align: center; margin-bottom: 20px; }
+
+    /* ── QUIZ FEEDBACK CARD ── */
+    .quiz-feedback-card { background: var(--bg2); border-radius: var(--r); padding: 20px; text-align: center; margin-top: 16px; border-top: 3px solid var(--terra); }
+    .qf-icon { font-size: 32px; margin-bottom: 8px; }
+    .qf-level { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: var(--brown); margin-bottom: 6px; }
+    .qf-msg { font-size: 13px; color: var(--brown2); line-height: 1.6; margin-bottom: 10px; }
+    .qf-bonus { font-size: 13px; color: var(--brown2); background: rgba(143,162,135,.12); border: 1px solid rgba(107,126,100,.2); border-radius: var(--r-sm); padding: 10px 14px; margin-top: 4px; text-align: left; }
     .score-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 20px; border: 5px solid; }
     .score-circle.excellent { border-color: var(--sage-d); background: rgba(143,162,135,.1); }
     .score-circle.pass      { border-color: var(--terra);  background: rgba(212,163,115,.1); }
@@ -118,6 +125,63 @@
     .review-opt.user-wrong  { background: var(--red-l); color: var(--red); }
     .review-opt.neutral     { color: var(--brown3); }
     .review-icon { flex-shrink: 0; font-size: 14px; }
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 640px) {
+      /* Topbar */
+      .header-inner { padding: 0 12px; }
+      .topbar-right { gap: 4px; }
+      .topbar-link { font-size: 11px; padding: 3px 8px; }
+
+      /* Page wrap */
+      .page-wrap { padding: 16px 14px 48px; }
+
+      /* Quiz header */
+      .quiz-header { margin-bottom: 20px; }
+      .quiz-title { font-size: 18px; }
+      .quiz-sub { font-size: 12px; }
+
+      /* Question card */
+      .q-card { padding: 16px 14px; margin-bottom: 16px; }
+      .q-text { font-size: 15px; margin-bottom: 16px; }
+
+      /* Options: bigger tap targets */
+      .opt { padding: 12px 12px; gap: 10px; }
+      .opt-text { font-size: 14px; line-height: 1.5; }
+      .opt-letter { width: 26px; height: 26px; font-size: 12px; }
+
+      /* Feedback */
+      .q-feedback { font-size: 13px; }
+
+      /* Actions: full-width buttons side by side, stacked when only next */
+      .quiz-actions { gap: 8px; flex-wrap: wrap; }
+      .btn-primary, .btn-secondary { flex: 1; min-width: 120px; justify-content: center; padding: 13px 16px; min-height: 48px; font-size: 14px; }
+
+      /* Result card */
+      .result-card { padding: 24px 16px; }
+      .score-circle { width: 100px; height: 100px; }
+      .score-num { font-size: 28px; }
+      .result-title { font-size: 18px; }
+      .result-msg { font-size: 13px; }
+      .result-actions { flex-direction: column; gap: 8px; }
+      .result-actions .btn-primary,
+      .result-actions .btn-secondary { width: 100%; justify-content: center; min-height: 48px; }
+
+      /* Result breakdown */
+      .result-breakdown { gap: 8px; }
+      .rb-item { padding: 8px 12px; }
+
+      /* Review section */
+      .review-item { padding: 14px 14px; }
+      .review-q { font-size: 13px; }
+      .review-opt { font-size: 12px; padding: 6px 8px; }
+
+      /* Feedback card mobile */
+      .quiz-feedback-card { padding: 16px 14px; }
+      .qf-icon { font-size: 28px; }
+      .qf-level { font-size: 16px; }
+      .qf-msg { font-size: 13px; }
+    }
   </style>
 </head>
 <body>
@@ -182,6 +246,15 @@
       <div class="result-msg"   id="resultMsg"></div>
       <div class="result-breakdown" id="breakdownRow"></div>
       <div class="result-actions" id="resultActions"></div>
+
+      <div id="quizFeedbackCard" class="quiz-feedback-card" style="display:none">
+        <div class="qf-icon" id="qfIcon"></div>
+        <div class="qf-level" id="qfLevel"></div>
+        <div class="qf-msg" id="qfMsg"></div>
+        <div id="qfBonus" class="qf-bonus" style="display:none">
+          💡 <strong>Bonus:</strong> Kamu bisa langsung ke modul berikutnya atau eksplorasi materi lanjutan.
+        </div>
+      </div>
     </div>
 
     <div class="review-section">
@@ -194,7 +267,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
 <script>
+// Auth guard — redirect ke login jika belum login
+(async () => {
+  if (typeof sb === 'undefined') return; // demo mode
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+  } catch(e) {}
+})();
+
 (async function() {
   try {
     if (typeof sb !== 'undefined') {
@@ -209,32 +293,39 @@
   document.getElementById('dashboardBack').href = 'index.html';
 })();
 </script>
-<script src="modules-data.js"></script>
 <script>
 /* ══ KUIS ENGINE ══ */
 const params  = new URLSearchParams(location.search);
 const modulId = parseInt(params.get('modul')) || 1;
-const modul   = MODULES_DATA.find(m => m.id === modulId);
 
 const LETTERS = ['A','B','C','D'];
 
 let currentQ   = 0;
 let answers    = [];     // index of selected option per question, or -1
 let submitted  = [];     // true/false whether q has been answered
-let correct    = [];     // correct count
 
-function saveKuisHist(score) {
+async function saveKuisHist(score) {
+  // Gunakan DataLayer.saveQuizAttempt() — siap Supabase nanti
   try {
-    const key  = 'sfp_kuis_' + modulId;
-    const hist = JSON.parse(localStorage.getItem(key) || '[]');
-    hist.push({ score, date: new Date().toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) });
-    localStorage.setItem(key, JSON.stringify(hist.slice(-10)));
-  } catch(e) {}
+    await DataLayer.saveQuizAttempt(modulId, {
+      score,
+      pct: score, // score sudah dalam bentuk persentase 0–100
+      date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+    });
+  } catch(e) {
+    console.warn('[kuis] saveQuizAttempt gagal:', e);
+  }
 }
 
-if (!modul) {
-  document.getElementById('qText').textContent = 'Modul tidak ditemukan.';
-} else {
+(async function initKuis() {
+  // Ambil modul via DataLayer — siap Supabase nanti
+  const modul = await DataLayer.getModuleById(modulId);
+
+  if (!modul) {
+    document.getElementById('qText').textContent = 'Modul tidak ditemukan.';
+    return;
+  }
+
   const qs = modul.kuis;
   answers   = new Array(qs.length).fill(-1);
   submitted = new Array(qs.length).fill(false);
@@ -261,6 +352,7 @@ if (!modul) {
 
     // options
     const optList = document.getElementById('optList');
+    const escOpt = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     optList.innerHTML = q.options.map((opt, i) => {
       let cls = 'opt';
       if (submitted[idx]) {
@@ -272,7 +364,7 @@ if (!modul) {
       }
       return `<div class="${cls}" onclick="selectOpt(${i})">
         <div class="opt-letter">${LETTERS[i]}</div>
-        <div class="opt-text">${opt}</div>
+        <div class="opt-text">${escOpt(opt)}</div>
       </div>`;
     }).join('');
 
@@ -314,12 +406,42 @@ if (!modul) {
   window.nextQ = nextQ;
   window.prevQ = prevQ;
 
-  function showResult() {
+  function getQuizFeedback(pct) {
+    if (pct >= 80) return {
+      icon: '🏆',
+      level: 'Luar Biasa!',
+      color: 'var(--sage)',
+      msg: 'Kamu menguasai materi ini dengan sangat baik. Lanjutkan ke modul berikutnya!',
+      action: 'Lanjut ke Modul Berikutnya',
+      actionClass: 'btn-next-modul',
+      showBonus: true
+    };
+    if (pct >= 60) return {
+      icon: '✅',
+      level: 'Cukup Baik',
+      color: 'var(--terra)',
+      msg: 'Kamu sudah memahami sebagian besar materi. Kamu boleh melanjutkan ke modul berikutnya.',
+      action: 'Lanjut ke Modul Berikutnya',
+      actionClass: 'btn-next-modul',
+      showBonus: false
+    };
+    return {
+      icon: '📚',
+      level: 'Perlu Mengulang',
+      color: '#c0392b',
+      msg: 'Skor kamu di bawah 60. Disarankan untuk membaca ulang materi sebelum melanjutkan.',
+      action: 'Baca Ulang Materi',
+      actionClass: 'btn-review-modul',
+      showBonus: false
+    };
+  }
+
+  async function showResult() {
     const total   = qs.length;
     const benar   = qs.filter((q, i) => answers[i] === q.answer).length;
     const score   = Math.round((benar / total) * 100);
 
-    saveKuisHist(score);
+    await saveKuisHist(score);
 
     document.getElementById('quizScreen').style.display   = 'none';
     document.getElementById('resultScreen').style.display = 'block';
@@ -356,17 +478,44 @@ if (!modul) {
     const backBtn  = `<a class="btn-primary" href="modul.html?id=${modulId}">← Kembali ke Modul</a>`;
     document.getElementById('resultActions').innerHTML = retryBtn + backBtn;
 
+    // feedback card — clear any previous dynamic action button first
+    const fbCard = document.getElementById('quizFeedbackCard');
+    const prevDynBtn = fbCard.querySelector('div[style*="margin-top:14px"]');
+    if (prevDynBtn) prevDynBtn.remove();
+    const fb = getQuizFeedback(score);
+    fbCard.style.display = 'block';
+    fbCard.style.borderTopColor = fb.color;
+    document.getElementById('qfIcon').textContent  = fb.icon;
+    document.getElementById('qfLevel').textContent = fb.level;
+    document.getElementById('qfMsg').textContent   = fb.msg;
+    document.getElementById('qfBonus').style.display = fb.showBonus ? 'block' : 'none';
+
+    // action button inside feedback card — next modul or review modul
+    const nextModul = await DataLayer.getModuleById(modulId + 1);
+    let fbActionHtml = '';
+    if (fb.actionClass === 'btn-next-modul') {
+      if (nextModul) {
+        fbActionHtml = `<div style="margin-top:14px"><a class="btn-primary" href="modul.html?id=${nextModul.id}" style="display:inline-flex;align-items:center;gap:7px;text-decoration:none">${fb.action} →</a></div>`;
+      } else {
+        fbActionHtml = `<div style="margin-top:14px;font-size:13px;color:var(--sage-d);font-weight:600">Selamat! Kamu telah menyelesaikan semua modul. 🎉</div>`;
+      }
+    } else {
+      fbActionHtml = `<div style="margin-top:14px"><a class="btn-secondary" href="modul.html?id=${modulId}" style="display:inline-flex;align-items:center;gap:7px;text-decoration:none;padding:11px 24px;border-radius:100px;background:transparent;color:var(--brown2);font-size:14px;font-weight:600;border:1.5px solid var(--line)">📖 ${fb.action}</a></div>`;
+    }
+    fbCard.insertAdjacentHTML('beforeend', fbActionHtml);
+
     // review
+    const escOpt2 = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const reviewHTML = qs.map((q, i) => {
       const userAns = answers[i];
       const isOk    = userAns === q.answer;
       return `<div class="review-item">
-        <div class="review-q">${i + 1}. ${q.q}</div>
+        <div class="review-q">${i + 1}. ${escOpt2(q.q)}</div>
         ${q.options.map((opt, j) => {
           let cls = 'neutral', icon = '·';
           if (j === q.answer)    { cls = 'correct-ans'; icon = '✓'; }
           if (j === userAns && !isOk) { cls = 'user-wrong';  icon = '✗'; }
-          return `<div class="review-opt ${cls}"><span class="review-icon">${icon}</span> ${LETTERS[j]}. ${opt}</div>`;
+          return `<div class="review-opt ${cls}"><span class="review-icon">${icon}</span> ${LETTERS[j]}. ${escOpt2(opt)}</div>`;
         }).join('')}
       </div>`;
     }).join('');
@@ -377,6 +526,16 @@ if (!modul) {
   function retryKuis() {
     answers   = new Array(qs.length).fill(-1);
     submitted = new Array(qs.length).fill(false);
+    // reset feedback card for next attempt
+    const fbCard = document.getElementById('quizFeedbackCard');
+    fbCard.style.display = 'none';
+    document.getElementById('qfIcon').textContent  = '';
+    document.getElementById('qfLevel').textContent = '';
+    document.getElementById('qfMsg').textContent   = '';
+    document.getElementById('qfBonus').style.display = 'none';
+    // remove dynamically inserted action button if any
+    const dynBtn = fbCard.querySelector('div[style*="margin-top:14px"]');
+    if (dynBtn) dynBtn.remove();
     document.getElementById('resultScreen').style.display = 'none';
     document.getElementById('quizScreen').style.display   = 'block';
     renderQ(0);
@@ -385,7 +544,7 @@ if (!modul) {
 
   // Start
   renderQ(0);
-}
+})(); // end initKuis
 </script>
 </body>
 </html>
