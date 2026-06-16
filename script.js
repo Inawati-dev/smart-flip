@@ -29,7 +29,7 @@ const zoomOuter  = document.getElementById('zoomOuter');
 const bookEl     = document.getElementById('book');
 const pgL        = document.getElementById('pgL');
 const pgR        = document.getElementById('pgR');
-const spineEl    = bookEl.querySelector('.spine');
+const spineEl    = bookEl ? bookEl.querySelector('.spine') : null;
 const flipper    = document.getElementById('flipper');
 const fFront     = document.getElementById('fFront');
 const fBack      = document.getElementById('fBack');
@@ -252,6 +252,9 @@ async function preRenderAll(forPath) {
 
   if (bgRunning && currentPath === forPath) {
     bgText.textContent = `✓ ${totalPages} halaman siap`;
+  } else {
+    // Aborted (buku berganti atau mobileBack ditekan)
+    bgProgress.style.display = 'none';
   }
   bgRunning = false;
 }
@@ -453,9 +456,11 @@ function applyZoom(newZoom, cx, cy) {
 function resetZoom(animate = true) {
   zoom = 1; panX = 0; panY = 0;
   if (!animate) {
-    const bw = bookEl.parentElement;
-    bw.style.transition = 'none';
-    void bw.offsetWidth;
+    const bw = bookEl && bookEl.parentElement;
+    if (bw) {
+      bw.style.transition = 'none';
+      void bw.offsetWidth;
+    }
   }
   updateTransform();
   zoomLabel.textContent = '100%';
@@ -464,8 +469,8 @@ function resetZoom(animate = true) {
   zoomOuter.classList.remove('zoomed');
 }
 function updateTransform() {
-  bookEl.parentElement.style.transform =
-    `translate(${panX}px,${panY}px) scale(${zoom})`;
+  const bw = bookEl && bookEl.parentElement;
+  if (bw) bw.style.transform = `translate(${panX}px,${panY}px) scale(${zoom})`;
   zoomOuter.classList.toggle('zoomed', zoom > 1);
 }
 function clampPan() {
@@ -479,13 +484,17 @@ function clampPan() {
 /* ─── PROGRESS ─── */
 function saveProgress() {
   if (!currentPath || totalPages <= 0) return;
-  try {
-    localStorage.setItem('sfp_' + currentPath, JSON.stringify({
-      page: currentPage, total: totalPages,
-      pct: Math.min(100, Math.round(((currentPage + pageStep()) / totalPages) * 100)),
-      lastOpened: new Date().toISOString().split('T')[0]
-    }));
-  } catch(e) {}
+  const data = {
+    page: currentPage, total: totalPages,
+    pct: Math.min(100, Math.round(((currentPage + pageStep()) / totalPages) * 100)),
+    lastOpened: new Date().toISOString().split('T')[0]
+  };
+  // Gunakan DataLayer.saveProgress() jika tersedia — siap Supabase nanti
+  if (typeof DataLayer !== 'undefined') {
+    DataLayer.saveProgress(currentPath, data).catch(() => {});
+  } else {
+    try { localStorage.setItem('sfp_' + currentPath, JSON.stringify(data)); } catch(e) {}
+  }
 }
 
 /* ─── ZOOM HINT ─── */
@@ -497,7 +506,7 @@ function showHint() {
 
 /* ─── HELPERS ─── */
 function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 
 /* ─── EVENTS: ZOOM + PAN ─── */
@@ -587,12 +596,14 @@ btnExpand.addEventListener('click',  () => {
 
 /* ─── MOBILE BACK ─── */
 mobileBack.addEventListener('click', () => {
+  bgRunning  = false;   // stop any running background render
+  currentPath = '';
   flipPane.classList.remove('active');
   welcome.style.display = '';
   stage.classList.remove('active');
   toolbar.classList.remove('active');
   flLoader.classList.remove('active');
-  currentPath = '';
+  bgProgress.style.display = 'none';
   document.querySelectorAll('.book-card').forEach(c => c.classList.remove('active'));
 });
 

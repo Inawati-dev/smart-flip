@@ -125,16 +125,32 @@ body{
 
 /* ── MOBILE ── */
 @media(max-width:640px){
-  .card{flex-direction:column}
+  body{padding:.75rem 1rem;align-items:flex-start}
+  .card{flex-direction:column;border-radius:14px}
   .left{
-    width:100%;padding:1.6rem 2rem;
+    width:100%;padding:1.2rem 1.4rem;
     flex-direction:row;flex-wrap:wrap;
-    justify-content:center;gap:.8rem;
+    justify-content:center;gap:.6rem;
   }
+  .logo-mark{font-size:1.8rem}
+  .logo-text{font-size:1.5rem}
   .logo-tagline,.left-divider,.left-info{display:none}
-  .right{padding:2rem 1.6rem;gap:1.2rem}
-  .form-title{font-size:1.5rem}
-  .btn-submit{height:48px}
+  .right{padding:1.6rem 1.2rem;gap:1rem}
+  .form-title{font-size:1.35rem}
+  .form-sub{font-size:.78rem}
+  .field label{font-size:.8rem;font-weight:600}
+  .field-wrap{height:48px}
+  .field-wrap input{font-size:16px}
+  .fields{gap:.75rem}
+  .role-btn{height:46px;font-size:.82rem}
+  .btn-submit{height:50px;font-size:.95rem;margin-top:1rem}
+  .login-row{font-size:.8rem}
+  .alert{font-size:.78rem}
+}
+@media(max-width:380px){
+  .right{padding:1.4rem 1rem}
+  .form-title{font-size:1.2rem}
+  .role-row{gap:.4rem}
 }
 </style>
 </head>

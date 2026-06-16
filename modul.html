@@ -87,8 +87,8 @@
     .sesi-badge { width: 28px; height: 28px; border-radius: 50%; background: var(--bg3); border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--brown3); flex-shrink: 0; }
 
     /* riwayat */
-    .riwayat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-    @media (max-width: 500px) { .riwayat-grid { grid-template-columns: 1fr 1fr; } }
+    .riwayat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 640px) { .riwayat-grid { grid-template-columns: 1fr 1fr; } }
     .stat-card { background: var(--bg3); border-radius: var(--r-sm); padding: 14px 16px; }
     .stat-val { font-size: 22px; font-weight: 700; color: var(--brown); font-family: 'Playfair Display', serif; }
     .stat-lbl { font-size: 11px; color: var(--brown3); margin-top: 2px; }
@@ -100,6 +100,103 @@
     .kuis-score.lulus { color: var(--sage-d); }
     .kuis-score.gagal { color: #c0392b; }
     .kuis-empty { font-size: 13px; color: var(--brown3); text-align: center; padding: 16px; }
+
+    /* ── VIDEO PEMBELAJARAN ── */
+    .modul-video { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; margin-bottom: 16px; }
+    .mv-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .mv-icon { font-size: 18px; }
+    .mv-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--brown); margin: 0; }
+    .mv-embed-wrap { position: relative; padding-top: 56.25%; border-radius: var(--r-sm); overflow: hidden; background: #000; }
+    .mv-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+    .mv-note { font-size: 12px; color: var(--brown3); margin-top: 10px; }
+
+    /* ── ADAPTIVE BADGE ── */
+    .adaptive-badge { font-size: 12px; background: var(--terra); color: #fff; border-radius: 20px; padding: 2px 10px; display: inline-block; margin-left: 8px; vertical-align: middle; }
+
+    /* ── SECTION CONTENT WRAPPERS ── */
+    .content-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 20px 24px; margin-bottom: 16px; }
+    .cs-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .cs-icon { font-size: 18px; }
+    .cs-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--brown); margin: 0; }
+    .cs-lock-badge { font-size: 12px; color: var(--brown3); margin-left: auto; }
+    .cs-btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    /* locked button style */
+    .btn-locked-soft { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+
+    /* tooltip-like hint */
+    .lock-hint { font-size: 12px; color: var(--brown3); margin-top: 8px; display: none; }
+    .btn-locked-soft + .lock-hint { display: block; }
+
+    /* ── REFLEKSI METAKOGNITIF ── */
+    .refleksi-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 22px 24px; margin-bottom: 16px; }
+    .refleksi-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--brown); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .refleksi-sub { font-size: 13px; color: var(--brown3); margin-bottom: 14px; line-height: 1.5; }
+    .refleksi-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+    .refl-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px 14px; border-radius: var(--r-sm);
+      background: var(--bg3); border: 1.5px solid var(--line);
+      cursor: pointer; transition: background .15s, border-color .15s;
+      font-size: 14px; color: var(--brown2); line-height: 1.45;
+      user-select: none;
+    }
+    .refl-item:hover { border-color: var(--terra); background: var(--bg2); }
+    .refl-item.checked { background: rgba(143,162,135,.1); border-color: var(--sage); }
+    .refl-item input[type="checkbox"] {
+      width: 17px; height: 17px; min-width: 17px; accent-color: var(--sage);
+      cursor: pointer; margin-top: 2px;
+    }
+    .refleksi-score { font-size: 13px; color: var(--brown3); font-weight: 500; padding: 8px 0 0; }
+    .refleksi-score.complete { color: var(--sage-d); font-weight: 700; }
+    .refleksi-badge { display: inline-block; margin-left: 6px; font-size: 13px; }
+
+    /* ── MOBILE RESPONSIVE ── */
+    @media (max-width: 640px) {
+      /* Video */
+      .modul-video { padding: 14px; }
+      /* Topbar: hide extra links to prevent overflow */
+      .header-inner { padding: 0 12px; }
+      .topbar-right { gap: 4px; }
+      .topbar-right .topbar-link:not(:first-child) { display: none; }
+      .topbar-link { font-size: 11px; padding: 3px 8px; }
+
+      /* Page wrap */
+      .page-wrap { padding: 20px 14px 48px; }
+
+      /* Hero: single column, cover centered */
+      .hero { grid-template-columns: 1fr !important; gap: 16px; }
+      .cover-wrap { display: flex; justify-content: center; }
+      .cover-canvas { width: 140px; height: 186px; font-size: 36px; }
+
+      /* Hero info */
+      .modul-title { font-size: 20px; }
+      .modul-sub, .modul-desc { font-size: 13px; line-height: 1.55; }
+
+      /* Progress */
+      .prog-row { margin-top: 8px; }
+
+      /* CTA buttons: stack full-width */
+      .cta-row { flex-direction: column; gap: 8px; margin-top: 10px; }
+      .btn-primary, .btn-secondary { width: 100%; justify-content: center; padding: 12px 20px; min-height: 48px; }
+
+      /* Sections */
+      .section { padding: 14px 14px; margin-bottom: 12px; }
+      .section-title { font-size: 14px; margin-bottom: 12px; }
+
+      /* Stats: 2 columns on mobile (already set above) */
+      .stat-val { font-size: 18px; }
+      .stat-card { padding: 12px 12px; }
+
+      /* Capaian */
+      .capaian-item { font-size: 13px; }
+
+      /* Materi */
+      .materi-item { font-size: 13px; gap: 10px; }
+
+      /* Kuis history row: stack on narrow */
+      .kuis-hist-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+    }
   </style>
 </head>
 <body>
@@ -134,7 +231,8 @@
     </div>
     <div class="hero-info">
       <div class="modul-badge" id="modulBadge">Modul —</div>
-      <div class="modul-title" id="modulTitle">Memuat…</div>
+      <div class="modul-title" id="modulTitle">Memuat… </div>
+      <span id="adaptiveBadge" class="adaptive-badge" style="display:none"></span>
       <div class="modul-sub"  id="modulSub"></div>
       <div class="modul-desc" id="modulDesc"></div>
 
@@ -143,12 +241,63 @@
         <div class="prog-label" id="progLabel">0%</div>
       </div>
 
-      <div class="cta-row">
-        <a class="btn-primary" id="btnBaca" href="#">📖 Mulai Belajar</a>
-        <a class="btn-secondary" id="btnKuis" href="#">✏️ Mulai Kuis</a>
-      </div>
     </div>
   </div>
+
+  <!-- ── CONTENT SECTIONS (reordered by VARK adaptive path) ── -->
+  <div id="contentSections">
+
+    <!-- Section Video -->
+    <div id="sectionVideo" class="content-section" style="display:none">
+      <div class="cs-header">
+        <span class="cs-icon">▶</span>
+        <h3 class="cs-title">Video Pembelajaran</h3>
+        <span class="cs-lock-badge" id="lockIconVideo">✅</span>
+      </div>
+      <div class="mv-embed-wrap">
+        <iframe id="mvIframe" class="mv-iframe"
+          frameborder="0" loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+      <p class="mv-note" id="mvNote">Tonton video ini setidaknya 30 detik untuk membuka e-modul.</p>
+    </div>
+
+    <!-- Section PDF / E-Modul -->
+    <div id="sectionPDF" class="content-section">
+      <div class="cs-header">
+        <span class="cs-icon">📖</span>
+        <h3 class="cs-title">E-Modul / Flipbook</h3>
+        <span class="cs-lock-badge" id="lockIconPDF">🔒</span>
+      </div>
+      <div class="cs-btn-row">
+        <a class="btn-primary" id="btnBaca" href="#" title="">📖 Mulai Belajar</a>
+      </div>
+      <div class="lock-hint" id="hintPDF">Tonton video dulu setidaknya 30 detik untuk membuka e-modul.</div>
+    </div>
+
+    <!-- Section Kuis -->
+    <div id="sectionKuis" class="content-section">
+      <div class="cs-header">
+        <span class="cs-icon">✏️</span>
+        <h3 class="cs-title">Kuis Formatif</h3>
+        <span class="cs-lock-badge" id="lockIconKuis">🔒</span>
+      </div>
+      <div class="cs-btn-row">
+        <a class="btn-secondary" id="btnKuis" href="#" title="">✏️ Mulai Kuis</a>
+      </div>
+      <div class="lock-hint" id="hintKuis">Buka e-modul dulu sebelum mengerjakan kuis.</div>
+    </div>
+
+    <!-- Section Refleksi (inside contentSections for VARK reordering) -->
+    <section class="refleksi-section content-section" id="sectionRefleksi">
+      <div class="refleksi-title">📝 Refleksi Belajar</div>
+      <p class="refleksi-sub">Centang pernyataan yang sesuai dengan pemahamanmu setelah mempelajari modul ini:</p>
+      <div id="refleksiList" class="refleksi-list"></div>
+      <div class="refleksi-score" id="refleksiScore"></div>
+    </section>
+
+  </div><!-- /#contentSections -->
 
   <!-- ── CAPAIAN ── -->
   <div class="section">
@@ -169,6 +318,7 @@
       <div class="stat-card"><div class="stat-val" id="statPct">—</div><div class="stat-lbl">Progress baca</div></div>
       <div class="stat-card"><div class="stat-val" id="statScore">—</div><div class="stat-lbl">Skor kuis terbaik</div></div>
       <div class="stat-card"><div class="stat-val" id="statDate">—</div><div class="stat-lbl">Terakhir dibuka</div></div>
+      <div class="stat-card"><div class="stat-val" id="timeSpentDisplay">—</div><div class="stat-lbl">Waktu Belajar</div></div>
     </div>
   </div>
 
@@ -182,7 +332,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
 <script>
+// Auth guard — redirect ke login jika belum login
+(async () => {
+  if (typeof sb === 'undefined') return; // demo mode
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+  } catch(e) {}
+})();
+
 // Auth-aware dashboard back button
 (async function() {
   try {
@@ -201,88 +362,149 @@
   document.getElementById('backLink').href = 'index.html';
 })();
 </script>
-<script src="modules-data.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-/* ── helpers ── */
-function readProgress(path) {
-  try { const r = localStorage.getItem('sfp_' + path); return r ? JSON.parse(r) : null; } catch(e) { return null; }
+/* ── XSS helper ── */
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-function readKuisHist(id) {
-  try { const r = localStorage.getItem('sfp_kuis_' + id); return r ? JSON.parse(r) : []; } catch(e) { return []; }
+
+/* ── Time-on-task tracking (via DataLayer) ── */
+let sessionStart = Date.now();
+let _modulIdForTime = null; // set setelah modul diketahui
+
+async function saveTimeSpent() {
+  if (_modulIdForTime === null) return;
+  try {
+    const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+    if (elapsed > 0) {
+      // Gunakan DataLayer.addTimeSpent() — siap Supabase nanti
+      await DataLayer.addTimeSpent(_modulIdForTime, elapsed);
+      sessionStart = Date.now(); // reset untuk lanjutan
+    }
+  } catch(e) {}
 }
+
+async function displayTimeSpent() {
+  if (_modulIdForTime === null) return;
+  try {
+    // Gunakan DataLayer.getTimeSpent() — siap Supabase nanti
+    const secs = await DataLayer.getTimeSpent(_modulIdForTime);
+    const mins = Math.floor(secs / 60);
+    const el = document.getElementById('timeSpentDisplay');
+    if (el) el.textContent = mins < 1 ? '< 1 menit' : `${mins} menit`;
+  } catch(e) {}
+}
+
+// Auto-save saat tab tersembunyi atau halaman ditutup
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) saveTimeSpent();
+});
+window.addEventListener('beforeunload', function() {
+  saveTimeSpent();
+});
+// Auto-save setiap 30 detik
+setInterval(async function() {
+  await saveTimeSpent();
+  await displayTimeSpent();
+}, 30000);
 
 /* ── init ── */
 const params = new URLSearchParams(location.search);
 const modulId = parseInt(params.get('id')) || 1;
-const modul = MODULES_DATA.find(m => m.id === modulId);
 
-if (!modul) {
-  document.getElementById('modulTitle').textContent = 'Modul tidak ditemukan';
-} else {
-  // Title & meta
-  document.title = `Modul ${modul.id} — ${modul.title}`;
-  document.getElementById('modulBadge').textContent = `Modul ${modul.id}`;
-  document.getElementById('modulTitle').textContent = modul.title;
-  document.getElementById('modulSub').textContent   = modul.sub;
-  document.getElementById('modulDesc').textContent  = modul.description;
+(async function initModul() {
+  try {
+    // Gunakan DataLayer.getModuleById() — siap Supabase nanti
+    const modul = await DataLayer.getModuleById(modulId);
 
-  // Progress
-  const prog = readProgress(modul.path);
-  if (prog) {
-    const pct = prog.pct || 0;
-    document.getElementById('progRow').style.display = 'flex';
-    document.getElementById('progFill').style.width = pct + '%';
-    document.getElementById('progFill').style.background = pct >= 100 ? 'var(--sage)' : 'var(--terra)';
-    document.getElementById('progLabel').textContent = pct + '%';
-    document.getElementById('statPct').textContent  = pct + '%';
-    document.getElementById('statDate').textContent = prog.lastOpened || '—';
-    // Change button label
-    const btnBaca = document.getElementById('btnBaca');
-    btnBaca.textContent = pct >= 100 ? '📖 Baca Ulang' : '▶ Lanjut Belajar';
-  } else {
-    document.getElementById('statPct').textContent  = '0%';
-    document.getElementById('statDate').textContent = '—';
-  }
+    if (!modul) {
+      document.getElementById('modulTitle').textContent = 'Modul tidak ditemukan';
+      return;
+    }
 
-  // CTA links
-  document.getElementById('btnBaca').href = `ebook.html?book=${encodeURIComponent(modul.path)}`;
-  document.getElementById('btnKuis').href = `kuis.html?modul=${modul.id}`;
+    // Title & meta
+    document.title = `Modul ${modul.id} — ${modul.title}`;
+    document.getElementById('modulBadge').textContent = `Modul ${modul.id}`;
+    document.getElementById('modulTitle').textContent = modul.title;
+    document.getElementById('modulSub').textContent   = modul.sub;
+    document.getElementById('modulDesc').textContent  = modul.description;
 
-  // Kuis history
-  const hist = readKuisHist(modul.id);
-  if (hist.length) {
-    const best = Math.max(...hist.map(h => h.score));
-    document.getElementById('statScore').textContent = best + '%';
-    const histHTML = hist.slice().reverse().map(h => `
-      <div class="kuis-hist-row">
-        <span>${h.date}</span>
-        <span class="kuis-score ${h.score >= 60 ? 'lulus' : 'gagal'}">${h.score}% — ${h.score >= 80 ? 'Sangat Baik' : h.score >= 60 ? 'Lulus' : 'Perlu Ulang'}</span>
+    // Progress — gunakan DataLayer.getProgress() — siap Supabase nanti
+    const prog = await DataLayer.getProgress(modul.path);
+    if (prog && prog.pct > 0) {
+      const pct = prog.pct || 0;
+      document.getElementById('progRow').style.display = 'flex';
+      document.getElementById('progFill').style.width = pct + '%';
+      document.getElementById('progFill').style.background = pct >= 100 ? 'var(--sage)' : 'var(--terra)';
+      document.getElementById('progLabel').textContent = pct + '%';
+      document.getElementById('statPct').textContent  = pct + '%';
+      document.getElementById('statDate').textContent = prog.lastOpened || '—';
+      // Change button label
+      const btnBaca = document.getElementById('btnBaca');
+      btnBaca.textContent = pct >= 100 ? '📖 Baca Ulang' : '▶ Lanjut Belajar';
+    } else {
+      document.getElementById('statPct').textContent  = '0%';
+      document.getElementById('statDate').textContent = '—';
+    }
+
+    // CTA links
+    document.getElementById('btnBaca').href = `ebook.html?book=${encodeURIComponent(modul.path)}`;
+    document.getElementById('btnKuis').href = `kuis.html?modul=${modul.id}`;
+
+    // Kuis history — gunakan DataLayer.getQuizAttempts() — siap Supabase nanti
+    const hist = await DataLayer.getQuizAttempts(modul.id);
+    if (hist.length) {
+      const best = Math.max(...hist.map(h => h.score));
+      document.getElementById('statScore').textContent = best + '%';
+      const histHTML = hist.slice().reverse().map(h => {
+        const dateStr = h.date || (h.completedAt ? new Date(h.completedAt).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric' }) : '—');
+        const score = Number(h.score) || 0;
+        return `<div class="kuis-hist-row">
+          <span>${escHtml(dateStr)}</span>
+          <span class="kuis-score ${score >= 60 ? 'lulus' : 'gagal'}">${score}% — ${score >= 80 ? 'Sangat Baik' : score >= 60 ? 'Lulus' : 'Perlu Ulang'}</span>
+        </div>`;
+      }).join('');
+      document.getElementById('kuisHistList').innerHTML = `<div class="kuis-hist">${histHTML}</div>`;
+    } else {
+      document.getElementById('statScore').textContent = '—';
+      document.getElementById('kuisHistList').innerHTML = '<div class="kuis-empty">Belum pernah mengerjakan kuis</div>';
+    }
+
+    // Capaian
+    document.getElementById('capaianList').innerHTML = modul.capaian.map(c => `
+      <div class="capaian-item">
+        <div class="capaian-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
+        <span>${c}</span>
       </div>`).join('');
-    document.getElementById('kuisHistList').innerHTML = `<div class="kuis-hist">${histHTML}</div>`;
-  } else {
-    document.getElementById('statScore').textContent = '—';
-    document.getElementById('kuisHistList').innerHTML = '<div class="kuis-empty">Belum pernah mengerjakan kuis</div>';
-  }
 
-  // Capaian
-  document.getElementById('capaianList').innerHTML = modul.capaian.map(c => `
-    <div class="capaian-item">
-      <div class="capaian-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
-      <span>${c}</span>
-    </div>`).join('');
+    // Materi
+    document.getElementById('materiList').innerHTML = modul.materi.map(m => `
+      <div class="materi-item">
+        <div class="sesi-badge">${m.sesi}</div>
+        <span>${m.topik}</span>
+      </div>`).join('');
 
-  // Materi
-  document.getElementById('materiList').innerHTML = modul.materi.map(m => `
-    <div class="materi-item">
-      <div class="sesi-badge">${m.sesi}</div>
-      <span>${m.topik}</span>
-    </div>`).join('');
+    // Time-on-task: set modul id dan tampilkan sisa waktu tersimpan
+    // Gunakan DataLayer.getTimeSpent() dan addTimeSpent() — siap Supabase nanti
+    _modulIdForTime = modul.id;
+    await displayTimeSpent();
 
-  // Cover PDF
-  (async function() {
+    // Video YouTube
+    const sectionVideo = document.getElementById('sectionVideo');
+    const mvIframe = document.getElementById('mvIframe');
+    if (modul.videoId && sectionVideo && mvIframe) {
+      mvIframe.src = `https://www.youtube-nocookie.com/embed/${modul.videoId}`;
+      sectionVideo.style.display = 'block';
+    } else if (sectionVideo) {
+      sectionVideo.style.display = 'none';
+    }
+
+    // Cover PDF
     try {
       const pdf = await pdfjsLib.getDocument(modul.path).promise;
       const page = await pdf.getPage(1);
@@ -296,7 +518,239 @@ if (!modul) {
       box.innerHTML = '';
       box.appendChild(canvas);
     } catch(e) { /* fallback icon already showing */ }
-  })();
+
+    // ── Sequential Content Flow (FASE 3) ─────────────
+    await initSeqFlow(modul.id, modul, prog);
+
+    // ── VARK Adaptive Path (FASE 4) ──────────────────
+    await applyAdaptivePath(modul.id);
+
+    // ── Refleksi Belajar ──────────────────────────────
+    await initRefleksi(modul.id);
+  } catch(e) {
+    console.error('[modul] initModul gagal:', e);
+  }
+})();
+
+// ══════════════════════════════════════
+// SEQUENTIAL CONTENT FLOW (FASE 3)
+// ══════════════════════════════════════
+
+async function initSeqFlow(moduleId, modul, prog) {
+  const seq = await DataLayer.getSeqState(moduleId);
+  const hasVideo = !!(modul && modul.videoId);
+  const progPct = (prog && prog.pct > 0) ? prog.pct : 0;
+
+  // Unlock logic
+  // PDF unlocked: videoWatched=true ATAU tidak ada video
+  const pdfUnlocked = seq.videoWatched || !hasVideo;
+  // Kuis unlocked: pdfOpened=true ATAU progress > 0
+  const kuisUnlocked = seq.pdfOpened || progPct > 0;
+
+  applyLockState('sectionPDF', 'lockIconPDF', 'btnBaca', 'hintPDF', pdfUnlocked,
+    'Tonton video dulu setidaknya 30 detik untuk membuka e-modul.',
+    seq.pdfOpened);
+  applyLockState('sectionKuis', 'lockIconKuis', 'btnKuis', 'hintKuis', kuisUnlocked,
+    'Buka e-modul dulu sebelum mengerjakan kuis.',
+    progPct >= 100);
+
+  // Update video lock icon (video always unlocked)
+  const lockVideo = document.getElementById('lockIconVideo');
+  if (lockVideo) {
+    lockVideo.textContent = seq.videoWatched ? '✅' : '▶';
+  }
+
+  // Note below video iframe
+  const mvNote = document.getElementById('mvNote');
+  if (mvNote) {
+    if (!hasVideo) {
+      mvNote.style.display = 'none';
+    } else if (seq.videoWatched) {
+      mvNote.style.display = 'none';
+    } else {
+      mvNote.style.display = 'block';
+    }
+  }
+
+  // 30-second timer: trigger videoWatched when video section visible
+  if (hasVideo && !seq.videoWatched) {
+    let videoTimerStarted = false;
+    let videoTimerCount = 0;
+    const iframe = document.getElementById('mvIframe');
+
+    // Start counting when iframe loads (user can see it)
+    if (iframe) {
+      iframe.addEventListener('load', function onIframeLoad() {
+        iframe.removeEventListener('load', onIframeLoad);
+        if (!videoTimerStarted) {
+          videoTimerStarted = true;
+          const timer = setInterval(async function() {
+            videoTimerCount++;
+            if (videoTimerCount >= 30) {
+              clearInterval(timer);
+              try {
+                await DataLayer.saveSeqState(moduleId, { videoWatched: true });
+              } catch(e) { console.warn('[modul] saveSeqState videoWatched gagal:', e); }
+              // Update UI without full reload
+              const li = document.getElementById('lockIconVideo');
+              if (li) li.textContent = '✅';
+              if (mvNote) mvNote.style.display = 'none';
+              // Unlock PDF section
+              applyLockState('sectionPDF', 'lockIconPDF', 'btnBaca', 'hintPDF', true, '', false);
+            }
+          }, 1000);
+        }
+      });
+    }
+  }
+
+  // Trigger pdfOpened when btnBaca is clicked
+  const btnBaca = document.getElementById('btnBaca');
+  if (btnBaca && !seq.pdfOpened) {
+    btnBaca.addEventListener('click', async function onBacaClick() {
+      try {
+        await DataLayer.saveSeqState(moduleId, { pdfOpened: true });
+      } catch(e) { console.warn('[modul] saveSeqState pdfOpened gagal:', e); }
+      // Unlock kuis after click
+      applyLockState('sectionKuis', 'lockIconKuis', 'btnKuis', 'hintKuis', true, '', false);
+    }, { once: true });
+  }
+}
+
+function applyLockState(sectionId, lockIconId, btnId, hintId, unlocked, hintText, completed) {
+  const btn = document.getElementById(btnId);
+  const lockIcon = document.getElementById(lockIconId);
+  const hint = document.getElementById(hintId);
+
+  if (!btn) return;
+
+  if (unlocked) {
+    btn.classList.remove('btn-locked-soft');
+    btn.removeAttribute('title');
+    btn.style.opacity = '';
+    btn.style.cursor = '';
+    btn.style.pointerEvents = '';
+    if (lockIcon) lockIcon.textContent = completed ? '✅' : '';
+    if (hint) hint.style.display = 'none';
+  } else {
+    btn.classList.add('btn-locked-soft');
+    btn.setAttribute('title', hintText);
+    btn.style.opacity = '0.55';
+    btn.style.cursor = 'not-allowed';
+    btn.style.pointerEvents = 'none';
+    if (lockIcon) lockIcon.textContent = '🔒';
+    if (hint) hint.style.display = 'block';
+  }
+}
+
+// ══════════════════════════════════════
+// VARK ADAPTIVE PATH (FASE 4)
+// ══════════════════════════════════════
+
+async function applyAdaptivePath(moduleId) {
+  const vark = await DataLayer.getVarkResult();
+  const dominant = vark ? vark.dominant : 'V';
+  const order = {
+    V: ['sectionVideo', 'sectionPDF', 'sectionKuis', 'sectionRefleksi'],
+    A: ['sectionVideo', 'sectionKuis', 'sectionPDF', 'sectionRefleksi'],
+    R: ['sectionPDF', 'sectionVideo', 'sectionKuis', 'sectionRefleksi'],
+    K: ['sectionKuis', 'sectionVideo', 'sectionPDF', 'sectionRefleksi'],
+  };
+  const container = document.getElementById('contentSections');
+  if (!container) return;
+  (order[dominant] || order['V']).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el) container.appendChild(el);
+  });
+  const badge = document.getElementById('adaptiveBadge');
+  const labels = { V: '📊 Visual', A: '🎧 Auditori', R: '📖 Baca/Tulis', K: '🤸 Kinestetik' };
+  if (badge) {
+    badge.textContent = 'Jalur: ' + (labels[dominant] || '');
+    badge.style.display = 'inline-block';
+  }
+}
+
+// ══════════════════════════════════════
+// REFLEKSI METAKOGNITIF
+// ══════════════════════════════════════
+
+const REFLEKSI = [
+  'Saya memahami konsep utama modul ini',
+  'Saya bisa menjelaskan materi ini dengan kata-kata sendiri',
+  'Saya tahu bagian mana yang masih perlu saya pelajari lagi',
+  'Saya sudah mencatat poin-poin penting',
+  'Saya siap menerapkan materi ini dalam penelitian saya',
+];
+
+async function initRefleksi(moduleId) {
+  const checks = await DataLayer.getRefleksi(moduleId);
+  const list = document.getElementById('refleksiList');
+  if (!list) return;
+
+  // Render checkbox items
+  list.innerHTML = REFLEKSI.map((teks, i) => `
+    <label class="refl-item${checks[i] ? ' checked' : ''}" id="refl-label-${i}">
+      <input type="checkbox" id="refl-cb-${i}"${checks[i] ? ' checked' : ''}>
+      <span>${teks}</span>
+    </label>
+  `).join('');
+
+  // Update skor awal
+  updateRefleksiScore(moduleId);
+
+  // Event listeners
+  REFLEKSI.forEach((_, i) => {
+    const cb = document.getElementById('refl-cb-' + i);
+    if (!cb) return;
+    cb.addEventListener('change', () => onRefleksiChange(moduleId));
+  });
+}
+
+function getRefleksiChecks() {
+  return REFLEKSI.map((_, i) => {
+    const cb = document.getElementById('refl-cb-' + i);
+    return cb ? cb.checked : false;
+  });
+}
+
+async function onRefleksiChange(moduleId) {
+  const checks = getRefleksiChecks();
+
+  // Update visual state per item
+  REFLEKSI.forEach((_, i) => {
+    const label = document.getElementById('refl-label-' + i);
+    if (label) {
+      if (checks[i]) label.classList.add('checked');
+      else label.classList.remove('checked');
+    }
+  });
+
+  // Simpan ke DataLayer
+  try {
+    await DataLayer.saveRefleksi(moduleId, checks);
+  } catch(e) { console.warn('[modul] saveRefleksi gagal:', e); }
+
+  // Update skor display
+  updateRefleksiScore(moduleId);
+}
+
+function updateRefleksiScore(moduleId) {
+  const checks = getRefleksiChecks();
+  const count = checks.filter(Boolean).length;
+  const total = REFLEKSI.length;
+  const el = document.getElementById('refleksiScore');
+  if (!el) return;
+
+  if (count === total) {
+    el.className = 'refleksi-score complete';
+    el.innerHTML = `✨ Refleksi Lengkap! <span class="refleksi-badge">${count} / ${total} kriteria terpenuhi</span>`;
+  } else if (count === 0) {
+    el.className = 'refleksi-score';
+    el.textContent = 'Belum ada kriteria yang dicentang';
+  } else {
+    el.className = 'refleksi-score';
+    el.textContent = `${count} / ${total} kriteria terpenuhi`;
+  }
 }
 </script>
 </body>

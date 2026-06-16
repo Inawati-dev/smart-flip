@@ -28,8 +28,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);display:flex;flex-
 .lb-ver{font-size:.6rem;color:var(--terra);opacity:.65;letter-spacing:.12em;margin-left:.2rem}
 .tb-spacer{flex:1}
 .tb-role-badge{font-size:.67rem;font-weight:600;letter-spacing:.06em;background:rgba(200,146,90,.22);color:var(--terra);border:1px solid rgba(200,146,90,.3);border-radius:100px;padding:.2rem .65rem}
-.tb-btn{width:34px;height:34px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0}
+.tb-btn{width:40px;height:40px;border-radius:8px;border:none;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0}
 .tb-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.tb-btn:focus-visible{outline:2px solid rgba(200,146,90,.7);outline-offset:2px}
 .tb-btn svg{width:18px;height:18px}
 .tb-notif-wrap{position:relative}
 .tb-notif-dot{position:absolute;top:4px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--terra);border:1.5px solid var(--brown)}
@@ -204,12 +205,58 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
 .btn-ok{flex:1;height:38px;border-radius:9px;border:none;background:var(--brown);font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--ivory);cursor:pointer}
 .btn-ok:hover{background:var(--terra)}
 
+/* ── NOTIF ITEMS ── */
+.notif-item-d{display:flex;gap:10px;padding:11px 14px;border-bottom:1px solid var(--line2);cursor:pointer;transition:background .15s}
+.notif-item-d:last-child{border-bottom:none}
+.notif-item-d:hover{background:var(--cream)}
+.notif-item-d.unread{background:rgba(200,146,90,.06)}
+.ni-icon-d{font-size:18px;flex-shrink:0;margin-top:1px}
+.ni-body-d{flex:1;min-width:0}
+.ni-title-d{font-size:.8rem;font-weight:600;color:var(--brown);line-height:1.3}
+.ni-text-d{font-size:.75rem;color:var(--brown3);margin-top:.2rem;line-height:1.4}
+.ni-time-d{font-size:.68rem;color:var(--brown3);margin-top:.25rem;opacity:.8}
+
+/* ── QUICK LINKS ── */
+.quick-link-row-d{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1.2rem}
+.quick-link-card-d{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.55rem .9rem;border-radius:10px;
+  background:var(--ivory);border:1px solid var(--line);
+  text-decoration:none;color:var(--brown2);font-size:.8rem;font-weight:500;
+  transition:all .18s;cursor:pointer;
+}
+.quick-link-card-d:hover{border-color:var(--terra);color:var(--terra);background:#FDF5EE}
+
 @media(max-width:768px){
   :root{--sw:0px}
   .tb-logo,.sidebar{display:none}
   .page{padding:1rem}
   .stat-grid{grid-template-columns:repeat(2,1fr)}
   .val-grid,.chart-grid{grid-template-columns:1fr}
+  #notifDropdown{width:calc(100vw - 32px);right:-8px}
+}
+@media(max-width:480px){
+  .page{padding:.85rem .75rem}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:.6rem}
+  .val-grid,.chart-grid{grid-template-columns:1fr}
+  .s-val{font-size:1.4rem}
+  .s-lbl{font-size:.68rem}
+  /* Topbar: tighten */
+  .topbar{gap:.3rem;padding:0 .5rem}
+  .tb-role-badge{display:none}
+  /* Tap targets */
+  .tb-btn{width:44px;height:44px}
+  /* Page headings */
+  .pg-hd h1{font-size:1.2rem}
+  .ch-info h2{font-size:1.1rem}
+  /* iOS zoom prevention */
+  .set-inp{font-size:16px}
+  /* Modal full-width */
+  .modal{width:calc(100vw - 32px);max-width:none}
+}
+@media(max-width:380px){
+  .page{padding:.75rem .6rem}
+  .stat-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -226,18 +273,25 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
   </div>
   <div class="tb-spacer"></div>
   <span class="tb-role-badge">Dosen</span>
-  <div class="tb-notif-wrap">
-    <button class="tb-btn" title="Notifikasi">
+  <div class="notif-wrapper" id="notifWrapper" style="position:relative">
+    <button class="tb-btn btn-notif" id="btnNotif" title="Notifikasi" aria-label="Notifikasi" style="position:relative">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span id="notifBadge" style="display:none;position:absolute;top:2px;right:2px;background:#e74c3c;color:#fff;border-radius:50%;font-size:9px;min-width:16px;height:16px;align-items:center;justify-content:center;border:1.5px solid var(--brown);font-weight:700;line-height:1;pointer-events:none">0</span>
     </button>
-    <div class="tb-notif-dot"></div>
+    <div id="notifDropdown" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:310px;background:var(--ivory);border-radius:12px;box-shadow:0 8px 32px rgba(44,36,32,.18);border:1px solid var(--line);z-index:300;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;border-bottom:1px solid var(--line)">
+        <span style="font-size:.85rem;font-weight:600;color:var(--brown)">Notifikasi</span>
+        <button id="btnMarkAllRead" onclick="markAllRead()" style="background:none;border:none;cursor:pointer;font-size:.72rem;color:var(--sage-d);font-family:'DM Sans',sans-serif;font-weight:500;padding:0">Tandai semua dibaca</button>
+      </div>
+      <div id="notifList" style="max-height:340px;overflow-y:auto"></div>
+    </div>
   </div>
   <div class="avatar-wrap">
     <div class="avatar" id="avatarBtn" onclick="toggleDD()">IW</div>
     <div class="av-dd" id="avDD">
       <div class="dd-hd">
-        <div class="dd-name" id="ddName">Ir. Johan Iriawan, M.T.</div>
-        <div class="dd-sub" id="ddNidn">NIDN: 0012345678</div>
+        <div class="dd-name" id="ddName">—</div>
+        <div class="dd-sub" id="ddNidn">NIDN: —</div>
       </div>
       <div class="dd-item" onclick="showPage('pengaturan');closeDD()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
@@ -343,6 +397,13 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
           <div class="s-sub" style="color:var(--red)">Skor &lt;60 / tidak aktif</div>
         </div>
       </div>
+      <!-- QUICK LINKS -->
+      <div class="quick-link-row-d">
+        <a href="draf.html?view=dosen" class="quick-link-card-d">📄 Asistensi Draf</a>
+        <a href="forum.html" class="quick-link-card-d">💬 Forum Diskusi</a>
+        <a href="ebook.html" class="quick-link-card-d">📚 Perpustakaan</a>
+      </div>
+
       <div class="sec-hd">
         <div class="sec-title">Progress per mahasiswa</div>
         <span class="sec-lnk" onclick="showPage('mahasiswa')">Lihat semua →</span>
@@ -434,9 +495,9 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
       <div class="set-card">
         <div class="set-hd"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><div class="set-hd-t">Data Profil</div></div>
         <div class="set-body">
-          <div class="set-field"><label>Nama Lengkap</label><input class="set-inp" id="setName" value="Ir. Johan Iriawan, M.T."></div>
-          <div class="set-field"><label>NIDN</label><input class="set-inp" id="setNidn" value="0012345678"></div>
-          <div class="set-field"><label>Email</label><input class="set-inp" id="setEmail" value="jiwa99@gmail.com"></div>
+          <div class="set-field"><label>Nama Lengkap</label><input class="set-inp" id="setName" value=""></div>
+          <div class="set-field"><label>NIDN</label><input class="set-inp" id="setNidn" value=""></div>
+          <div class="set-field"><label>Email</label><input class="set-inp" id="setEmail" value="" readonly></div>
           <button class="btn-save" onclick="saveProfil()">Simpan Perubahan</button>
         </div>
       </div>
@@ -466,6 +527,8 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
 </div>
 
 <script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
 <script>
 // ════════════════════════════
 // DUMMY DATA
@@ -514,17 +577,8 @@ const SCORE_DIST = [
   {range:'91–100',count:2,color:'#4A6040'},
 ];
 
-const MODULES = [
-  {no:1,title:'Dasar & Konsep R&D',           selesai:28,avgQ:80,waktu:18},
-  {no:2,title:'Model ADDIE & 4D',              selesai:25,avgQ:78,waktu:22},
-  {no:3,title:'Needs Assessment',              selesai:22,avgQ:75,waktu:20},
-  {no:4,title:'Penyusunan Bab 1 Proposal',    selesai:20,avgQ:72,waktu:25},
-  {no:5,title:'Blueprint & Storyboard',        selesai:14,avgQ:68,waktu:19},
-  {no:6,title:'Instrumen Validasi Ahli',       selesai:6, avgQ:0, waktu:0},
-  {no:7,title:'Analisis Data Validasi',        selesai:2, avgQ:0, waktu:0},
-  {no:8,title:'Uji Coba & Implementasi',       selesai:0, avgQ:0, waktu:0},
-  {no:9,title:'Evaluasi & Diseminasi',         selesai:0, avgQ:0, waktu:0},
-];
+// MODULES diganti dengan DataLayer.getClassStats() (siap Supabase nanti)
+// Lihat renderModuls() dan renderAnalitikTable() di bawah
 
 const FORUM = [
   {author:'Aryadi Ramadhan',ai:'AR',color:'#5A7353',mod:'Modul 5',
@@ -554,6 +608,13 @@ const VALIDASI = [
   ]},
 ];
 
+// ── XSS helper ──
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ════════════════════════════
 // INIT
 // ════════════════════════════
@@ -564,33 +625,47 @@ let filteredStudents = [...STUDENTS];
     if (typeof sb !== 'undefined') {
       const {data:{session}} = await sb.auth.getSession();
       if (!session) {
-        if (location.hostname !== 'localhost') { window.location.href = 'index.html'; return; }
+        window.location.replace('index.html'); return;
       } else {
         const {data:p} = await sb.from('profiles').select('*').eq('id',session.user.id).single();
         if (p) {
-          if (p.role !== 'dosen') { window.location.href = 'dashboard-mhs.html'; return; }
+          if (p.role !== 'dosen') { window.location.replace('dashboard-mhs.html'); return; }
           const name = p.full_name || session.user.email.split('@')[0];
           const ini  = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
           document.getElementById('avatarBtn').textContent = ini;
           document.getElementById('ddName').textContent   = name;
           document.getElementById('ddNidn').textContent   = 'NIDN: ' + (p.nim_nidn || '—');
           document.getElementById('setName').value = name;
+          document.getElementById('setNidn').value = p.nim_nidn || '';
           document.getElementById('setEmail').value = session.user.email;
         }
       }
     }
-  } catch(e){}
+  } catch(e){
+    // Demo mode: gunakan DataLayer.getProfile()
+    try {
+      const demoProfile = await DataLayer.getProfile();
+      const name = demoProfile.name || demoProfile.full_name || 'Dosen';
+      const ini  = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || 'D';
+      document.getElementById('avatarBtn').textContent = ini;
+      document.getElementById('ddName').textContent   = name;
+      document.getElementById('ddNidn').textContent   = 'NIDN: ' + (demoProfile.nim || demoProfile.nim_nidn || '—');
+      document.getElementById('setName').value = name;
+      document.getElementById('setNidn').value = demoProfile.nim || demoProfile.nim_nidn || '';
+      document.getElementById('setEmail').value = demoProfile.email || '';
+    } catch(e2){}
+  }
   renderAll();
 })();
 
-function renderAll(){
+async function renderAll(){
   renderDashTable();
   renderBarChart('dashChart', SCORE_DIST);
   renderFullTable();
-  renderModuls();
+  await renderModuls();
   renderBarChart('analitikChart1', SCORE_DIST);
   renderModulChart();
-  renderAnalitikTable();
+  await renderAnalitikTable();
   renderForum();
   renderValidasi();
 }
@@ -639,7 +714,9 @@ function renderBarChart(id, data){
   }).join('');
 }
 
-function renderModulChart(){
+async function renderModulChart(){
+  // MODULES var was previously undefined here — now fetched from DataLayer
+  const MODULES = await DataLayer.getClassStats();
   const max = 32;
   document.getElementById('analitikChart2').innerHTML = MODULES.slice(0,7).map(m=>{
     const h = Math.round((m.selesai/max)*100);
@@ -652,15 +729,17 @@ function renderModulChart(){
   }).join('');
 }
 
-function renderModuls(){
+async function renderModuls(){
+  // Gunakan DataLayer.getClassStats() — siap Supabase nanti
+  const MODULES = await DataLayer.getClassStats();
   document.getElementById('modulList').innerHTML = MODULES.map(m=>{
     const pct = Math.round(m.selesai/32*100);
     const pc = pct>=70?'var(--sage)':pct>=40?'var(--terra)':'var(--line)';
     return `<div class="mod-row">
       <div class="mod-num">${m.no}</div>
       <div class="mod-body">
-        <div class="mod-t">${m.title}</div>
-        <div class="mod-s">${m.selesai} dari 32 mahasiswa selesai</div>
+        <div class="mod-t">${escHtml(m.title)}</div>
+        <div class="mod-s">${escHtml(String(m.selesai))} dari 32 mahasiswa selesai</div>
       </div>
       <div class="mod-r">
         <span style="font-size:.73rem;color:var(--brown3)">${m.avgQ?'Rata-rata: '+m.avgQ:'Kuis belum aktif'}</span>
@@ -673,12 +752,14 @@ function renderModuls(){
   }).join('');
 }
 
-function renderAnalitikTable(){
+async function renderAnalitikTable(){
+  // Gunakan DataLayer.getClassStats() — siap Supabase nanti
+  const MODULES = await DataLayer.getClassStats();
   document.getElementById('analitikTbody').innerHTML = MODULES.map(m=>{
     const pct = Math.round(m.selesai/32*100);
     const pc = pct>=70?'#2A5010':pct>=40?'#633806':'#B03020';
     return `<tr>
-      <td style="font-weight:500">${m.no}. ${m.title}</td>
+      <td style="font-weight:500">${escHtml(String(m.no))}. ${escHtml(m.title)}</td>
       <td><span style="font-weight:600;color:${pc}">${m.selesai}/32</span> <span style="color:var(--brown3)">(${pct}%)</span></td>
       <td>${m.avgQ?`<span style="font-weight:600;color:var(--sage-d)">${m.avgQ}</span>`:'<span style="color:var(--brown3)">—</span>'}</td>
       <td style="color:var(--brown3)">${m.waktu?m.waktu+' menit':'—'}</td>
@@ -690,17 +771,17 @@ function renderForum(){
   document.getElementById('forumList').innerHTML = FORUM.map(f=>`
     <div class="forum-card">
       <div class="fc-top">
-        <div class="fc-av" style="background:${f.color}">${f.ai}</div>
+        <div class="fc-av" style="background:${escHtml(f.color)}">${escHtml(f.ai)}</div>
         <div class="fc-bd">
-          <div class="fc-ti">${f.title}</div>
-          <div class="fc-me">${f.author} · ${f.time}</div>
+          <div class="fc-ti">${escHtml(f.title)}</div>
+          <div class="fc-me">${escHtml(f.author)} · ${escHtml(f.time)}</div>
         </div>
       </div>
       <div class="fc-bot">
-        <span class="fc-tag">${f.mod}</span>
+        <span class="fc-tag">${escHtml(f.mod)}</span>
         <span class="fc-st">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          ${f.replies} balasan
+          ${escHtml(String(f.replies))} balasan
         </span>
       </div>
     </div>`).join('');
@@ -736,7 +817,7 @@ function showPage(name){
 }
 function toggleDD(){ document.getElementById('avDD').classList.toggle('open') }
 function closeDD(){ document.getElementById('avDD').classList.remove('open') }
-document.addEventListener('click',e=>{ if(!e.target.closest('.avatar-wrap')) closeDD() });
+// click-outside handled in NOTIFIKASI BELL section below
 
 function filterStudents(){
   const q = document.getElementById('srchInput').value.toLowerCase();
@@ -758,11 +839,97 @@ async function doLogout(){
 }
 
 async function saveProfil(){
-  const name = document.getElementById('setName').value.trim();
+  const name  = document.getElementById('setName').value.trim();
+  const nidn  = document.getElementById('setNidn').value.trim();
   if(!name) return;
+  // Gunakan DataLayer.updateProfile() — siap Supabase nanti
+  await DataLayer.updateProfile({ name, full_name: name, nim: nidn, nim_nidn: nidn });
+  // Jika Supabase aktif, dual-write
+  if (typeof sb !== 'undefined') {
+    try {
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) await sb.from('profiles').upsert({ id: user.id, full_name: name, nim_nidn: nidn });
+    } catch(e) {}
+  }
   document.getElementById('ddName').textContent = name;
+  document.getElementById('ddNidn').textContent = 'NIDN: ' + (nidn || '—');
   alert('Profil berhasil disimpan!');
 }
+
+// ════════════════════════════
+// NOTIFIKASI BELL
+// ════════════════════════════
+function timeAgo(iso) {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff/60000), h = Math.floor(m/60), d = Math.floor(h/24);
+    if (diff < 60000) return 'baru saja';
+    if (m < 60) return m + ' menit lalu';
+    if (h < 24) return h + ' jam lalu';
+    return new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+  } catch(e) { return ''; }
+}
+
+async function loadNotifications() {
+  try {
+    const notifs = await DataLayer.getNotifications();
+    const unread = notifs.filter(n => !n.read).length;
+    const badge  = document.getElementById('notifBadge');
+    if (badge) {
+      badge.textContent = unread > 9 ? '9+' : String(unread);
+      badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    const icons = { kuis:'📝', forum:'💬', draf:'📄', sistem:'ℹ️' };
+    list.innerHTML = notifs.length
+      ? notifs.map(n => `
+          <div class="notif-item-d${n.read?'':' unread'}" data-id="${escHtml(n.id)}">
+            <div class="ni-icon-d">${icons[n.type]||'🔔'}</div>
+            <div class="ni-body-d">
+              <div class="ni-title-d">${escHtml(n.title)}</div>
+              <div class="ni-text-d">${escHtml(n.body)}</div>
+              <div class="ni-time-d">${escHtml(timeAgo(n.createdAt))}</div>
+            </div>
+          </div>`).join('')
+      : '<div style="padding:1.5rem;text-align:center;font-size:.8rem;color:var(--brown3)">Tidak ada notifikasi</div>';
+
+    list.querySelectorAll('.notif-item-d').forEach(el => {
+      el.addEventListener('click', async () => {
+        await DataLayer.markNotificationRead(el.dataset.id);
+        el.classList.remove('unread');
+        await loadNotifications();
+      });
+    });
+  } catch(e) {}
+}
+
+document.getElementById('btnNotif')?.addEventListener('click', e => {
+  e.stopPropagation();
+  const dd = document.getElementById('notifDropdown');
+  if (!dd) return;
+  const isOpen = dd.style.display !== 'none';
+  dd.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) loadNotifications();
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#notifWrapper')) {
+    const dd = document.getElementById('notifDropdown');
+    if (dd) dd.style.display = 'none';
+  }
+  if (!e.target.closest('.avatar-wrap')) closeDD();
+});
+
+async function markAllRead() {
+  try {
+    await DataLayer.markAllRead();
+    await loadNotifications();
+  } catch(e) {}
+}
+
+// Load notifikasi saat init
+loadNotifications();
 </script>
 </body>
 </html>

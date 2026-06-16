@@ -246,8 +246,8 @@
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Redirect berdasarkan role → dashboard mahasiswa / dosen</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Halaman register — form lengkap dengan NIM/NIDN</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Session persist — redirect otomatis kalau sudah login</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Logout berfungsi dari semua halaman</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Proteksi halaman: redirect ke login kalau belum login</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Logout berfungsi dari semua halaman (<code>sb.auth.signOut()</code>)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Proteksi halaman: redirect ke login kalau belum login (semua halaman protected)</div></div>
     </div>
   </div>
 
@@ -270,7 +270,7 @@
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Modul aktif dengan progress bar per modul (Selesai / Sedang / Terkunci)</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Halaman Video, Kuis, Forum, Draf Saya, Progress, Pengaturan + dummy data</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.5</strong> — Avatar dropdown: Edit Profil + Logout</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Tombol "Lanjut Belajar" → modul terakhir dikerjakan</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Tombol "Lanjut Belajar" → modul terakhir dikerjakan (baca dari localStorage)</div></div>
     </div>
   </div>
 
@@ -352,6 +352,29 @@
     </div>
   </div>
 
+  <!-- ═══ FASE 2f — Mobile UI + Bug Sweep (v0.8) ═══ -->
+  <div class="fase-block" id="f2f">
+    <div class="fase-head" onclick="toggleFase('f2f')">
+      <div class="collapse-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="fase-title">FASE 2f — Mobile UI &amp; Bug Sweep (v0.8)</div>
+      <span class="fase-badge" id="f2f-badge">—</span>
+    </div>
+    <div class="fase-progress"><div class="fase-progress-fill" id="f2f-bar" style="width:0%"></div></div>
+    <div class="fase-items" id="f2f-items">
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Mobile responsive fix: index.html, register.html (360px–768px, tap targets 48px)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Mobile responsive fix: modul.html (hero single-column, cover centered, CTA full-width)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Mobile responsive fix: kuis.html (opsi jawaban touch-friendly, action buttons stacked)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Mobile responsive fix: dashboard-mhs &amp; dos (stat-grid single col @380px, role badge hidden)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Bug sweep: null guard spineEl &amp; bookEl.parentElement di script.js</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Bug sweep: HTML escaping opsi kuis (XSS via innerHTML — karakter &lt; &gt; di soal)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Bug sweep: fix CSS var <code>--terra-dark</code> → <code>--terra-d</code> di dashboard-mhs; tambah <code>-webkit-backdrop-filter</code> di style.css</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8</strong> — Bug sweep: fix race condition bgRunning + bgProgress tidak hide saat mobileBack &amp; abort di preRenderAll</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8.1</strong> — Buat <code>reset-password.html</code> — halaman reset password (Supabase email link)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8.1</strong> — Konsolidasi <code>index.html</code> vs <code>login.html</code> — pilih satu, hapus duplikat</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.8.1</strong> — Fix distribusi jawaban kuis di <code>modules-data.js</code> — A:11, B:11, C:11, D:12</div></div>
+    </div>
+  </div>
+
   <!-- ═══ FASE 3–10 collapsed ═══ -->
   <div class="fase-block collapsed" id="f3">
     <div class="fase-head" onclick="toggleFase('f3')">
@@ -361,7 +384,7 @@
     </div>
     <div class="fase-progress"><div class="fase-progress-fill" id="f3-bar" style="width:0%"></div></div>
     <div class="fase-items" id="f3-items">
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Struktur 9 modul sesuai RPS Metode Penelitian & Pengembangan</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Struktur 9 modul sesuai RPS Metode Penelitian &amp; Pengembangan</div></div>
       <div class="sublist">
         <div class="sub-item">1. Dasar &amp; Konsep R&amp;D</div>
         <div class="sub-item">2. Model ADDIE, 4D, Borg &amp; Gall</div>
@@ -373,11 +396,11 @@
         <div class="sub-item">8. Uji Coba &amp; Implementasi</div>
         <div class="sub-item">9. Evaluasi &amp; Diseminasi</div>
       </div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Setiap modul: Video → PDF/E-modul → Kuis Formatif</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Embed video YouTube atau Supabase Storage</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">E-modul PDF tampil sebagai flipbook (ebook.html)</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Kuis formatif min. 5 soal per modul</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Time-on-task tracking per modul</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Setiap modul: Video → PDF/E-modul → Kuis Formatif</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Embed video YouTube atau Supabase Storage</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">E-modul PDF tampil sebagai flipbook (ebook.html)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Kuis formatif min. 5 soal per modul</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Time-on-task tracking per modul</div></div>
     </div>
   </div>
 
@@ -389,11 +412,11 @@
     </div>
     <div class="fase-progress"><div class="fase-progress-fill" id="f4-bar" style="width:0%"></div></div>
     <div class="fase-items" id="f4-items">
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Asesmen awal gaya belajar (VARK quiz 12 pertanyaan)</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Simpan profil gaya belajar ke <code>profiles.learning_style</code></div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Algoritma jalur adaptif berdasarkan gaya belajar (V/A/R/K)</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Umpan balik instan setelah kuis: pesan per rentang skor</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Rekomendasi "Kamu perlu mengulang..." jika skor &lt; 60</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Asesmen awal gaya belajar (VARK quiz 12 pertanyaan)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Simpan profil gaya belajar ke <code>profiles.learning_style</code></div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Algoritma jalur adaptif berdasarkan gaya belajar (V/A/R/K)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Umpan balik instan setelah kuis: pesan per rentang skor</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Rekomendasi "Kamu perlu mengulang..." jika skor &lt; 60</div></div>
     </div>
   </div>
 
@@ -405,13 +428,13 @@
     </div>
     <div class="fase-progress"><div class="fase-progress-fill" id="f5-bar" style="width:0%"></div></div>
     <div class="fase-items" id="f5-items">
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Grafik progress modul (donut chart)</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Log waktu belajar per sesi</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Checklist metakognitif self-reflection per modul</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Grafik progress modul (donut chart)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Log waktu belajar per sesi</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Checklist metakognitif self-reflection per modul</div></div>
       <div class="item"><div class="item-check unchecked"></div><div class="item-text">Manajemen modul: tambah/edit konten (dosen only)</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Forum peer-review per modul (post + reply)</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Portal asistensi draf: upload, komentar dosen, versioning</div></div>
-      <div class="item"><div class="item-check unchecked"></div><div class="item-text">Notifikasi in-app (bell icon)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Forum peer-review per modul (post + reply)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Portal asistensi draf: upload, komentar dosen, versioning</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Notifikasi in-app (bell icon)</div></div>
       <div class="item"><div class="item-check unchecked"></div><div class="item-text">Email reminder: tidak aktif 3 hari (Supabase Edge Functions)</div></div>
       <div class="item"><div class="item-check unchecked"></div><div class="item-text">Notif dosen: mahasiswa kumpulkan draf baru</div></div>
       <div class="item"><div class="item-check unchecked"></div><div class="item-text">Filter kelas/kelompok di dashboard dosen</div></div>
@@ -441,7 +464,7 @@
     </div>
   </div>
 
-  <p class="last-updated">Terakhir diperbarui: 09 Jun 2026 · v0.7.2</p>
+  <p class="last-updated">Terakhir diperbarui: 16 Jun 2026 · v0.9</p>
 
 </div><!-- /.page -->
 
@@ -450,15 +473,16 @@
 const fases = [
   { id: 'f0',  checked: 5,  total: 7  },
   { id: 'f0b', checked: 10, total: 10 },
-  { id: 'f1',  checked: 6,  total: 8  },
-  { id: 'f2',  checked: 10, total: 11 },
+  { id: 'f1',  checked: 8,  total: 8  },
+  { id: 'f2',  checked: 11, total: 11 },
   { id: 'f2b', checked: 9,  total: 9  },
   { id: 'f2c', checked: 7,  total: 7  },
   { id: 'f2d', checked: 9,  total: 9  },
   { id: 'f2e', checked: 5,  total: 5  },
-  { id: 'f3',  checked: 0,  total: 6  },
-  { id: 'f4',  checked: 0,  total: 5  },
-  { id: 'f5',  checked: 0,  total: 12 },
+  { id: 'f2f', checked: 11, total: 11 },
+  { id: 'f3',  checked: 6,  total: 6  },
+  { id: 'f4',  checked: 5,  total: 5  },
+  { id: 'f5',  checked: 6,  total: 12 },
   { id: 'f9',  checked: 0,  total: 10 },
 ];
 
