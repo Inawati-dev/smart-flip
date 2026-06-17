@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>N-Gain Calculator SDL — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="supabase.js" onerror="console.warn('supabase.js not found — demo mode')"></script>
+<script src="modules-data.js" onerror="console.warn('modules-data.js not found')"></script>
+<script src="data-layer.js" onerror="console.warn('data-layer.js not found')"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F2E9;
+  --ivory:#FFFDF8;
+  --sage:#8FA287;
+  --terra:#D4A373;
+  --terra-d:#B8855A;
+  --brown:#3E362E;
+  --brown2:#6B5D4F;
+  --brown3:#9B8B7A;
+  --border:rgba(62,54,46,.10);
+}
+html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--brown)}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--brown);
+  display:flex;align-items:center;gap:.75rem;
+  padding:0 1.5rem;height:54px;
+}
+.tb-back{
+  display:flex;align-items:center;gap:.4rem;
+  color:rgba(255,255,255,.65);font-size:.82rem;font-weight:500;
+  text-decoration:none;border:none;background:none;cursor:pointer;
+  padding:.35rem .6rem;border-radius:6px;transition:all .18s;
+  white-space:nowrap;
+}
+.tb-back:hover{background:rgba(255,255,255,.1);color:#fff}
+.tb-back svg{width:15px;height:15px;flex-shrink:0}
+.tb-divider{width:1px;height:22px;background:rgba(255,255,255,.12)}
+.tb-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--terra);font-weight:600}
+.tb-spacer{flex:1}
+.tb-badge{
+  font-size:.65rem;font-weight:600;letter-spacing:.06em;
+  background:rgba(212,163,115,.18);color:var(--terra);
+  border:1px solid rgba(212,163,115,.28);border-radius:100px;
+  padding:.2rem .65rem;white-space:nowrap;
+}
+
+/* ── MAIN WRAPPER ── */
+.page-wrap{max-width:900px;margin:0 auto;padding:2rem 1.25rem 4rem}
+
+/* ── PAGE HEADER ── */
+.page-header{margin-bottom:2rem;padding-bottom:1.25rem;border-bottom:1px solid var(--border)}
+.page-header h1{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--brown);margin-bottom:.35rem}
+.page-header p{font-size:.9rem;color:var(--brown3);line-height:1.5}
+
+/* ── PANEL ── */
+.panel{background:var(--ivory);border:1px solid var(--border);border-radius:12px;padding:1.5rem;margin-bottom:1.5rem}
+.panel-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;color:var(--brown);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.panel-title svg{width:18px;height:18px;color:var(--terra);flex-shrink:0}
+
+/* ── CONFIG PANEL ── */
+.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:480px){.config-grid{grid-template-columns:1fr}}
+.field-group{display:flex;flex-direction:column;gap:.4rem}
+.field-group label{font-size:.8rem;font-weight:600;color:var(--brown2);letter-spacing:.02em}
+.field-group input{
+  height:42px;padding:0 .8rem;border:1.5px solid var(--border);
+  border-radius:8px;background:#fff;font-family:'DM Sans',sans-serif;
+  font-size:1rem;color:var(--brown);outline:none;transition:border-color .18s;
+}
+.field-group input:focus{border-color:var(--terra)}
+.field-hint{font-size:.73rem;color:var(--brown3);margin-top:.15rem}
+
+/* ── TABLE PANEL ── */
+.table-toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.75rem;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  border:none;border-radius:8px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-weight:600;
+  transition:all .18s;white-space:nowrap;min-height:40px;padding:0 1rem;font-size:.83rem;
+}
+.btn-terra{background:var(--terra);color:#fff}
+.btn-terra:hover{background:var(--terra-d)}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--brown2)}
+.btn-outline:hover{border-color:var(--terra);color:var(--terra)}
+.btn-sm{padding:0 .7rem;min-height:36px;font-size:.78rem}
+.btn svg{width:15px;height:15px;flex-shrink:0}
+
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px;border:1px solid var(--border)}
+#ngainTable{width:100%;border-collapse:collapse;min-width:620px}
+#ngainTable thead{background:var(--cream)}
+#ngainTable th{
+  padding:.65rem .8rem;text-align:left;font-size:.75rem;font-weight:600;
+  color:var(--brown2);letter-spacing:.04em;text-transform:uppercase;
+  border-bottom:1px solid var(--border);white-space:nowrap;
+}
+#ngainTable td{
+  padding:.45rem .6rem;border-bottom:1px solid rgba(62,54,46,.06);
+  font-size:.85rem;color:var(--brown);vertical-align:middle;
+}
+#ngainTable tbody tr:last-child td{border-bottom:none}
+#ngainTable tbody tr:hover{background:rgba(212,163,115,.04)}
+
+.td-no{width:40px;text-align:center;color:var(--brown3);font-size:.78rem}
+.inp-nama,.inp-pre,.inp-post{
+  height:36px;padding:0 .5rem;border:1.5px solid var(--border);
+  border-radius:6px;background:#fff;font-family:'DM Sans',sans-serif;
+  font-size:16px;color:var(--brown);outline:none;width:100%;transition:border-color .18s;
+}
+.inp-nama{min-width:140px}
+.inp-pre,.inp-post{min-width:70px;text-align:center}
+.inp-nama:focus,.inp-pre:focus,.inp-post:focus{border-color:var(--terra)}
+.td-ngain{text-align:center;font-weight:600;color:var(--brown2);font-variant-numeric:tabular-nums;min-width:70px}
+.td-kat{text-align:center;font-size:.8rem;min-width:70px}
+
+.kat-tinggi{color:var(--sage);font-weight:600}
+.kat-sedang{color:var(--terra);font-weight:600}
+.kat-rendah{color:#c0392b;font-weight:600}
+
+.btn-del{
+  width:32px;height:32px;border-radius:6px;border:1.5px solid rgba(192,57,43,.2);
+  background:rgba(192,57,43,.06);color:#c0392b;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;margin:auto;
+  transition:all .18s;flex-shrink:0;min-height:44px;min-width:44px;
+  font-size:1.1rem;font-weight:700;line-height:1;
+}
+.btn-del:hover{background:rgba(192,57,43,.15);border-color:rgba(192,57,43,.4)}
+
+/* ── ACTION ROW ── */
+.action-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem}
+
+/* ── HASIL PANEL ── */
+#hasilPanel{display:none}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+@media(max-width:600px){.stat-grid{grid-template-columns:1fr}}
+.stat-card{
+  background:#fff;border:1px solid var(--border);border-radius:10px;
+  padding:1rem;text-align:center;position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+}
+.stat-card.tinggi::before{background:var(--sage)}
+.stat-card.sedang::before{background:var(--terra)}
+.stat-card.rendah::before{background:#c0392b}
+.stat-label{font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--brown3);margin-bottom:.4rem}
+.stat-val{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700}
+.stat-card.tinggi .stat-val{color:var(--sage)}
+.stat-card.sedang .stat-val{color:var(--terra)}
+.stat-card.rendah .stat-val{color:#c0392b}
+.stat-sub{font-size:.72rem;color:var(--brown3);margin-top:.2rem}
+
+.avg-wrap{
+  background:linear-gradient(135deg,rgba(212,163,115,.12),rgba(143,162,135,.12));
+  border:1px solid var(--border);border-radius:10px;
+  padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1.25rem;
+  margin-bottom:1.25rem;flex-wrap:wrap;
+}
+.avg-val-big{font-family:'Playfair Display',serif;font-size:2.8rem;font-weight:700;color:var(--terra-d);line-height:1}
+.avg-info{flex:1;min-width:160px}
+.avg-info strong{font-size:1rem;font-weight:600;color:var(--brown);display:block;margin-bottom:.2rem}
+.avg-info span{font-size:.83rem;color:var(--brown2)}
+.avg-kat-badge{
+  font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:.3rem .85rem;border-radius:100px;
+}
+.kat-badge-tinggi{background:rgba(143,162,135,.2);color:#5a7a51}
+.kat-badge-sedang{background:rgba(212,163,115,.2);color:var(--terra-d)}
+.kat-badge-rendah{background:rgba(192,57,43,.1);color:#c0392b}
+
+/* ── BAR CHART ── */
+.chart-title{font-size:.8rem;font-weight:600;color:var(--brown2);margin-bottom:.75rem;letter-spacing:.02em}
+.bar-wrap{display:flex;flex-direction:column;gap:.6rem}
+.bar-row{display:flex;align-items:center;gap:.75rem}
+.bar-label{font-size:.78rem;color:var(--brown2);width:50px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:22px;background:rgba(62,54,46,.06);border-radius:100px;overflow:hidden;position:relative}
+.bar-fill{height:100%;border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1);min-width:2px}
+.bar-fill.tinggi{background:var(--sage)}
+.bar-fill.sedang{background:var(--terra)}
+.bar-fill.rendah{background:#c0392b}
+.bar-pct{font-size:.75rem;color:var(--brown3);width:36px;flex-shrink:0;font-variant-numeric:tabular-nums}
+
+/* ── INTERPRETASI ── */
+.interpretasi{background:rgba(143,162,135,.08);border-left:3px solid var(--sage);border-radius:0 8px 8px 0;padding:1rem 1.25rem}
+.interpretasi h4{font-size:.85rem;font-weight:600;color:var(--brown);margin-bottom:.5rem}
+.interpretasi p{font-size:.83rem;color:var(--brown2);line-height:1.6;margin-bottom:.5rem}
+.interpretasi p:last-child{margin-bottom:0}
+#interpText{font-size:.88rem;color:var(--brown);line-height:1.7;padding:.75rem 1rem;background:#fff;border-radius:8px;border:1px solid var(--border);margin-top:.75rem}
+
+/* ── EXPORT ROW ── */
+.export-row{display:flex;align-items:center;gap:.75rem;margin-top:1rem;flex-wrap:wrap}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .topbar{padding:0 1rem}
+  .page-wrap{padding:1.25rem .85rem 3rem}
+  .page-header h1{font-size:1.35rem}
+  .panel{padding:1.1rem}
+  .avg-val-big{font-size:2.2rem}
+  .tb-title{font-size:.9rem}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="dashboard-dos.html" class="tb-back">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+    Dashboard Dosen
+  </a>
+  <div class="tb-divider"></div>
+  <span class="tb-title">N-Gain Calculator SDL</span>
+  <div class="tb-spacer"></div>
+  <span class="tb-badge">DOSEN</span>
+</div>
+
+<div class="page-wrap">
+
+  <!-- PAGE HEADER -->
+  <div class="page-header">
+    <h1>N-Gain Calculator SDL</h1>
+    <p>Analisis Peningkatan Self-Directed Learning — hitung dan interpretasi N-Gain dari data pre-test dan post-test mahasiswa.</p>
+  </div>
+
+  <!-- CONFIG PANEL -->
+  <div class="panel">
+    <div class="panel-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+      Konfigurasi
+    </div>
+    <div class="config-grid">
+      <div class="field-group">
+        <label for="skorMax">Skor Maksimum</label>
+        <input type="number" id="skorMax" value="100" min="1" max="1000" step="1">
+        <span class="field-hint">Nilai tertinggi yang bisa diraih (biasanya 100)</span>
+      </div>
+      <div class="field-group">
+        <label for="jmlMhs">Jumlah Mahasiswa</label>
+        <input type="number" id="jmlMhs" value="30" min="1" max="500" step="1">
+        <span class="field-hint">Hanya referensi; baris tabel dikelola manual</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INPUT TABLE -->
+  <div class="panel">
+    <div class="panel-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Data Pre-Test &amp; Post-Test
+    </div>
+
+    <div class="table-toolbar">
+      <span id="rowCount" style="font-size:.82rem;color:var(--brown3)">5 mahasiswa</span>
+      <button class="btn btn-outline btn-sm" onclick="addRow()">
+        <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        Tambah Baris
+      </button>
+    </div>
+
+    <div class="table-wrap">
+      <table id="ngainTable">
+        <thead>
+          <tr>
+            <th class="td-no">No</th>
+            <th>Nama Mahasiswa</th>
+            <th style="text-align:center">Pre-Test</th>
+            <th style="text-align:center">Post-Test</th>
+            <th style="text-align:center">N-Gain</th>
+            <th style="text-align:center">Kategori</th>
+            <th style="text-align:center">Hapus</th>
+          </tr>
+        </thead>
+        <tbody id="tBody"></tbody>
+      </table>
+    </div>
+
+    <div class="action-row">
+      <button class="btn btn-terra" onclick="hitungSemua()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 7H6a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-3M16 5l2 2 4-4M15 3h6v6"/></svg>
+        Hitung N-Gain
+      </button>
+      <button class="btn btn-outline" onclick="resetTable()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 4v5h.582M20 20v-5h-.581M5.58 9A8 8 0 0119.418 15M4.582 9A8 8 0 0118.419 15"/></svg>
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- HASIL PANEL -->
+  <div class="panel" id="hasilPanel">
+    <div class="panel-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      Hasil Analisis N-Gain
+    </div>
+
+    <!-- Average -->
+    <div class="avg-wrap">
+      <div class="avg-val-big" id="avgVal">—</div>
+      <div class="avg-info">
+        <strong>Rata-rata N-Gain Kelas</strong>
+        <span>Indeks peningkatan SDL seluruh mahasiswa</span>
+      </div>
+      <span class="avg-kat-badge" id="avgKatBadge"></span>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="stat-grid">
+      <div class="stat-card tinggi">
+        <div class="stat-label">Tinggi</div>
+        <div class="stat-val" id="statTinggi">0</div>
+        <div class="stat-sub">N-Gain &gt; 0.7</div>
+      </div>
+      <div class="stat-card sedang">
+        <div class="stat-label">Sedang</div>
+        <div class="stat-val" id="statSedang">0</div>
+        <div class="stat-sub">0.3 ≤ N-Gain ≤ 0.7</div>
+      </div>
+      <div class="stat-card rendah">
+        <div class="stat-label">Rendah</div>
+        <div class="stat-val" id="statRendah">0</div>
+        <div class="stat-sub">N-Gain &lt; 0.3</div>
+      </div>
+    </div>
+
+    <!-- Bar chart -->
+    <div style="margin-bottom:1.25rem">
+      <div class="chart-title">Distribusi Kategori N-Gain</div>
+      <div class="bar-wrap">
+        <div class="bar-row">
+          <div class="bar-label">Tinggi</div>
+          <div class="bar-track"><div class="bar-fill tinggi" id="barTinggi" style="width:0%"></div></div>
+          <div class="bar-pct" id="pctTinggi">0%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Sedang</div>
+          <div class="bar-track"><div class="bar-fill sedang" id="barSedang" style="width:0%"></div></div>
+          <div class="bar-pct" id="pctSedang">0%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-label">Rendah</div>
+          <div class="bar-track"><div class="bar-fill rendah" id="barRendah" style="width:0%"></div></div>
+          <div class="bar-pct" id="pctRendah">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export -->
+    <div class="export-row">
+      <button class="btn btn-outline" onclick="exportCSV()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+        Export CSV
+      </button>
+      <span style="font-size:.78rem;color:var(--brown3)">Unduh hasil sebagai file .csv untuk laporan penelitian</span>
+    </div>
+  </div>
+
+  <!-- INTERPRETASI -->
+  <div class="panel">
+    <div class="panel-title">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      Interpretasi N-Gain
+    </div>
+    <div class="interpretasi">
+      <h4>Tentang N-Gain (Normalized Gain)</h4>
+      <p>N-Gain (g) adalah indeks yang mengukur seberapa besar peningkatan belajar dari pre-test ke post-test, dinormalisasi terhadap kemungkinan peningkatan maksimal. Rumus: <strong>g = (Post − Pre) / (Max − Pre)</strong>.</p>
+      <p>Kategori interpretasi menurut Hake (1998): <strong style="color:#5a7a51">Tinggi (g &gt; 0.7)</strong> — pembelajaran sangat efektif; <strong style="color:var(--terra-d)">Sedang (0.3 ≤ g ≤ 0.7)</strong> — cukup efektif; <strong style="color:#c0392b">Rendah (g &lt; 0.3)</strong> — perlu perbaikan strategi pembelajaran.</p>
+    </div>
+    <div id="interpText" style="display:none"></div>
+  </div>
+
+</div>
+
+<script>
+/* ── AUTH GUARD (dosen only) ── */
+(async () => {
+  try {
+    if (typeof sb === 'undefined') return; // demo mode
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+    // Optional: check role
+    // const { data: profile } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+    // if (profile?.role !== 'dosen') { window.location.replace('dashboard-mhs.html'); return; }
+  } catch(e) { console.error('Auth error:', e); }
+})();
+
+/* ── DUMMY DATA ── */
+const dummyData = [
+  { nama: 'Ahmad Rizki',    pre: 55, post: 80 },
+  { nama: 'Budi Santoso',   pre: 60, post: 85 },
+  { nama: 'Citra Dewi',     pre: 45, post: 75 },
+  { nama: 'Diana Putri',    pre: 70, post: 90 },
+  { nama: 'Eko Prasetyo',   pre: 50, post: 70 },
+];
+
+/* ── HELPER FUNCTIONS ── */
+function calcNGain(pre, post, max) {
+  if (pre >= max) return 0;
+  const ng = (post - pre) / (max - pre);
+  return Math.max(-1, Math.min(1, ng)); // clamp
+}
+
+function kategori(ng) {
+  if (ng > 0.7) return 'Tinggi';
+  if (ng >= 0.3) return 'Sedang';
+  return 'Rendah';
+}
+
+function updateRowNumbers() {
+  document.querySelectorAll('#tBody tr').forEach((tr, i) => {
+    tr.querySelector('.td-no').textContent = i + 1;
+  });
+  const n = document.querySelectorAll('#tBody tr').length;
+  document.getElementById('rowCount').textContent = n + ' mahasiswa';
+}
+
+/* ── CREATE ROW ── */
+function createRow(data = {}) {
+  const tr = document.createElement('tr');
+  const { nama = '', pre = '', post = '' } = data;
+  tr.innerHTML = `
+    <td class="td-no"></td>
+    <td><input type="text" class="inp-nama" placeholder="Nama mahasiswa" value="${escHtml(String(nama))}" autocomplete="off"></td>
+    <td><input type="number" class="inp-pre" placeholder="0" value="${pre}" min="0" max="1000" step="0.5"></td>
+    <td><input type="number" class="inp-post" placeholder="0" value="${post}" min="0" max="1000" step="0.5"></td>
+    <td class="td-ngain">—</td>
+    <td class="td-kat">—</td>
+    <td><button class="btn-del" title="Hapus baris" onclick="deleteRow(this)">×</button></td>
+  `;
+  return tr;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function addRow(data) {
+  const tbody = document.getElementById('tBody');
+  tbody.appendChild(createRow(data));
+  updateRowNumbers();
+}
+
+function deleteRow(btn) {
+  const tr = btn.closest('tr');
+  tr.remove();
+  updateRowNumbers();
+  // hide hasil if no rows
+  if (!document.querySelectorAll('#tBody tr').length) {
+    document.getElementById('hasilPanel').style.display = 'none';
+  }
+}
+
+function resetTable() {
+  document.getElementById('tBody').innerHTML = '';
+  dummyData.forEach(d => addRow(d));
+  document.getElementById('hasilPanel').style.display = 'none';
+  document.getElementById('interpText').style.display = 'none';
+}
+
+/* ── HITUNG ── */
+function hitungSemua() {
+  const max = parseFloat(document.getElementById('skorMax').value) || 100;
+  const rows = document.querySelectorAll('#tBody tr');
+  if (!rows.length) { alert('Tambahkan data mahasiswa terlebih dahulu.'); return; }
+
+  let values = [], tinggi = 0, sedang = 0, rendah = 0;
+  let hasError = false;
+
+  rows.forEach(row => {
+    const pre  = parseFloat(row.querySelector('.inp-pre').value)  || 0;
+    const post = parseFloat(row.querySelector('.inp-post').value) || 0;
+
+    // Validation highlight
+    row.querySelector('.inp-pre').style.borderColor  = pre  > max ? '#c0392b' : '';
+    row.querySelector('.inp-post').style.borderColor = post > max ? '#c0392b' : '';
+    if (pre > max || post > max) hasError = true;
+
+    const ng  = calcNGain(pre, post, max);
+    const kat = kategori(ng);
+
+    row.querySelector('.td-ngain').textContent = ng.toFixed(3);
+    const tdKat = row.querySelector('.td-kat');
+    tdKat.textContent = kat;
+    tdKat.className = 'td-kat kat-' + kat.toLowerCase();
+
+    values.push(ng);
+    if (kat === 'Tinggi') tinggi++;
+    else if (kat === 'Sedang') sedang++;
+    else rendah++;
+  });
+
+  if (hasError) {
+    alert('Perhatian: beberapa skor melebihi skor maksimum yang dikonfigurasi. Harap periksa data.');
+  }
+
+  const avg = values.reduce((a, b) => a + b, 0) / values.length;
+  showHasil(avg, tinggi, sedang, rendah, values.length);
+}
+
+/* ── SHOW HASIL ── */
+function showHasil(avg, tinggi, sedang, rendah, total) {
+  const panel = document.getElementById('hasilPanel');
+  panel.style.display = 'block';
+  panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Average
+  document.getElementById('avgVal').textContent = avg.toFixed(3);
+  const katAvg = kategori(avg);
+  const badge  = document.getElementById('avgKatBadge');
+  badge.textContent = 'Kategori: ' + katAvg;
+  badge.className = 'avg-kat-badge kat-badge-' + katAvg.toLowerCase();
+
+  // Stat cards
+  document.getElementById('statTinggi').textContent = tinggi;
+  document.getElementById('statSedang').textContent = sedang;
+  document.getElementById('statRendah').textContent = rendah;
+
+  // Bar chart
+  const pctT = total > 0 ? ((tinggi / total) * 100).toFixed(1) : 0;
+  const pctS = total > 0 ? ((sedang / total) * 100).toFixed(1) : 0;
+  const pctR = total > 0 ? ((rendah / total) * 100).toFixed(1) : 0;
+
+  document.getElementById('barTinggi').style.width  = pctT + '%';
+  document.getElementById('barSedang').style.width  = pctS + '%';
+  document.getElementById('barRendah').style.width  = pctR + '%';
+  document.getElementById('pctTinggi').textContent  = pctT + '%';
+  document.getElementById('pctSedang').textContent  = pctS + '%';
+  document.getElementById('pctRendah').textContent  = pctR + '%';
+
+  // Interpretasi dinamis
+  buildInterpretasi(avg, katAvg, tinggi, sedang, rendah, total);
+}
+
+/* ── INTERPRETASI DINAMIS ── */
+function buildInterpretasi(avg, katAvg, tinggi, sedang, rendah, total) {
+  const el = document.getElementById('interpText');
+  el.style.display = 'block';
+
+  const pctTinggi = ((tinggi / total) * 100).toFixed(1);
+  const pctSedang = ((sedang / total) * 100).toFixed(1);
+  const pctRendah = ((rendah / total) * 100).toFixed(1);
+
+  let kesimpulan = '';
+  if (katAvg === 'Tinggi') {
+    kesimpulan = `Pembelajaran SDL dengan menggunakan SMART-FLIP 5.0 menunjukkan efektivitas yang <strong>sangat baik</strong> dalam meningkatkan kemampuan mahasiswa. Rata-rata N-Gain kelas sebesar <strong>${avg.toFixed(3)}</strong> berada pada kategori <em>Tinggi</em>, mengindikasikan bahwa media pembelajaran digital berbasis flipbook secara signifikan mampu meningkatkan kompetensi mahasiswa pada mata kuliah Metode Penelitian dan Pengembangan.`;
+  } else if (katAvg === 'Sedang') {
+    kesimpulan = `Pembelajaran SDL dengan menggunakan SMART-FLIP 5.0 menunjukkan efektivitas yang <strong>cukup baik</strong> dalam meningkatkan kemampuan mahasiswa. Rata-rata N-Gain kelas sebesar <strong>${avg.toFixed(3)}</strong> berada pada kategori <em>Sedang</em>. Diperlukan optimalisasi lebih lanjut pada komponen modul yang memiliki N-Gain rendah agar efektivitas pembelajaran dapat ditingkatkan.`;
+  } else {
+    kesimpulan = `Pembelajaran SDL dengan menggunakan SMART-FLIP 5.0 menunjukkan efektivitas yang <strong>perlu ditingkatkan</strong>. Rata-rata N-Gain kelas sebesar <strong>${avg.toFixed(3)}</strong> berada pada kategori <em>Rendah</em>. Disarankan untuk melakukan revisi mendalam terhadap konten modul, strategi scaffolding, dan mekanisme umpan balik kuis formatif.`;
+  }
+
+  el.innerHTML = `
+    <p style="margin-bottom:.6rem">${kesimpulan}</p>
+    <p>Distribusi kategori: <strong style="color:#5a7a51">${tinggi} mahasiswa (${pctTinggi}%)</strong> kategori Tinggi,
+    <strong style="color:var(--terra-d)">${sedang} mahasiswa (${pctSedang}%)</strong> kategori Sedang,
+    dan <strong style="color:#c0392b">${rendah} mahasiswa (${pctRendah}%)</strong> kategori Rendah
+    dari total ${total} responden.</p>
+    <p style="margin-top:.4rem;font-size:.78rem;color:var(--brown3)">Referensi: Hake, R.R. (1998). Interactive-engagement versus traditional methods: A six-thousand-student survey of mechanics test data for introductory physics courses. <em>American Journal of Physics, 66</em>(1), 64–74.</p>
+  `;
+}
+
+/* ── EXPORT CSV ── */
+function exportCSV() {
+  const rows = document.querySelectorAll('#tBody tr');
+  const max  = parseFloat(document.getElementById('skorMax').value) || 100;
+  let csv = 'No,Nama Mahasiswa,Pre-Test,Post-Test,N-Gain,Kategori\n';
+
+  rows.forEach((row, i) => {
+    const nama = (row.querySelector('.inp-nama').value  || '').replace(/"/g, '""');
+    const pre  = row.querySelector('.inp-pre').value  || '';
+    const post = row.querySelector('.inp-post').value || '';
+    const ng   = row.querySelector('.td-ngain').textContent;
+    const kat  = row.querySelector('.td-kat').textContent;
+    csv += `${i + 1},"${nama}",${pre},${post},${ng},${kat}\n`;
+  });
+
+  // Tambah summary
+  csv += `\nRata-rata N-Gain Kelas,${document.getElementById('avgVal').textContent || '—'}\n`;
+  csv += `Kategori Kelas,${document.getElementById('avgKatBadge').textContent.replace('Kategori: ', '') || '—'}\n`;
+  csv += `Tinggi,${document.getElementById('statTinggi').textContent}\n`;
+  csv += `Sedang,${document.getElementById('statSedang').textContent}\n`;
+  csv += `Rendah,${document.getElementById('statRendah').textContent}\n`;
+  csv += `Skor Maksimum,${max}\n`;
+
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `ngain-sdl-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* ── INIT ── */
+(function init() {
+  dummyData.forEach(d => addRow(d));
+})();
+</script>
+</body>
+</html>

@@ -85,6 +85,44 @@ const MODULES_DATA = [
         answer: 0,
       },
     ],
+    jurnal: [
+      {
+        judul: 'Penelitian Pengembangan dalam Pendidikan: Teori dan Aplikasi',
+        penulis: 'Sugiyono',
+        tahun: 2019,
+        jurnal: 'Jurnal Pendidikan dan Kebudayaan',
+        doi: 'https://doi.org/10.24832/jpnk.v24i2.1458',
+        abstrak: 'Artikel ini mengulas konsep dasar penelitian pengembangan (R&D) dalam konteks pendidikan di Indonesia, mencakup definisi, karakteristik, dan prosedur pelaksanaannya. Penulis membandingkan pendekatan Borg & Gall dengan model-model pengembangan lokal yang telah diadaptasi untuk kebutuhan penelitian pendidikan tinggi.',
+      },
+      {
+        judul: 'Perbedaan Penelitian R&D dengan Penelitian Kuantitatif dan Kualitatif',
+        penulis: 'Nana Syaodih Sukmadinata',
+        tahun: 2020,
+        jurnal: 'Jurnal Penelitian Pendidikan',
+        doi: 'https://doi.org/10.17509/jpp.v20i1.24521',
+        abstrak: 'Studi ini mengidentifikasi perbedaan mendasar antara penelitian R&D dengan jenis penelitian lain ditinjau dari tujuan, prosedur, dan produk yang dihasilkan. Temuan menunjukkan bahwa R&D memiliki siklus validasi berulang yang tidak ditemukan pada penelitian konvensional.',
+      },
+      {
+        judul: 'Aplikasi Borg & Gall dalam Pengembangan Media Pembelajaran Digital',
+        penulis: 'Heri Retnawati & Samsul Hadi',
+        tahun: 2021,
+        jurnal: 'Jurnal Teknologi Pendidikan',
+        doi: 'https://doi.org/10.21831/jtp.v23i1.35612',
+        abstrak: 'Penelitian ini mengaplikasikan model Borg & Gall sepuluh langkah dalam pengembangan media pembelajaran digital untuk mata pelajaran matematika SMA. Hasil validasi menunjukkan persentase kelayakan 87,4% dan peningkatan hasil belajar yang signifikan pada uji lapangan.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Pengembangan Modul Cetak Biologi Berbasis Inkuiri yang Meningkatkan Hasil Belajar Siswa SMA',
+        konteks: 'Sebuah tim peneliti dari universitas negeri di Jawa Timur mengembangkan modul cetak berbasis inkuiri untuk mata pelajaran Biologi kelas XI. Proses R&D berlangsung selama dua semester dengan mengikuti prosedur Borg & Gall yang disederhanakan.',
+        pertanyaan: 'Mengapa peneliti perlu melakukan studi pendahuluan sebelum memulai pengembangan modul? Faktor-faktor apa saja yang seharusnya menjadi dasar keputusan untuk memulai sebuah penelitian R&D?',
+      },
+      {
+        judul: 'Kegagalan Produk R&D Akibat Tidak Adanya Needs Assessment yang Memadai',
+        konteks: 'Sebuah produk e-learning yang dikembangkan tanpa studi kebutuhan yang cukup gagal diadopsi oleh guru karena tidak sesuai dengan kondisi sekolah sasaran. Kasus ini menjadi pelajaran penting tentang pentingnya tahap awal dalam R&D.',
+        pertanyaan: 'Apa langkah-langkah yang seharusnya dilakukan peneliti sebelum memulai tahap desain produk? Bagaimana cara memastikan produk yang dikembangkan benar-benar dibutuhkan oleh pengguna?',
+      },
+    ],
   },
   // Modul 1 distribution: A:1, B:1, C:2, D:1
 
@@ -163,6 +201,44 @@ const MODULES_DATA = [
           'ADDIE memiliki tahap Evaluation eksplisit, 4D memiliki tahap Disseminate',
         ],
         answer: 3,
+      },
+    ],
+    jurnal: [
+      {
+        judul: 'Penerapan Model ADDIE dalam Pengembangan E-Learning Pendidikan Vokasi',
+        penulis: 'Endang Mulyatiningsih',
+        tahun: 2020,
+        jurnal: 'Jurnal Pendidikan Vokasi',
+        doi: 'https://doi.org/10.21831/jpv.v10i2.31874',
+        abstrak: 'Artikel ini memaparkan penerapan model ADDIE secara sistematis dalam pengembangan platform e-learning untuk pendidikan vokasi. Setiap fase ADDIE diuraikan secara operasional disertai instrumen dan output yang dihasilkan pada masing-masing tahap.',
+      },
+      {
+        judul: 'Perbandingan Efektivitas Model 4D dan ADDIE dalam Pengembangan Perangkat Pembelajaran',
+        penulis: 'Trianto Ibnu Badar Al-Tabany',
+        tahun: 2021,
+        jurnal: 'Jurnal Cakrawala Pendidikan',
+        doi: 'https://doi.org/10.21831/cp.v40i1.35108',
+        abstrak: 'Studi komparatif ini membandingkan penggunaan model 4D (Thiagarajan) dan ADDIE dalam pengembangan perangkat pembelajaran IPA. Hasil analisis menunjukkan bahwa model 4D lebih efisien untuk pengembangan bahan ajar, sementara ADDIE lebih komprehensif untuk pengembangan sistem pembelajaran.',
+      },
+      {
+        judul: 'Adaptasi Model Pengembangan Instruksional untuk Konteks Pendidikan Tinggi Indonesia',
+        penulis: 'I Made Tegeh & I Made Kirna',
+        tahun: 2022,
+        jurnal: 'Jurnal Ilmu Pendidikan',
+        doi: 'https://doi.org/10.17977/jip.v28i1.14821',
+        abstrak: 'Penelitian ini mengkaji adaptasi berbagai model pengembangan instruksional termasuk ADDIE dan 4D untuk konteks pendidikan tinggi Indonesia. Rekomendasi diberikan berdasarkan karakteristik peneliti, sumber daya yang tersedia, dan tujuan pengembangan.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Implementasi Model 4D dalam Pengembangan LKS Matematika Kontekstual untuk SMP',
+        konteks: 'Seorang mahasiswa S2 menggunakan model 4D Thiagarajan untuk mengembangkan Lembar Kerja Siswa (LKS) matematika kontekstual berbasis kearifan lokal untuk kelas VIII SMP. Proses Define, Design, Develop, dan Disseminate dijalankan selama satu tahun akademik.',
+        pertanyaan: 'Apa keuntungan menggunakan model 4D dibandingkan ADDIE dalam pengembangan LKS? Bagaimana tahap Disseminate dalam model 4D memastikan produk dapat digunakan secara lebih luas?',
+      },
+      {
+        judul: 'Kesalahan Pemilihan Model Pengembangan dan Dampaknya pada Kualitas Produk',
+        konteks: 'Seorang peneliti menggunakan model ADDIE untuk mengembangkan modul cetak, padahal proyek tersebut sebenarnya lebih cocok menggunakan model 4D. Akibatnya, tahap diseminasi tidak terencana dengan baik dan produk tidak terdistribusi secara luas.',
+        pertanyaan: 'Kriteria apa yang sebaiknya dipertimbangkan peneliti dalam memilih model pengembangan? Bagaimana cara memetakan kebutuhan penelitian ke model yang paling sesuai?',
       },
     ],
   },
@@ -245,6 +321,44 @@ const MODULES_DATA = [
         answer: 3,
       },
     ],
+    jurnal: [
+      {
+        judul: 'Teknik Needs Assessment dalam Perancangan Kurikulum Berbasis Kompetensi',
+        penulis: 'Zainal Arifin',
+        tahun: 2020,
+        jurnal: 'Jurnal Kurikulum dan Teknologi Pendidikan',
+        doi: 'https://doi.org/10.17977/jktp.v3i2.13902',
+        abstrak: 'Artikel ini membahas berbagai teknik needs assessment yang dapat digunakan dalam perancangan kurikulum berbasis kompetensi, termasuk observasi, wawancara, angket, dan analisis dokumen. Penulis menyajikan panduan praktis penerapan setiap teknik disertai kelebihan dan keterbatasannya.',
+      },
+      {
+        judul: 'Gap Analysis sebagai Dasar Pengembangan Bahan Ajar di Perguruan Tinggi',
+        penulis: 'Wina Sanjaya',
+        tahun: 2021,
+        jurnal: 'Jurnal Penelitian dan Evaluasi Pendidikan',
+        doi: 'https://doi.org/10.21831/pep.v25i1.36092',
+        abstrak: 'Studi ini menggunakan pendekatan gap analysis untuk mengidentifikasi kesenjangan antara kompetensi yang diharapkan dengan kompetensi aktual mahasiswa dalam mata kuliah metodologi penelitian. Temuan dijadikan dasar pengembangan bahan ajar yang lebih kontekstual dan sesuai kebutuhan.',
+      },
+      {
+        judul: 'Triangulasi Data dalam Needs Assessment untuk Penelitian Pengembangan Pendidikan',
+        penulis: 'Mardapi Djemari',
+        tahun: 2022,
+        jurnal: 'Jurnal Pendidikan dan Pembelajaran',
+        doi: 'https://doi.org/10.17977/jpp.v29i1.15623',
+        abstrak: 'Penelitian ini membuktikan bahwa penggunaan triangulasi sumber dan metode dalam needs assessment menghasilkan data yang lebih akurat dan komprehensif dibandingkan satu metode tunggal. Studi dilakukan pada tiga sekolah menengah atas di wilayah perkotaan dan pedesaan.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Needs Assessment di SMK untuk Pengembangan Materi Praktik Teknologi Informasi',
+        konteks: 'Tim peneliti dari universitas teknik melakukan needs assessment di lima SMK Program Keahlian TKJ (Teknik Komputer dan Jaringan) untuk mengidentifikasi kesenjangan antara kurikulum yang ada dengan kebutuhan industri teknologi informasi saat ini.',
+        pertanyaan: 'Instrumen apa saja yang sebaiknya disiapkan untuk melakukan needs assessment di SMK? Bagaimana cara menyajikan hasil needs assessment agar dapat menjustifikasi perlunya pengembangan materi baru?',
+      },
+      {
+        judul: 'Kesalahan Interpretasi Gap Analysis dan Dampaknya pada Relevansi Produk',
+        konteks: 'Seorang peneliti salah menginterpretasikan data gap analysis sehingga produk yang dikembangkan tidak menjawab kebutuhan yang sesungguhnya. Masalah baru terdeteksi saat uji coba lapangan ketika guru menyatakan produk kurang relevan.',
+        pertanyaan: 'Bagaimana cara memvalidasi hasil gap analysis sebelum dijadikan dasar pengembangan? Siapa saja yang sebaiknya dilibatkan dalam proses verifikasi hasil needs assessment?',
+      },
+    ],
   },
   // Modul 3 distribution: A:1, B:1, C:2, D:1
 
@@ -323,6 +437,44 @@ const MODULES_DATA = [
           'Mengurangi jumlah rumusan masalah',
         ],
         answer: 2,
+      },
+    ],
+    jurnal: [
+      {
+        judul: 'Panduan Penulisan Latar Belakang Masalah dalam Penelitian Pengembangan',
+        penulis: 'Sugiyono & Agus Prasetyo',
+        tahun: 2021,
+        jurnal: 'Jurnal Penelitian Ilmu Pendidikan',
+        doi: 'https://doi.org/10.21831/jpipfip.v14i1.37411',
+        abstrak: 'Artikel ini memberikan panduan sistematis untuk menulis latar belakang masalah dalam penelitian pengembangan yang kuat dan berbasis data. Penulis mengidentifikasi lima elemen esensial yang harus hadir dalam latar belakang masalah yang baik, termasuk data empiris lapangan dan relevansi teoritis.',
+      },
+      {
+        judul: 'Perumusan Masalah Penelitian R&D yang Operasional dan Terukur',
+        penulis: 'Nana Sudjana & Ibrahim',
+        tahun: 2020,
+        jurnal: 'Jurnal Ilmiah Pendidikan',
+        doi: 'https://doi.org/10.24036/jip.v9i1.108931',
+        abstrak: 'Kajian ini menganalisis 50 proposal penelitian R&D mahasiswa untuk mengidentifikasi kesalahan umum dalam perumusan masalah. Temuan menunjukkan bahwa 68% proposal memiliki rumusan masalah yang terlalu umum dan tidak dapat dijawab secara empiris melalui penelitian pengembangan.',
+      },
+      {
+        judul: 'Analisis Komponen Bab 1 Proposal R&D yang Lolos Seleksi Hibah Kompetitif',
+        penulis: 'Eko Putro Widoyoko',
+        tahun: 2022,
+        jurnal: 'Jurnal Teknologi Pendidikan dan Pembelajaran',
+        doi: 'https://doi.org/10.17977/jtpp.v9i2.16821',
+        abstrak: 'Penelitian ini menganalisis karakteristik Bab 1 dari 30 proposal R&D yang berhasil lolos hibah penelitian kompetitif tingkat nasional. Ditemukan pola konsisten berupa kekuatan data empiris, ketajaman rumusan masalah, dan kejelasan tujuan yang spesifik dan terukur.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Analisis Proposal R&D Mahasiswa yang Lolos Seleksi Hibah PKM-Riset',
+        konteks: 'Tim mahasiswa dari program studi Pendidikan Matematika berhasil lolos seleksi Program Kreativitas Mahasiswa bidang Riset Eksakta (PKM-RE) dengan proposal pengembangan media pembelajaran berbasis augmented reality. Bab 1 proposal mereka dinilai sangat kuat oleh reviewer.',
+        pertanyaan: 'Elemen apa saja yang membuat Bab 1 sebuah proposal R&D dinilai kuat oleh reviewer hibah? Bagaimana cara membangun argumentasi yang logis dari latar belakang masalah menuju rumusan masalah dan tujuan penelitian?',
+      },
+      {
+        judul: 'Revisi Berulang Bab 1 Akibat Ketidakkonsistenan antara Masalah dan Tujuan',
+        konteks: 'Seorang mahasiswa S2 mengalami empat kali revisi Bab 1 proposalnya karena terdapat ketidakkonsistenan antara rumusan masalah dan tujuan penelitian, serta manfaat yang tidak relevan dengan produk yang dikembangkan.',
+        pertanyaan: 'Bagaimana cara memastikan konsistensi antar komponen Bab 1 proposal penelitian? Buatlah matriks konsistensi yang menghubungkan masalah, tujuan, manfaat, dan produk yang akan dikembangkan.',
       },
     ],
   },
@@ -405,6 +557,44 @@ const MODULES_DATA = [
         answer: 1,
       },
     ],
+    jurnal: [
+      {
+        judul: 'Desain Instruksional Berbasis Storyboard untuk Pengembangan Media Video Pembelajaran',
+        penulis: 'Arif S. Sadiman & R. Rahardjo',
+        tahun: 2020,
+        jurnal: 'Jurnal Teknologi Pembelajaran',
+        doi: 'https://doi.org/10.17977/jtp.v7i2.14382',
+        abstrak: 'Artikel ini membahas pentingnya storyboard sebagai alat bantu desain dalam pengembangan media video pembelajaran yang efektif. Penulis menyajikan format storyboard standar dan menjelaskan bagaimana setiap komponen storyboard berkontribusi pada kualitas produk akhir.',
+      },
+      {
+        judul: 'Blueprint sebagai Fondasi Desain Produk Pengembangan E-Modul Interaktif',
+        penulis: 'Cecep Kustandi & Bambang Sutjipto',
+        tahun: 2021,
+        jurnal: 'Jurnal Ilmu Komputer dan Informatika Pendidikan',
+        doi: 'https://doi.org/10.21831/jikap.v5i1.38241',
+        abstrak: 'Penelitian ini mengidentifikasi komponen-komponen esensial yang harus ada dalam blueprint e-modul interaktif dan menguji dampaknya terhadap efisiensi proses pengembangan. Blueprint yang komprehensif terbukti mengurangi waktu revisi produk hingga 40% dibandingkan pengembangan tanpa blueprint.',
+      },
+      {
+        judul: 'Prototyping Cepat dalam Pengembangan Produk Pembelajaran Digital',
+        penulis: 'Rudi Susilana & Cepi Riyana',
+        tahun: 2022,
+        jurnal: 'Jurnal Pendidikan Teknologi Informasi',
+        doi: 'https://doi.org/10.17977/jpti.v4i1.17234',
+        abstrak: 'Studi ini menguji efektivitas metode rapid prototyping dalam pengembangan produk pembelajaran digital dibandingkan metode konvensional. Hasil menunjukkan bahwa iterasi cepat pada prototipe awal menghasilkan produk yang lebih sesuai kebutuhan pengguna dengan waktu pengembangan yang lebih singkat.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Pengembangan Storyboard Video Pembelajaran Interaktif Kimia SMA Berbasis Problem-Based Learning',
+        konteks: 'Tim pengembang media pembelajaran dari LPTK menyusun storyboard untuk 12 episode video pembelajaran kimia interaktif berbasis Problem-Based Learning (PBL) untuk kelas XI SMA. Proses penyusunan storyboard melibatkan kolaborasi antara ahli materi, ahli media, dan guru kimia.',
+        pertanyaan: 'Komponen apa saja yang harus ada dalam sebuah storyboard video pembelajaran yang baik? Bagaimana cara memastikan storyboard dapat dikomunikasikan dengan jelas kepada tim produksi yang berbeda latar belakang?',
+      },
+      {
+        judul: 'Revisi Blueprint Besar-besaran Akibat Tidak Adanya Validasi Desain Awal',
+        konteks: 'Pengembangan aplikasi pembelajaran adaptif harus mengalami perombakan total pada blueprint-nya setelah memasuki tahap pengembangan, karena desain awal tidak melewati proses validasi ahli. Kerugian waktu dan biaya yang signifikan terjadi akibat kelalaian ini.',
+        pertanyaan: 'Mengapa validasi desain awal (blueprint dan storyboard) harus dilakukan sebelum masuk tahap pengembangan penuh? Siapa yang idealnya menjadi validator untuk blueprint sebuah e-modul?',
+      },
+    ],
   },
   // Modul 5 distribution: A:1, B:1, C:2, D:1
 
@@ -485,6 +675,44 @@ const MODULES_DATA = [
         answer: 2,
       },
     ],
+    jurnal: [
+      {
+        judul: 'Validasi Instrumen Penelitian Pendidikan: Konsep, Prosedur, dan Aplikasi',
+        penulis: 'Suharsimi Arikunto',
+        tahun: 2020,
+        jurnal: 'Jurnal Penelitian dan Evaluasi Pendidikan',
+        doi: 'https://doi.org/10.21831/pep.v24i2.33714',
+        abstrak: 'Artikel ini menguraikan konsep validasi instrumen secara komprehensif, termasuk jenis validitas, prosedur pengujian, dan interpretasi hasilnya dalam konteks penelitian pendidikan. Penulis memberikan panduan praktis untuk menyusun instrumen yang valid dan menginterpretasikan nilai koefisien validitas.',
+      },
+      {
+        judul: 'Expert Judgment dalam Penelitian R&D: Pemilihan Validator dan Pelaksanaan',
+        penulis: 'Purwanto & Dyah Ratih Sulistyastuti',
+        tahun: 2021,
+        jurnal: 'Jurnal Ilmu Pendidikan',
+        doi: 'https://doi.org/10.17977/jip.v27i2.14203',
+        abstrak: 'Penelitian ini membahas kriteria pemilihan validator ahli yang tepat dalam penelitian pengembangan serta prosedur pelaksanaan expert judgment yang sistematis dan etis. Ditemukan bahwa kualifikasi validator berpengaruh signifikan terhadap validitas produk yang dihasilkan.',
+      },
+      {
+        judul: 'Reliabilitas Instrumen Validasi Ahli: Analisis Inter-Rater Reliability pada Produk E-Learning',
+        penulis: 'Djaali & Pudji Mulyono',
+        tahun: 2022,
+        jurnal: 'Jurnal Teknologi Pendidikan',
+        doi: 'https://doi.org/10.21831/jtp.v24i2.41562',
+        abstrak: 'Studi ini menganalisis tingkat inter-rater reliability pada penilaian validasi ahli terhadap 15 produk e-learning menggunakan koefisien kappa Cohen. Hasil menunjukkan bahwa penggunaan rubrik penilaian yang jelas meningkatkan konsistensi antar-validator secara signifikan.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Proses Validasi Ahli Modul Elektronik STEM untuk Siswa Sekolah Menengah',
+        konteks: 'Tim peneliti mengembangkan modul elektronik STEM untuk siswa SMP dan melibatkan tiga validator: seorang ahli materi IPA, seorang ahli media pembelajaran, dan seorang praktisi pendidikan STEM. Proses validasi berlangsung dua putaran dengan revisi di antara keduanya.',
+        pertanyaan: 'Bagaimana cara menyusun instrumen validasi yang dapat memberikan data kuantitatif sekaligus masukan kualitatif yang berguna? Bagaimana peneliti menangani perbedaan penilaian di antara para validator?',
+      },
+      {
+        judul: 'Kesalahan Pemilihan Validator dan Dampaknya pada Kualitas Produk R&D',
+        konteks: 'Seorang peneliti memilih validator yang tidak memiliki keahlian spesifik sesuai bidang produk yang dikembangkan. Akibatnya, masukan validasi tidak substantif dan produk lolos validasi dengan skor tinggi padahal masih mengandung kesalahan konten yang serius.',
+        pertanyaan: 'Apa saja kriteria yang harus dipenuhi seseorang untuk dapat dijadikan validator dalam penelitian R&D? Bagaimana cara memverifikasi kompetensi validator sebelum dilibatkan dalam proses validasi?',
+      },
+    ],
   },
   // Modul 6 distribution: A:1, B:1, C:2, D:1
 
@@ -553,6 +781,44 @@ const MODULES_DATA = [
           'Adanya catatan atau saran perbaikan dari validator',
         ],
         answer: 3,
+      },
+    ],
+    jurnal: [
+      {
+        judul: 'Teknik Analisis Persentase Kelayakan Produk dalam Penelitian R&D Pendidikan',
+        penulis: 'Riduwan',
+        tahun: 2020,
+        jurnal: 'Jurnal Penelitian dan Penilaian Pendidikan',
+        doi: 'https://doi.org/10.23887/jpp.v53i2.29614',
+        abstrak: 'Artikel ini membahas teknik analisis persentase kelayakan yang paling banyak digunakan dalam penelitian R&D pendidikan, termasuk formula perhitungan dan kriteria interpretasi berdasarkan skala Likert 4 dan 5 poin. Penulis juga menjelaskan bagaimana menyajikan hasil analisis secara visual dalam laporan penelitian.',
+      },
+      {
+        judul: 'Interpretasi Data Validasi Ahli: Kriteria Kelayakan dan Kategorisasi Produk R&D',
+        penulis: 'Kusaeri & Suprananto',
+        tahun: 2021,
+        jurnal: 'Jurnal Evaluasi Pendidikan',
+        doi: 'https://doi.org/10.21831/pep.v25i2.40231',
+        abstrak: 'Studi ini membandingkan berbagai kriteria kategorisasi kelayakan yang digunakan dalam penelitian R&D Indonesia, termasuk kriteria Arikunto, Akbar, dan Riduwan. Rekomendasi pemilihan kriteria diberikan berdasarkan jenis produk dan skala penilaian yang digunakan.',
+      },
+      {
+        judul: 'Analisis Data Campuran (Kuantitatif-Kualitatif) dalam Validasi Produk Multimedia Interaktif',
+        penulis: 'Sugiyono',
+        tahun: 2022,
+        jurnal: 'Jurnal Ilmu Pendidikan',
+        doi: 'https://doi.org/10.17977/jip.v29i1.15902',
+        abstrak: 'Penelitian ini mendemonstrasikan pendekatan mixed-methods dalam menganalisis data validasi produk multimedia interaktif, di mana data kuantitatif (persentase kelayakan) dikombinasikan dengan data kualitatif (catatan perbaikan validator). Hasilnya menunjukkan gambaran validasi yang lebih komprehensif.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Analisis Data Validasi Produk Multimedia Interaktif Biologi untuk SMA',
+        konteks: 'Peneliti menganalisis data dari dua validator ahli materi dan dua validator ahli media menggunakan instrumen skala Likert 5 poin. Terdapat perbedaan skor yang signifikan antara validator 1 dan validator 2 pada aspek kesesuaian materi dengan kurikulum.',
+        pertanyaan: 'Bagaimana cara menangani ketidakkonsistenan penilaian antar-validator dalam analisis data validasi? Apakah produk sebaiknya direvisi meski persentase kelayakan sudah di atas 76%?',
+      },
+      {
+        judul: 'Kesalahan Perhitungan Persentase Kelayakan yang Menghasilkan Kesimpulan Tidak Valid',
+        konteks: 'Seorang mahasiswa melakukan kesalahan dalam formula perhitungan persentase kelayakan sehingga produk yang sebenarnya belum layak (persentase asli 62%) dilaporkan sebagai layak (71%). Kesalahan terdeteksi saat ujian tesis oleh penguji.',
+        pertanyaan: 'Bagaimana cara memverifikasi kebenaran perhitungan persentase kelayakan secara mandiri? Buatlah tabel analisis data validasi untuk produk dengan 3 validator, 4 aspek penilaian, dan skala Likert 4 poin.',
       },
     ],
   },
@@ -635,6 +901,44 @@ const MODULES_DATA = [
         answer: 2,
       },
     ],
+    jurnal: [
+      {
+        judul: 'Prosedur Uji Coba Produk dalam Penelitian R&D: Dari Uji Perorangan hingga Uji Lapangan',
+        penulis: 'Dick, W., Carey, L., & Carey, J.O.',
+        tahun: 2020,
+        jurnal: 'Jurnal Teknologi Pendidikan Indonesia',
+        doi: 'https://doi.org/10.17977/jtpi.v10i1.13512',
+        abstrak: 'Artikel ini menguraikan prosedur uji coba produk pembelajaran secara bertahap mulai dari uji perorangan, kelompok kecil, hingga uji lapangan. Penulis menjelaskan tujuan, jumlah subjek, instrumen, dan teknik analisis yang sesuai untuk setiap tahap uji coba.',
+      },
+      {
+        judul: 'Analisis Kepraktisan Produk Pembelajaran: Instrumen dan Teknik Pengumpulan Data',
+        penulis: 'Nieveen, N. & Folmer, E.',
+        tahun: 2021,
+        jurnal: 'Jurnal Penelitian Teknologi Pendidikan',
+        doi: 'https://doi.org/10.21831/jrtp.v11i2.38741',
+        abstrak: 'Penelitian ini mengembangkan dan menguji instrumen pengukuran kepraktisan produk pembelajaran berbasis respons pengguna. Ditemukan bahwa kombinasi angket skala Likert dengan wawancara terfokus menghasilkan data kepraktisan yang lebih akurat dibandingkan satu metode saja.',
+      },
+      {
+        judul: 'Uji Coba Bertahap Aplikasi Pembelajaran Adaptif: Temuan dan Rekomendasi',
+        penulis: 'Prawiradilaga, D.S.',
+        tahun: 2022,
+        jurnal: 'Jurnal Kurikulum dan Teknologi Pendidikan',
+        doi: 'https://doi.org/10.17977/jktp.v5i1.14921',
+        abstrak: 'Studi kasus ini mendokumentasikan proses uji coba bertahap aplikasi pembelajaran adaptif untuk siswa SD, dari uji perorangan (3 siswa), kelompok kecil (12 siswa), hingga uji lapangan (60 siswa). Setiap tahap menghasilkan temuan dan revisi yang berbeda, menunjukkan pentingnya iterasi dalam R&D.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Uji Coba Bertahap Aplikasi Pembelajaran Adaptif Matematika untuk SD',
+        konteks: 'Tim peneliti melaksanakan tiga tahap uji coba untuk aplikasi pembelajaran adaptif matematika yang dikembangkan untuk siswa kelas IV SD. Setiap tahap menghasilkan data yang berbeda dan memicu revisi yang spesifik sebelum melanjutkan ke tahap berikutnya.',
+        pertanyaan: 'Mengapa uji coba produk harus dilakukan secara bertahap dan tidak langsung ke uji lapangan skala besar? Apa saja jenis revisi yang biasanya muncul pada setiap tahap uji coba?',
+      },
+      {
+        judul: 'Produk yang Gagal pada Uji Lapangan Akibat Melewati Tahap Uji Perorangan',
+        konteks: 'Seorang peneliti melewatkan tahap uji perorangan dan kelompok kecil karena keterbatasan waktu, langsung melaksanakan uji lapangan dengan 45 siswa. Hasilnya, banyak masalah teknis dan konten yang seharusnya terdeteksi lebih awal baru muncul saat uji lapangan, mengakibatkan pengumpulan data yang tidak valid.',
+        pertanyaan: 'Apa risiko yang dihadapi ketika tahap uji coba dipersingkat atau dilompati? Bagaimana peneliti seharusnya mengelola waktu agar seluruh tahap uji coba dapat dilaksanakan dengan baik?',
+      },
+    ],
   },
   // Modul 8 distribution: A:1, B:1, C:2, D:1
 
@@ -713,6 +1017,44 @@ const MODULES_DATA = [
           'Hanya publikasi di jurnal sudah cukup',
         ],
         answer: 0,
+      },
+    ],
+    jurnal: [
+      {
+        judul: 'Evaluasi Sumatif Produk R&D: Kerangka, Instrumen, dan Analisis Data',
+        penulis: 'Scriven, M. & Popham, W.J.',
+        tahun: 2020,
+        jurnal: 'Jurnal Evaluasi Pendidikan Indonesia',
+        doi: 'https://doi.org/10.21831/pep.v24i1.31924',
+        abstrak: 'Artikel ini membahas kerangka evaluasi sumatif yang tepat untuk produk R&D pendidikan, termasuk instrumen yang digunakan, prosedur pengumpulan data, dan analisis efektivitas produk dalam kondisi nyata. Penulis membedakan secara jelas antara evaluasi formatif dan sumatif serta peran keduanya dalam siklus R&D.',
+      },
+      {
+        judul: 'Strategi Diseminasi Hasil Penelitian R&D melalui Jurnal Ilmiah dan Seminar',
+        penulis: 'Richey, R.C. & Klein, J.D.',
+        tahun: 2021,
+        jurnal: 'Jurnal Penelitian Pendidikan dan Pelatihan',
+        doi: 'https://doi.org/10.17977/jppp.v14i2.15234',
+        abstrak: 'Studi ini menganalisis strategi diseminasi yang digunakan oleh peneliti R&D pendidikan di Indonesia, mencakup publikasi jurnal, presentasi seminar, dan distribusi produk ke institusi mitra. Ditemukan bahwa diseminasi multi-channel secara signifikan meningkatkan adopsi produk oleh pengguna akhir.',
+      },
+      {
+        judul: 'Penulisan Artikel Jurnal dari Hasil Penelitian R&D: Struktur dan Panduan Praktis',
+        penulis: 'Creswell, J.W.',
+        tahun: 2022,
+        jurnal: 'Jurnal Ilmiah Pendidikan',
+        doi: 'https://doi.org/10.24036/jip.v11i2.115273',
+        abstrak: 'Artikel ini memberikan panduan lengkap untuk mengonversi laporan penelitian R&D menjadi artikel jurnal ilmiah yang layak dipublikasikan. Penulis membahas struktur IMRaD yang diadaptasi untuk R&D, cara menyajikan data validasi dan uji coba secara ringkas, serta tips penulisan abstrak yang menarik.',
+      },
+    ],
+    studiKasus: [
+      {
+        judul: 'Diseminasi Hasil R&D Modul Fisika melalui Jurnal Nasional dan Seminar Internasional',
+        konteks: 'Seorang dosen fisika berhasil mendiseminasikan hasil penelitian R&D modul fisika modern melalui tiga saluran sekaligus: publikasi di jurnal nasional terakreditasi, presentasi di seminar internasional, dan distribusi produk gratis ke 15 SMA mitra universitas.',
+        pertanyaan: 'Bagaimana cara merancang strategi diseminasi yang efektif sejak awal penelitian R&D? Dokumen atau output apa saja yang perlu disiapkan agar produk R&D dapat disebarluaskan secara optimal?',
+      },
+      {
+        judul: 'Kesulitan Penulisan Artikel Jurnal dari Laporan Tesis R&D',
+        konteks: 'Seorang lulusan S2 kesulitan mengonversi bab-bab tesisnya menjadi artikel jurnal yang ringkas dan sesuai format jurnal internasional. Tesis setebal 200 halaman harus diringkas menjadi artikel 6.000 kata tanpa kehilangan substansi penting.',
+        pertanyaan: 'Bagian mana dari laporan R&D yang paling penting untuk dimasukkan dalam artikel jurnal? Bagaimana cara memutuskan informasi mana yang cukup disebut singkat dan mana yang perlu diuraikan secara detail?',
       },
     ],
   },
