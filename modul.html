@@ -151,8 +151,32 @@
     .refleksi-score.complete { color: var(--sage-d); font-weight: 700; }
     .refleksi-badge { display: inline-block; margin-left: 6px; font-size: 13px; }
 
+    /* ── Jurnal & Studi Kasus ── */
+    .modul-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--r); padding: 22px 24px; margin-bottom: 16px; }
+    .section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .section-icon { font-size: 18px; }
+    .section-title { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; color: var(--brown); margin: 0; }
+    .section-badge { font-size: 11px; color: var(--brown3); background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r-pill); padding: 2px 9px; margin-left: auto; }
+    .jurnal-tabs { display:flex; gap:.5rem; margin-bottom:1rem; border-bottom:2px solid var(--border); padding-bottom:.5rem; }
+    .jtab { background:none; border:none; padding:.5rem 1.2rem; font:600 .9rem 'DM Sans',sans-serif; color:var(--brown3); cursor:pointer; border-radius:8px 8px 0 0; transition:all .2s; }
+    .jtab.active { color:var(--terra); background:rgba(212,163,115,.12); }
+    .jurnal-card { background:var(--ivory, var(--bg2)); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; margin-bottom:.9rem; transition: border-color .2s; }
+    .jurnal-card:hover { border-color:var(--terra); }
+    .jurnal-judul { font:600 1rem 'Playfair Display',serif; color:var(--brown); margin-bottom:.3rem; }
+    .jurnal-meta { font:.82rem 'DM Sans',sans-serif; color:var(--brown3); margin-bottom:.5rem; }
+    .jurnal-abstrak { font:.88rem 'DM Sans',sans-serif; color:var(--brown2); line-height:1.6; margin-bottom:.7rem; }
+    .jurnal-doi { display:inline-block; font:.82rem 'DM Sans',sans-serif; color:var(--terra); text-decoration:none; }
+    .jurnal-doi:hover { text-decoration:underline; }
+    .kasus-card { background:var(--ivory, var(--bg2)); border-left:4px solid var(--sage); border-radius:0 12px 12px 0; padding:1.2rem 1.4rem; margin-bottom:.9rem; }
+    .kasus-judul { font:600 1rem 'Playfair Display',serif; color:var(--brown); margin-bottom:.4rem; }
+    .kasus-konteks { font:.88rem 'DM Sans',sans-serif; color:var(--brown2); margin-bottom:.8rem; }
+    .kasus-pertanyaan { background:rgba(143,162,135,.1); border-radius:8px; padding:.8rem 1rem; font:.88rem 'DM Sans',sans-serif; color:var(--brown); }
+    .kasus-pertanyaan::before { content:'💬 Diskusi: '; font-weight:600; }
+
     /* ── MOBILE RESPONSIVE ── */
     @media (max-width: 640px) {
+      .jurnal-tabs { overflow-x:auto; }
+      .jurnal-card, .kasus-card { padding:.9rem 1rem; }
       /* Video */
       .modul-video { padding: 14px; }
       /* Topbar: hide extra links to prevent overflow */
@@ -295,6 +319,29 @@
       <p class="refleksi-sub">Centang pernyataan yang sesuai dengan pemahamanmu setelah mempelajari modul ini:</p>
       <div id="refleksiList" class="refleksi-list"></div>
       <div class="refleksi-score" id="refleksiScore"></div>
+    </section>
+
+    <!-- ═══ SECTION JURNAL & STUDI KASUS ═══ -->
+    <section id="sectionJurnal" class="modul-section">
+      <div class="section-header">
+        <span class="section-icon">📚</span>
+        <h2 class="section-title">Jurnal &amp; Studi Kasus</h2>
+        <span class="section-badge" id="jurnalCount">—</span>
+      </div>
+
+      <!-- Tab: Jurnal | Studi Kasus -->
+      <div class="jurnal-tabs">
+        <button class="jtab active" onclick="switchJTab('jurnal')">Referensi Jurnal</button>
+        <button class="jtab" onclick="switchJTab('kasus')">Studi Kasus</button>
+      </div>
+
+      <div id="jtabJurnal" class="jtab-content active">
+        <div id="jurnalList" class="jurnal-list"></div>
+      </div>
+
+      <div id="jtabKasus" class="jtab-content" style="display:none">
+        <div id="kasusList" class="kasus-list"></div>
+      </div>
     </section>
 
   </div><!-- /#contentSections -->
@@ -527,6 +574,9 @@ const modulId = parseInt(params.get('id')) || 1;
 
     // ── Refleksi Belajar ──────────────────────────────
     await initRefleksi(modul.id);
+
+    // ── Jurnal & Studi Kasus ──────────────────────────
+    renderJurnal(modul);
   } catch(e) {
     console.error('[modul] initModul gagal:', e);
   }
@@ -750,6 +800,50 @@ function updateRefleksiScore(moduleId) {
   } else {
     el.className = 'refleksi-score';
     el.textContent = `${count} / ${total} kriteria terpenuhi`;
+  }
+}
+
+// ══════════════════════════════════════
+// JURNAL & STUDI KASUS
+// ══════════════════════════════════════
+
+function renderJurnal(modul) {
+  const list = document.getElementById('jurnalList');
+  const kasList = document.getElementById('kasusList');
+  const badge = document.getElementById('jurnalCount');
+  if (!list || !modul) return;
+
+  const jurnals = modul.jurnal || [];
+  const kasus = modul.studiKasus || [];
+  if (badge) badge.textContent = `${jurnals.length} jurnal · ${kasus.length} kasus`;
+
+  list.innerHTML = jurnals.map(j => `
+    <div class="jurnal-card">
+      <div class="jurnal-judul">${escHtml(j.judul)}</div>
+      <div class="jurnal-meta">${escHtml(j.penulis)} · ${j.tahun} · <em>${escHtml(j.jurnal)}</em></div>
+      <div class="jurnal-abstrak">${escHtml(j.abstrak)}</div>
+      <a href="${escHtml(j.doi)}" target="_blank" rel="noopener" class="jurnal-doi">🔗 Buka DOI</a>
+    </div>
+  `).join('') || '<p style="color:var(--brown3);text-align:center;padding:2rem">Belum ada referensi jurnal.</p>';
+
+  kasList.innerHTML = kasus.map(k => `
+    <div class="kasus-card">
+      <div class="kasus-judul">${escHtml(k.judul)}</div>
+      <div class="kasus-konteks">${escHtml(k.konteks)}</div>
+      <div class="kasus-pertanyaan">${escHtml(k.pertanyaan)}</div>
+    </div>
+  `).join('') || '<p style="color:var(--brown3);text-align:center;padding:2rem">Belum ada studi kasus.</p>';
+}
+
+function switchJTab(tab) {
+  document.querySelectorAll('.jtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.jtab-content').forEach(c => c.style.display = 'none');
+  if (tab === 'jurnal') {
+    document.getElementById('jtabJurnal').style.display = '';
+    document.querySelectorAll('.jtab')[0].classList.add('active');
+  } else {
+    document.getElementById('jtabKasus').style.display = '';
+    document.querySelectorAll('.jtab')[1].classList.add('active');
   }
 }
 </script>

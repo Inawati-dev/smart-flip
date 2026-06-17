@@ -63,6 +63,10 @@
      addDraftComment(draftId, { text, authorRole })          → comment
      updateDraftStatus(draftId, status) → void
 
+   FEEDBACK KEPRAKTISAN (mahasiswa)
+     saveFeedback(moduleId, data)       → void   (konten, kemudahan, keterbacaan, kebermanfaatan, komentar)
+     getFeedback(moduleId?)             → array feedback (filter per modul atau semua)
+
    CLASS STATS (dosen)
      getClassStats()                    → array statistik per modul (demo data)
 
@@ -1169,6 +1173,62 @@ const DataLayer = (() => {
       if (idx === -1) return;
       drafts[idx].status = status;
       lsSet('sfp_drafts', drafts);
+    },
+
+    // ════════════════════════════════════════════════════
+    // FEEDBACK KEPRAKTISAN (mahasiswa menilai modul)
+    // ════════════════════════════════════════════════════
+
+    /**
+     * Simpan satu entri feedback kepraktisan.
+     * Key localStorage: sfp_feedback → array of feedback entry
+     * @param {number} moduleId
+     * @param {{ konten, kemudahan, keterbacaan, kebermanfaatan, komentar? }} data
+     *   Semua aspek rating: 1–5 (integer)
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   await sb.from('feedback').insert({
+     *     user_id: user.id, module_id: moduleId,
+     *     konten: data.konten, kemudahan: data.kemudahan,
+     *     keterbacaan: data.keterbacaan, kebermanfaatan: data.kebermanfaatan,
+     *     rata_rata: ((data.konten + data.kemudahan + data.keterbacaan + data.kebermanfaatan) / 4).toFixed(1),
+     *     komentar: data.komentar || '',
+     *     submitted_at: new Date().toISOString()
+     *   });
+     */
+    saveFeedback(moduleId, data) {
+      const all = lsGet('sfp_feedback') || [];
+      all.push({
+        id: 'fb_' + Date.now(),
+        moduleId,
+        konten: data.konten,                   // 1-5
+        kemudahan: data.kemudahan,              // 1-5
+        keterbacaan: data.keterbacaan,          // 1-5
+        kebermanfaatan: data.kebermanfaatan,    // 1-5
+        rataRata: ((data.konten + data.kemudahan + data.keterbacaan + data.kebermanfaatan) / 4).toFixed(1),
+        komentar: data.komentar || '',
+        date: new Date().toISOString(),
+      });
+      lsSet('sfp_feedback', all);
+    },
+
+    /**
+     * Ambil daftar feedback. Jika moduleId diberikan, filter per modul.
+     * Key localStorage: sfp_feedback → array of feedback entry
+     * @param {number|null} moduleId - null = semua modul
+     * Return: array of { id, moduleId, konten, kemudahan, keterbacaan, kebermanfaatan, rataRata, komentar, date }
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   let q = sb.from('feedback').select('*').eq('user_id', user.id).order('submitted_at', { ascending: false });
+     *   if (moduleId) q = q.eq('module_id', moduleId);
+     *   const { data } = await q;
+     *   return data || [];
+     */
+    getFeedback(moduleId = null) {
+      const all = lsGet('sfp_feedback') || [];
+      return moduleId ? all.filter(f => f.moduleId == moduleId) : all;
     },
 
     // ════════════════════════════════════════════════════
