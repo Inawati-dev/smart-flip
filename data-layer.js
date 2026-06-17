@@ -113,7 +113,21 @@ const DataLayer = (() => {
         authorName: 'Budi Santoso', authorRole: 'mahasiswa',
         content: 'Apa perbedaan utama antara R&D dan penelitian eksperimen biasa? Saya masih bingung membedakannya dari sisi tujuan penelitian.',
         createdAt: new Date(Date.now() - 7200000).toISOString(),
-        likes: 3, replies: [],
+        likes: 3,
+        replies: [
+          {
+            id: 'rep_1a',
+            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            content: 'Perbedaan kunci: R&D bertujuan menghasilkan produk/prosedur baru yang tervalidasi, sedangkan eksperimen murni menguji hipotesis tentang hubungan sebab-akibat. Pada R&D, validasi ahli dan uji coba lapangan adalah bagian inti prosesnya.',
+            createdAt: new Date(Date.now() - 5400000).toISOString(),
+          },
+          {
+            id: 'rep_1b',
+            authorName: 'Rina Wulandari', authorRole: 'mahasiswa',
+            content: 'Tambahan dari saya: R&D bersifat siklus iteratif (revisi berkali-kali berdasarkan feedback), sedangkan eksperimen bersifat linear. Ini yang bikin R&D lebih panjang prosesnya.',
+            createdAt: new Date(Date.now() - 3600000).toISOString(),
+          },
+        ],
       },
       {
         id: 'post_2', moduleId: 2,
@@ -122,7 +136,7 @@ const DataLayer = (() => {
         createdAt: new Date(Date.now() - 14400000).toISOString(),
         likes: 5,
         replies: [{
-          id: 'rep_1',
+          id: 'rep_2a',
           authorName: 'Dr. Andi', authorRole: 'dosen',
           content: 'Betul! ADDIE memang lebih terstruktur. Tapi untuk penelitian skripsi, Borg & Gall sering lebih direkomendasikan karena ada tahap validasi ahli yang eksplisit.',
           createdAt: new Date(Date.now() - 10800000).toISOString(),
@@ -135,7 +149,154 @@ const DataLayer = (() => {
         createdAt: new Date(Date.now() - 86400000).toISOString(),
         likes: 2, replies: [],
       },
+      {
+        id: 'post_4', moduleId: 2,
+        authorName: 'Fajar Nugroho', authorRole: 'mahasiswa',
+        content: 'Bingung membedakan model 4D (Thiagarajan) dengan ADDIE. Keduanya tampak mirip. Kapan sebaiknya memilih 4D daripada ADDIE?',
+        createdAt: new Date(Date.now() - 172800000).toISOString(),
+        likes: 7,
+        replies: [
+          {
+            id: 'rep_4a',
+            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            content: '4D (Define-Design-Develop-Disseminate) lebih ringkas dan sering dipakai untuk pengembangan perangkat pembelajaran (LKS, modul cetak, RPP). ADDIE lebih komprehensif dan cocok untuk sistem e-learning atau multimedia. Keduanya valid untuk skripsi, pilih sesuai jenis produk yang dikembangkan.',
+            createdAt: new Date(Date.now() - 160000000).toISOString(),
+          },
+          {
+            id: 'rep_4b',
+            authorName: 'Siti Rahma', authorRole: 'mahasiswa',
+            content: 'Dari yang saya baca, 4D lebih banyak dipakai di penelitian pendidikan dasar, sedangkan ADDIE populer di instructional design dan pelatihan perusahaan. Semoga membantu!',
+            createdAt: new Date(Date.now() - 150000000).toISOString(),
+          },
+        ],
+      },
+      {
+        id: 'post_5', moduleId: 1,
+        authorName: 'Maya Sari', authorRole: 'mahasiswa',
+        content: 'Setelah baca modul 1, saya paham konsep dasar R&D. Tapi apakah boleh menggabungkan dua model pengembangan sekaligus, misalnya ADDIE dan Borg & Gall? Ada yang pernah melihat contoh penelitiannya?',
+        createdAt: new Date(Date.now() - 259200000).toISOString(),
+        likes: 4,
+        replies: [
+          {
+            id: 'rep_5a',
+            authorName: 'Ahmad Rizki', authorRole: 'mahasiswa',
+            content: 'Ada beberapa jurnal yang menggabungkan keduanya, biasanya mengambil tahap Analysis dari ADDIE lalu menyesuaikan dengan langkah Borg & Gall untuk validasi. Tapi perlu justifikasi yang kuat di bab metodologi.',
+            createdAt: new Date(Date.now() - 240000000).toISOString(),
+          },
+        ],
+      },
+      {
+        id: 'post_6', moduleId: 3,
+        authorName: 'Rina Wulandari', authorRole: 'mahasiswa',
+        content: 'Sudah selesai menyusun instrumen needs assessment untuk bab 1. Pakai angket terbuka + tertutup plus wawancara kepada 3 guru. Apakah cukup? Atau perlu FGD juga?',
+        createdAt: new Date(Date.now() - 345600000).toISOString(),
+        likes: 6,
+        replies: [
+          {
+            id: 'rep_6a',
+            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            content: 'Triangulasi data (angket + wawancara) sudah bagus. FGD bisa ditambahkan jika ingin memperkuat temuan, terutama kalau ada perbedaan signifikan antara data angket dan wawancara. Untuk skripsi S1, dua sumber data biasanya sudah memadai.',
+            createdAt: new Date(Date.now() - 320000000).toISOString(),
+          },
+        ],
+      },
+      {
+        id: 'post_7', moduleId: 3,
+        authorName: 'Dimas Prakoso', authorRole: 'mahasiswa',
+        content: 'Sharing progres bab 1: sudah selesai latar belakang dan rumusan masalah. Yang masih susah bagian kajian pustaka — terlalu banyak referensi, bingung mana yang relevan dan mana yang tidak. Ada tips?',
+        createdAt: new Date(Date.now() - 432000000).toISOString(),
+        likes: 8,
+        replies: [
+          {
+            id: 'rep_7a',
+            authorName: 'Siti Rahma', authorRole: 'mahasiswa',
+            content: 'Tips dari saya: buat tabel pemetaan literatur dulu. Kolom: penulis/tahun, topik utama, metode, relevansi dengan penelitianmu. Dari sana lebih mudah menyaring mana yang benar-benar dibutuhkan.',
+            createdAt: new Date(Date.now() - 400000000).toISOString(),
+          },
+          {
+            id: 'rep_7b',
+            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            content: 'Betul saran Siti. Tambahan: prioritaskan literatur dari jurnal terindeks (Scopus/SINTA) dan maksimal 10 tahun terakhir (kecuali teori dasar seperti Bloom, Piaget, dll). Fokus pada yang langsung berkaitan dengan variabel penelitianmu.',
+            createdAt: new Date(Date.now() - 380000000).toISOString(),
+          },
+        ],
+      },
     ]);
+  }
+
+  // ─── PROGRESS SEED ────────────────────────────────────
+  function seedProgressIfEmpty() {
+    // Seed modul 1 — selesai 100%
+    if (!lsGet('sfp_books/modul-01.pdf')) {
+      lsSet('sfp_books/modul-01.pdf', {
+        pct: 100, currentPage: 24, totalPages: 24,
+        lastOpened: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+    // Seed modul 2 — selesai 100%
+    if (!lsGet('sfp_books/modul-02.pdf')) {
+      lsSet('sfp_books/modul-02.pdf', {
+        pct: 100, currentPage: 20, totalPages: 20,
+        lastOpened: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+    // Seed modul 3 — sedang dikerjakan 45%
+    if (!lsGet('sfp_books/modul-03.pdf')) {
+      lsSet('sfp_books/modul-03.pdf', {
+        pct: 45, currentPage: 9, totalPages: 20,
+        lastOpened: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
+  }
+
+  // ─── QUIZ SEED ────────────────────────────────────────
+  function seedQuizIfEmpty() {
+    // Kuis modul 1 — 2 percobaan (skor naik: 60 → 80)
+    if (!lsGet('sfp_quiz_1')) {
+      lsSet('sfp_quiz_1', [
+        {
+          score: 60, pct: 60, total: 5, correct: 3,
+          completedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+          date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+          answers: [2, 1, 3, 1, 0],
+        },
+        {
+          score: 80, pct: 80, total: 5, correct: 4,
+          completedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+          date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+          answers: [2, 1, 3, 1, 0],
+        },
+      ]);
+    }
+    // Kuis modul 2 — 1 percobaan sempurna
+    if (!lsGet('sfp_quiz_2')) {
+      lsSet('sfp_quiz_2', [
+        {
+          score: 100, pct: 100, total: 5, correct: 5,
+          completedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+          date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
+          answers: [0, 2, 3, 1, 3],
+        },
+      ]);
+    }
+  }
+
+  // ─── LEARNING TIME SEED ───────────────────────────────
+  function seedTimeIfEmpty() {
+    if (!localStorage.getItem('sfp_time_1')) localStorage.setItem('sfp_time_1', '2340');  // 39 menit
+    if (!localStorage.getItem('sfp_time_2')) localStorage.setItem('sfp_time_2', '1980');  // 33 menit
+    if (!localStorage.getItem('sfp_time_3')) localStorage.setItem('sfp_time_3', '720');   // 12 menit
+  }
+
+  // ─── VARK SEED ────────────────────────────────────────
+  function seedVarkIfEmpty() {
+    if (!lsGet('sfp_vark')) {
+      lsSet('sfp_vark', {
+        V: 5, A: 3, R: 2, K: 2,
+        dominant: 'visual',
+        completedAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    }
   }
 
   // ─── PUBLIC API ───────────────────────────────────────
@@ -658,10 +819,12 @@ const DataLayer = (() => {
       const stored = lsGet('sfp_notifs');
       if (!stored) {
         const dummy = [
-          { id: 'n1', type: 'kuis',  title: 'Kuis Selesai',   body: 'Kamu mendapat skor 85 di Modul 1',          read: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
-          { id: 'n2', type: 'forum', title: 'Balasan Baru',   body: 'Siti membalas postingan kamu di forum',      read: false, createdAt: new Date(Date.now() - 7200000).toISOString() },
-          { id: 'n3', type: 'draf',  title: 'Draf Dikomentari', body: 'Dosen memberikan komentar pada draf kamu', read: false, createdAt: new Date(Date.now() - 10800000).toISOString() },
-          { id: 'n4', type: 'sistem',title: 'Selamat Datang', body: 'Selamat bergabung di SMART-FLIP 5.0!',       read: true,  createdAt: new Date(Date.now() - 86400000).toISOString() },
+          { id: 'n1', type: 'kuis',   title: 'Kuis Selesai',        body: 'Kamu mendapat skor 80 di Kuis Modul 1. Nilai meningkat dari percobaan sebelumnya!',  read: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
+          { id: 'n2', type: 'forum',  title: 'Balasan Baru',        body: 'Ir. Johan Iriawan membalas pertanyaanmu di forum Modul 1 tentang perbedaan R&D.',     read: false, createdAt: new Date(Date.now() - 7200000).toISOString() },
+          { id: 'n3', type: 'draf',   title: 'Draf Dikomentari',    body: 'Dosen memberikan komentar pada draf "Identifikasi Masalah Penelitian" kamu.',         read: false, createdAt: new Date(Date.now() - 10800000).toISOString() },
+          { id: 'n4', type: 'kuis',   title: 'Kuis Modul 2 Sempurna', body: 'Luar biasa! Kamu mendapat skor 100 pada Kuis Modul 2. Pertahankan!',               read: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
+          { id: 'n5', type: 'progres', title: 'Modul 1 Selesai',    body: 'Selamat! Kamu telah menyelesaikan Modul 1: Dasar & Konsep R&D. Lanjut ke Modul 2!',  read: true,  createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString() },
+          { id: 'n6', type: 'sistem', title: 'Selamat Datang',      body: 'Selamat bergabung di SMART-FLIP 5.0! Mulailah belajar dari Modul 1.',                read: true,  createdAt: new Date(Date.now() - 8 * 24 * 3600000).toISOString() },
         ];
         lsSet('sfp_notifs', dummy);
         return dummy;
@@ -720,6 +883,10 @@ const DataLayer = (() => {
         // return data ?? [];
       }
       seedForumIfEmpty();
+      seedProgressIfEmpty();
+      seedQuizIfEmpty();
+      seedTimeIfEmpty();
+      seedVarkIfEmpty();
       const all = lsGet('sfp_forum') || [];
       return moduleId ? all.filter(p => p.moduleId === moduleId) : all;
     },
@@ -856,6 +1023,60 @@ const DataLayer = (() => {
                 text: 'Terima kasih Pak. Saya sudah revisi bagian Design dan menambahkan rubrik validasi. Mohon dicek kembali.',
                 createdAt: new Date(now.getTime() - 86400000 * 3).toISOString(),
               }
+            ],
+          },
+          {
+            id: 'draft_1000000003',
+            moduleId: 3,
+            moduleName: 'Needs Assessment & Analisis Kebutuhan',
+            authorName: 'Ahmad Rizki',
+            title: 'Laporan Needs Assessment Bab 1',
+            version: 1,
+            content: 'Analisis kebutuhan dilakukan melalui observasi kelas dan wawancara terstruktur kepada 3 guru IPA di SMP Negeri 5. Hasil menunjukkan bahwa 78% siswa mengalami kesulitan memahami konsep abstrak melalui buku teks konvensional...',
+            status: 'reviewed',
+            submittedAt: new Date(now.getTime() - 86400000 * 3).toISOString(),
+            comments: [
+              {
+                id: 'cmt_1000000004',
+                authorName: 'Ir. Johan Iriawan, M.T.',
+                authorRole: 'dosen',
+                text: 'Needs assessment sudah komprehensif dan datanya kuat. Triangulasi antara observasi dan wawancara dilakukan dengan baik. Lanjutkan ke penyusunan rumusan masalah dan tujuan penelitian. Approved untuk diteruskan ke bab berikutnya.',
+                createdAt: new Date(now.getTime() - 86400000 * 2).toISOString(),
+              },
+            ],
+          },
+          {
+            id: 'draft_1000000004',
+            moduleId: 1,
+            moduleName: 'Dasar & Konsep R&D',
+            authorName: 'Maya Sari',
+            title: 'Latar Belakang Masalah & Justifikasi R&D',
+            version: 3,
+            content: 'Latar belakang ini menjabarkan kesenjangan antara kondisi ideal pembelajaran berbasis proyek dengan kondisi nyata di lapangan berdasarkan studi pendahuluan di tiga sekolah menengah atas di Kota Malang...',
+            status: 'reviewed',
+            submittedAt: new Date(now.getTime() - 86400000 * 10).toISOString(),
+            comments: [
+              {
+                id: 'cmt_1000000005',
+                authorName: 'Ir. Johan Iriawan, M.T.',
+                authorRole: 'dosen',
+                text: 'Versi pertama: latar belakang masih terlalu umum. Perlu data spesifik dari studi pendahuluan.',
+                createdAt: new Date(now.getTime() - 86400000 * 9).toISOString(),
+              },
+              {
+                id: 'cmt_1000000006',
+                authorName: 'Maya Sari',
+                authorRole: 'mahasiswa',
+                text: 'Sudah ditambahkan data angket dari 3 sekolah Pak. Mohon ditinjau kembali.',
+                createdAt: new Date(now.getTime() - 86400000 * 7).toISOString(),
+              },
+              {
+                id: 'cmt_1000000007',
+                authorName: 'Ir. Johan Iriawan, M.T.',
+                authorRole: 'dosen',
+                text: 'Revisi sudah sangat baik. Data empiris dari studi pendahuluan sudah memperkuat argumentasi. Draf disetujui — lanjutkan ke rumusan masalah dan tujuan penelitian.',
+                createdAt: new Date(now.getTime() - 86400000 * 6).toISOString(),
+              },
             ],
           },
         ];
