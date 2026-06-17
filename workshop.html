@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
 <script src="modules-data.js"></script>
 <script src="data-layer.js"></script>
@@ -1136,8 +1135,12 @@ function render() {
    CHECKLIST
    ══════════════════════════════════════════════════ */
 function loadChecklist() {
-  const raw = localStorage.getItem(`sfp_ws_${currentId}`);
-  checklistState = raw ? JSON.parse(raw) : {};
+  try {
+    const raw = localStorage.getItem(`sfp_ws_${currentId}`);
+    checklistState = raw ? JSON.parse(raw) : {};
+  } catch(e) {
+    checklistState = {};
+  }
 }
 
 function saveChecklist() {
@@ -1192,6 +1195,7 @@ function saveLkAnswer(el) {
 function clearLembarKerja() {
   if (!confirm('Hapus semua jawaban lembar kerja modul ini?')) return;
   const d = WORKSHOP_DATA[currentId];
+  if (!d || !d.lembarKerja) return;
   d.lembarKerja.pertanyaan.forEach((_, i) => {
     localStorage.removeItem(`sfp_lk_${currentId}_${i}`);
   });

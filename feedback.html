@@ -365,6 +365,13 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 <script>
 'use strict';
 
+// ── XSS HELPER ──────────────────────────────────────────
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 // ── AUTH GUARD ──────────────────────────────────────────
 (async () => {
   try {
@@ -514,6 +521,7 @@ async function handleSubmit() {
   btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.8" stroke-dasharray="20" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg> Menyimpan…';
 
   try {
+    if (typeof DataLayer === 'undefined') throw new Error('DataLayer not loaded');
     await DataLayer.saveFeedback(modulId, {
       konten: ratings.konten,
       kemudahan: ratings.kemudahan,
@@ -599,10 +607,12 @@ async function renderRiwayat() {
   const starsHtml = (n) => '★'.repeat(n) + '☆'.repeat(5 - n);
 
   list.innerHTML = feedbacks.map(fb => {
-    const modulTitle = modulMap[fb.moduleId] ? `Modul ${fb.moduleId} — ${modulMap[fb.moduleId]}` : `Modul ${fb.moduleId}`;
-    const dateStr = fb.date ? new Date(fb.date).toLocaleDateString('id-ID', {
+    const modulTitle = modulMap[fb.moduleId]
+      ? `Modul ${parseInt(fb.moduleId)} — ${escHtml(String(modulMap[fb.moduleId]))}`
+      : `Modul ${parseInt(fb.moduleId) || escHtml(String(fb.moduleId))}`;
+    const dateStr = fb.date ? escHtml(new Date(fb.date).toLocaleDateString('id-ID', {
       day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    }) : '';
+    })) : '';
     return `
     <div class="fb-card">
       <div class="fb-card-header">
@@ -612,26 +622,26 @@ async function renderRiwayat() {
       <div class="fb-ratings-grid">
         <div class="fb-rating-row">
           <span class="fb-rating-label">Konten</span>
-          <span class="fb-rating-stars" title="${fb.konten}/5">${starsHtml(fb.konten)}</span>
+          <span class="fb-rating-stars" title="${parseInt(fb.konten) || 0}/5">${starsHtml(fb.konten)}</span>
         </div>
         <div class="fb-rating-row">
           <span class="fb-rating-label">Kemudahan</span>
-          <span class="fb-rating-stars" title="${fb.kemudahan}/5">${starsHtml(fb.kemudahan)}</span>
+          <span class="fb-rating-stars" title="${parseInt(fb.kemudahan) || 0}/5">${starsHtml(fb.kemudahan)}</span>
         </div>
         <div class="fb-rating-row">
           <span class="fb-rating-label">Keterbacaan</span>
-          <span class="fb-rating-stars" title="${fb.keterbacaan}/5">${starsHtml(fb.keterbacaan)}</span>
+          <span class="fb-rating-stars" title="${parseInt(fb.keterbacaan) || 0}/5">${starsHtml(fb.keterbacaan)}</span>
         </div>
         <div class="fb-rating-row">
           <span class="fb-rating-label">Manfaat</span>
-          <span class="fb-rating-stars" title="${fb.kebermanfaatan}/5">${starsHtml(fb.kebermanfaatan)}</span>
+          <span class="fb-rating-stars" title="${parseInt(fb.kebermanfaatan) || 0}/5">${starsHtml(fb.kebermanfaatan)}</span>
         </div>
       </div>
       <div class="fb-avg">
         <span class="fb-avg-icon">⭐</span>
-        Rata-rata: <strong>${fb.rataRata}</strong> / 5
+        Rata-rata: <strong>${escHtml(String(fb.rataRata ?? '—'))}</strong> / 5
       </div>
-      ${fb.komentar ? `<div class="fb-komentar">"${fb.komentar}"</div>` : ''}
+      ${fb.komentar ? `<div class="fb-komentar">"${escHtml(String(fb.komentar))}"</div>` : ''}
     </div>`;
   }).join('');
 }

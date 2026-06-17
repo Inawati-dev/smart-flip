@@ -247,10 +247,34 @@
     <div class="legend-item"><span class="tag tag-doc">DOC</span> Dokumentasi</div>
   </div>
 
-  <!-- ═══ v0.9.1 (current) ═══ -->
+  <!-- ═══ v0.9.2 (current) ═══ -->
   <div class="version-block">
     <div class="vb-head">
-      <span class="vb-badge current">v0.9.1 ✦</span>
+      <span class="vb-badge current">v0.9.2 ✦</span>
+      <span class="vb-title">Feedback, N-Gain, Workshop &amp; Jurnal/Studi Kasus</span>
+      <span class="vb-date">17 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span><strong>feedback.html</strong> — Form kepraktisan pengguna: rating bintang 1–5 per 4 aspek (konten, kemudahan, keterbacaan, kebermanfaatan), riwayat per modul</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span><strong>ngain.html</strong> — N-Gain Calculator SDL: input pre/post-test, hitung N-Gain otomatis, kategori Tinggi/Sedang/Rendah, grafik distribusi, export CSV</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span><strong>workshop.html</strong> — Panduan sesi tatap muka 9 modul: tab Tujuan/Aktivitas/Checklist/Lembar Kerja, print-friendly</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span><strong>modul.html</strong> — Section Jurnal &amp; Studi Kasus: 3 referensi jurnal + 2 studi kasus per modul (27 jurnal, 18 kasus total)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span><strong>modules-data.js</strong> — Tambah field <code>jurnal[]</code> dan <code>studiKasus[]</code> untuk 9 modul</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>9 dummy PDF modul (8 halaman/modul): cover, capaian, peta konsep, 4 sesi materi, latihan &amp; ringkasan</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Seed data demo diperkaya: progress 3 modul, riwayat kuis, 7 forum posts, 4 drafts, 6 notifikasi, VARK pre-seeded</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>Bug sweep v0.9.1: 36 fixes (auth, data, mobile UI, CSS tokens, escHtml, changelog sync)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>Folder cleanup: assets/, books/ modul-NN.pdf, .gitignore diperbarui</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>DataLayer: tambah <code>saveFeedback()</code> dan <code>getFeedback()</code></li>
+      </ul>
+      <p class="vb-desc">Sprint 7 — Studi Kasus &amp; Jurnal, form kepraktisan, N-Gain Calculator SDL, dan panduan workshop tatap muka.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.9.1 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.9.1</span>
       <span class="vb-title">Bug Sweep — Fanout Orchestration (Sweep 1–4)</span>
       <span class="vb-date">16 Jun 2026</span>
     </div>
@@ -574,6 +598,17 @@
           · CSS token fixes<br>
           · Documentation sync
         </div>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.9.2</div>
+        <div class="rm-title">Feedback, N-Gain &amp; Workshop</div>
+        <div class="rm-items">
+          · feedback.html kepraktisan pengguna<br>
+          · ngain.html N-Gain Calculator SDL<br>
+          · workshop.html panduan tatap muka<br>
+          · modul.html Jurnal &amp; Studi Kasus
+        </div>
         <span class="rm-status current">Sekarang ✦</span>
       </div>
       <div class="rm-card">
@@ -585,7 +620,7 @@
           · Analisis N-Gain SDL<br>
           · HKI + artikel SINTA 3
         </div>
-        <span class="rm-status planned">Sprint 6 →</span>
+        <span class="rm-status planned">Sprint 8 →</span>
       </div>
     </div>
   </div>

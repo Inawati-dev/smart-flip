@@ -265,6 +265,10 @@
         <div class="prog-label" id="progLabel">0%</div>
       </div>
 
+      <div class="cta-row" style="margin-top:12px">
+        <a id="btnWorkshop" href="#" class="btn-secondary" target="_blank">🗂️ Panduan Workshop</a>
+      </div>
+
     </div>
   </div>
 
@@ -502,6 +506,8 @@ const modulId = parseInt(params.get('id')) || 1;
     // CTA links
     document.getElementById('btnBaca').href = `ebook.html?book=${encodeURIComponent(modul.path)}`;
     document.getElementById('btnKuis').href = `kuis.html?modul=${modul.id}`;
+    const btnWs = document.getElementById('btnWorkshop');
+    if (btnWs) btnWs.href = 'workshop.html?id=' + modul.id;
 
     // Kuis history — gunakan DataLayer.getQuizAttempts() — siap Supabase nanti
     const hist = await DataLayer.getQuizAttempts(modul.id);
@@ -817,14 +823,19 @@ function renderJurnal(modul) {
   const kasus = modul.studiKasus || [];
   if (badge) badge.textContent = `${jurnals.length} jurnal · ${kasus.length} kasus`;
 
-  list.innerHTML = jurnals.map(j => `
+  list.innerHTML = jurnals.map(j => {
+    // Only allow https: and http: DOI links — block javascript: and other dangerous protocols
+    const safeDoi = (typeof j.doi === 'string' && /^https?:\/\//i.test(j.doi.trim()))
+      ? escHtml(j.doi)
+      : '#';
+    return `
     <div class="jurnal-card">
       <div class="jurnal-judul">${escHtml(j.judul)}</div>
-      <div class="jurnal-meta">${escHtml(j.penulis)} · ${j.tahun} · <em>${escHtml(j.jurnal)}</em></div>
+      <div class="jurnal-meta">${escHtml(j.penulis)} · ${escHtml(String(j.tahun || ''))} · <em>${escHtml(j.jurnal)}</em></div>
       <div class="jurnal-abstrak">${escHtml(j.abstrak)}</div>
-      <a href="${escHtml(j.doi)}" target="_blank" rel="noopener" class="jurnal-doi">🔗 Buka DOI</a>
-    </div>
-  `).join('') || '<p style="color:var(--brown3);text-align:center;padding:2rem">Belum ada referensi jurnal.</p>';
+      <a href="${safeDoi}" target="_blank" rel="noopener noreferrer" class="jurnal-doi">🔗 Buka DOI</a>
+    </div>`;
+  }).join('') || '<p style="color:var(--brown3);text-align:center;padding:2rem">Belum ada referensi jurnal.</p>';
 
   kasList.innerHTML = kasus.map(k => `
     <div class="kasus-card">
