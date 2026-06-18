@@ -303,6 +303,20 @@ const DataLayer = (() => {
     }
   }
 
+  // ─── SEED ON INIT ─────────────────────────────────────
+  // Panggil semua seed saat DataLayer pertama kali dimuat,
+  // sehingga halaman manapun (profil, manajemen, dll) langsung
+  // punya data demo tanpa harus lewat forum.html dulu.
+  (function seedAll() {
+    try {
+      seedForumIfEmpty();
+      seedProgressIfEmpty();
+      seedQuizIfEmpty();
+      seedTimeIfEmpty();
+      seedVarkIfEmpty();
+    } catch(e) { console.warn('[DataLayer] seedAll error:', e); }
+  })();
+
   // ─── PUBLIC API ───────────────────────────────────────
   return {
 

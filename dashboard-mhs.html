@@ -1284,10 +1284,12 @@ let profile = null;
   renderAll();
 
   // Cek apakah VARK sudah diisi
-  const varkResult = await DataLayer.getVarkResult();
-  if (!varkResult) {
-    const banner = document.getElementById('varkBanner');
-    if (banner) banner.style.display = 'flex';
+  if (typeof DataLayer !== 'undefined') {
+    const varkResult = await DataLayer.getVarkResult();
+    if (!varkResult) {
+      const banner = document.getElementById('varkBanner');
+      if (banner) banner.style.display = 'flex';
+    }
   }
 })();
 

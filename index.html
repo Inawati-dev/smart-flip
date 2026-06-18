@@ -336,7 +336,9 @@ function hideAlert() {
 }
 
 function demoLogin(role) {
-  window.location.href = role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+  localStorage.setItem('sfp_role', role);
+  localStorage.setItem('sfp_demo', '1');
+  window.location.replace(role === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html');
 }
 
 async function handleLogin(e) {
@@ -349,8 +351,10 @@ async function handleLogin(e) {
   // Demo mode: langsung redirect
   if (DEMO_MODE) {
     showAlert(`Demo: masuk sebagai ${selectedRole === 'dosen' ? 'Dosen' : 'Mahasiswa'}…`, 'success');
+    localStorage.setItem('sfp_role', selectedRole);
+    localStorage.setItem('sfp_demo', '1');
     setTimeout(() => {
-      window.location.href = selectedRole === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+      window.location.replace(selectedRole === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html');
     }, 700);
     return;
   }
