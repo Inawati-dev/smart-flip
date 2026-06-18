@@ -387,8 +387,13 @@ html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-ser
 <script>
 /* ── AUTH GUARD (dosen only) ── */
 (async () => {
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) {
+    // Demo mode: cek role — hanya dosen yang boleh masuk
+    if (localStorage.getItem('sfp_role') !== 'dosen') { window.location.replace('dashboard-mhs.html'); return; }
+    return;
+  }
   try {
-    if (typeof sb === 'undefined') return; // demo mode
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace('index.html'); return; }
     // Optional: check role

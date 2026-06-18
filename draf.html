@@ -269,7 +269,8 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 
 // ── Auth guard ─────────────────────────────────────────────────
 (async () => {
-  if (typeof sb === 'undefined') return;
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) return; // demo mode — skip auth
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace('index.html'); return; }

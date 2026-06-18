@@ -712,7 +712,12 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', upda
 // AUTH GUARD (dosen only)
 // ════════════════════════════
 (async () => {
-  if (typeof sb === 'undefined') return; // demo mode
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) {
+    // Demo mode: cek role — hanya dosen yang boleh masuk
+    if (localStorage.getItem('sfp_role') !== 'dosen') { window.location.replace('dashboard-mhs.html'); return; }
+    return;
+  }
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace('index.html'); return; }
@@ -726,7 +731,7 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', upda
       document.getElementById('ddNidn').textContent   = 'NIDN: ' + (p.nim_nidn || '—');
     }
   } catch(e) {
-    // demo mode — silently skip
+    // silently skip
   }
 })();
 
