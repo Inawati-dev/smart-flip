@@ -21,6 +21,10 @@ vark.html           — Asesmen gaya belajar VARK (12 pertanyaan)
 feedback.html       — Form kepraktisan pengguna (rating 1-5 per aspek, mahasiswa)
 ngain.html          — N-Gain Calculator SDL (input pre/post-test, grafik, dosen only)
 workshop.html       — Panduan sesi tatap muka per modul (print-friendly)
+validasi.html       — Instrumen Validasi Ahli (16 indikator: 8 media + 8 materi, hasil kelayakan)
+analitik.html       — Dasbor Analitik Kelas dosen (progress mahasiswa, grafik, flag tidak aktif, CSV)
+profil.html         — Profil pengguna (edit data, hasil VARK, statistik belajar, riwayat kuis)
+manajemen.html      — Panel kelola modul dosen (edit metadata, status, urutan, bulk actions)
 changelog.html      — Riwayat versi
 checklist.html      — Checklist pengembangan
 script.js           — Flipbook engine (lazy PDF render, Map cache)
@@ -118,14 +122,22 @@ Spawn dedicated agent untuk:
 - v0.8.1 ✓ — reset-password.html, konsolidasi login pages, fix quiz answer distribution
 - v0.9 ✓ — DataLayer, VARK, forum.html, draf.html, notifikasi, donut chart, modul video + seq lock
 - v0.9.1 ✓ — Bug sweep orchestrated (4 fanout agents, 36 fixes), folder cleanup, dummy PDF 9 modul
-- v0.9.2 → Sprint 7 (current): Studi Kasus & Jurnal, feedback.html, ngain.html, workshop.html
+- v0.9.2 ✓ — Studi Kasus & Jurnal, feedback.html, ngain.html, workshop.html, navigasi, bug sweep (7 fixes)
+- v0.9.3 ✓ — validasi.html, analitik.html, profil.html, manajemen.html, navigasi integrasi, bug sweep (4 fixes)
 - v1.0 → Sprint 8: Supabase live sync, uji lapangan, N-Gain SDL real data, HKI
 
-## Fitur v0.9.2 (dari Mindmap — DIKERJAKAN)
+## Fitur v0.9.2 ✓ (dari Mindmap)
 - modul.html — section #sectionJurnal: referensi jurnal + studi kasus per modul (dari modules-data.js)
 - feedback.html — form kepraktisan mahasiswa: rating 1-5 per aspek, simpan ke DataLayer
 - ngain.html — N-Gain calculator SDL: input pre/post-test, hitung N-Gain, grafik distribusi (dosen only)
 - workshop.html — panduan sesi tatap muka per modul: tujuan, aktivitas, checklist, lembar kerja
+
+## Fitur v0.9.3 ✓ (dari Mindmap)
+- validasi.html — instrumen validasi ahli: 16 indikator (8 aspek media + 8 aspek materi), kategori kelayakan, cetak
+- analitik.html — dasbor analitik kelas dosen: tabel 10 mahasiswa, grafik distribusi, flag tidak aktif, export CSV
+- profil.html — profil pengguna: edit data, hasil VARK, statistik belajar, riwayat kuis, reset data demo
+- manajemen.html — panel kelola modul dosen: edit metadata, toggle status, reorder ↑↓, bulk actions
+- DataLayer +10 methods: saveValidasi, getValidasi, saveProfil, getProfil, saveModulCustom, getModulCustom, saveModulOrder, getModulOrder
 
 ## Fitur DIABAIKAN DULU (dari Mindmap — defer ke v1.0+)
 - Laporan Akhir (Bab 4 & 5) — butuh data real dari Supabase
