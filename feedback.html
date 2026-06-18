@@ -377,8 +377,9 @@ function escHtml(s) {
 
 // ── AUTH GUARD ──────────────────────────────────────────
 (async () => {
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) return; // demo mode — skip auth
   try {
-    if (typeof sb === 'undefined') return; // demo mode
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace('index.html'); return; }
   } catch(e) { console.error('[feedback] auth guard error:', e); }

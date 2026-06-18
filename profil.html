@@ -903,7 +903,8 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', upda
 // AUTH GUARD
 // ══════════════════════════════════════
 (async () => {
-  if (typeof sb === 'undefined') return; // demo mode — skip auth
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) return; // demo mode — skip auth
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) { window.location.replace('index.html'); return; }

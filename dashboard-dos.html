@@ -1162,8 +1162,10 @@ function escHtml(s) {
 let filteredStudents = [...STUDENTS];
 
 (async () => {
+  // Demo mode — skip auth, langsung ke DataLayer fallback
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
   try {
-    if (typeof sb !== 'undefined') {
+    if (!isDemo && typeof sb !== 'undefined') {
       const {data:{session}} = await sb.auth.getSession();
       if (!session) {
         window.location.replace('index.html'); return;
