@@ -72,13 +72,41 @@ async function doLogout() {
 }
 ```
 
-## Mobile Support Rules
+## Mobile Support Rules — WAJIB untuk SETIAP perubahan
+- **SETIAP fitur/perubahan baru WAJIB di-test dan support mobile** sebelum dianggap selesai
 - Semua halaman harus responsive di lebar 360px–768px
 - Gunakan CSS media query `@media(max-width:640px)` atau `@media(max-width:768px)`
 - Sidebar dashboard: collapse/hide di mobile, ganti dengan bottom nav atau hamburger
-- Font size minimum 13px di mobile
+- Font size minimum 13px di mobile (16px untuk input agar iOS tidak auto-zoom)
 - Tap targets minimum 44×44px
 - Avoid `overflow:hidden` di body untuk mobile scroll
+- Semua modal/dialog harus responsive: max-width 90vw, max-height 90vh, overflow-y:auto
+- Grid/flex layout: wajib fallback ke single-column di `max-width:640px`
+- Tabel data: horizontal scroll wrapper (`overflow-x:auto`) di mobile
+
+### Modal Wajib
+- **Logout**: SETIAP halaman yang punya tombol logout WAJIB tampilkan modal konfirmasi
+  "Yakin ingin keluar?" dengan tombol Batal + Keluar sebelum memanggil `doLogout()`
+- **Aksi destruktif** (hapus data, reset, submit final): WAJIB ada modal konfirmasi
+- **Login sukses**: tampilkan feedback visual (toast/alert) sebelum redirect
+- Pattern modal konfirmasi standar:
+  ```html
+  <div id="logoutModal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <p>Yakin ingin keluar?</p>
+      <div class="modal-actions">
+        <button onclick="closeLogoutModal()">Batal</button>
+        <button onclick="doLogout()" class="btn-danger">Keluar</button>
+      </div>
+    </div>
+  </div>
+  ```
+
+### Mobile Audit — Wajib setelah setiap sprint
+Spawn dedicated agent untuk:
+- Screenshot simulation semua halaman di 375px dan 768px
+- Cek semua form, button, nav, modal, tabel, grid di kedua ukuran
+- Fix inline — tidak perlu konfirmasi untuk layout fix
 
 ## Design Tokens (CSS Variables)
 ```css
@@ -124,6 +152,9 @@ Spawn dedicated agent untuk:
 - v0.9.1 ✓ — Bug sweep orchestrated (4 fanout agents, 36 fixes), folder cleanup, dummy PDF 9 modul
 - v0.9.2 ✓ — Studi Kasus & Jurnal, feedback.html, ngain.html, workshop.html, navigasi, bug sweep (7 fixes)
 - v0.9.3 ✓ — validasi.html, analitik.html, profil.html, manajemen.html, navigasi integrasi, bug sweep (4 fixes)
+- v0.9.4 ✓ — PWA (manifest + sw.js + icons), skeleton loading, onboarding modal, VARK visual, isDemo pattern semua halaman, GIF demo poster
+- v0.9.5 ✓ — Mobile support rules CLAUDE.md, logout modal semua halaman, login toast feedback, modal responsive 90vw/90vh
+- v0.9.6 ✓ — Bug sweep 16 fixes, CSS animations (pageIn/fadeUp/toastIn/modalIn/shimmer/progressFill), profil-dos.html baru, prefers-reduced-motion
 - v1.0 → Sprint 8: Supabase live sync, uji lapangan, N-Gain SDL real data, HKI
 
 ## Fitur v0.9.2 ✓ (dari Mindmap)

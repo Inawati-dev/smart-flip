@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profil Dosen — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js" onerror="console.warn('supabase.js not found — demo mode')"></script>
+<script src="modules-data.js" onerror="console.warn('modules-data.js not found')"></script>
+<script src="data-layer.js" onerror="console.warn('data-layer.js not found')"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ══ DESIGN TOKENS ══ */
+:root{
+  --bg:#F5F2E9;
+  --surface:#FFFDF8;
+  --surface2:#FAF7F2;
+  --topnav-bg:#3E362E;
+  --text:#2C2420;
+  --text2:#4A3D33;
+  --text3:#9B8B7A;
+  --terra:#D4A373;
+  --terra-d:#B8855A;
+  --sage:#8FA287;
+  --sage-d:#6B7E64;
+  --sage-bg:#EBF0E7;
+  --border:rgba(62,54,46,.12);
+  --line:#DDD5C4;
+  --line2:#EDE8DF;
+  --red:#B03020;
+  --topnav-h:56px;
+}
+@media(prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#1A1208;--surface:#241C10;--surface2:#2E2416;
+    --topnav-bg:#0F0C08;--text:#F0EBE0;--text2:#C8BDB0;--text3:#7A6B5E;
+    --terra:#E8B888;--terra-d:#D4A373;--sage:#9FB49A;--sage-d:#8FA287;
+    --sage-bg:rgba(143,162,135,.18);--border:rgba(255,255,255,.08);
+    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);--red:#E87070;
+  }
+}
+[data-theme="dark"]{
+  --bg:#1A1208;--surface:#241C10;--surface2:#2E2416;
+  --topnav-bg:#0F0C08;--text:#F0EBE0;--text2:#C8BDB0;--text3:#7A6B5E;
+  --terra:#E8B888;--terra-d:#D4A373;--sage:#9FB49A;--sage-d:#8FA287;
+  --sage-bg:rgba(143,162,135,.18);--border:rgba(255,255,255,.08);
+  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);--red:#E87070;
+}
+[data-theme="light"]{
+  --bg:#F5F2E9;--surface:#FFFDF8;--surface2:#FAF7F2;
+  --topnav-bg:#3E362E;--text:#2C2420;--text2:#4A3D33;--text3:#9B8B7A;
+  --terra:#D4A373;--terra-d:#B8855A;--sage:#8FA287;--sage-d:#6B7E64;
+  --sage-bg:#EBF0E7;--border:rgba(62,54,46,.12);
+  --line:#DDD5C4;--line2:#EDE8DF;--red:#B03020;
+}
+
+html,body{min-height:100%;overflow:auto}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);transition:background .25s,color .25s}
+
+/* ══ TOP NAV ══ */
+.topnav{
+  position:fixed;top:0;left:0;right:0;height:var(--topnav-h);
+  z-index:400;background:var(--topnav-bg);
+  display:flex;align-items:center;padding:0 1rem;gap:.25rem;
+  box-shadow:0 1px 0 rgba(0,0,0,.25);transition:background .25s;
+}
+.tn-logo{display:flex;align-items:center;gap:.5rem;text-decoration:none;flex-shrink:0;margin-right:.75rem}
+.tn-logo-icon{font-size:1.1rem;line-height:1}
+.tn-logo-text{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--terra);letter-spacing:.01em}
+.tn-logo-text span{color:var(--sage)}
+.tn-logo-ver{font-size:.58rem;color:var(--terra);opacity:.65;letter-spacing:.1em;align-self:flex-end;margin-bottom:.15rem;margin-left:.1rem}
+.tn-nav{display:flex;align-items:center;gap:.1rem;flex:1;overflow-x:auto;scrollbar-width:none}
+.tn-nav::-webkit-scrollbar{display:none}
+.nav-item{
+  display:flex;align-items:center;gap:.35rem;padding:.4rem .65rem;border-radius:7px;
+  font-size:.82rem;font-weight:400;color:rgba(255,255,255,.6);
+  cursor:pointer;text-decoration:none;white-space:nowrap;flex-shrink:0;
+  border:none;background:transparent;font-family:'DM Sans',sans-serif;
+  transition:all .18s;position:relative;line-height:1;
+}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.07)}
+.nav-item.active{color:var(--terra);background:rgba(212,163,115,.1)}
+.nav-item.active::after{
+  content:'';position:absolute;bottom:-1px;left:.35rem;right:.35rem;
+  height:2px;border-radius:2px 2px 0 0;background:var(--terra);
+}
+.nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.75}
+.nav-item.active svg{opacity:1}
+.tn-right{display:flex;align-items:center;gap:.2rem;flex-shrink:0;margin-left:.5rem}
+.tn-btn{
+  width:38px;height:38px;border-radius:8px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0;
+}
+.tn-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
+.tn-btn svg{width:16px;height:16px}
+.avatar-wrap{position:relative;margin-left:.2rem}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--terra);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;cursor:pointer;
+  border:2px solid rgba(212,163,115,.4);transition:border-color .2s;flex-shrink:0;
+}
+.avatar:hover{border-color:var(--terra)}
+.av-dd{
+  position:absolute;top:calc(100% + 10px);right:0;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 8px 32px rgba(44,36,32,.2);
+  min-width:200px;z-index:400;display:none;overflow:hidden;
+}
+.av-dd.open{display:block}
+.dd-hd{padding:.8rem 1rem;border-bottom:1px solid var(--line2)}
+.dd-name{font-size:.85rem;font-weight:600;color:var(--text)}
+.dd-sub{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+.dd-item{
+  display:flex;align-items:center;gap:.6rem;padding:.6rem 1rem;
+  font-size:.82rem;color:var(--text2);cursor:pointer;transition:background .15s;
+  text-decoration:none;
+}
+.dd-item:hover{background:var(--bg)}
+.dd-item svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.dd-sep{height:1px;background:var(--line2);margin:.2rem 0}
+.dd-red{color:var(--red)!important}
+
+/* Hamburger */
+.tn-hamburger{
+  display:none;width:42px;height:42px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;flex-direction:column;
+  align-items:center;justify-content:center;gap:4.5px;
+  color:rgba(255,255,255,.7);transition:background .18s;flex-shrink:0;
+}
+.tn-hamburger:hover{background:rgba(255,255,255,.1)}
+.tn-hamburger span{display:block;width:18px;height:1.5px;background:currentColor;border-radius:2px;transition:all .22s}
+
+/* ══ MOBILE DRAWER ══ */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:490;display:none}
+.drawer-overlay.open{display:block}
+.drawer{
+  position:fixed;top:0;left:0;bottom:0;width:260px;
+  background:var(--topnav-bg);z-index:500;
+  transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;padding-top:.5rem;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.5rem;
+}
+.drawer-logo{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--terra)}
+.drawer-close{
+  width:32px;height:32px;border-radius:7px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);
+}
+.drawer-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.drawer-close svg{width:16px;height:16px}
+.drawer .nav-item{margin:.5px .5rem;width:calc(100% - 1rem);border-radius:9px}
+.drawer .nav-item.active::after{display:none}
+.drawer .nav-item.active{background:rgba(212,163,115,.15);color:var(--terra)}
+.drawer-sect{
+  padding:.6rem 1rem .25rem;font-size:.6rem;font-weight:700;
+  letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+.drawer-div{height:1px;background:rgba(255,255,255,.07);margin:.4rem .75rem}
+
+/* ══ CONTENT AREA ══ */
+.main-wrap{padding-top:var(--topnav-h);min-height:100vh}
+.page-wrap{max-width:860px;margin:0 auto;padding:1.6rem 2rem 3rem}
+.pg-hd{margin-bottom:1.4rem}
+.pg-hd h1{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:600;color:var(--text);line-height:1.2}
+.pg-hd p{font-size:.8rem;color:var(--text3);margin-top:.25rem}
+
+/* ══ HERO CARD ══ */
+.hero-card{
+  background:var(--surface);border-radius:16px;border:1px solid var(--line);
+  padding:1.6rem 1.8rem;margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:1.5rem;
+  transition:background .25s,border-color .25s;
+}
+.avatar-circle{
+  width:80px;height:80px;border-radius:50%;flex-shrink:0;
+  background:var(--terra);display:flex;align-items:center;justify-content:center;
+  font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;
+  color:#fff;letter-spacing:-.02em;
+  box-shadow:0 4px 16px rgba(212,163,115,.35);
+}
+.hero-info{flex:1;min-width:0}
+.hero-name{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:600;color:var(--text);line-height:1.2;margin-bottom:.2rem}
+.hero-nidn{font-size:.8rem;color:var(--text3);margin-bottom:.3rem}
+.hero-email{font-size:.8rem;color:var(--text3);margin-bottom:.5rem}
+.hero-meta{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.role-badge{
+  display:inline-flex;align-items:center;gap:.3rem;
+  padding:.25rem .75rem;border-radius:100px;
+  font-size:.72rem;font-weight:600;
+  background:rgba(212,163,115,.15);color:var(--terra-d);
+}
+.btn-edit-profil{
+  height:34px;padding:0 1rem;border-radius:8px;border:1.5px solid var(--line);
+  background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;
+  font-size:.78rem;font-weight:600;color:var(--text2);transition:all .18s;
+  display:flex;align-items:center;gap:.3rem;
+}
+.btn-edit-profil:hover{border-color:var(--terra);color:var(--terra)}
+.btn-edit-profil svg{width:13px;height:13px}
+
+/* ══ EDIT FORM ══ */
+.edit-form-wrap{
+  background:var(--surface);border-radius:14px;border:1px solid var(--terra);
+  padding:1.2rem 1.5rem;margin-bottom:1.2rem;display:none;transition:background .25s;
+}
+.edit-form-wrap.open{display:block}
+.edit-form-title{font-size:.88rem;font-weight:600;color:var(--text);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--line)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+.form-field{display:flex;flex-direction:column;gap:.28rem}
+.form-field label{font-size:.73rem;font-weight:600;color:var(--text2)}
+.form-input{
+  height:40px;border-radius:8px;border:1.5px solid var(--line);
+  background:var(--surface2);padding:0 .8rem;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);
+  outline:none;transition:border-color .18s,box-shadow .18s;
+  width:100%;
+}
+.form-input:focus{border-color:var(--terra);box-shadow:0 0 0 3px rgba(212,163,115,.12)}
+.form-input:disabled{opacity:.5;cursor:not-allowed}
+select.form-input{cursor:pointer}
+.form-actions{display:flex;gap:.6rem}
+.btn-simpan{
+  height:38px;padding:0 1.3rem;border-radius:9px;border:none;
+  background:var(--terra);color:#1A1208;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;
+}
+.btn-simpan:hover{background:var(--terra-d)}
+.btn-batal{
+  height:38px;padding:0 1rem;border-radius:9px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text2);
+  cursor:pointer;transition:all .15s;
+}
+.btn-batal:hover{border-color:var(--text)}
+
+/* ══ SECTION CARD ══ */
+.section-card{
+  background:var(--surface);border-radius:14px;border:1px solid var(--line);
+  overflow:hidden;margin-bottom:1.1rem;transition:background .25s,border-color .25s;
+}
+.card-head{display:flex;align-items:center;gap:.6rem;padding:.85rem 1.2rem;border-bottom:1px solid var(--line)}
+.card-head-icon{font-size:1rem;flex-shrink:0}
+.card-head-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.card-body{padding:1.1rem 1.2rem}
+
+/* ══ STAT GRID ══ */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+.stat-card{
+  background:var(--surface2);border-radius:11px;border:1px solid var(--line2);
+  padding:.9rem 1rem;position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:11px 11px 0 0}
+.sc-c1::before{background:var(--sage)}
+.sc-c2::before{background:var(--terra)}
+.sc-c3::before{background:#4A7EA0}
+.sc-c4::before{background:#8B6BA0}
+.stat-icon{font-size:1.2rem;margin-bottom:.3rem}
+.stat-val{font-size:1.35rem;font-weight:600;color:var(--text);line-height:1}
+.stat-lbl{font-size:.68rem;color:var(--text3);margin-top:.2rem}
+.stat-sub{font-size:.67rem;color:var(--text3);margin-top:.15rem;opacity:.8}
+
+/* ══ ACTIVITY TABLE ══ */
+.data-card{
+  background:var(--surface);border-radius:14px;border:1px solid var(--line);
+  overflow:clip;margin-bottom:1.1rem;transition:background .25s,border-color .25s;
+}
+.dt-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;border-bottom:1px solid var(--line)}
+.dt-head-title{font-size:.88rem;font-weight:600;color:var(--text)}
+.dt-count{font-size:.74rem;color:var(--text3)}
+table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.data-tbl th{text-align:left;padding:.5rem .9rem;font-size:.68rem;font-weight:600;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--line)}
+.data-tbl td{padding:.6rem .9rem;color:var(--text2);border-bottom:1px solid var(--line2)}
+.data-tbl tr:last-child td{border-bottom:none}
+.data-tbl tr:hover td{background:var(--bg)}
+.act-icon{font-size:.95rem;margin-right:.2rem}
+.act-badge{
+  display:inline-flex;align-items:center;
+  padding:.18rem .55rem;border-radius:6px;
+  font-weight:600;font-size:.75rem;white-space:nowrap;
+}
+.ab-draf{background:#FAE8A0;color:#705010}
+.ab-kuis{background:#C0DD97;color:#27500A}
+.ab-forum{background:rgba(143,162,135,.2);color:var(--sage-d)}
+
+/* ══ TOGGLE / SETTINGS ══ */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:.55rem 0;border-bottom:1px solid var(--line2)}
+.toggle-row:last-of-type{border-bottom:none}
+.toggle-label{font-size:.82rem;color:var(--text2)}
+.toggle-sub{font-size:.7rem;color:var(--text3);margin-top:.1rem}
+.toggle{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--line);border-radius:22px;transition:.25s}
+.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:.25s}
+.toggle input:checked + .toggle-slider{background:var(--sage)}
+.toggle input:checked + .toggle-slider::before{transform:translateX(18px)}
+.settings-actions{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--line2)}
+.btn-logout-card{
+  height:38px;padding:0 1.1rem;border-radius:8px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.8rem;font-weight:600;
+  color:var(--red);cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;gap:.4rem;
+}
+.btn-logout-card:hover{border-color:var(--red);background:rgba(176,48,32,.05)}
+.btn-logout-card svg{width:14px;height:14px}
+
+/* ══ TOAST ══ */
+.toast{
+  position:fixed;bottom:1.4rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--topnav-bg);color:var(--terra);
+  padding:.65rem 1.4rem;border-radius:100px;font-size:.82rem;font-weight:600;
+  box-shadow:0 6px 24px rgba(0,0,0,.25);z-index:800;transition:transform .3s ease;
+  pointer-events:none;white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ══ MODAL ══ */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:700;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:16px;padding:1.6rem 1.8rem;
+  max-width:360px;width:90%;text-align:center;
+  box-shadow:0 16px 48px rgba(0,0,0,.22);border:1px solid var(--border);
+  transition:background .25s;
+}
+.modal h3{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:.4rem}
+.modal p{font-size:.82rem;color:var(--text3);margin-bottom:1.3rem;line-height:1.5}
+.modal-btns{display:flex;gap:.6rem}
+.btn-cancel{
+  flex:1;height:38px;border-radius:9px;border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text2);cursor:pointer;transition:all .15s;
+}
+.btn-cancel:hover{border-color:var(--text)}
+.btn-confirm{
+  flex:1;height:38px;border-radius:9px;border:none;
+  background:var(--topnav-bg);color:var(--terra);
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s;
+}
+.btn-confirm:hover{background:var(--terra);color:#fff}
+
+/* ══ RESPONSIVE ══ */
+@media(max-width:768px){
+  .tn-nav{display:none}
+  .tn-hamburger{display:flex}
+  .page-wrap{padding:1.1rem 1rem 2.5rem}
+  .hero-card{flex-direction:column;align-items:flex-start;gap:1rem;padding:1.2rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .form-grid{grid-template-columns:1fr}
+}
+@media(max-width:640px){
+  .page-wrap{padding:.9rem .85rem 2rem}
+  .hero-card{padding:1rem}
+  .avatar-circle{width:64px;height:64px;font-size:1.6rem}
+  .hero-name{font-size:1.1rem}
+  .form-input{font-size:16px}
+  select.form-input{font-size:16px}
+  body{font-size:13px}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:.6rem}
+  .stat-val{font-size:1.15rem}
+  .data-tbl th,.data-tbl td{padding:.45rem .6rem;font-size:.76rem}
+  .settings-actions{flex-direction:column}
+  .btn-logout-card{width:100%;justify-content:center}
+}
+@media(max-width:380px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP NAV ══ -->
+<nav class="topnav" id="topnav">
+  <a class="tn-logo" href="dashboard-dos.html">
+    <span class="tn-logo-icon">📖</span>
+    <span class="tn-logo-text">SMART<span>-FLIP</span></span>
+    <span class="tn-logo-ver">5.0</span>
+  </a>
+
+  <div class="tn-nav" id="tnNav">
+    <a class="nav-item" href="dashboard-dos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item" href="analitik.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analitik
+    </a>
+    <a class="nav-item" href="validasi.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Validasi
+    </a>
+    <a class="nav-item" href="manajemen.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Kelola Modul
+    </a>
+    <a class="nav-item active" href="profil-dos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </a>
+  </div>
+
+  <div class="tn-right">
+    <button class="tn-btn" id="btnTheme" title="Toggle dark mode" onclick="toggleTheme()" aria-label="Toggle tema">
+      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    </button>
+    <div class="avatar-wrap">
+      <div class="avatar" id="avatarBtn" onclick="toggleDD()">AF</div>
+      <div class="av-dd" id="avDD">
+        <div class="dd-hd">
+          <div class="dd-name" id="ddName">—</div>
+          <div class="dd-sub" id="ddNidn">NIDN: —</div>
+        </div>
+        <a class="dd-item" href="dashboard-dos.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <div class="dd-sep"></div>
+        <div class="dd-item dd-red" onclick="openLogoutModal();closeDD()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Keluar
+        </div>
+      </div>
+    </div>
+    <button class="tn-hamburger" id="btnHamburger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══ MOBILE DRAWER ══ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hd">
+    <span class="drawer-logo">SMART-FLIP 5.0</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-sect">Navigasi</div>
+  <a class="nav-item" href="dashboard-dos.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item" href="analitik.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analitik
+  </a>
+  <a class="nav-item" href="validasi.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Validasi
+  </a>
+  <a class="nav-item" href="manajemen.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+    Kelola Modul
+  </a>
+  <a class="nav-item active" href="profil-dos.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profil
+  </a>
+  <div class="drawer-div"></div>
+  <div class="nav-item" style="color:var(--red)" onclick="openLogoutModal();closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Keluar
+  </div>
+</div>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div class="main-wrap">
+<div class="page-wrap">
+
+  <div class="pg-hd">
+    <h1>Profil Dosen</h1>
+    <p>Kelola data diri, statistik mengajar, dan pengaturan akun</p>
+  </div>
+
+  <!-- ── HERO CARD ── -->
+  <div class="hero-card" id="heroCard">
+    <div class="avatar-circle" id="avatarCircle">AF</div>
+    <div class="hero-info">
+      <div class="hero-name" id="heroName">Dr. Ahmad Fauzi, M.Pd.</div>
+      <div class="hero-nidn" id="heroNidn">NIDN: 0012345678</div>
+      <div class="hero-email" id="heroEmail">ahmad.fauzi@um.ac.id</div>
+      <div class="hero-meta">
+        <span class="role-badge">👨‍🏫 Dosen</span>
+        <button class="btn-edit-profil" onclick="toggleEditForm()" id="btnEditProfil">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Edit Profil
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 1: EDIT FORM DATA DIRI ── -->
+  <div class="edit-form-wrap" id="editFormWrap">
+    <div class="edit-form-title">Edit Data Diri Dosen</div>
+    <div class="form-grid">
+      <div class="form-field">
+        <label for="inputNama">Nama Lengkap</label>
+        <input class="form-input" id="inputNama" type="text" placeholder="Nama lengkap">
+      </div>
+      <div class="form-field">
+        <label for="inputNidn">NIDN</label>
+        <input class="form-input" id="inputNidn" type="text" placeholder="NIDN">
+      </div>
+      <div class="form-field">
+        <label for="inputJabatan">Jabatan Fungsional</label>
+        <select class="form-input" id="inputJabatan">
+          <option value="Asisten Ahli">Asisten Ahli</option>
+          <option value="Lektor">Lektor</option>
+          <option value="Lektor Kepala" selected>Lektor Kepala</option>
+          <option value="Profesor">Profesor</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label for="inputProdi">Program Studi</label>
+        <input class="form-input" id="inputProdi" type="text" placeholder="Program Studi">
+      </div>
+      <div class="form-field">
+        <label for="inputFakultas">Fakultas</label>
+        <input class="form-input" id="inputFakultas" type="text" placeholder="Fakultas">
+      </div>
+      <div class="form-field">
+        <label for="inputEmail">Email</label>
+        <input class="form-input" id="inputEmail" type="email" placeholder="Email" disabled>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-simpan" onclick="simpanProfil()">Simpan</button>
+      <button class="btn-batal" onclick="toggleEditForm()">Batal</button>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: STATISTIK MENGAJAR ── -->
+  <div class="section-card">
+    <div class="card-head">
+      <span class="card-head-icon">📊</span>
+      <div class="card-head-title">Statistik Mengajar</div>
+    </div>
+    <div class="card-body">
+      <div class="stat-grid">
+        <div class="stat-card sc-c1">
+          <div class="stat-icon">📚</div>
+          <div class="stat-val" id="stModulAktif">—</div>
+          <div class="stat-lbl">Modul Aktif</div>
+          <div class="stat-sub">dari 9 modul</div>
+        </div>
+        <div class="stat-card sc-c2">
+          <div class="stat-icon">👥</div>
+          <div class="stat-val" id="stMahasiswa">28</div>
+          <div class="stat-lbl">Mahasiswa Terdaftar</div>
+          <div class="stat-sub">Kelas A</div>
+        </div>
+        <div class="stat-card sc-c3">
+          <div class="stat-icon">✅</div>
+          <div class="stat-val" id="stCompleteness">64%</div>
+          <div class="stat-lbl">Rata-rata Completeness</div>
+          <div class="stat-sub">mahasiswa selesai</div>
+        </div>
+        <div class="stat-card sc-c4">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-val" id="stAvgSkor">76%</div>
+          <div class="stat-lbl">Rata-rata Skor Kuis</div>
+          <div class="stat-sub">semua modul</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SECTION 3: AKTIVITAS KELAS TERKINI ── -->
+  <div class="data-card">
+    <div class="dt-head">
+      <div class="dt-head-title">Aktivitas Kelas Terkini</div>
+      <span class="dt-count">5 aktivitas terakhir</span>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="data-tbl">
+        <thead>
+          <tr>
+            <th>Aktivitas</th>
+            <th>Detail</th>
+            <th>Waktu</th>
+          </tr>
+        </thead>
+        <tbody id="activityBody">
+          <tr>
+            <td><span class="act-icon">📄</span> Citra Dewi Lestari</td>
+            <td><span class="act-badge ab-draf">Submit Draf Modul 3</span></td>
+            <td>2 jam lalu</td>
+          </tr>
+          <tr>
+            <td><span class="act-icon">🎯</span> Budi Santoso</td>
+            <td><span class="act-badge ab-kuis">Selesai Kuis Modul 2 — Skor 88</span></td>
+            <td>3 jam lalu</td>
+          </tr>
+          <tr>
+            <td><span class="act-icon">💬</span> Forum Modul 1</td>
+            <td><span class="act-badge ab-forum">3 balasan baru</span></td>
+            <td>5 jam lalu</td>
+          </tr>
+          <tr>
+            <td><span class="act-icon">📄</span> Eka Wulandari</td>
+            <td><span class="act-badge ab-draf">Submit Draf Modul 2</span></td>
+            <td>1 hari lalu</td>
+          </tr>
+          <tr>
+            <td><span class="act-icon">🎯</span> Gita Puspita</td>
+            <td><span class="act-badge ab-kuis">Selesai Kuis Modul 4 — Skor 90</span></td>
+            <td>1 hari lalu</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── SECTION 4: PENGATURAN ── -->
+  <div class="section-card">
+    <div class="card-head">
+      <span class="card-head-icon">⚙️</span>
+      <div class="card-head-title">Pengaturan</div>
+    </div>
+    <div class="card-body">
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Notifikasi draf masuk</div>
+          <div class="toggle-sub">Terima notifikasi saat mahasiswa mengumpulkan draf baru</div>
+        </div>
+        <label class="toggle" aria-label="Toggle notifikasi draf">
+          <input type="checkbox" id="toggleDraf" checked onchange="saveTogglePref('notif_draf', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div>
+          <div class="toggle-label">Notifikasi forum baru</div>
+          <div class="toggle-sub">Terima notifikasi saat ada postingan forum baru dari mahasiswa</div>
+        </div>
+        <label class="toggle" aria-label="Toggle notifikasi forum">
+          <input type="checkbox" id="toggleForum" checked onchange="saveTogglePref('notif_forum', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="settings-actions">
+        <button class="btn-logout-card" onclick="openLogoutModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Keluar dari Akun
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-wrap -->
+</div><!-- /main-wrap -->
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ LOGOUT MODAL ══ -->
+<div class="modal-bg" id="logoutModal">
+  <div class="modal">
+    <h3>Keluar dari akun?</h3>
+    <p>Semua data sudah tersimpan secara otomatis.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+// ══ XSS HELPER ══
+function escHtml(s){
+  return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ══ THEME ══
+(function initTheme(){
+  const saved = localStorage.getItem('sfp_theme');
+  if(saved) document.documentElement.setAttribute('data-theme',saved);
+  updateThemeIcon();
+})();
+
+function updateThemeIcon(){
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark'
+    ||(!document.documentElement.hasAttribute('data-theme')&&window.matchMedia('(prefers-color-scheme:dark)').matches);
+  document.getElementById('iconMoon').style.display = isDark?'none':'';
+  document.getElementById('iconSun').style.display  = isDark?'':'none';
+}
+
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme')
+    ||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  const next = cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',next);
+  localStorage.setItem('sfp_theme',next);
+  updateThemeIcon();
+}
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',updateThemeIcon);
+
+// ══ AUTH GUARD ══
+(async()=>{
+  const isDemo = localStorage.getItem('sfp_demo')==='1' || typeof sb==='undefined';
+  if(isDemo){
+    if(localStorage.getItem('sfp_role') !== 'dosen'){
+      window.location.replace('dashboard-mhs.html'); return;
+    }
+    initDosProfile();
+    return;
+  }
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ window.location.replace('index.html'); return; }
+    initDosProfile(session.user.id);
+  } catch(e){ initDosProfile(); }
+})();
+
+// ══ DEFAULT DATA ══
+const DEFAULT_DOS_PROFIL = {
+  name:'Dr. Ahmad Fauzi, M.Pd.',
+  nidn:'0012345678',
+  jabatan:'Lektor Kepala',
+  prodi:'Pendidikan Teknik Elektro',
+  fakultas:'Fakultas Vokasi',
+  email:'ahmad.fauzi@um.ac.id'
+};
+
+let currentProfil = null;
+let editFormOpen  = false;
+
+// ══ INIT ══
+async function initDosProfile(userId){
+  // Load profil from DataLayer (keyed separately from mahasiswa)
+  let saved = null;
+  try{
+    if(typeof DataLayer !== 'undefined' && DataLayer.getProfil){
+      const raw = DataLayer.getProfil();
+      // Use only if it contains dosen-specific fields (jabatan)
+      if(raw && raw.jabatan) saved = raw;
+    }
+  } catch(e){}
+
+  currentProfil = saved || { ...DEFAULT_DOS_PROFIL };
+
+  // Try Supabase for real data
+  if(userId && typeof sb !== 'undefined'){
+    try{
+      const { data:p } = await sb.from('profiles').select('*').eq('id',userId).single();
+      if(p){
+        currentProfil = {
+          name: p.full_name || currentProfil.name,
+          nidn: p.nim_nidn  || currentProfil.nidn,
+          jabatan:  p.jabatan  || currentProfil.jabatan,
+          prodi:    p.prodi    || currentProfil.prodi,
+          fakultas: p.fakultas || currentProfil.fakultas,
+          email:    p.email    || currentProfil.email,
+        };
+      }
+    } catch(e){}
+  }
+
+  renderHeroCard();
+  renderStats();
+  loadTogglePrefs();
+}
+
+// ══ HERO CARD ══
+function renderHeroCard(){
+  const p = currentProfil;
+  const initials = (p.name||'D').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  document.getElementById('avatarCircle').textContent = initials;
+  document.getElementById('avatarBtn').textContent    = initials;
+  document.getElementById('heroName').textContent     = p.name  || '—';
+  document.getElementById('heroNidn').textContent     = 'NIDN: '+(p.nidn||'—');
+  document.getElementById('heroEmail').textContent    = p.email || '—';
+
+  // Avatar dropdown name
+  document.getElementById('ddName').textContent  = p.name || '—';
+  document.getElementById('ddNidn').textContent  = 'NIDN: '+(p.nidn||'—');
+
+  // Populate form fields
+  document.getElementById('inputNama').value     = p.name     || '';
+  document.getElementById('inputNidn').value     = p.nidn     || '';
+  document.getElementById('inputEmail').value    = p.email    || '';
+  document.getElementById('inputProdi').value    = p.prodi    || '';
+  document.getElementById('inputFakultas').value = p.fakultas || '';
+  // Jabatan dropdown
+  const sel = document.getElementById('inputJabatan');
+  for(let i=0;i<sel.options.length;i++){
+    if(sel.options[i].value === p.jabatan){ sel.selectedIndex=i; break; }
+  }
+}
+
+// ══ TOGGLE EDIT FORM ══
+function toggleEditForm(){
+  editFormOpen = !editFormOpen;
+  document.getElementById('editFormWrap').classList.toggle('open', editFormOpen);
+}
+
+// ══ SAVE PROFIL ══
+function simpanProfil(){
+  const nama     = document.getElementById('inputNama').value.trim();
+  const nidn     = document.getElementById('inputNidn').value.trim();
+  const jabatan  = document.getElementById('inputJabatan').value;
+  const prodi    = document.getElementById('inputProdi').value.trim();
+  const fakultas = document.getElementById('inputFakultas').value.trim();
+
+  if(!nama){ showToast('Nama tidak boleh kosong'); return; }
+
+  currentProfil = { ...currentProfil, name:nama, nidn, jabatan, prodi, fakultas };
+
+  try{
+    if(typeof DataLayer !== 'undefined' && DataLayer.saveProfil){
+      DataLayer.saveProfil(currentProfil);
+    }
+  } catch(e){}
+
+  renderHeroCard();
+  toggleEditForm();
+  showToast('Profil berhasil disimpan ✓');
+}
+
+// ══ STATS ══
+function renderStats(){
+  // Count active modules from MODULES_DATA
+  let aktif = 0;
+  try{
+    if(typeof MODULES_DATA !== 'undefined'){
+      aktif = MODULES_DATA.filter(m => m.status === 'active' || !m.status).length;
+    } else if(typeof DataLayer !== 'undefined' && DataLayer.getModulOrder){
+      const order = DataLayer.getModulOrder();
+      aktif = order ? Object.values(order).filter(s => s !== 'draft').length : 9;
+    }
+  } catch(e){ aktif = 9; }
+  if(!aktif) aktif = 9; // fallback
+
+  document.getElementById('stModulAktif').textContent = aktif;
+  // Mahasiswa, completeness, avg skor are dummy (28, 64%, 76%)
+  // already set as static HTML but can be updated here if needed
+}
+
+// ══ TOGGLE PREFERENCES ══
+function loadTogglePrefs(){
+  const draf  = localStorage.getItem('sfp_dos_notif_draf');
+  const forum = localStorage.getItem('sfp_dos_notif_forum');
+  if(draf  !== null) document.getElementById('toggleDraf').checked  = draf  === 'true';
+  if(forum !== null) document.getElementById('toggleForum').checked = forum === 'true';
+}
+
+function saveTogglePref(key, val){
+  localStorage.setItem('sfp_dos_'+key, String(val));
+  showToast(val ? 'Notifikasi diaktifkan' : 'Notifikasi dinonaktifkan');
+}
+
+// ══ LOGOUT ══
+function openLogoutModal(){
+  document.getElementById('logoutModal').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeLogoutModal(){
+  document.getElementById('logoutModal').classList.remove('show');
+  document.body.style.overflow='';
+}
+async function confirmLogout(){
+  closeLogoutModal();
+  await doLogout();
+}
+async function doLogout(){
+  try{ if(typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e){}
+  window.location.href = 'index.html';
+}
+
+// Close modal on backdrop click
+document.getElementById('logoutModal').addEventListener('click', function(e){
+  if(e.target === this) closeLogoutModal();
+});
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape') closeLogoutModal();
+});
+
+// ══ TOAST ══
+let toastTimer = null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ══ AVATAR DROPDOWN ══
+function toggleDD(){
+  document.getElementById('avDD').classList.toggle('open');
+}
+function closeDD(){
+  document.getElementById('avDD').classList.remove('open');
+}
+document.addEventListener('click', function(e){
+  const wrap = document.getElementById('avatarBtn');
+  const dd   = document.getElementById('avDD');
+  if(dd && !dd.contains(e.target) && !wrap.contains(e.target)){
+    closeDD();
+  }
+});
+
+// ══ MOBILE DRAWER ══
+function toggleDrawer(){
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawerOverlay').classList.toggle('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+window.addEventListener('resize', ()=>{ if(window.innerWidth > 768) closeDrawer(); });
+</script>
+</body>
+</html>

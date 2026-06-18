@@ -123,6 +123,14 @@ body{
 .login-row a{color:var(--sage-d);text-decoration:none;font-weight:600}
 .login-row a:hover{text-decoration:underline;color:var(--brown2)}
 
+/* ── ANIMATIONS ── */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.card{animation:pageIn .4s ease-out both}
+.alert.show{animation:toastIn .25s ease-out}
+
 /* ── MOBILE ── */
 @media(max-width:640px){
   body{padding:.75rem 1rem;align-items:flex-start}

@@ -436,7 +436,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);tra
 /* ── DATA CARD ── */
 .data-card{
   background:var(--surface);border-radius:12px;
-  border:1px solid var(--line);overflow:hidden;margin-bottom:1rem;
+  border:1px solid var(--line);overflow:clip;margin-bottom:1rem;
 }
 .dc-hd{
   display:flex;align-items:center;justify-content:space-between;
@@ -617,6 +617,44 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
 .btn-ok:hover{background:var(--terra)}
 
 /* ══════════════════════════════════════
+   ANIMATIONS (PAGE-SPECIFIC)
+══════════════════════════════════════ */
+
+/* Page entrance */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:pageIn .35s ease-out both}
+.hero{animation:pageIn .4s ease-out both}
+
+/* Stat cards stagger */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stat-card:nth-child(1){animation:fadeUp .3s ease-out .05s both}
+.stat-card:nth-child(2){animation:fadeUp .3s ease-out .10s both}
+.stat-card:nth-child(3){animation:fadeUp .3s ease-out .15s both}
+.stat-card:nth-child(4){animation:fadeUp .3s ease-out .20s both}
+
+/* Stat card hover lift */
+.stat-card{transition:transform .2s ease,box-shadow .2s ease}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+
+/* Quick action cards stagger & hover */
+.quick-card:nth-child(1){animation:fadeUp .3s ease-out .08s both}
+.quick-card:nth-child(2){animation:fadeUp .3s ease-out .13s both}
+.quick-card:nth-child(3){animation:fadeUp .3s ease-out .18s both}
+.quick-card:nth-child(4){animation:fadeUp .3s ease-out .23s both}
+.quick-card:nth-child(5){animation:fadeUp .3s ease-out .28s both}
+.quick-card:nth-child(6){animation:fadeUp .3s ease-out .33s both}
+.quick-card{transition:transform .2s ease,border-color .18s,color .18s,background .18s,box-shadow .2s}
+.quick-card:hover{transform:translateY(-2px)}
+
+/* Modal entrance */
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-box,.logout-modal-box{animation:modalIn .25s ease-out}
+
+/* Bar fill */
+@keyframes progressFill{from{width:0}to{width:var(--pw,100%)}}
+.bar-fill{animation:progressFill .8s ease-out .3s both}
+
+/* ══════════════════════════════════════
    RESPONSIVE — MOBILE
 ══════════════════════════════════════ */
 @media(max-width:768px){
@@ -644,12 +682,113 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
   .modal{width:calc(100vw - 32px);max-width:none}
   .hero-chips{gap:.4rem}
   .hero-chip{font-size:.72rem;padding:.28rem .6rem}
+  body{font-size:13px}
+  input,select,textarea{font-size:16px!important}
+  .srch-row input{font-size:16px!important}
 }
 @media(max-width:380px){
   .page{padding:.75rem .6rem}
   .stat-grid{grid-template-columns:1fr}
   .quick-grid{grid-template-columns:1fr}
 }
+
+/* ══════════════════════════════════════
+   ONBOARDING MODAL
+══════════════════════════════════════ */
+.ob-overlay{
+  position:fixed;inset:0;
+  background:rgba(44,36,32,.55);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  z-index:800;
+  display:none;align-items:center;justify-content:center;
+  padding:1rem;
+}
+.ob-overlay.show{display:flex}
+.ob-modal{
+  background:var(--surface);
+  border-radius:20px;
+  max-width:420px;width:100%;
+  max-height:calc(100vh - 2rem);overflow-y:auto;
+  box-shadow:0 24px 64px rgba(44,36,32,.28);
+  border:1px solid var(--border);
+  animation:ob-slide-in .38s cubic-bezier(.22,.68,0,1.2) both;
+  position:relative;
+}
+@keyframes ob-slide-in{
+  from{transform:translateY(32px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+.ob-skip{
+  position:absolute;top:.85rem;right:.85rem;
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:var(--surface2);color:var(--text3);
+  cursor:pointer;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;z-index:2;
+  font-family:'DM Sans',sans-serif;
+}
+.ob-skip:hover{background:var(--line);color:var(--text)}
+.ob-step{display:none;padding:2rem 1.8rem 1.5rem}
+.ob-step.ob-active{display:block}
+.ob-icon-big{font-size:2.8rem;margin-bottom:.85rem;line-height:1}
+.ob-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.25rem;font-weight:700;
+  color:var(--text);line-height:1.25;margin-bottom:.4rem;
+}
+.ob-sub{font-size:.82rem;color:var(--text3);line-height:1.55;margin-bottom:1.25rem}
+.ob-feat-list{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.4rem}
+.ob-feat{
+  display:flex;align-items:flex-start;gap:.75rem;
+  background:var(--surface2);border-radius:10px;padding:.7rem .9rem;
+  border:1px solid var(--border);
+}
+.ob-feat-icon{font-size:1.2rem;flex-shrink:0;margin-top:.05rem}
+.ob-feat-body strong{display:block;font-size:.83rem;font-weight:600;color:var(--text);margin-bottom:.15rem}
+.ob-feat-body span{font-size:.76rem;color:var(--text3);line-height:1.4}
+.ob-vark-box{
+  background:linear-gradient(135deg,rgba(212,163,115,.15),rgba(143,162,135,.1));
+  border:1px solid rgba(212,163,115,.3);
+  border-radius:12px;padding:.9rem 1rem;margin-bottom:1.3rem;
+}
+.ob-vark-title{font-size:.85rem;font-weight:700;color:var(--terra-d);margin-bottom:.3rem}
+.ob-vark-desc{font-size:.78rem;color:var(--text2);line-height:1.5}
+.ob-vark-types{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem}
+.ob-vark-type{
+  font-size:.68rem;font-weight:700;padding:.22rem .55rem;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border);color:var(--text2);
+}
+.ob-actions{display:flex;align-items:center;gap:.65rem;margin-top:.25rem}
+.ob-btn-next{
+  flex:1;height:42px;border-radius:11px;border:none;
+  background:var(--terra);color:#1A1208;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:background .18s,transform .15s;
+}
+.ob-btn-next:hover{background:var(--terra-d);transform:translateY(-1px)}
+.ob-btn-back{
+  height:42px;padding:0 1rem;border-radius:11px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text2);
+  cursor:pointer;transition:all .15s;
+}
+.ob-btn-back:hover{border-color:var(--text);color:var(--text)}
+.ob-dots{
+  display:flex;align-items:center;justify-content:center;
+  gap:.45rem;padding-bottom:1.4rem;
+}
+.ob-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--line);transition:all .22s;cursor:pointer;border:none;
+}
+.ob-dot.ob-dot-active{background:var(--terra);width:20px;border-radius:4px}
+@media(max-width:480px){
+  .ob-modal{border-radius:16px}
+  .ob-step{padding:1.6rem 1.25rem 1.25rem}
+  .ob-title{font-size:1.1rem}
+}
+
 </style>
 </head>
 <body>
@@ -708,7 +847,7 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       Kelola Modul
     </a>
-    <a class="nav-item" href="profil.html">
+    <a class="nav-item" href="profil-dos.html">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       Profil
     </a>
@@ -745,12 +884,12 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
           <div class="dd-name" id="ddName">—</div>
           <div class="dd-sub" id="ddNidn">NIDN: —</div>
         </div>
-        <div class="dd-item" onclick="showPage('pengaturan');closeDD()">
+        <a class="dd-item" href="profil-dos.html">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
           Edit Profil
-        </div>
+        </a>
         <div class="dd-sep"></div>
-        <div class="dd-item dd-red" onclick="document.getElementById('logoutModal').classList.add('show');closeDD()">
+        <div class="dd-item dd-red" onclick="openLogoutModal();closeDD()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Keluar
         </div>
@@ -819,7 +958,7 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
     Kelola Modul
   </a>
-  <a class="nav-item" href="profil.html">
+  <a class="nav-item" href="profil-dos.html">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     Profil
   </a>
@@ -828,7 +967,7 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     Pengaturan
   </button>
-  <button class="nav-item" style="color:var(--red)" onclick="document.getElementById('logoutModal').classList.add('show');closeDrawer()">
+  <button class="nav-item" style="color:var(--red)" onclick="openLogoutModal();closeDrawer()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     Keluar
   </button>
@@ -885,7 +1024,7 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
         <a href="manajemen.html" class="quick-card">
           <span class="quick-card-icon">✏️</span>Kelola Modul
         </a>
-        <a href="profil.html" class="quick-card">
+        <a href="profil-dos.html" class="quick-card">
           <span class="quick-card-icon">👤</span>Profil
         </a>
       </div>
@@ -924,10 +1063,12 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
         <span class="sec-lnk" onclick="showPage('mahasiswa')">Lihat semua →</span>
       </div>
       <div class="data-card">
-        <table class="dt">
-          <thead><tr><th>Nama</th><th>Progres</th><th>Kuis</th><th>Status</th></tr></thead>
-          <tbody id="dashTbody"></tbody>
-        </table>
+        <div style="overflow-x:auto">
+          <table class="dt">
+            <thead><tr><th>Nama</th><th>Progres</th><th>Kuis</th><th>Status</th></tr></thead>
+            <tbody id="dashTbody"></tbody>
+          </table>
+        </div>
       </div>
       <div class="chart-card">
         <div class="chart-title">Distribusi skor kuis — Kelas A</div>
@@ -986,10 +1127,12 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
     </div>
     <div class="data-card" style="margin-top:1rem">
       <div class="dc-hd"><div class="dc-title">Ringkasan per modul</div><div class="dc-sub">Kelas A · Juni 2026</div></div>
-      <table class="dt">
-        <thead><tr><th>Modul</th><th>Selesai</th><th>Rata-rata Kuis</th><th>Rata-rata Waktu</th></tr></thead>
-        <tbody id="analitikTbody"></tbody>
-      </table>
+      <div style="overflow-x:auto">
+        <table class="dt">
+          <thead><tr><th>Modul</th><th>Selesai</th><th>Rata-rata Kuis</th><th>Rata-rata Waktu</th></tr></thead>
+          <tbody id="analitikTbody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1035,8 +1178,8 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
     <h3>Keluar dari akun?</h3>
     <p>Semua data sudah tersimpan secara otomatis.</p>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="document.getElementById('logoutModal').classList.remove('show')">Batal</button>
-      <button class="btn-ok" onclick="doLogout()">Ya, Keluar</button>
+      <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="btn-ok" onclick="confirmLogout()">Ya, Keluar</button>
     </div>
   </div>
 </div>
@@ -1515,6 +1658,112 @@ async function markAllRead() {
 
 // Load notifikasi saat init
 loadNotifications();
+
+// ══════════════════════════════════════
+// ONBOARDING (DOSEN) — sfp_onboarded_dos_v1
+// ══════════════════════════════════════
+(function initOnboardingDos() {
+  const FLAG = 'sfp_onboarded_dos_v1';
+  const overlay = document.getElementById('obOverlay');
+  if (!overlay) return;
+  if (!localStorage.getItem(FLAG)) overlay.classList.add('show');
+  let cur = 1;
+  const TOTAL = 2;
+  function go(n) {
+    if (n < 1 || n > TOTAL) return;
+    document.querySelectorAll('.ob-step').forEach(el => el.classList.remove('ob-active'));
+    const el = document.getElementById('ob-step-' + n);
+    if (el) el.classList.add('ob-active');
+    document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+      d.classList.toggle('ob-dot-active', parseInt(d.dataset.step) === n);
+    });
+    cur = n;
+  }
+  function close() {
+    localStorage.setItem(FLAG, '1');
+    overlay.classList.remove('show');
+  }
+  document.getElementById('obSkip')?.addEventListener('click', close);
+  document.getElementById('ob-next-1')?.addEventListener('click', () => go(2));
+  document.getElementById('ob-back-2')?.addEventListener('click', () => go(1));
+  document.getElementById('ob-finish')?.addEventListener('click', close);
+  document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+    d.addEventListener('click', () => go(parseInt(d.dataset.step)));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) close();
+  });
+})();
+
+function showOnboardingGuide() {
+  const overlay = document.getElementById('obOverlay');
+  if (!overlay) return;
+  document.querySelectorAll('.ob-step').forEach(el => el.classList.remove('ob-active'));
+  const s1 = document.getElementById('ob-step-1');
+  if (s1) s1.classList.add('ob-active');
+  document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+    d.classList.toggle('ob-dot-active', d.dataset.step === '1');
+  });
+  overlay.classList.add('show');
+}
+
+
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
 </script>
-</body>
-</html>
+
+<!-- ══ ONBOARDING MODAL (dosen) ══ -->
+<div class="ob-overlay" id="obOverlay" role="dialog" aria-modal="true" aria-label="Panduan dosen">
+  <div class="ob-modal">
+    <button class="ob-skip" id="obSkip" aria-label="Lewati panduan" title="Lewati">&#10005;</button>
+
+    <!-- STEP 1 -->
+    <div class="ob-step ob-active" id="ob-step-1">
+      <div class="ob-icon-big">&#127891;</div>
+      <div class="ob-title">Selamat Datang, Dosen!</div>
+      <div class="ob-sub">Dashboard ini memudahkanmu memantau perkembangan mahasiswa, mengelola konten modul, dan menganalisis hasil pembelajaran secara real-time.</div>
+      <div class="ob-feat-list">
+        <div class="ob-feat">
+          <span class="ob-feat-icon">&#128202;</span>
+          <div class="ob-feat-body">
+            <strong>Analitik Kelas</strong>
+            <span>Pantau progres, distribusi skor, dan flag mahasiswa tidak aktif.</span>
+          </div>
+        </div>
+        <div class="ob-feat">
+          <span class="ob-feat-icon">&#9989;</span>
+          <div class="ob-feat-body">
+            <strong>Validasi &amp; N-Gain</strong>
+            <span>Rekap hasil validasi ahli dan hitung N-Gain SDL mahasiswa.</span>
+          </div>
+        </div>
+        <div class="ob-feat">
+          <span class="ob-feat-icon">&#9999;&#65039;</span>
+          <div class="ob-feat-body">
+            <strong>Kelola Modul &amp; Draf</strong>
+            <span>Edit metadata modul, atur urutan, dan review draf mahasiswa.</span>
+          </div>
+        </div>
+      </div>
+      <div class="ob-actions">
+        <button class="ob-btn-next" id="ob-next-1">Lanjut &#8594;</button>
+      </div>
+    </div>
+
+    <!-- STEP 2 -->
+    <div class="ob-step" id="ob-step-2">
+      <div class="ob-icon-big">&#128640;</div>
+      <div class="ob-title">Pandu

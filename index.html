@@ -4,6 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Masuk — SMART-FLIP 5.0</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D4A373">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SMART-FLIP">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -166,6 +171,15 @@ body{
 .alert.error{background:#FDF0EF;border:1px solid #EBB8B2;color:var(--err)}
 .alert.success{background:#EAF3DE;border:1px solid #B8D98A;color:#2A5010}
 .alert.show{display:block}
+
+/* ── ANIMATIONS ── */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+
+.card{animation:pageIn .4s ease-out both}
+.form-card{animation:fadeUp .35s ease-out .1s both}
+.alert.show{animation:toastIn .25s ease-out}
 
 /* ── MOBILE ── */
 @media(max-width:640px){
@@ -429,6 +443,15 @@ if (!DEMO_MODE) {
       }
     } catch(e) {}
   })();
+}
+
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/smart-flipbook/sw.js')
+      .then(r => console.log('[SW] registered:', r.scope))
+      .catch(e => console.warn('[SW] failed:', e));
+  });
 }
 </script>
 </body>

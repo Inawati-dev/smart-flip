@@ -447,6 +447,97 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
+/* ── 1. Page Load Fade-in ── */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-wrapper, main, .container, .card, .page {
+  animation: pageIn 0.4s ease-out both;
+}
+
+/* ── 2. Card Hover Lift ── */
+.stat-card, .quick-card, .module-card, .section-card, .data-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.stat-card:hover, .quick-card:hover, .module-card:hover, .section-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(62,54,46,.12);
+}
+
+/* ── 3. Button Press ── */
+button, .btn, .btn-primary, .btn-secondary, .btn-lanjut, .demo-btn, .tb-btn {
+  transition: transform 0.1s ease, opacity 0.15s ease;
+}
+button:active, .btn:active, .btn-primary:active, .btn-secondary:active, .btn-lanjut:active {
+  transform: scale(0.97);
+}
+
+/* ── 4. Staggered Fade-up ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── 5. Toast / Alert Slide-in ── */
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.toast, .alert.show { animation: toastIn 0.25s ease-out; }
+
+/* ── 6. Modal Entrance ── */
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-box, .logout-modal-box, .ob-modal .ob-card {
+  animation: modalIn 0.25s ease-out;
+}
+
+/* ── 7. Skeleton Shimmer ── */
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg,
+    rgba(62,54,46,.06) 25%,
+    rgba(62,54,46,.12) 50%,
+    rgba(62,54,46,.06) 75%);
+  background-size: 400% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+/* ── 8. Nav Active Indicator Slide ── */
+.nav-item { position: relative; }
+.nav-item::before {
+  content: '';
+  position: absolute; bottom: 0; left: 0;
+  width: 0; height: 2px;
+  background: var(--terra);
+  transition: width 0.25s ease;
+  border-radius: 2px;
+}
+.nav-item.active::before, .nav-item:hover::before { width: 100%; }
+
+/* ── 9. Progress Bar Animation ── */
+@keyframes progressFill {
+  from { width: 0; }
+  to   { width: var(--progress-width, 100%); }
+}
+.progress-fill {
+  animation: progressFill 0.8s ease-out 0.3s both;
+}
+
+/* ── 10. Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 .book-card { animation: fadeIn .2s ease both; }
 
 /* ══════════════════════════════════════════════════════

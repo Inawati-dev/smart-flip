@@ -247,10 +247,74 @@
     <div class="legend-item"><span class="tag tag-doc">DOC</span> Dokumentasi</div>
   </div>
 
-  <!-- ═══ v0.9.3 (current) ═══ -->
+  <!-- ═══ v0.9.6 (current) ═══ -->
   <div class="version-block">
     <div class="vb-head">
-      <span class="vb-badge current">v0.9.3 ✦</span>
+      <span class="vb-badge current">v0.9.6 ✦</span>
+      <span class="vb-title">Bug Sweep, CSS Animations &amp; Profil Dosen</span>
+      <span class="vb-date">18 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span><strong>profil-dos.html</strong> — Halaman profil khusus dosen: Data Diri (NIDN, jabatan fungsional, prodi, fakultas), Statistik Mengajar (4 stat cards), Aktivitas Kelas Terkini, Pengaturan (toggles + logout)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>CSS animations library di style.css: <code>pageIn</code>, <code>fadeUp</code> (stagger), <code>toastIn</code>, <code>modalIn</code>, <code>shimmer</code>, <code>progressFill</code> — semua GPU-composited (transform/opacity)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Card hover lift: <code>translateY(-3px)</code> + shadow; button active: <code>scale(0.97)</code>; nav item underline slide via <code>::after</code></li>
+        <li class="imp"><span class="tag tag-imp">IMP</span><code>@media (prefers-reduced-motion: reduce)</code> — semua animasi dimatikan (accessibility compliance)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span><strong>isDemo pattern</strong> diterapkan ke semua 15 halaman protected: <code>const isDemo = localStorage.getItem('sfp_demo')==='1' || typeof sb==='undefined'</code></li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>profil.html raw JS muncul di body — <code>&lt;/script&gt;</code> tag terpotong oleh injeksi sebelumnya; file dipulihkan + re-injected bersih</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>Bug sweep 16 fixes: null checks, broken event listeners, missing auth guards di 8 halaman</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>dashboard-dos.html — link profil mengarah ke <code>profil-dos.html</code> di 4 titik navigasi (topbar, dropdown, mobile drawer, quick-card)</li>
+        <li class="refac"><span class="tag tag-refac">REFAC</span>CLAUDE.md: Sprint Roadmap diperbarui; v0.9.4–v0.9.6 tercatat lengkap</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.9.5 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge">v0.9.5</span>
+      <span class="vb-title">Mobile Support Rules &amp; Logout Modal</span>
+      <span class="vb-date">18 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="imp"><span class="tag tag-imp">IMP</span>CLAUDE.md: Mobile Support Rules ditambahkan — WAJIB setiap fitur support mobile 360–768px, input 16px (iOS anti-zoom), tap target 44×44px, modal 90vw/90vh</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Logout confirmation modal di semua 15 halaman protected: "Yakin ingin keluar?" dengan tombol Batal + Keluar</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Login toast feedback: visual feedback sebelum redirect ke dashboard</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Semua modal/dialog: <code>max-width:90vw; max-height:90vh; overflow-y:auto</code> — responsive mobile</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>Mobile audit: form, button, nav, grid di 375px dan 768px — semua halaman</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══ v0.9.4 ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge">v0.9.4</span>
+      <span class="vb-title">Onboarding, Loading Skeleton, VARK Visual &amp; PWA</span>
+      <span class="vb-date">18 Jun 2026</span>
+    </div>
+    <div class="vb-body">
+      <ul class="change-list">
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Onboarding modal mahasiswa 3-step: Welcome, Cara Belajar, VARK Adaptive — flag <code>sfp_onboarded_v1</code> di localStorage; bisa dipanggil ulang dari profil via <code>showOnboardingGuide()</code></li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Onboarding modal dosen 2-step: Welcome, Panduan Mulai — flag <code>sfp_onboarded_dos_v1</code> di localStorage</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>VARK summary visual di profil.html: dominant style card, rekomendasi konten per gaya belajar, bar chart per-warna, tips belajar 3 poin per tipe (V/A/R/K)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Export laporan belajar PDF dari profil.html (<code>window.print</code> + <code>@media print</code> CSS)</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>PWA: <code>manifest.json</code> + <code>sw.js</code> (cache-first strategy), icon 192px + 512px; manifest link + <code>theme-color</code> di 6 halaman utama; SW registration di index.html &amp; profil.html</li>
+        <li class="feat"><span class="tag tag-feat">FEAT</span>Notifikasi: unread dot, 6 dummy notifs (modul/kuis/forum/draf/progres/sistem), empty state</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Loading skeleton shimmer di dashboard-mhs.html: stat cards + modul list (mencegah layout shift)</li>
+        <li class="imp"><span class="tag tag-imp">IMP</span>Toast error ramah: "Koneksi bermasalah. Data ditampilkan dari cache lokal." (fallback offline)</li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>"Modul undefined" di subtitle Lanjut Belajar — fallback <code>m.no || m.id</code></li>
+        <li class="fix"><span class="tag tag-fix">FIX</span>Global <code>unhandledrejection</code> error handler di dashboard-mhs.html, modul.html, kuis.html</li>
+      </ul>
+      <p class="vb-desc">Sprint 9 — onboarding flow, UX polish (skeleton + toast), VARK visual summary, ekspor PDF, dan PWA support.</p>
+    </div>
+  </div>
+
+  <!-- ═══ v0.9.3 ✓ ═══ -->
+  <div class="version-block">
+    <div class="vb-head">
+      <span class="vb-badge minor">v0.9.3 ✓</span>
       <span class="vb-title">Validasi Ahli, Analitik Kelas &amp; Profil Pengguna</span>
       <span class="vb-date">18 Jun 2026</span>
     </div>
@@ -639,6 +703,17 @@
           · profil.html profil &amp; statistik belajar<br>
           · DataLayer +6 methods baru
         </div>
+        <span class="rm-status done">✓ Selesai</span>
+      </div>
+      <div class="rm-card">
+        <div class="rm-ver">v0.9.4</div>
+        <div class="rm-title">Onboarding, Skeleton &amp; PWA</div>
+        <div class="rm-items">
+          · Onboarding modal MHS (3-step) + DOS (2-step)<br>
+          · Loading skeleton shimmer dashboard<br>
+          · VARK summary visual + tips per tipe<br>
+          · Export laporan PDF + PWA manifest + SW
+        </div>
         <span class="rm-status current">Sekarang ✦</span>
       </div>
       <div class="rm-card">
@@ -650,7 +725,7 @@
           · Analisis N-Gain SDL<br>
           · HKI + artikel SINTA 3
         </div>
-        <span class="rm-status planned">Sprint 8 →</span>
+        <span class="rm-status planned">Sprint 10 →</span>
       </div>
     </div>
   </div>

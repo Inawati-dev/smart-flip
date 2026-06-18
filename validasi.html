@@ -477,6 +477,20 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
   body{background:#fff;color:#000}
 }
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem;transition:opacity .15s}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem;transition:opacity .15s}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -515,7 +529,7 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 
   <!-- Right controls -->
   <div class="tb-right">
-    <button class="tb-logout" onclick="document.getElementById('logoutModal').classList.add('show')" aria-label="Keluar">
+    <button class="tb-logout" onclick="openLogoutModal()" aria-label="Keluar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Keluar
     </button>
@@ -554,7 +568,7 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   </a>
   <div class="drawer-div"></div>
   <button class="tb-navitem" style="color:rgba(240,80,80,.8);width:calc(100% - 1rem);margin:.3px .5rem"
-    onclick="document.getElementById('logoutModal').classList.add('show');closeDrawer()">
+    onclick="openLogoutModal();closeDrawer()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
     Keluar
   </button>
@@ -964,8 +978,8 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
     <h3>Keluar dari akun?</h3>
     <p>Semua data sudah tersimpan secara otomatis.</p>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="document.getElementById('logoutModal').classList.remove('show')">Batal</button>
-      <button class="btn-ok" onclick="doLogout()">Ya, Keluar</button>
+      <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="btn-ok" onclick="confirmLogout()">Ya, Keluar</button>
     </div>
   </div>
 </div>
@@ -1409,6 +1423,22 @@ async function doLogout() {
   try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
   window.location.href = 'index.html';
 }
+
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
 </script>
 </body>
 </html>

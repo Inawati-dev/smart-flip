@@ -837,11 +837,11 @@ const DataLayer = (() => {
       const stored = lsGet('sfp_notifs');
       if (!stored) {
         const dummy = [
-          { id: 'n1', type: 'kuis',   title: 'Kuis Selesai',        body: 'Kamu mendapat skor 80 di Kuis Modul 1. Nilai meningkat dari percobaan sebelumnya!',  read: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
-          { id: 'n2', type: 'forum',  title: 'Balasan Baru',        body: 'Ir. Johan Iriawan membalas pertanyaanmu di forum Modul 1 tentang perbedaan R&D.',     read: false, createdAt: new Date(Date.now() - 7200000).toISOString() },
-          { id: 'n3', type: 'draf',   title: 'Draf Dikomentari',    body: 'Dosen memberikan komentar pada draf "Identifikasi Masalah Penelitian" kamu.',         read: false, createdAt: new Date(Date.now() - 10800000).toISOString() },
-          { id: 'n4', type: 'kuis',   title: 'Kuis Modul 2 Sempurna', body: 'Luar biasa! Kamu mendapat skor 100 pada Kuis Modul 2. Pertahankan!',               read: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
-          { id: 'n5', type: 'progres', title: 'Modul 1 Selesai',    body: 'Selamat! Kamu telah menyelesaikan Modul 1: Dasar & Konsep R&D. Lanjut ke Modul 2!',  read: true,  createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString() },
+          { id: 'n1', type: 'modul',  title: 'Modul 3 Dibuka',      body: 'Modul 3: Desain Penelitian & Instrumen kini tersedia. Lanjutkan perjalanan belajarmu!', read: false, createdAt: new Date(Date.now() - 7200000).toISOString() },
+          { id: 'n2', type: 'kuis',   title: 'Kuis Modul 2 — 85%',  body: 'Selamat! Kamu mendapat skor 85 di Kuis Modul 2. Kenaikan 5 poin dari percobaan sebelumnya!', read: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
+          { id: 'n3', type: 'forum',  title: 'Dosen Membalas Diskusimu', body: 'Ir. Johan Iriawan membalas pertanyaanmu di forum Modul 1 tentang perbedaan R&D.', read: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
+          { id: 'n4', type: 'draf',   title: 'Draf Dikomentari',    body: 'Dosen memberikan komentar pada draf "Identifikasi Masalah Penelitian" kamu. Cek segera!', read: false, createdAt: new Date(Date.now() - 10800000).toISOString() },
+          { id: 'n5', type: 'progres', title: 'Modul 1 Selesai! 🏆', body: 'Selamat! Kamu telah menyelesaikan Modul 1: Dasar & Konsep R&D. Lanjut ke Modul 2!', read: true,  createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString() },
           { id: 'n6', type: 'sistem', title: 'Selamat Datang',      body: 'Selamat bergabung di SMART-FLIP 5.0! Mulailah belajar dari Modul 1.',                read: true,  createdAt: new Date(Date.now() - 8 * 24 * 3600000).toISOString() },
         ];
         lsSet('sfp_notifs', dummy);
