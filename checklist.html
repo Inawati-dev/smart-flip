@@ -375,6 +375,28 @@
     </div>
   </div>
 
+  <!-- ═══ FASE 2g — Onboarding, Skeleton, VARK Visual & PWA (v0.9.4) ═══ -->
+  <div class="fase-block" id="f2g">
+    <div class="fase-head" onclick="toggleFase('f2g')">
+      <div class="collapse-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg></div>
+      <div class="fase-title">FASE 2g — Onboarding, Skeleton, VARK Visual &amp; PWA (v0.9.4)</div>
+      <span class="fase-badge done" id="f2g-badge">10 / 10</span>
+    </div>
+    <div class="fase-progress"><div class="fase-progress-fill" id="f2g-bar" style="width:100%"></div></div>
+    <div class="fase-items" id="f2g-items">
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Onboarding modal mahasiswa 3-step (Welcome, Cara Belajar, VARK Adaptive) — flag <code>sfp_onboarded_v1</code></div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Onboarding modal dosen 2-step (Welcome, Panduan Mulai) — flag <code>sfp_onboarded_dos_v1</code></div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — <code>showOnboardingGuide()</code> dapat dipanggil ulang dari profil.html</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Loading skeleton shimmer di dashboard-mhs.html: stat cards + modul list</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Toast error ramah "Koneksi bermasalah. Data ditampilkan dari cache lokal."</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — VARK summary visual di profil.html: dominant style card, rekomendasi konten, bar chart per-warna, tips 3 poin per tipe</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Export laporan belajar PDF dari profil.html (<code>window.print</code> + <code>@media print</code>)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — PWA: <code>manifest.json</code> + <code>sw.js</code> (cache-first), icon 192px + 512px</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — manifest link + <code>theme-color</code> di 6 halaman utama; SW registration di index.html &amp; profil.html</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Fix: "Modul undefined" di subtitle Lanjut Belajar (fallback <code>m.no || m.id</code>); global <code>unhandledrejection</code> handler di dashboard-mhs, modul, kuis</div></div>
+    </div>
+  </div>
+
   <!-- ═══ FASE 3–10 collapsed ═══ -->
   <div class="fase-block collapsed" id="f3">
     <div class="fase-head" onclick="toggleFase('f3')">
@@ -442,6 +464,12 @@
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.3</strong> — validasi.html: instrumen validasi ahli media &amp; materi (16 indikator, 2 aspek, hasil kelayakan)</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.3</strong> — analitik.html: dasbor analitik kelas dosen (progress mahasiswa, grafik distribusi, flag tidak aktif, export CSV)</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.3</strong> — profil.html: halaman profil pengguna (edit data, hasil VARK, statistik belajar, riwayat kuis)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.4</strong> — Notifikasi: unread dot, 6 dummy notifs (modul/kuis/forum/draf/progres/sistem), empty state</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.5</strong> — Logout confirmation modal di semua 15 halaman protected (konfirmasi sebelum keluar)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.5</strong> — Mobile audit menyeluruh 375px + 768px (form, button, nav, grid, modal — semua halaman)</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.6</strong> — Bug sweep 16 fixes: isDemo pattern, null checks, auth guards, profil.html script tag fix</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.6</strong> — CSS animations: pageIn, fadeUp, toastIn, modalIn, shimmer, progressFill + prefers-reduced-motion</div></div>
+      <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text"><strong>v0.9.6</strong> — profil-dos.html: halaman profil khusus dosen (NIDN, jabatan, statistik kelas, aktivitas)</div></div>
       <div class="item"><div class="item-check unchecked"></div><div class="item-text">Email reminder: tidak aktif 3 hari (Supabase Edge Functions)</div></div>
       <div class="item"><div class="item-check checked"><svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg></div><div class="item-text done-text">Notif dosen: mahasiswa kumpulkan draf baru</div></div>
       <div class="item"><div class="item-check unchecked"></div><div class="item-text">Filter kelas/kelompok di dashboard dosen</div></div>
@@ -471,7 +499,7 @@
     </div>
   </div>
 
-  <p class="last-updated">Terakhir diperbarui: 18 Jun 2026 · v0.9.3</p>
+  <p class="last-updated">Terakhir diperbarui: 18 Jun 2026 · v0.9.4</p>
 
 </div><!-- /.page -->
 
@@ -487,9 +515,10 @@ const fases = [
   { id: 'f2d', checked: 9,  total: 9  },
   { id: 'f2e', checked: 5,  total: 5  },
   { id: 'f2f', checked: 11, total: 11 },
+  { id: 'f2g', checked: 10, total: 10 },
   { id: 'f3',  checked: 6,  total: 6  },
   { id: 'f4',  checked: 5,  total: 5  },
-  { id: 'f5',  checked: 14, total: 19 },
+  { id: 'f5',  checked: 15, total: 21 },
   { id: 'f9',  checked: 0,  total: 10 },
 ];
 

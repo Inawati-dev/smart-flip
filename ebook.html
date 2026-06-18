@@ -20,6 +20,7 @@
     <div class="topbar-right">
       <button class="topbar-cat-btn" id="topbarCatBtn" onclick="toggleCatalog()" title="Buka/tutup katalog">📚 Katalog</button>
       <a class="topbar-link" id="dashboardBack" href="index.html" title="Kembali ke Dashboard">← Dashboard</a>
+      <button class="topbar-link" style="color:#C04020;border-color:rgba(192,64,32,.3)" onclick="openLogoutModal()">Keluar</button>
       <a class="topbar-link" href="changelog.html" title="Changelog">📋 Changelog</a>
       <a class="topbar-link" href="checklist.html" title="Checklist">✅ Checklist</a>
     </div>
@@ -223,6 +224,20 @@
   font-family:inherit;
 }
 .topbar-cat-btn:hover{background:var(--terra-d,#B8855A);}
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
 </style>
 <!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -266,6 +281,40 @@ openCatalog();
 </script>
 <script src="modules-data.js"></script>
 <script src="data-layer.js"></script>
-<script src="script.js"></script>
+<script src="script.js">
+// ── LOGOUT ──
+async function doLogout() {
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
+  window.location.href = 'index.html';
+}
+
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
+</script>
+
+<!-- ── LOGOUT MODAL ── -->
+<div id="logoutModal" class="logout-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+  <div class="logout-modal-box">
+    <h3 id="lmTitle">Keluar dari SMART-FLIP?</h3>
+    <p>Progres belajar kamu tersimpan otomatis.</p>
+    <div class="logout-modal-actions">
+      <button class="logout-btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="logout-btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

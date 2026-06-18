@@ -499,7 +499,7 @@ body{
 .vid-meta{font-size:.7rem;color:var(--text3);margin-top:.25rem}
 
 /* ── QUIZ TABLE ── */
-.data-card{background:var(--surface);border-radius:12px;border:1px solid var(--line);overflow:hidden;transition:background .25s,border-color .25s}
+.data-card{background:var(--surface);border-radius:12px;border:1px solid var(--line);overflow:clip;transition:background .25s,border-color .25s}
 .dt-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;border-bottom:1px solid var(--line)}
 .dt-head-title{font-size:.88rem;font-weight:600;color:var(--text)}
 table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
@@ -629,6 +629,22 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{text-align:center;padding:2rem;color:var(--text3);font-size:.83rem}
 
+/* ── SKELETON SHIMMER ── */
+.skeleton{
+  background:linear-gradient(90deg,rgba(62,54,46,.08) 25%,rgba(255,255,255,0.3) 50%,rgba(62,54,46,.08) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+}
+[data-theme="dark"] .skeleton{
+  background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+}
+@keyframes shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
 /* ── VARK BANNER ── */
 .vark-banner{
   display:none;align-items:center;gap:12px;
@@ -685,6 +701,57 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 .ql-icon{font-size:16px;flex-shrink:0}
 
 /* ══════════════════════════════════════
+   ANIMATIONS (PAGE-SPECIFIC)
+══════════════════════════════════════ */
+
+/* Page entrance */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:pageIn .35s ease-out both}
+
+/* Hero entrance */
+.hero.visible{animation:pageIn .4s ease-out both}
+
+/* Stat cards stagger */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stat-card:nth-child(1){animation:fadeUp .3s ease-out .05s both}
+.stat-card:nth-child(2){animation:fadeUp .3s ease-out .10s both}
+.stat-card:nth-child(3){animation:fadeUp .3s ease-out .15s both}
+
+/* Stat card hover lift (override base) */
+.stat-card{transition:transform .2s ease,box-shadow .2s ease,background .25s,border-color .25s}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+
+/* Module card stagger */
+.mod-card:nth-child(1){animation:fadeUp .3s ease-out .08s both}
+.mod-card:nth-child(2){animation:fadeUp .3s ease-out .13s both}
+.mod-card:nth-child(3){animation:fadeUp .3s ease-out .18s both}
+.mod-card:nth-child(4){animation:fadeUp .3s ease-out .23s both}
+.mod-card:nth-child(5){animation:fadeUp .3s ease-out .28s both}
+.mod-card:nth-child(6){animation:fadeUp .3s ease-out .33s both}
+.mod-card:nth-child(7){animation:fadeUp .3s ease-out .38s both}
+.mod-card:nth-child(8){animation:fadeUp .3s ease-out .43s both}
+.mod-card:nth-child(9){animation:fadeUp .3s ease-out .48s both}
+
+/* Module card hover lift */
+.mod-card{transition:all .18s ease}
+.mod-card:hover:not(.locked){transform:translateY(-2px);border-color:var(--text3);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+
+/* Quick link cards */
+.quick-link-card{transition:transform .2s ease,border-color .18s,color .18s,background .18s}
+.quick-link-card:hover{transform:translateY(-2px)}
+
+/* Button press */
+.btn-lanjut-belajar:active{transform:scale(.97)!important}
+
+/* Modal entrance */
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-box,.logout-modal-box,.ob-card{animation:modalIn .25s ease-out}
+
+/* Progress bar fill */
+@keyframes progressFill{from{width:0}to{width:var(--pw,100%)}}
+.mod-prog-fill{animation:progressFill .8s ease-out .4s both}
+
+/* ══════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════ */
 @media(max-width:768px){
@@ -722,6 +789,118 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
   .stat-grid{grid-template-columns:1fr}
   .s-val{font-size:1.6rem}
 }
+
+/* ══════════════════════════════════════
+   ONBOARDING MODAL
+══════════════════════════════════════ */
+.ob-overlay{
+  position:fixed;inset:0;
+  background:rgba(44,36,32,.55);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  z-index:800;
+  display:none;align-items:center;justify-content:center;
+  padding:1rem;
+}
+.ob-overlay.show{display:flex}
+.ob-modal{
+  background:var(--surface);
+  border-radius:20px;
+  max-width:420px;width:100%;
+  max-height:calc(100vh - 2rem);overflow-y:auto;
+  box-shadow:0 24px 64px rgba(44,36,32,.28);
+  border:1px solid var(--border);
+  animation:ob-slide-in .38s cubic-bezier(.22,.68,0,1.2) both;
+  position:relative;
+}
+@keyframes ob-slide-in{
+  from{transform:translateY(32px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+.ob-skip{
+  position:absolute;top:.85rem;right:.85rem;
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:var(--surface2);color:var(--text3);
+  cursor:pointer;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;z-index:2;
+  font-family:'DM Sans',sans-serif;
+}
+.ob-skip:hover{background:var(--line);color:var(--text)}
+.ob-step{display:none;padding:2rem 1.8rem 1.5rem}
+.ob-step.ob-active{display:block}
+.ob-icon-big{font-size:2.8rem;margin-bottom:.85rem;line-height:1}
+.ob-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.25rem;font-weight:700;
+  color:var(--text);line-height:1.25;margin-bottom:.4rem;
+}
+.ob-sub{font-size:.82rem;color:var(--text3);line-height:1.55;margin-bottom:1.25rem}
+.ob-feat-list{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.4rem}
+.ob-feat{
+  display:flex;align-items:flex-start;gap:.75rem;
+  background:var(--surface2);border-radius:10px;padding:.7rem .9rem;
+  border:1px solid var(--border);
+}
+.ob-feat-icon{font-size:1.2rem;flex-shrink:0;margin-top:.05rem}
+.ob-feat-body strong{display:block;font-size:.83rem;font-weight:600;color:var(--text);margin-bottom:.15rem}
+.ob-feat-body span{font-size:.76rem;color:var(--text3);line-height:1.4}
+.ob-vark-box{
+  background:linear-gradient(135deg,rgba(212,163,115,.15),rgba(143,162,135,.1));
+  border:1px solid rgba(212,163,115,.3);
+  border-radius:12px;padding:.9rem 1rem;margin-bottom:1.3rem;
+}
+.ob-vark-title{font-size:.85rem;font-weight:700;color:var(--terra-d);margin-bottom:.3rem}
+.ob-vark-desc{font-size:.78rem;color:var(--text2);line-height:1.5}
+.ob-vark-types{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem}
+.ob-vark-type{
+  font-size:.68rem;font-weight:700;padding:.22rem .55rem;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border);color:var(--text2);
+}
+.ob-actions{display:flex;align-items:center;gap:.65rem;margin-top:.25rem}
+.ob-btn-next{
+  flex:1;height:42px;border-radius:11px;border:none;
+  background:var(--terra);color:#1A1208;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:background .18s,transform .15s;
+}
+.ob-btn-next:hover{background:var(--terra-d);transform:translateY(-1px)}
+.ob-btn-back{
+  height:42px;padding:0 1rem;border-radius:11px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text2);
+  cursor:pointer;transition:all .15s;
+}
+.ob-btn-back:hover{border-color:var(--text);color:var(--text)}
+.ob-dots{
+  display:flex;align-items:center;justify-content:center;
+  gap:.45rem;padding-bottom:1.4rem;
+}
+.ob-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--line);transition:all .22s;cursor:pointer;border:none;
+}
+.ob-dot.ob-dot-active{background:var(--terra);width:20px;border-radius:4px}
+@media(max-width:480px){
+  .ob-modal{border-radius:16px}
+  .ob-step{padding:1.6rem 1.25rem 1.25rem}
+  .ob-title{font-size:1.1rem}
+}
+
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -815,7 +994,7 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
           Edit Profil
         </div>
         <div class="dd-sep"></div>
-        <div class="dd-item dd-logout" onclick="document.getElementById('logoutModal').classList.add('show');closeDropdown()">
+        <div class="dd-item dd-logout" onclick="openLogoutModal();closeDropdown()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Keluar
         </div>
@@ -889,7 +1068,7 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Pengaturan
     </a>
-    <a class="nav-item" style="color:var(--red)" onclick="document.getElementById('logoutModal').classList.add('show');closeDrawer()">
+    <a class="nav-item" style="color:var(--red)" onclick="openLogoutModal();closeDrawer()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Keluar
     </a>
@@ -964,8 +1143,15 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
       <a href="vark.html" class="vb-btn">Mulai Asesmen</a>
     </div>
 
+    <!-- Skeleton stat cards (shown while loading) -->
+    <div id="statSkelGrid" class="stat-grid" style="margin-bottom:1.3rem">
+      <div class="skeleton" style="height:96px;border-radius:12px"></div>
+      <div class="skeleton" style="height:96px;border-radius:12px"></div>
+      <div class="skeleton" style="height:96px;border-radius:12px"></div>
+    </div>
+
     <!-- STAT CARDS -->
-    <div class="stat-grid">
+    <div class="stat-grid" id="statRealGrid">
       <div class="stat-card c1">
         <div class="s-icon gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
         <div class="s-val" id="statDone">4/9</div>
@@ -1019,7 +1205,13 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
       <div class="sec-title">Modul aktif</div>
       <span class="sec-link" onclick="showPage('modul')">Lihat semua →</span>
     </div>
-    <div class="module-list" id="modListDash"></div>
+    <!-- Skeleton modul list (shown while loading) -->
+    <div id="modListSkel" style="display:flex;flex-direction:column;gap:.75rem">
+      <div class="skeleton" style="height:72px;border-radius:10px"></div>
+      <div class="skeleton" style="height:72px;border-radius:10px"></div>
+      <div class="skeleton" style="height:72px;border-radius:10px"></div>
+    </div>
+    <div class="module-list" id="modListDash" style="display:none"></div>
   </div>
 
   <!-- ── PAGE: MODUL ── -->
@@ -1051,10 +1243,12 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
         <div class="dt-head-title">Percobaan kuis</div>
         <span style="font-size:.75rem;color:var(--text3)">6 percobaan</span>
       </div>
-      <table class="data-tbl">
-        <thead><tr><th>Modul</th><th>Skor</th><th>Status</th><th>Tanggal</th></tr></thead>
-        <tbody id="quizBody"></tbody>
-      </table>
+      <div style="overflow-x:auto">
+        <table class="data-tbl">
+          <thead><tr><th>Modul</th><th>Skor</th><th>Status</th><th>Tanggal</th></tr></thead>
+          <tbody id="quizBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 
@@ -1154,8 +1348,8 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
     <h3>Keluar dari akun?</h3>
     <p>Sesi belajar kamu akan disimpan secara otomatis.</p>
     <div class="modal-btns">
-      <button class="btn-cancel" onclick="document.getElementById('logoutModal').classList.remove('show')">Batal</button>
-      <button class="btn-confirm" onclick="doLogout()">Ya, Keluar</button>
+      <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
     </div>
   </div>
 </div>
@@ -1283,7 +1477,25 @@ let profile = null;
     if (setEmail) setEmail.value = profile.email || '';
   }
 
-  renderAll();
+  // Tampilkan skeleton saat loading
+  const skelStat = document.getElementById('statSkelGrid');
+  const skelMod  = document.getElementById('modListSkel');
+  const realStat = document.getElementById('statRealGrid');
+  const realMod  = document.getElementById('modListDash');
+  if (skelStat) skelStat.style.display = '';
+  if (realStat) realStat.style.display = 'none';
+  if (skelMod)  skelMod.style.display  = '';
+  if (realMod)  realMod.style.display  = 'none';
+
+  try {
+    await renderAll();
+  } finally {
+    // Hide skeleton, show real content
+    if (skelStat) skelStat.style.display = 'none';
+    if (realStat) realStat.style.display = '';
+    if (skelMod)  skelMod.style.display  = 'none';
+    if (realMod)  realMod.style.display  = '';
+  }
 
   // Cek apakah VARK sudah diisi
   if (typeof DataLayer !== 'undefined') {
@@ -1430,7 +1642,7 @@ async function renderAll() {
   if (lanjut) {
     const btn = document.getElementById('btnLanjutBelajar');
     if (btn) { btn.href = `modul.html?id=${lanjut.id}`; btn.style.display = 'inline-flex'; }
-    document.getElementById('greetSub').textContent = `Modul ${lanjut.no}: ${lanjut.title}`;
+    document.getElementById('greetSub').textContent = `Modul ${lanjut.no ?? lanjut.id}: ${lanjut.title}`;
   }
   // Update hero chips after stat data is ready
   await updateHeroChips();
@@ -1478,7 +1690,7 @@ function modCardHTML(m, allProgress) {
   return `<div class="mod-card ${locked ? 'locked' : ''}">
     <div class="mod-icon-wrap" style="background:${m.color}">${lockIcon}</div>
     <div class="mod-body">
-      <div class="mod-title">${m.no}. ${m.title}</div>
+      <div class="mod-title">${m.no ?? m.id}. ${m.title}</div>
       <div class="mod-sub">${m.sub}</div>
       ${progBar}
       ${bukaBtn}
@@ -1502,7 +1714,7 @@ async function renderVideos() {
       </div>
       <div class="vid-body">
         <div class="vid-title">${m.title}</div>
-        <div class="vid-meta">Modul ${m.no} · Kelas A</div>
+        <div class="vid-meta">Modul ${m.no ?? m.id} · Kelas A</div>
       </div>
     </div>
   `).join('');
@@ -1602,7 +1814,7 @@ async function renderProgress() {
       : pct > 0 ? 'in_progress'
       : m.status;
     return {
-      label: `${m.no}. ${m.title}`,
+      label: `${m.no ?? m.id}. ${m.title}`,
       pct,
       color: status === 'completed' ? 'var(--sage)' : status === 'in_progress' ? 'var(--terra)' : 'var(--line)',
     };
@@ -1733,7 +1945,7 @@ async function loadNotifications() {
     }
     const list = document.getElementById('notifList');
     if (!list) return;
-    const icons = { kuis:'📝', forum:'💬', draf:'📄', sistem:'ℹ️' };
+    const icons = { modul:'📚', kuis:'📝', forum:'💬', draf:'📄', progres:'🏆', sistem:'ℹ️' };
     list.innerHTML = notifs.length
       ? notifs.map(n => `
           <div class="notif-item${n.read?'':' unread'}" data-id="${escHtml(n.id)}">
@@ -1780,6 +1992,89 @@ document.addEventListener('click', e => {
 
 // Load notifikasi saat init
 loadNotifications();
+
+// ══════════════════════════════════════
+// ONBOARDING (MHS) — sfp_onboarded_v1
+// ══════════════════════════════════════
+(function initOnboarding() {
+  const FLAG = 'sfp_onboarded_v1';
+  const overlay = document.getElementById('obOverlay');
+  if (!overlay) return;
+  if (!localStorage.getItem(FLAG)) overlay.classList.add('show');
+  let cur = 1;
+  const TOTAL = 3;
+  function go(n) {
+    if (n < 1 || n > TOTAL) return;
+    document.querySelectorAll('.ob-step').forEach(el => el.classList.remove('ob-active'));
+    const el = document.getElementById('ob-step-' + n);
+    if (el) el.classList.add('ob-active');
+    document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+      d.classList.toggle('ob-dot-active', parseInt(d.dataset.step) === n);
+    });
+    cur = n;
+  }
+  function close(goVark) {
+    localStorage.setItem(FLAG, '1');
+    overlay.classList.remove('show');
+    if (goVark) {
+      if (typeof DataLayer !== 'undefined') {
+        DataLayer.getVarkResult().then(function(r) {
+          if (!r) window.location.href = 'vark.html';
+        }).catch(function(){});
+      } else {
+        window.location.href = 'vark.html';
+      }
+    }
+  }
+  document.getElementById('obSkip')?.addEventListener('click', () => close(false));
+  document.getElementById('ob-next-1')?.addEventListener('click', () => go(2));
+  document.getElementById('ob-back-2')?.addEventListener('click', () => go(1));
+  document.getElementById('ob-next-2')?.addEventListener('click', () => go(3));
+  document.getElementById('ob-back-3')?.addEventListener('click', () => go(2));
+  document.getElementById('ob-finish')?.addEventListener('click', () => close(true));
+  document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+    d.addEventListener('click', () => go(parseInt(d.dataset.step)));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) close(false);
+  });
+})();
+
+function showOnboardingGuide() {
+  const overlay = document.getElementById('obOverlay');
+  if (!overlay) return;
+  document.querySelectorAll('.ob-step').forEach(el => el.classList.remove('ob-active'));
+  const first = document.getElementById('ob-step-1');
+  if (first) first.classList.add('ob-active');
+}
 </script>
-</body>
+
+<!-- ── LOGOUT MODAL ── -->
+<div id="logoutModal" class="logout-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+  <div class="logout-modal-box">
+    <h3 id="lmTitle">Keluar dari SMART-FLIP?</h3>
+    <p>Progres belajar kamu tersimpan otomatis.</p>
+    <div class="logout-modal-actions">
+      <button class="logout-btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="logout-btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+<script>
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
+</script>
 </html>
