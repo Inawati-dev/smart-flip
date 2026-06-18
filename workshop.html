@@ -7,9 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
-<script src="supabase.js"></script>
-<script src="modules-data.js"></script>
-<script src="data-layer.js"></script>
+<script src="supabase.js" onerror="console.warn('supabase.js not found — demo mode')"></script>
+<script src="modules-data.js" onerror="console.warn('modules-data.js not found')"></script>
+<script src="data-layer.js" onerror="console.warn('data-layer.js not found')"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -400,6 +400,10 @@ body{
     <option value="8">Modul 8</option>
     <option value="9">Modul 9</option>
   </select>
+  <a href="profil.html" class="tb-back" style="flex-shrink:0">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profil
+  </a>
   <button class="btn-print" onclick="window.print()" aria-label="Cetak halaman">
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a1 1 0 001 1h6a1 1 0 001-1v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zm2 0h6v3H7V4zm-1 9a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
     <span>Cetak</span>

@@ -1232,6 +1232,50 @@ const DataLayer = (() => {
     },
 
     // ════════════════════════════════════════════════════
+    // VALIDASI AHLI (dosen/ahli mengisi instrumen validasi)
+    // ════════════════════════════════════════════════════
+
+    /**
+     * Simpan hasil validasi ahli.
+     * Key localStorage: sfp_validasi → satu objek (validasi terbaru)
+     * @param {{
+     *   aspekMedia:  { scores: number[], avg: number, komentar: string },
+     *   aspekMateri: { scores: number[], avg: number, komentar: string },
+     *   totalAvg:    number,
+     *   validator:   { nama: string, institusi: string, keahlian: string },
+     *   timestamp:   number
+     * }} data
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   await sb.from('validasi_ahli').upsert({
+     *     user_id: user.id,
+     *     aspek_media: data.aspekMedia,
+     *     aspek_materi: data.aspekMateri,
+     *     total_avg: data.totalAvg,
+     *     validator: data.validator,
+     *     submitted_at: new Date(data.timestamp).toISOString()
+     *   }, { onConflict: 'user_id' });
+     */
+    saveValidasi(data) {
+      lsSet('sfp_validasi', data);
+    },
+
+    /**
+     * Ambil hasil validasi ahli yang tersimpan.
+     * Return: object validasi atau null jika belum pernah submit.
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   const { data } = await sb.from('validasi_ahli')
+     *     .select('*').eq('user_id', user.id).single();
+     *   return data || null;
+     */
+    getValidasi() {
+      return lsGet('sfp_validasi') || null;
+    },
+
+    // ════════════════════════════════════════════════════
     // CLASS STATS (digunakan di dashboard dosen)
     // ════════════════════════════════════════════════════
 
@@ -1262,6 +1306,114 @@ const DataLayer = (() => {
         {no:8,title:'Uji Coba & Implementasi',       selesai:0, avgQ:0, waktu:0},
         {no:9,title:'Evaluasi & Diseminasi',         selesai:0, avgQ:0, waktu:0},
       ];
+    },
+
+    // ════════════════════════════════════════════════════
+    // PROFIL PENGGUNA (data diri tambahan — profil.html)
+    // ════════════════════════════════════════════════════
+
+    /**
+     * Simpan data profil pengguna ke localStorage.
+     * Key localStorage: sfp_profil
+     * @param {{ nama, nim, prodi, angkatan, email, role }} data
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   await sb.from('profiles').upsert({
+     *     id: user.id,
+     *     full_name: data.nama,
+     *     nim_nidn: data.nim,
+     *     prodi: data.prodi,
+     *     angkatan: data.angkatan
+     *   }, { onConflict: 'id' });
+     */
+    saveProfil(data) {
+      lsSet('sfp_profil', data);
+    },
+
+    /**
+     * Ambil data profil pengguna dari localStorage.
+     * Key localStorage: sfp_profil
+     * Return: { nama, nim, prodi, angkatan, email, role } atau null jika belum disimpan.
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   const { data } = await sb.from('profiles')
+     *     .select('full_name, nim_nidn, prodi, angkatan, role')
+     *     .eq('id', user.id).single();
+     *   return data ? {
+     *     nama: data.full_name, nim: data.nim_nidn,
+     *     prodi: data.prodi, angkatan: data.angkatan, role: data.role
+     *   } : null;
+     */
+    getProfil() {
+      return lsGet('sfp_profil') || null;
+    },
+
+    // ════════════════════════════════════════════════════
+    // MANAJEMEN MODUL (dosen — metadata custom & urutan)
+    // ════════════════════════════════════════════════════
+
+    /**
+     * Simpan metadata kustom satu modul (hasil edit dosen).
+     * Key localStorage: sfp_modul_custom_{moduleId}
+     * @param {number} moduleId
+     * @param {{ judul?, deskripsi?, status?, durasi?, catatan?, updatedAt? }} data
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   await sb.from('module_custom').upsert({
+     *     user_id: user.id, module_id: moduleId, ...data
+     *   }, { onConflict: 'user_id,module_id' });
+     */
+    saveModulCustom(moduleId, data) {
+      lsSet('sfp_modul_custom_' + moduleId, data);
+    },
+
+    /**
+     * Ambil metadata kustom satu modul.
+     * Key localStorage: sfp_modul_custom_{moduleId}
+     * @param {number} moduleId
+     * Return: object data kustom atau null jika belum pernah diedit.
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   const { data } = await sb.from('module_custom')
+     *     .select('*').eq('user_id', user.id).eq('module_id', moduleId).single();
+     *   return data || null;
+     */
+    getModulCustom(moduleId) {
+      return lsGet('sfp_modul_custom_' + moduleId) || null;
+    },
+
+    /**
+     * Simpan urutan tampilan modul (array of module IDs).
+     * Key localStorage: sfp_modul_order
+     * @param {number[]} order - array ID modul sesuai urutan tampil
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   await sb.from('profiles').upsert({
+     *     id: user.id, modul_order: order
+     *   }, { onConflict: 'id' });
+     */
+    saveModulOrder(order) {
+      lsSet('sfp_modul_order', order);
+    },
+
+    /**
+     * Ambil urutan tampilan modul yang tersimpan.
+     * Key localStorage: sfp_modul_order
+     * Return: array of module IDs atau null jika belum pernah diubah.
+     *
+     * TODO Supabase (nanti):
+     *   const { data: { user } } = await sb.auth.getUser();
+     *   const { data } = await sb.from('profiles')
+     *     .select('modul_order').eq('id', user.id).single();
+     *   return data?.modul_order || null;
+     */
+    getModulOrder() {
+      return lsGet('sfp_modul_order') || null;
     },
 
   };

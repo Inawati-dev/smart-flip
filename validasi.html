@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Validasi Ahli — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
+  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
+  --terra:#D4A373;--terra-d:#B8855A;
+  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
+  --border:rgba(62,54,46,.10);
+  --line:#DDD5C4;--line2:#EDE8DF;
+  --red:#B03020;--red-bg:#FDECEA;
+  --topnav-h:54px;
+}
+html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif}
+
+/* ══════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════ */
+.topbar{
+  position:sticky;top:0;z-index:200;
+  background:var(--brown);height:var(--topnav-h);
+  display:flex;align-items:center;gap:.5rem;padding:0 1rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.04);
+}
+.tb-logo{
+  display:flex;align-items:center;gap:.4rem;
+  text-decoration:none;flex-shrink:0;margin-right:.5rem;
+}
+.tb-logo-text{
+  font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;
+  color:var(--terra);letter-spacing:.01em;
+}
+.tb-logo-text span{color:var(--sage)}
+.tb-logo-ver{font-size:.55rem;color:var(--terra);opacity:.65;letter-spacing:.1em;align-self:flex-end;margin-bottom:.1rem;margin-left:.1rem}
+.tb-sep{width:1px;height:20px;background:rgba(255,255,255,.1);flex-shrink:0;margin:0 .25rem}
+.tb-title{
+  font-size:.88rem;font-weight:600;color:rgba(255,255,255,.85);flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Nav items in topbar */
+.tb-nav{display:flex;align-items:center;gap:.1rem;flex-shrink:0}
+.tb-navitem{
+  display:flex;align-items:center;gap:.3rem;
+  padding:.35rem .6rem;border-radius:7px;
+  font-size:.78rem;font-weight:400;
+  color:rgba(255,255,255,.55);
+  cursor:pointer;text-decoration:none;
+  white-space:nowrap;
+  border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;
+  transition:all .18s;
+}
+.tb-navitem:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.07)}
+.tb-navitem.active{color:var(--terra);background:rgba(212,163,115,.1)}
+.tb-navitem svg{width:13px;height:13px;flex-shrink:0;opacity:.7}
+
+/* Right controls */
+.tb-right{display:flex;align-items:center;gap:.2rem;flex-shrink:0;margin-left:.5rem}
+.tb-btn{
+  width:36px;height:36px;border-radius:8px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);transition:all .18s;
+}
+.tb-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
+.tb-btn svg{width:15px;height:15px}
+.tb-logout{
+  display:flex;align-items:center;gap:.35rem;
+  padding:.35rem .7rem;border-radius:7px;border:none;
+  background:transparent;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;
+  color:rgba(255,255,255,.5);transition:all .18s;
+}
+.tb-logout:hover{background:rgba(176,48,32,.15);color:#F59090}
+
+/* Mobile hamburger */
+.tb-hamburger{
+  display:none;width:40px;height:40px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  color:rgba(255,255,255,.7);transition:background .18s;
+}
+.tb-hamburger:hover{background:rgba(255,255,255,.1)}
+.tb-hamburger span{display:block;width:16px;height:1.5px;background:currentColor;border-radius:2px;transition:all .22s}
+
+/* Mobile drawer */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:490;display:none}
+.drawer-overlay.open{display:block}
+.drawer{
+  position:fixed;top:0;left:0;bottom:0;width:240px;background:var(--brown);
+  z-index:500;transform:translateX(-100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;padding-top:.5rem;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.5rem;
+}
+.drawer-logo{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--terra)}
+.drawer-close{
+  width:30px;height:30px;border-radius:7px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);
+}
+.drawer-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.drawer-close svg{width:14px;height:14px}
+.drawer .tb-navitem{margin:.3px .5rem;width:calc(100% - 1rem);border-radius:9px}
+.drawer .tb-navitem.active{background:rgba(212,163,115,.15);color:var(--terra)}
+.drawer-div{height:1px;background:rgba(255,255,255,.07);margin:.4rem .75rem}
+
+/* ══════════════════════════════════════
+   MAIN LAYOUT
+══════════════════════════════════════ */
+.main-wrap{padding-top:0;min-height:calc(100vh - var(--topnav-h));background:var(--cream)}
+.wrap{max-width:760px;margin:0 auto;padding:2rem 1.25rem 5rem}
+
+/* ══════════════════════════════════════
+   PAGE HEADING
+══════════════════════════════════════ */
+.page-heading{margin-bottom:1.75rem}
+.page-heading h1{
+  font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:700;
+  color:var(--brown);line-height:1.25;
+}
+.page-heading p{font-size:.85rem;color:var(--brown3);margin-top:.35rem}
+
+/* ══════════════════════════════════════
+   CARDS
+══════════════════════════════════════ */
+.card{
+  background:var(--ivory);border-radius:16px;border:1px solid var(--line);
+  padding:1.5rem 1.75rem;margin-bottom:1.25rem;
+}
+.card-title{
+  font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;
+  color:var(--brown);margin-bottom:1.1rem;display:flex;align-items:center;gap:.5rem;
+}
+.card-title svg{width:18px;height:18px;color:var(--terra);flex-shrink:0}
+
+/* ══════════════════════════════════════
+   INFO PANEL
+══════════════════════════════════════ */
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1.5rem;margin-bottom:1rem}
+.info-row{display:flex;flex-direction:column;gap:.2rem}
+.info-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--brown3)}
+.info-value{font-size:.88rem;color:var(--brown);font-weight:500}
+.info-note{
+  font-size:.8rem;color:var(--brown2);
+  background:var(--ivory2);border-left:3px solid var(--terra);
+  border-radius:0 8px 8px 0;padding:.65rem .9rem;
+  line-height:1.55;
+}
+
+/* ══════════════════════════════════════
+   TAB NAVIGATION
+══════════════════════════════════════ */
+.tab-nav{
+  display:flex;gap:.25rem;margin-bottom:1.25rem;
+  background:var(--ivory2);border:1px solid var(--line);
+  border-radius:12px;padding:.3rem;
+}
+.tab-btn{
+  flex:1;height:40px;border-radius:9px;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;
+  color:var(--brown3);cursor:pointer;transition:all .18s;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+}
+.tab-btn svg{width:14px;height:14px;flex-shrink:0}
+.tab-btn.active{background:var(--ivory);color:var(--terra);font-weight:600;box-shadow:0 1px 4px rgba(62,54,46,.1)}
+.tab-btn:hover:not(.active){color:var(--brown2);background:rgba(255,253,248,.5)}
+
+/* Tab panels */
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ══════════════════════════════════════
+   VALIDATOR IDENTITY FIELDS
+══════════════════════════════════════ */
+.identity-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.5rem}
+.field-group{margin-bottom:.75rem}
+.field-group:last-child{margin-bottom:0}
+.field-label{
+  display:block;font-size:.75rem;font-weight:600;color:var(--brown2);
+  text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;
+}
+.field-hint{font-size:.72rem;color:var(--brown3);font-weight:400;text-transform:none;letter-spacing:0;margin-left:.3rem}
+.field-input{
+  width:100%;height:44px;padding:0 .875rem;
+  border:1.5px solid var(--line);border-radius:10px;
+  background:var(--ivory2);font-family:'DM Sans',sans-serif;font-size:.88rem;
+  color:var(--brown);transition:border-color .15s;outline:none;
+}
+.field-input:focus{border-color:var(--terra)}
+.field-input:read-only{background:var(--cream);color:var(--brown3);cursor:default}
+@media(max-width:640px){
+  .field-input{font-size:16px}
+  .identity-grid{grid-template-columns:1fr}
+}
+
+/* ══════════════════════════════════════
+   INDIKATOR ROWS (radio 1–5)
+══════════════════════════════════════ */
+.section-title{
+  font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--brown3);margin-bottom:.75rem;padding-bottom:.5rem;
+  border-bottom:1px solid var(--line2);
+}
+
+.indikator-row{
+  display:flex;align-items:flex-start;gap:.75rem;
+  padding:.8rem 0;border-bottom:1px solid var(--line2);
+}
+.indikator-row:last-child{border-bottom:none;padding-bottom:0}
+.indikator-row:first-of-type{padding-top:0}
+
+.ind-info{flex:1;min-width:0}
+.ind-num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(212,163,115,.15);
+  font-size:.65rem;font-weight:700;color:var(--terra);
+  flex-shrink:0;margin-right:.4rem;
+}
+.ind-label{font-size:.87rem;font-weight:600;color:var(--brown);line-height:1.3}
+
+.ind-radio{display:flex;flex-direction:column;align-items:flex-end;gap:.35rem;flex-shrink:0}
+
+/* Custom radio group */
+.radio-group{
+  display:flex;align-items:center;gap:.3rem;
+}
+.radio-opt{
+  display:flex;flex-direction:column;align-items:center;gap:.2rem;cursor:pointer;
+}
+.radio-opt input[type="radio"]{display:none}
+.radio-dot{
+  width:38px;height:38px;border-radius:50%;
+  border:2px solid var(--line);background:var(--ivory2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:700;color:var(--brown3);
+  transition:all .18s;cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+}
+.radio-opt input[type="radio"]:checked + .radio-dot{
+  background:var(--terra);border-color:var(--terra);color:#fff;
+}
+.radio-opt:hover .radio-dot{border-color:var(--terra);color:var(--terra)}
+.radio-lbl{font-size:.58rem;color:var(--brown3);text-align:center;white-space:nowrap;line-height:1.1}
+.radio-lbl-row{
+  display:flex;justify-content:space-between;
+  font-size:.62rem;color:var(--brown3);margin-top:.25rem;padding:0 .1rem;
+}
+
+/* Score badge */
+.ind-score-badge{
+  font-size:.7rem;font-weight:700;color:var(--brown3);
+  background:var(--ivory2);border:1px solid var(--line);
+  border-radius:100px;padding:.15rem .5rem;min-width:2.2rem;text-align:center;
+  transition:background .15s,color .15s;
+}
+.ind-score-badge.filled{background:var(--terra);border-color:var(--terra);color:#fff}
+
+@media(max-width:640px){
+  .indikator-row{flex-direction:column;align-items:flex-start;gap:.55rem}
+  .ind-radio{align-items:flex-start}
+  .radio-dot{width:44px;height:44px;font-size:.85rem}
+}
+
+/* ══════════════════════════════════════
+   KOMENTAR TEXTAREA
+══════════════════════════════════════ */
+.komentar-textarea{
+  width:100%;min-height:90px;resize:vertical;
+  border:1.5px solid var(--line);border-radius:10px;
+  padding:.75rem .875rem;font-family:'DM Sans',sans-serif;
+  color:var(--brown);background:var(--ivory2);
+  transition:border-color .15s;line-height:1.55;
+}
+.komentar-textarea:focus{outline:none;border-color:var(--terra)}
+@media(max-width:640px){.komentar-textarea{font-size:16px}}
+.char-counter{font-size:.7rem;color:var(--brown3);text-align:right;margin-top:.3rem}
+.char-counter.warn{color:var(--red)}
+
+/* ══════════════════════════════════════
+   SUBMIT BUTTON
+══════════════════════════════════════ */
+.btn-submit{
+  width:100%;height:50px;border-radius:12px;border:none;
+  background:var(--terra-d);color:#fff;
+  font-family:'DM Sans',sans-serif;font-size:.95rem;font-weight:600;
+  cursor:pointer;transition:background .15s,transform .1s;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  margin-top:1.25rem;
+}
+.btn-submit:hover:not(:disabled){background:var(--brown)}
+.btn-submit:active:not(:disabled){transform:scale(.98)}
+.btn-submit:disabled{opacity:.55;cursor:not-allowed}
+
+/* ══════════════════════════════════════
+   VALIDATION ERRORS
+══════════════════════════════════════ */
+.error-msg{
+  display:none;font-size:.75rem;color:var(--red);margin-top:.35rem;
+  padding:.35rem .6rem;background:var(--red-bg);border-radius:6px;
+}
+.error-msg.show{display:block}
+
+/* ══════════════════════════════════════
+   HASIL VALIDASI (post-submit)
+══════════════════════════════════════ */
+.hasil-wrap{display:none}
+.hasil-wrap.show{display:block}
+.form-wrap{display:block}
+.form-wrap.hidden{display:none}
+
+.badge-kelayakan{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.6rem 1.2rem;border-radius:100px;
+  font-size:.95rem;font-weight:700;margin-bottom:1.25rem;
+}
+.bk-sangat-layak{background:#C0DD97;color:#27500A}
+.bk-layak{background:rgba(212,163,115,.25);color:#7A4A10}
+.bk-cukup{background:#F5E8CB;color:#7A5A10}
+.bk-kurang{background:var(--red-bg);color:var(--red)}
+
+/* Aspek summary bar */
+.aspek-summary{margin-bottom:1.25rem}
+.aspek-bar-row{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.55rem 0;border-bottom:1px solid var(--line2);
+}
+.aspek-bar-row:last-child{border-bottom:none}
+.aspek-bar-label{font-size:.82rem;color:var(--brown2);flex:0 0 130px;font-weight:500}
+.aspek-bar-track{flex:1;height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.aspek-bar-fill{height:100%;border-radius:4px;transition:width .5s ease}
+.aspek-bar-val{font-size:.82rem;font-weight:700;color:var(--brown);flex:0 0 42px;text-align:right}
+
+/* Tabel indikator */
+.tabel-ringkasan{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:.75rem}
+.tabel-ringkasan th{
+  text-align:left;padding:.5rem .75rem;
+  font-size:.7rem;font-weight:600;color:var(--brown3);
+  background:var(--ivory2);border-bottom:1px solid var(--line);
+}
+.tabel-ringkasan td{padding:.55rem .75rem;color:var(--brown2);border-bottom:1px solid var(--line2)}
+.tabel-ringkasan tr:last-child td{border-bottom:none}
+.tabel-ringkasan tr:hover td{background:var(--cream)}
+.skor-cell{font-weight:700;color:var(--brown)}
+.skor-good{color:var(--sage-d)}
+.skor-avg{color:var(--terra-d)}
+.skor-low{color:var(--red)}
+
+/* Total row */
+.tabel-ringkasan .total-row td{
+  border-top:2px solid var(--line);font-weight:700;
+  background:var(--ivory2);color:var(--brown);
+}
+
+/* Print & isi ulang buttons */
+.hasil-actions{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap}
+.btn-print{
+  flex:1;height:44px;border-radius:10px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;
+  color:var(--brown2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  transition:all .15s;
+}
+.btn-print:hover{border-color:var(--brown);color:var(--brown)}
+.btn-print svg{width:14px;height:14px}
+.btn-isi-ulang{
+  flex:1;height:44px;border-radius:10px;
+  border:none;background:var(--brown);color:var(--terra);
+  font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:600;
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+}
+.btn-isi-ulang:hover{background:var(--terra-d);color:#fff}
+
+/* ══════════════════════════════════════
+   RIWAYAT SECTION
+══════════════════════════════════════ */
+.riwayat-section{margin-top:1rem}
+.riwayat-toggle{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  background:var(--ivory);border:1px solid var(--line);border-radius:12px;
+  padding:.85rem 1.1rem;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:600;color:var(--brown2);
+  transition:background .15s;
+}
+.riwayat-toggle:hover{background:var(--ivory2)}
+.riwayat-toggle .chevron{color:var(--brown3);font-size:.7rem;transition:transform .2s;display:inline-block}
+.riwayat-toggle.open .chevron{transform:rotate(180deg)}
+.riwayat-count{font-size:.72rem;font-weight:400;color:var(--brown3);margin-left:.4rem}
+.riwayat-body{display:none;padding:.5rem 0 0}
+.riwayat-body.open{display:block}
+.riwayat-empty{text-align:center;padding:2rem 1rem;color:var(--brown3);font-size:.83rem}
+.riwayat-empty .re-icon{font-size:2rem;margin-bottom:.5rem;display:block}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--brown);color:#fff;
+  padding:.7rem 1.5rem;border-radius:100px;font-size:.85rem;font-weight:500;
+  box-shadow:0 4px 16px rgba(62,54,46,.25);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+  z-index:999;white-space:nowrap;pointer-events:none;
+}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ══════════════════════════════════════
+   MODAL LOGOUT
+══════════════════════════════════════ */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(44,36,32,.55);
+  z-index:600;display:none;align-items:center;justify-content:center;
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--ivory);border-radius:16px;padding:1.6rem 1.8rem;
+  max-width:340px;width:90%;text-align:center;
+  box-shadow:0 16px 48px rgba(44,36,32,.25);
+}
+.modal h3{font-size:1rem;font-weight:600;color:var(--brown);margin-bottom:.4rem}
+.modal p{font-size:.82rem;color:var(--brown3);margin-bottom:1.3rem;line-height:1.5}
+.modal-btns{display:flex;gap:.6rem}
+.btn-cancel{
+  flex:1;height:40px;border-radius:9px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--brown2);cursor:pointer;
+}
+.btn-ok{
+  flex:1;height:40px;border-radius:9px;
+  border:none;background:var(--brown);
+  font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--terra);cursor:pointer;
+}
+.btn-ok:hover{background:var(--terra-d);color:#fff}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media(max-width:768px){
+  .tb-nav{display:none}
+  .tb-hamburger{display:flex}
+  .wrap{padding:1.5rem 1rem 4rem}
+  .card{padding:1.25rem 1rem;border-radius:12px}
+  .page-heading h1{font-size:1.3rem}
+  .info-grid{grid-template-columns:1fr}
+  .hasil-actions{flex-direction:column}
+  .aspek-bar-label{flex:0 0 100px;font-size:.78rem}
+}
+@media(max-width:480px){
+  .wrap{padding:1.1rem .75rem 3.5rem}
+  .card{padding:1rem .875rem}
+  .tab-btn{font-size:.78rem;padding:0 .4rem}
+  .btn-submit{font-size:.88rem}
+  .tabel-ringkasan{font-size:.75rem}
+}
+
+/* ══════════════════════════════════════
+   PRINT
+══════════════════════════════════════ */
+@media print{
+  .topbar,.riwayat-section,.hasil-actions,.toast,.modal-bg,.form-wrap{display:none!important}
+  .hasil-wrap{display:block!important}
+  .wrap{padding:0;max-width:100%}
+  .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
+  body{background:#fff;color:#000}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     TOPBAR
+══════════════════════════════════════ -->
+<nav class="topbar">
+  <a class="tb-logo" href="dashboard-dos.html">
+    <span style="font-size:1rem">📖</span>
+    <span class="tb-logo-text">SMART<span>-FLIP</span></span>
+    <span class="tb-logo-ver">5.0</span>
+  </a>
+  <div class="tb-sep"></div>
+  <span class="tb-title">Validasi Ahli</span>
+
+  <!-- Nav items (desktop) -->
+  <div class="tb-nav">
+    <a class="tb-navitem" href="dashboard-dos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="tb-navitem" href="dashboard-dos.html?page=analitik">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analitik
+    </a>
+    <a class="tb-navitem active" href="validasi.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Validasi
+    </a>
+    <a class="tb-navitem" href="ngain.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      N-Gain
+    </a>
+  </div>
+
+  <!-- Right controls -->
+  <div class="tb-right">
+    <button class="tb-logout" onclick="document.getElementById('logoutModal').classList.add('show')" aria-label="Keluar">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Keluar
+    </button>
+    <button class="tb-hamburger" id="btnHamburger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MOBILE DRAWER
+══════════════════════════════════════ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hd">
+    <span class="drawer-logo">SMART-FLIP 5.0</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <a class="tb-navitem" href="dashboard-dos.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </a>
+  <a class="tb-navitem" href="dashboard-dos.html?page=analitik" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analitik
+  </a>
+  <a class="tb-navitem active" href="validasi.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Validasi
+  </a>
+  <a class="tb-navitem" href="ngain.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    N-Gain
+  </a>
+  <div class="drawer-div"></div>
+  <button class="tb-navitem" style="color:rgba(240,80,80,.8);width:calc(100% - 1rem);margin:.3px .5rem"
+    onclick="document.getElementById('logoutModal').classList.add('show');closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Keluar
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════ -->
+<div class="main-wrap">
+<div class="wrap">
+
+  <!-- PAGE HEADING -->
+  <div class="page-heading">
+    <h1>Instrumen Validasi Ahli</h1>
+    <p>Lembar penilaian kelayakan e-modul SMART-FLIP 5.0 untuk validator ahli media dan ahli materi</p>
+  </div>
+
+  <!-- ── INFO PANEL ── -->
+  <div class="card">
+    <div class="card-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Informasi Instrumen
+    </div>
+    <div class="info-grid">
+      <div class="info-row">
+        <span class="info-label">Nama Instrumen</span>
+        <span class="info-value">Lembar Validasi E-Modul SMART-FLIP 5.0</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Tujuan</span>
+        <span class="info-value">Penilaian kelayakan aspek media &amp; materi</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Skala Penilaian</span>
+        <span class="info-value">1 (Sangat Kurang) — 5 (Sangat Baik)</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Aspek Dinilai</span>
+        <span class="info-value">Media (8 indikator) + Materi (8 indikator)</span>
+      </div>
+    </div>
+    <div class="info-note">
+      <strong>Petunjuk pengisian:</strong> Pilih angka 1–5 pada setiap indikator sesuai dengan penilaian Anda. Nilai 1 = Sangat Kurang, 2 = Kurang, 3 = Cukup, 4 = Baik, 5 = Sangat Baik. Isi semua indikator sebelum mengirimkan formulir. Saran dan komentar sangat membantu perbaikan e-modul ini.
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       FORM VALIDASI
+  ══════════════════════════════════════ -->
+  <div class="form-wrap" id="formWrap">
+
+    <!-- ── IDENTITAS VALIDATOR ── -->
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        Identitas Validator
+      </div>
+      <div class="identity-grid">
+        <div class="field-group">
+          <label class="field-label" for="fldNama">Nama Lengkap <span class="field-hint">wajib</span></label>
+          <input type="text" id="fldNama" class="field-input" placeholder="Dr. / Prof. …" autocomplete="name">
+          <div class="error-msg" id="errNama">Nama lengkap harus diisi.</div>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="fldInstitusi">Institusi <span class="field-hint">wajib</span></label>
+          <input type="text" id="fldInstitusi" class="field-input" placeholder="Universitas / Lembaga …" autocomplete="organization">
+          <div class="error-msg" id="errInstitusi">Institusi harus diisi.</div>
+        </div>
+      </div>
+      <div class="field-group" style="margin-bottom:0">
+        <label class="field-label" for="fldKeahlian">Bidang Keahlian <span class="field-hint">wajib</span></label>
+        <input type="text" id="fldKeahlian" class="field-input" placeholder="Mis: Teknologi Pendidikan, Desain Grafis, Metodologi Penelitian …">
+        <div class="error-msg" id="errKeahlian">Bidang keahlian harus diisi.</div>
+      </div>
+    </div>
+
+    <!-- ── TAB NAVIGATION ── -->
+    <div class="tab-nav" role="tablist">
+      <button class="tab-btn active" id="tabBtnMedia" role="tab" aria-selected="true"
+        aria-controls="tabMedia" onclick="switchTab('media')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+        Aspek Media
+        <span style="font-size:.68rem;background:rgba(212,163,115,.2);border-radius:100px;padding:.1rem .4rem;color:var(--terra);font-weight:700">8</span>
+      </button>
+      <button class="tab-btn" id="tabBtnMateri" role="tab" aria-selected="false"
+        aria-controls="tabMateri" onclick="switchTab('materi')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Aspek Materi
+        <span style="font-size:.68rem;background:rgba(143,162,135,.2);border-radius:100px;padding:.1rem .4rem;color:var(--sage-d);font-weight:700">8</span>
+      </button>
+    </div>
+
+    <!-- ════════════════ ASPEK MEDIA ════════════════ -->
+    <div class="tab-panel active" id="tabMedia" role="tabpanel">
+      <div class="card">
+        <div class="section-title">Aspek Media — penilaian kualitas tampilan &amp; antarmuka</div>
+        <div class="error-msg" id="errMedia" style="margin-bottom:.75rem">Semua indikator aspek media harus diberi nilai.</div>
+
+        <!-- Indikator M1 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">1</span>
+            <span class="ind-label">Tampilan antarmuka (desain, warna, tipografi)</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="0" role="radiogroup" aria-label="Tampilan antarmuka">
+              <!-- generated by JS -->
+            </div>
+            <div class="ind-score-badge" id="sbM0">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M2 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">2</span>
+            <span class="ind-label">Kemudahan navigasi</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="1" role="radiogroup" aria-label="Kemudahan navigasi"></div>
+            <div class="ind-score-badge" id="sbM1">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M3 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">3</span>
+            <span class="ind-label">Kualitas tampilan video</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="2" role="radiogroup" aria-label="Kualitas tampilan video"></div>
+            <div class="ind-score-badge" id="sbM2">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M4 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">4</span>
+            <span class="ind-label">Keterbacaan teks dan font</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="3" role="radiogroup" aria-label="Keterbacaan teks dan font"></div>
+            <div class="ind-score-badge" id="sbM3">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M5 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">5</span>
+            <span class="ind-label">Konsistensi tata letak</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="4" role="radiogroup" aria-label="Konsistensi tata letak"></div>
+            <div class="ind-score-badge" id="sbM4">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M6 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">6</span>
+            <span class="ind-label">Responsivitas di berbagai perangkat</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="5" role="radiogroup" aria-label="Responsivitas di berbagai perangkat"></div>
+            <div class="ind-score-badge" id="sbM5">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M7 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">7</span>
+            <span class="ind-label">Ketepatan penggunaan ikon/simbol</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="6" role="radiogroup" aria-label="Ketepatan penggunaan ikon/simbol"></div>
+            <div class="ind-score-badge" id="sbM6">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator M8 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">8</span>
+            <span class="ind-label">Keseluruhan kualitas media</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="M" data-index="7" role="radiogroup" aria-label="Keseluruhan kualitas media"></div>
+            <div class="ind-score-badge" id="sbM7">—</div>
+          </div>
+        </div>
+
+        <!-- Saran aspek media -->
+        <div style="margin-top:1.25rem">
+          <label class="field-label" for="saranMedia">Saran &amp; Komentar Aspek Media <span class="field-hint">opsional, maks. 500 karakter</span></label>
+          <textarea id="saranMedia" class="komentar-textarea" maxlength="500"
+            placeholder="Tuliskan catatan, saran perbaikan, atau komentar untuk aspek media…"></textarea>
+          <div class="char-counter" id="ccMedia">0 / 500</div>
+        </div>
+
+        <button class="btn-submit" style="margin-top:1rem" onclick="switchTab('materi')">
+          Lanjut ke Aspek Materi
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+    </div><!-- /tabMedia -->
+
+    <!-- ════════════════ ASPEK MATERI ════════════════ -->
+    <div class="tab-panel" id="tabMateri" role="tabpanel">
+      <div class="card">
+        <div class="section-title">Aspek Materi — penilaian kualitas konten &amp; pembelajaran</div>
+        <div class="error-msg" id="errMateri" style="margin-bottom:.75rem">Semua indikator aspek materi harus diberi nilai.</div>
+
+        <!-- Indikator T1 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">1</span>
+            <span class="ind-label">Kesesuaian materi dengan RPS</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="0" role="radiogroup" aria-label="Kesesuaian materi dengan RPS"></div>
+            <div class="ind-score-badge" id="sbT0">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T2 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">2</span>
+            <span class="ind-label">Kedalaman dan keluasan materi</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="1" role="radiogroup" aria-label="Kedalaman dan keluasan materi"></div>
+            <div class="ind-score-badge" id="sbT1">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T3 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">3</span>
+            <span class="ind-label">Keakuratan konsep R&amp;D</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="2" role="radiogroup" aria-label="Keakuratan konsep R&D"></div>
+            <div class="ind-score-badge" id="sbT2">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T4 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">4</span>
+            <span class="ind-label">Kemutakhiran referensi</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="3" role="radiogroup" aria-label="Kemutakhiran referensi"></div>
+            <div class="ind-score-badge" id="sbT3">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T5 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">5</span>
+            <span class="ind-label">Kualitas soal kuis</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="4" role="radiogroup" aria-label="Kualitas soal kuis"></div>
+            <div class="ind-score-badge" id="sbT4">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T6 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">6</span>
+            <span class="ind-label">Kualitas studi kasus</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="5" role="radiogroup" aria-label="Kualitas studi kasus"></div>
+            <div class="ind-score-badge" id="sbT5">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T7 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">7</span>
+            <span class="ind-label">Ketepatan umpan balik</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="6" role="radiogroup" aria-label="Ketepatan umpan balik"></div>
+            <div class="ind-score-badge" id="sbT6">—</div>
+          </div>
+        </div>
+
+        <!-- Indikator T8 -->
+        <div class="indikator-row">
+          <div class="ind-info">
+            <span class="ind-num">8</span>
+            <span class="ind-label">Keseluruhan kualitas materi</span>
+          </div>
+          <div class="ind-radio">
+            <div class="radio-group" data-aspect="T" data-index="7" role="radiogroup" aria-label="Keseluruhan kualitas materi"></div>
+            <div class="ind-score-badge" id="sbT7">—</div>
+          </div>
+        </div>
+
+        <!-- Saran aspek materi -->
+        <div style="margin-top:1.25rem">
+          <label class="field-label" for="saranMateri">Saran &amp; Komentar Aspek Materi <span class="field-hint">opsional, maks. 500 karakter</span></label>
+          <textarea id="saranMateri" class="komentar-textarea" maxlength="500"
+            placeholder="Tuliskan catatan, saran perbaikan, atau komentar untuk aspek materi…"></textarea>
+          <div class="char-counter" id="ccMateri">0 / 500</div>
+        </div>
+
+        <!-- SUBMIT -->
+        <div class="error-msg" id="errSubmit" style="margin-top:1rem">Harap lengkapi semua indikator dan identitas validator sebelum mengirimkan.</div>
+        <button id="btnSubmit" class="btn-submit" onclick="handleSubmit()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Kirim Validasi
+        </button>
+      </div>
+    </div><!-- /tabMateri -->
+
+  </div><!-- /form-wrap -->
+
+  <!-- ══════════════════════════════════════
+       HASIL VALIDASI
+  ══════════════════════════════════════ -->
+  <div class="hasil-wrap" id="hasilWrap">
+    <div class="card">
+      <div class="card-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        Hasil Validasi
+      </div>
+
+      <!-- Badge kelayakan -->
+      <div id="badgeKelayakan"></div>
+
+      <!-- Total rata-rata -->
+      <div style="margin-bottom:1.25rem">
+        <div style="font-size:.8rem;color:var(--brown3);margin-bottom:.3rem">Rata-rata Total (Media + Materi)</div>
+        <div style="font-size:2rem;font-weight:700;color:var(--brown);line-height:1" id="hasilTotalAvg">—</div>
+        <div style="font-size:.78rem;color:var(--brown3);margin-top:.15rem">dari skala 5.00</div>
+      </div>
+
+      <!-- Bar chart per aspek -->
+      <div class="aspek-summary" id="aspekSummary"></div>
+
+      <!-- Tabel ringkasan -->
+      <div style="overflow-x:auto">
+        <table class="tabel-ringkasan" id="tabelRingkasan">
+          <thead>
+            <tr>
+              <th style="width:2.5rem">No</th>
+              <th>Indikator</th>
+              <th style="width:4.5rem;text-align:center">Aspek</th>
+              <th style="width:4.5rem;text-align:center">Nilai</th>
+            </tr>
+          </thead>
+          <tbody id="tabelBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="hasil-actions">
+        <button class="btn-print" onclick="window.print()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Cetak Hasil
+        </button>
+        <button class="btn-isi-ulang" onclick="isiUlang()">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.36"/></svg>
+          Isi Ulang
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       RIWAYAT
+  ══════════════════════════════════════ -->
+  <div class="riwayat-section">
+    <button class="riwayat-toggle" id="riwayatToggle" onclick="toggleRiwayat()" aria-expanded="false">
+      <span>
+        Riwayat Validasi
+        <span class="riwayat-count" id="riwayatCount"></span>
+      </span>
+      <span class="chevron">▼</span>
+    </button>
+    <div class="riwayat-body" id="riwayatBody" aria-hidden="true">
+      <div id="riwayatList"></div>
+    </div>
+  </div>
+
+</div><!-- /wrap -->
+</div><!-- /main-wrap -->
+
+<!-- MODAL LOGOUT -->
+<div class="modal-bg" id="logoutModal">
+  <div class="modal">
+    <h3>Keluar dari akun?</h3>
+    <p>Semua data sudah tersimpan secara otomatis.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="document.getElementById('logoutModal').classList.remove('show')">Batal</button>
+      <button class="btn-ok" onclick="doLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- SCRIPTS -->
+<script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
+<script>
+'use strict';
+
+// ── XSS HELPER ──────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ── AUTH GUARD (dosen protected) ────────────────────────────────────────
+(async () => {
+  try {
+    if (typeof sb === 'undefined') return; // demo mode — skip
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+    // Load profil untuk pre-fill identitas
+    try {
+      const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+      if (p) {
+        if (document.getElementById('fldNama').value === '') {
+          document.getElementById('fldNama').value = p.full_name || '';
+        }
+      }
+    } catch(e2) {}
+  } catch(e) { console.error('[validasi] auth guard error:', e); }
+})();
+
+// ── SCORES STATE ────────────────────────────────────────────────────────
+// scoresM[0..7] = nilai indikator aspek media (1–5, 0 = belum diisi)
+// scoresT[0..7] = nilai indikator aspek materi
+const scoresM = new Array(8).fill(0);
+const scoresT = new Array(8).fill(0);
+
+const SCALE_LABELS = ['Sangat Kurang','Kurang','Cukup','Baik','Sangat Baik'];
+
+// ── INIT ────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  buildRadioGroups();
+  initCharCounters();
+  checkRiwayat();
+
+  // Pre-fill identitas dari DataLayer.getProfile() jika tersedia (demo mode)
+  try {
+    if (typeof DataLayer !== 'undefined') {
+      const profile = await DataLayer.getProfile();
+      const namaEl = document.getElementById('fldNama');
+      if (namaEl && !namaEl.value && profile.name && profile.name !== 'Mahasiswa') {
+        namaEl.value = profile.name;
+      }
+    }
+  } catch(e) {}
+});
+
+// ── BUILD RADIO GROUPS ──────────────────────────────────────────────────
+function buildRadioGroups() {
+  document.querySelectorAll('.radio-group').forEach(group => {
+    const aspect = group.dataset.aspect;    // 'M' or 'T'
+    const idx    = parseInt(group.dataset.index);
+
+    for (let v = 1; v <= 5; v++) {
+      const lbl  = document.createElement('label');
+      lbl.className = 'radio-opt';
+      lbl.title = SCALE_LABELS[v - 1];
+
+      const inp  = document.createElement('input');
+      inp.type   = 'radio';
+      inp.name   = `ind_${aspect}_${idx}`;
+      inp.value  = v;
+      inp.setAttribute('aria-label', `${v} — ${SCALE_LABELS[v - 1]}`);
+
+      const dot  = document.createElement('span');
+      dot.className = 'radio-dot';
+      dot.textContent = v;
+
+      inp.addEventListener('change', () => setScore(aspect, idx, v));
+      lbl.appendChild(inp);
+      lbl.appendChild(dot);
+      group.appendChild(lbl);
+    }
+
+    // Scale labels below the first & last radio
+    const lrow = document.createElement('div');
+    lrow.className = 'radio-lbl-row';
+    lrow.style.cssText = 'display:flex;justify-content:space-between;font-size:.58rem;color:var(--brown3);margin-top:.2rem;';
+    lrow.innerHTML = '<span>SK</span><span>SB</span>';
+    group.insertAdjacentElement('afterend', lrow);
+  });
+}
+
+// ── SET SCORE ───────────────────────────────────────────────────────────
+function setScore(aspect, idx, val) {
+  if (aspect === 'M') {
+    scoresM[idx] = val;
+    const badge = document.getElementById('sbM' + idx);
+    if (badge) { badge.textContent = val + '/5'; badge.classList.add('filled'); }
+  } else {
+    scoresT[idx] = val;
+    const badge = document.getElementById('sbT' + idx);
+    if (badge) { badge.textContent = val + '/5'; badge.classList.add('filled'); }
+  }
+  // Clear validation errors if complete
+  if (scoresM.every(v => v > 0)) document.getElementById('errMedia').classList.remove('show');
+  if (scoresT.every(v => v > 0)) document.getElementById('errMateri').classList.remove('show');
+}
+
+// ── TAB SWITCH ──────────────────────────────────────────────────────────
+function switchTab(tab) {
+  const isMedia  = tab === 'media';
+  document.getElementById('tabBtnMedia').classList.toggle('active', isMedia);
+  document.getElementById('tabBtnMateri').classList.toggle('active', !isMedia);
+  document.getElementById('tabBtnMedia').setAttribute('aria-selected', isMedia);
+  document.getElementById('tabBtnMateri').setAttribute('aria-selected', !isMedia);
+  document.getElementById('tabMedia').classList.toggle('active', isMedia);
+  document.getElementById('tabMateri').classList.toggle('active', !isMedia);
+  // Scroll to top of form
+  document.querySelector('.tab-nav').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+// ── CHAR COUNTERS ────────────────────────────────────────────────────────
+function initCharCounters() {
+  [['saranMedia','ccMedia'],['saranMateri','ccMateri']].forEach(([taId, ccId]) => {
+    const ta = document.getElementById(taId);
+    const cc = document.getElementById(ccId);
+    if (!ta || !cc) return;
+    ta.addEventListener('input', () => {
+      const len = ta.value.length;
+      cc.textContent = len + ' / 500';
+      cc.classList.toggle('warn', len >= 450);
+    });
+  });
+}
+
+// ── VALIDATE ─────────────────────────────────────────────────────────────
+function validate() {
+  let valid = true;
+
+  // Identitas
+  const nama = document.getElementById('fldNama').value.trim();
+  const inst = document.getElementById('fldInstitusi').value.trim();
+  const keah = document.getElementById('fldKeahlian').value.trim();
+
+  document.getElementById('errNama').classList.toggle('show', !nama);
+  document.getElementById('errInstitusi').classList.toggle('show', !inst);
+  document.getElementById('errKeahlian').classList.toggle('show', !keah);
+  if (!nama || !inst || !keah) valid = false;
+
+  // Aspek media
+  const mediaOk = scoresM.every(v => v > 0);
+  document.getElementById('errMedia').classList.toggle('show', !mediaOk);
+  if (!mediaOk) valid = false;
+
+  // Aspek materi
+  const materiOk = scoresT.every(v => v > 0);
+  document.getElementById('errMateri').classList.toggle('show', !materiOk);
+  if (!materiOk) valid = false;
+
+  return valid;
+}
+
+// ── SUBMIT ───────────────────────────────────────────────────────────────
+async function handleSubmit() {
+  document.getElementById('errSubmit').classList.remove('show');
+
+  if (!validate()) {
+    document.getElementById('errSubmit').classList.add('show');
+    // Switch to media tab if media has errors and user is on materi tab
+    if (!scoresM.every(v => v > 0)) switchTab('media');
+    return;
+  }
+
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.8" stroke-dasharray="20" stroke-linecap="round"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg> Menyimpan…';
+
+  try {
+    const avgM = +(scoresM.reduce((s,v) => s + v, 0) / 8).toFixed(2);
+    const avgT = +(scoresT.reduce((s,v) => s + v, 0) / 8).toFixed(2);
+    const totalAvg = +((avgM + avgT) / 2).toFixed(2);
+
+    const payload = {
+      aspekMedia: {
+        scores: [...scoresM],
+        avg: avgM,
+        komentar: document.getElementById('saranMedia').value.trim(),
+      },
+      aspekMateri: {
+        scores: [...scoresT],
+        avg: avgT,
+        komentar: document.getElementById('saranMateri').value.trim(),
+      },
+      totalAvg,
+      validator: {
+        nama:       document.getElementById('fldNama').value.trim(),
+        institusi:  document.getElementById('fldInstitusi').value.trim(),
+        keahlian:   document.getElementById('fldKeahlian').value.trim(),
+      },
+      timestamp: Date.now(),
+    };
+
+    if (typeof DataLayer !== 'undefined') {
+      DataLayer.saveValidasi(payload);
+    }
+
+    showToast('Validasi berhasil disimpan. Terima kasih! ✓');
+    renderHasil(payload);
+    renderRiwayat();
+
+    // Show result, hide form
+    document.getElementById('formWrap').classList.add('hidden');
+    document.getElementById('hasilWrap').classList.add('show');
+    document.querySelector('.hasil-wrap').scrollIntoView({ behavior:'smooth', block:'start' });
+
+  } catch(e) {
+    console.error('[validasi] submit error:', e);
+    showToast('Gagal menyimpan. Coba lagi.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l5 4-5 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Kirim Validasi';
+  }
+}
+
+// ── RENDER HASIL ─────────────────────────────────────────────────────────
+function kelayakanInfo(avg) {
+  if (avg >= 4.2) return { label:'Sangat Layak', cls:'bk-sangat-layak', icon:'🏆' };
+  if (avg >= 3.4) return { label:'Layak',        cls:'bk-layak',        icon:'✅' };
+  if (avg >= 2.6) return { label:'Cukup Layak',  cls:'bk-cukup',        icon:'🔶' };
+  return            { label:'Kurang Layak',       cls:'bk-kurang',       icon:'⚠️' };
+}
+
+function barColor(avg) {
+  if (avg >= 4.2) return '#8FA287';
+  if (avg >= 3.4) return '#D4A373';
+  if (avg >= 2.6) return '#E8C070';
+  return '#C05060';
+}
+
+const LABEL_M = [
+  'Tampilan antarmuka','Kemudahan navigasi','Kualitas video',
+  'Keterbacaan teks','Konsistensi layout','Responsivitas',
+  'Ketepatan ikon','Kualitas media (kesel.)',
+];
+const LABEL_T = [
+  'Kesesuaian RPS','Kedalaman materi','Keakuratan konsep R&D',
+  'Kemutakhiran referensi','Kualitas kuis','Kualitas studi kasus',
+  'Ketepatan umpan balik','Kualitas materi (kesel.)',
+];
+
+function renderHasil(data) {
+  const ki = kelayakanInfo(data.totalAvg);
+
+  // Badge kelayakan
+  document.getElementById('badgeKelayakan').innerHTML =
+    `<span class="badge-kelayakan ${escHtml(ki.cls)}">${escHtml(ki.icon)} ${escHtml(ki.label)} — Rata-rata ${escHtml(String(data.totalAvg))}</span>`;
+
+  // Total avg
+  document.getElementById('hasilTotalAvg').textContent = String(data.totalAvg);
+
+  // Aspek summary bars
+  const aspeks = [
+    { label:'Aspek Media',   avg: data.aspekMedia.avg },
+    { label:'Aspek Materi',  avg: data.aspekMateri.avg },
+  ];
+  document.getElementById('aspekSummary').innerHTML = aspeks.map(a => `
+    <div class="aspek-bar-row">
+      <div class="aspek-bar-label">${escHtml(a.label)}</div>
+      <div class="aspek-bar-track">
+        <div class="aspek-bar-fill" style="width:${(a.avg/5*100).toFixed(1)}%;background:${barColor(a.avg)}"></div>
+      </div>
+      <div class="aspek-bar-val">${escHtml(String(a.avg))}</div>
+    </div>`).join('');
+
+  // Tabel indikator
+  let rows = '';
+  scoresM.forEach((v,i) => {
+    const cls = v >= 4 ? 'skor-good' : v >= 3 ? 'skor-avg' : 'skor-low';
+    rows += `<tr><td>${i+1}</td><td>${escHtml(LABEL_M[i])}</td><td style="text-align:center;font-size:.75rem;color:var(--terra)">Media</td><td class="skor-cell ${cls}" style="text-align:center">${v}/5</td></tr>`;
+  });
+  scoresT.forEach((v,i) => {
+    const cls = v >= 4 ? 'skor-good' : v >= 3 ? 'skor-avg' : 'skor-low';
+    rows += `<tr><td>${i+1}</td><td>${escHtml(LABEL_T[i])}</td><td style="text-align:center;font-size:.75rem;color:var(--sage-d)">Materi</td><td class="skor-cell ${cls}" style="text-align:center">${v}/5</td></tr>`;
+  });
+  // Total row
+  rows += `<tr class="total-row"><td colspan="3" style="text-align:right;padding-right:.75rem">Rata-rata Total</td><td style="text-align:center" class="skor-cell">${escHtml(String(data.totalAvg))}/5</td></tr>`;
+  document.getElementById('tabelBody').innerHTML = rows;
+}
+
+// ── ISI ULANG ────────────────────────────────────────────────────────────
+function isiUlang() {
+  // Reset scores
+  scoresM.fill(0);
+  scoresT.fill(0);
+
+  // Reset radio buttons
+  document.querySelectorAll('.radio-group input[type="radio"]').forEach(r => r.checked = false);
+
+  // Reset score badges
+  document.querySelectorAll('.ind-score-badge').forEach(b => {
+    b.textContent = '—';
+    b.classList.remove('filled');
+  });
+
+  // Reset textareas & counters
+  ['saranMedia','saranMateri'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  ['ccMedia','ccMateri'].forEach(id => {
+    document.getElementById(id).textContent = '0 / 500';
+    document.getElementById(id).classList.remove('warn');
+  });
+
+  // Clear error messages
+  document.querySelectorAll('.error-msg.show').forEach(e => e.classList.remove('show'));
+
+  // Show form, hide hasil
+  document.getElementById('formWrap').classList.remove('hidden');
+  document.getElementById('hasilWrap').classList.remove('show');
+
+  switchTab('media');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── RIWAYAT ──────────────────────────────────────────────────────────────
+function checkRiwayat() {
+  renderRiwayat();
+  // If already submitted, show hasil immediately
+  try {
+    if (typeof DataLayer !== 'undefined') {
+      const prev = DataLayer.getValidasi();
+      if (prev) {
+        renderHasil(prev);
+        document.getElementById('formWrap').classList.add('hidden');
+        document.getElementById('hasilWrap').classList.add('show');
+      }
+    }
+  } catch(e) {}
+}
+
+function renderRiwayat() {
+  const list    = document.getElementById('riwayatList');
+  const countEl = document.getElementById('riwayatCount');
+
+  let data = null;
+  try {
+    if (typeof DataLayer !== 'undefined') data = DataLayer.getValidasi();
+  } catch(e) {}
+
+  if (!data) {
+    countEl.textContent = '';
+    list.innerHTML = `<div class="riwayat-empty">
+      <span class="re-icon">📋</span>
+      Belum ada riwayat validasi yang tersimpan.
+    </div>`;
+    return;
+  }
+
+  countEl.textContent = '(1)';
+  const ki   = kelayakanInfo(data.totalAvg);
+  const date = data.timestamp
+    ? new Date(data.timestamp).toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})
+    : '—';
+
+  list.innerHTML = `
+  <div style="background:var(--ivory);border:1px solid var(--line);border-radius:12px;padding:1rem 1.1rem;margin-top:.75rem">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem;margin-bottom:.75rem">
+      <div>
+        <div style="font-size:.83rem;font-weight:600;color:var(--brown)">
+          ${escHtml(data.validator?.nama || '—')} — ${escHtml(data.validator?.institusi || '—')}
+        </div>
+        <div style="font-size:.72rem;color:var(--brown3);margin-top:.2rem">${escHtml(data.validator?.keahlian || '—')}</div>
+      </div>
+      <div style="font-size:.7rem;color:var(--brown3);white-space:nowrap;flex-shrink:0">${escHtml(date)}</div>
+    </div>
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.65rem">
+      <div style="font-size:.78rem;color:var(--brown2)">
+        Media: <strong style="color:var(--terra)">${escHtml(String(data.aspekMedia?.avg ?? '—'))}</strong>
+      </div>
+      <div style="font-size:.78rem;color:var(--brown2)">
+        Materi: <strong style="color:var(--sage-d)">${escHtml(String(data.aspekMateri?.avg ?? '—'))}</strong>
+      </div>
+      <div style="font-size:.78rem;color:var(--brown2)">
+        Total: <strong style="color:var(--brown)">${escHtml(String(data.totalAvg ?? '—'))}</strong>
+      </div>
+    </div>
+    <div style="display:inline-flex;align-items:center;gap:.35rem;background:var(--sage-bg);border-radius:100px;padding:.25rem .75rem;font-size:.78rem;font-weight:700;color:var(--sage-d)">
+      ${escHtml(ki.icon)} ${escHtml(ki.label)}
+    </div>
+    ${data.aspekMedia?.komentar ? `<div style="margin-top:.6rem;font-size:.76rem;color:var(--brown2);padding:.5rem .7rem;background:var(--ivory2);border-radius:8px;line-height:1.5"><strong>Media:</strong> "${escHtml(data.aspekMedia.komentar)}"</div>` : ''}
+    ${data.aspekMateri?.komentar ? `<div style="margin-top:.5rem;font-size:.76rem;color:var(--brown2);padding:.5rem .7rem;background:var(--ivory2);border-radius:8px;line-height:1.5"><strong>Materi:</strong> "${escHtml(data.aspekMateri.komentar)}"</div>` : ''}
+  </div>`;
+}
+
+// ── RIWAYAT TOGGLE ───────────────────────────────────────────────────────
+function toggleRiwayat() {
+  const body   = document.getElementById('riwayatBody');
+  const toggle = document.getElementById('riwayatToggle');
+  const open   = body.classList.toggle('open');
+  toggle.classList.toggle('open', open);
+  toggle.setAttribute('aria-expanded', open);
+  body.setAttribute('aria-hidden', !open);
+}
+
+// ── DRAWER (mobile) ──────────────────────────────────────────────────────
+function toggleDrawer() {
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawerOverlay').classList.toggle('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+// ── TOAST ────────────────────────────────────────────────────────────────
+let toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+// ── LOGOUT ───────────────────────────────────────────────────────────────
+async function doLogout() {
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>

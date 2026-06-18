@@ -10,3 +10,6 @@ Thumbs.db
 
 # Node
 node_modules/
+
+# Referensi internal — tidak perlu di-push
+kemampuan.md
