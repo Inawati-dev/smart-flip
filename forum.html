@@ -125,6 +125,32 @@ body{
 .btn-theme:hover{background:rgba(255,255,255,.1);color:#fff}
 .btn-theme:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
 
+/* ── HAMBURGER + NAV DRAWER (mobile) ── */
+.hb-btn{display:none;width:44px;height:44px;border-radius:8px;border:none;background:transparent;cursor:pointer;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:20px;transition:all .18s;flex-shrink:0}
+.hb-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:495;opacity:0;visibility:hidden;transition:opacity .25s}
+.nav-backdrop.open{opacity:1;visibility:visible}
+.nav-drawer{position:fixed;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:var(--ivory);z-index:500;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(44,36,32,.18);display:flex;flex-direction:column;overflow-y:auto}
+.nav-drawer.open{transform:translateX(0)}
+.nav-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+.nav-drawer-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--brown)}
+.nav-drawer-close{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--brown2);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.nav-drawer-close:hover{background:var(--terra);color:#fff}
+.nav-drawer-links{display:flex;flex-direction:column;padding:8px;gap:2px}
+.nav-drawer-links a,.nav-drawer-links button{display:flex;align-items:center;gap:10px;min-height:44px;padding:11px 14px;border-radius:8px;font-size:14px;font-weight:600;color:var(--brown2);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:background .15s,color .15s}
+.nav-drawer-links a:hover,.nav-drawer-links button:hover{background:var(--cream);color:var(--terra-d)}
+.nav-drawer-links .nav-link-danger{color:var(--err)}
+.nav-drawer-links .nav-link-danger:hover{background:rgba(232,112,112,.12);color:var(--err)}
+
+.btn-logout-top{
+  background:transparent;border:none;cursor:pointer;
+  color:rgba(232,112,112,.85);font-family:'DM Sans',sans-serif;
+  font-size:13px;font-weight:600;padding:6px 8px;
+  border-radius:7px;transition:background .15s,color .15s;flex-shrink:0;
+  display:flex;align-items:center;min-height:36px;
+}
+.btn-logout-top:hover{background:rgba(255,255,255,.1);color:#fff}
+
 /* ── FILTER TABS ── */
 .forum-tabs{
   display:flex;gap:8px;overflow-x:auto;
@@ -160,7 +186,7 @@ body{
   font-size:13px;font-weight:700;flex-shrink:0;
 }
 .np-modul-select{
-  flex:1;height:36px;padding:0 10px;
+  flex:1;min-width:0;height:36px;padding:0 10px;
   border:1.5px solid var(--line);border-radius:8px;
   background:var(--ivory2);font-family:'DM Sans',sans-serif;
   font-size:13px;color:var(--brown);outline:none;
@@ -297,11 +323,18 @@ body{
   .tab-btn{min-height:44px;height:auto;padding:8px 14px}
   .btn-post-submit{height:44px}
   .btn-theme{width:44px;height:44px}
+  .btn-logout-top{min-height:44px;font-size:12px;padding:6px 6px}
+  .topbar{padding:0 10px;gap:8px}
+  .topbar-title{font-size:.95rem}
 }
 @media(max-width:400px){
   .topbar{padding:0 10px;gap:8px}
   .topbar-title{font-size:.95rem}
   .new-post-card,.post-card{padding:12px}
+}
+@media(max-width:768px){
+  .btn-back,.topbar-sub,.btn-theme,.btn-logout-top{display:none}
+  .hb-btn{display:flex}
 }
 
 /* ── LOGOUT MODAL ── */
@@ -329,7 +362,25 @@ body{
   <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
     <span id="themeIcon">🌙</span>
   </button>
+  <button class="btn-logout-top" onclick="openLogoutModal()" title="Keluar">Keluar</button>
+  <button class="hb-btn" id="hbBtn" aria-label="Buka menu" onclick="openNavDrawer()">☰</button>
 </div>
+
+<!-- ── NAV DRAWER (mobile) ── -->
+<div class="nav-backdrop" id="navBackdrop" onclick="closeNavDrawer()"></div>
+<aside class="nav-drawer" id="navDrawer" role="dialog" aria-modal="true" aria-label="Menu navigasi">
+  <div class="nav-drawer-head">
+    <span class="nav-drawer-title">Menu</span>
+    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Tutup menu">×</button>
+  </div>
+  <nav class="nav-drawer-links">
+    <a href="dashboard-mhs.html" id="navDashboard">🏠 Dashboard</a>
+    <a href="profil.html">👤 Profil</a>
+    <a href="changelog.html">📋 Changelog</a>
+    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
+    <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
+  </nav>
+</aside>
 
 <!-- ══ FILTER TABS ══ -->
 <div class="forum-tabs" id="forumTabs"></div>
@@ -400,6 +451,19 @@ function toggleTheme() {
 }
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
+
+// ── NAV DRAWER (mobile hamburger) ──
+function openNavDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeNavDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNavDrawer(); });
 
 // ── Auth guard ──
 (async () => {

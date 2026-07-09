@@ -115,7 +115,7 @@ const DataLayer = (() => {
         replies: [
           {
             id: 'rep_1a',
-            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen',
             content: 'Perbedaan kunci: R&D bertujuan menghasilkan produk/prosedur baru yang tervalidasi, sedangkan eksperimen murni menguji hipotesis tentang hubungan sebab-akibat. Pada R&D, validasi ahli dan uji coba lapangan adalah bagian inti prosesnya.',
             createdAt: new Date(Date.now() - 5400000).toISOString(),
           },
@@ -156,7 +156,7 @@ const DataLayer = (() => {
         replies: [
           {
             id: 'rep_4a',
-            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen',
             content: '4D (Define-Design-Develop-Disseminate) lebih ringkas dan sering dipakai untuk pengembangan perangkat pembelajaran (LKS, modul cetak, RPP). ADDIE lebih komprehensif dan cocok untuk sistem e-learning atau multimedia. Keduanya valid untuk skripsi, pilih sesuai jenis produk yang dikembangkan.',
             createdAt: new Date(Date.now() - 160000000).toISOString(),
           },
@@ -192,7 +192,7 @@ const DataLayer = (() => {
         replies: [
           {
             id: 'rep_6a',
-            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen',
             content: 'Triangulasi data (angket + wawancara) sudah bagus. FGD bisa ditambahkan jika ingin memperkuat temuan, terutama kalau ada perbedaan signifikan antara data angket dan wawancara. Untuk skripsi S1, dua sumber data biasanya sudah memadai.',
             createdAt: new Date(Date.now() - 320000000).toISOString(),
           },
@@ -213,7 +213,7 @@ const DataLayer = (() => {
           },
           {
             id: 'rep_7b',
-            authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen',
+            authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen',
             content: 'Betul saran Siti. Tambahan: prioritaskan literatur dari jurnal terindeks (Scopus/SINTA) dan maksimal 10 tahun terakhir (kecuali teori dasar seperti Bloom, Piaget, dll). Fokus pada yang langsung berkaitan dengan variabel penelitianmu.',
             createdAt: new Date(Date.now() - 380000000).toISOString(),
           },
@@ -698,7 +698,7 @@ const DataLayer = (() => {
         const dummy = [
           { id: 'n1', type: 'modul',  title: 'Modul 3 Dibuka',      body: 'Modul 3: Desain Penelitian & Instrumen kini tersedia. Lanjutkan perjalanan belajarmu!', read: false, createdAt: new Date(Date.now() - 7200000).toISOString() },
           { id: 'n2', type: 'kuis',   title: 'Kuis Modul 2 — 85%',  body: 'Selamat! Kamu mendapat skor 85 di Kuis Modul 2. Kenaikan 5 poin dari percobaan sebelumnya!', read: false, createdAt: new Date(Date.now() - 86400000).toISOString() },
-          { id: 'n3', type: 'forum',  title: 'Dosen Membalas Diskusimu', body: 'Ir. Johan Iriawan membalas pertanyaanmu di forum Modul 1 tentang perbedaan R&D.', read: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
+          { id: 'n3', type: 'forum',  title: 'Dosen Membalas Diskusimu', body: 'Dr. Ahmad Fauzi membalas pertanyaanmu di forum Modul 1 tentang perbedaan R&D.', read: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
           { id: 'n4', type: 'draf',   title: 'Draf Dikomentari',    body: 'Dosen memberikan komentar pada draf "Identifikasi Masalah Penelitian" kamu. Cek segera!', read: false, createdAt: new Date(Date.now() - 10800000).toISOString() },
           { id: 'n5', type: 'progres', title: 'Modul 1 Selesai! 🏆', body: 'Selamat! Kamu telah menyelesaikan Modul 1: Dasar & Konsep R&D. Lanjut ke Modul 2!', read: true,  createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString() },
           { id: 'n6', type: 'sistem', title: 'Selamat Datang',      body: 'Selamat bergabung di SMART-FLIP 5.0! Mulailah belajar dari Modul 1.',                read: true,  createdAt: new Date(Date.now() - 8 * 24 * 3600000).toISOString() },
@@ -872,7 +872,7 @@ const DataLayer = (() => {
             authorName: 'Andi Pratama', title: 'Identifikasi Masalah Penelitian', version: 1,
             content: 'Penelitian ini bermula dari observasi awal di kelas Metpen yang menunjukkan bahwa mahasiswa kesulitan membedakan pendekatan R&D dengan penelitian eksperimental...',
             status: 'submitted', submittedAt: new Date(now.getTime() - 86400000 * 2).toISOString(),
-            comments: [{ id: 'cmt_1000000001', authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen', text: 'Identifikasi masalahnya sudah cukup baik. Tolong perkuat dengan data empiris dari sumber yang lebih baru (≤5 tahun). Tambahkan pula studi pendahuluan yang lebih konkret.', createdAt: new Date(now.getTime() - 86400000).toISOString() }],
+            comments: [{ id: 'cmt_1000000001', authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen', text: 'Identifikasi masalahnya sudah cukup baik. Tolong perkuat dengan data empiris dari sumber yang lebih baru (≤5 tahun). Tambahkan pula studi pendahuluan yang lebih konkret.', createdAt: new Date(now.getTime() - 86400000).toISOString() }],
           },
           {
             id: 'draft_1000000002', moduleId: 2, moduleName: 'Model Pengembangan ADDIE & 4D',
@@ -880,7 +880,7 @@ const DataLayer = (() => {
             content: 'Draf ini menguraikan penerapan model ADDIE dalam pengembangan media pembelajaran interaktif berbasis web untuk mata pelajaran IPA kelas VIII...',
             status: 'revision', submittedAt: new Date(now.getTime() - 86400000 * 5).toISOString(),
             comments: [
-              { id: 'cmt_1000000002', authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen', text: 'Tahap Analysis sudah bagus. Namun pada tahap Design, perlu diperjelas indikator keberhasilan produk. Sertakan juga instrumen validasi yang akan digunakan.', createdAt: new Date(now.getTime() - 86400000 * 4).toISOString() },
+              { id: 'cmt_1000000002', authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen', text: 'Tahap Analysis sudah bagus. Namun pada tahap Design, perlu diperjelas indikator keberhasilan produk. Sertakan juga instrumen validasi yang akan digunakan.', createdAt: new Date(now.getTime() - 86400000 * 4).toISOString() },
               { id: 'cmt_1000000003', authorName: 'Dewi Lestari', authorRole: 'mahasiswa', text: 'Terima kasih Pak. Saya sudah revisi bagian Design dan menambahkan rubrik validasi. Mohon dicek kembali.', createdAt: new Date(now.getTime() - 86400000 * 3).toISOString() },
             ],
           },
@@ -889,7 +889,7 @@ const DataLayer = (() => {
             authorName: 'Ahmad Rizki', title: 'Laporan Needs Assessment Bab 1', version: 1,
             content: 'Analisis kebutuhan dilakukan melalui observasi kelas dan wawancara terstruktur kepada 3 guru IPA di SMP Negeri 5. Hasil menunjukkan bahwa 78% siswa mengalami kesulitan memahami konsep abstrak melalui buku teks konvensional...',
             status: 'reviewed', submittedAt: new Date(now.getTime() - 86400000 * 3).toISOString(),
-            comments: [{ id: 'cmt_1000000004', authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen', text: 'Needs assessment sudah komprehensif dan datanya kuat. Triangulasi antara observasi dan wawancara dilakukan dengan baik. Lanjutkan ke penyusunan rumusan masalah dan tujuan penelitian. Approved untuk diteruskan ke bab berikutnya.', createdAt: new Date(now.getTime() - 86400000 * 2).toISOString() }],
+            comments: [{ id: 'cmt_1000000004', authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen', text: 'Needs assessment sudah komprehensif dan datanya kuat. Triangulasi antara observasi dan wawancara dilakukan dengan baik. Lanjutkan ke penyusunan rumusan masalah dan tujuan penelitian. Approved untuk diteruskan ke bab berikutnya.', createdAt: new Date(now.getTime() - 86400000 * 2).toISOString() }],
           },
           {
             id: 'draft_1000000004', moduleId: 1, moduleName: 'Dasar & Konsep R&D',
@@ -897,9 +897,9 @@ const DataLayer = (() => {
             content: 'Latar belakang ini menjabarkan kesenjangan antara kondisi ideal pembelajaran berbasis proyek dengan kondisi nyata di lapangan berdasarkan studi pendahuluan di tiga sekolah menengah atas di Kota Malang...',
             status: 'reviewed', submittedAt: new Date(now.getTime() - 86400000 * 10).toISOString(),
             comments: [
-              { id: 'cmt_1000000005', authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen', text: 'Versi pertama: latar belakang masih terlalu umum. Perlu data spesifik dari studi pendahuluan.', createdAt: new Date(now.getTime() - 86400000 * 9).toISOString() },
+              { id: 'cmt_1000000005', authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen', text: 'Versi pertama: latar belakang masih terlalu umum. Perlu data spesifik dari studi pendahuluan.', createdAt: new Date(now.getTime() - 86400000 * 9).toISOString() },
               { id: 'cmt_1000000006', authorName: 'Maya Sari', authorRole: 'mahasiswa', text: 'Sudah ditambahkan data angket dari 3 sekolah Pak. Mohon ditinjau kembali.', createdAt: new Date(now.getTime() - 86400000 * 7).toISOString() },
-              { id: 'cmt_1000000007', authorName: 'Ir. Johan Iriawan, M.T.', authorRole: 'dosen', text: 'Revisi sudah sangat baik. Data empiris dari studi pendahuluan sudah memperkuat argumentasi. Draf disetujui — lanjutkan ke rumusan masalah dan tujuan penelitian.', createdAt: new Date(now.getTime() - 86400000 * 6).toISOString() },
+              { id: 'cmt_1000000007', authorName: 'Dr. Ahmad Fauzi, M.Pd.', authorRole: 'dosen', text: 'Revisi sudah sangat baik. Data empiris dari studi pendahuluan sudah memperkuat argumentasi. Draf disetujui — lanjutkan ke rumusan masalah dan tujuan penelitian.', createdAt: new Date(now.getTime() - 86400000 * 6).toISOString() },
             ],
           },
         ];
