@@ -1,0 +1,15 @@
+# Supabase credentials — JANGAN DI-COMMIT
+supabase.js
+
+# Book PDFs — too large for git, deploy separately
+books/*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Referensi internal — tidak perlu di-push
+kemampuan.md
