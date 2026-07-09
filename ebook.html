@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Perpustakaan Digital</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="header-inner">
+    <a class="logo" href="#">
+      <span class="logo-mark">📖</span>
+      <span class="logo-text" id="siteName">Perpustakaan Digital</span>
+    </a>
+    <div class="topbar-right">
+      <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" title="Ganti tema" onclick="toggleTheme()"><span id="themeIcon">🌙</span></button>
+      <button class="topbar-cat-btn" id="topbarCatBtn" onclick="toggleCatalog()" title="Buka/tutup katalog">📚 Katalog</button>
+      <a class="topbar-link" id="dashboardBack" href="index.html" title="Kembali ke Dashboard">← Dashboard</a>
+      <a class="topbar-link" href="profil.html" title="Profil">👤 Profil</a>
+      <a class="topbar-link" href="changelog.html" title="Changelog">📋 Changelog</a>
+      <a class="topbar-link" href="checklist.html" title="Checklist">✅ Checklist</a>
+      <button class="topbar-link" style="color:var(--red);border-color:var(--red-border)" onclick="openLogoutModal()">Keluar</button>
+    </div>
+  </div>
+</header>
+
+<div class="app" id="app">
+
+  <!-- ═══ CATALOG DRAWER (overlay, CSS-only toggle) ═══ -->
+  <div class="cat-backdrop" id="catBackdrop" onclick="closeCatalog()"></div>
+  <aside class="cat-pane" id="catPane">
+    <div class="cp-head">
+      <h2>Katalog Buku</h2>
+      <p class="cp-sub" id="catSub">Memuat…</p>
+      <button class="cp-close-btn" onclick="closeCatalog()" title="Tutup katalog">×</button>
+    </div>
+    <div class="cp-loading" id="cpLoading">
+      <div class="cp-ring"></div>
+    </div>
+    <div class="cp-error" id="cpError">
+      <div class="cp-err-icon">⚠️</div>
+      <p>Gagal memuat katalog</p>
+      <p class="cp-hint" id="stateHint"></p>
+    </div>
+    <div class="cp-grid" id="bookGrid"></div>
+    <div class="cp-footer">
+      <button class="btn-lanjut" id="btnLanjut" onclick="startReading()">‹ Mulai Baca</button>
+    </div>
+  </aside>
+
+  <!-- ═══ FLIP PANE (full width) ═══ -->
+  <section class="flip-pane" id="flipPane">
+
+    <!-- Welcome screen (shown before any book is opened) -->
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">📚</div>
+      <h2>Pilih buku dari katalog</h2>
+      <p>Klik judul buku apa saja untuk mulai membaca</p>
+    </div>
+
+    <!-- Loading progress -->
+    <div class="fl-loader" id="flLoader">
+      <div class="fl-title" id="flTitle"></div>
+      <div class="fl-spinner-wrap">
+        <div class="fl-ring"></div>
+      </div>
+      <div class="fl-bar-wrap">
+        <div class="fl-bar"><div class="fl-fill" id="flFill"></div></div>
+        <span class="fl-detail" id="flDetail">Mempersiapkan…</span>
+      </div>
+    </div>
+
+    <!-- Book stage -->
+    <div class="stage" id="stage">
+      <div class="zoom-outer" id="zoomOuter">
+        <div class="book-wrap">
+          <div class="book" id="book">
+            <div class="pg pg-l" id="pgL"></div>
+            <div class="spine"></div>
+            <div class="pg pg-r" id="pgR"></div>
+            <div class="flipper" id="flipper">
+              <div class="f-face f-front" id="fFront"></div>
+              <div class="f-face f-back" id="fBack"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar" id="toolbar">
+      <button class="tb-btn" id="btnFirst" title="Halaman pertama">⏮</button>
+      <button class="tb-btn" id="btnPrev"  title="Sebelumnya">‹</button>
+      <span   class="pg-counter" id="pgCounter">— / —</span>
+      <button class="tb-btn" id="btnNext"  title="Berikutnya">›</button>
+      <button class="tb-btn" id="btnLast"  title="Halaman terakhir">⏭</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btnThumb" title="Thumbnail strip">⊞</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btnZoomOut" title="Perkecil (−)">−</button>
+      <span   class="zoom-label" id="zoomLabel">100%</span>
+      <button class="tb-btn" id="btnZoomIn"  title="Perbesar (+)">+</button>
+      <div class="tb-sep"></div>
+      <button class="tb-btn" id="btnExpand" title="Perluas / Ciutkan">⤢</button>
+      <div class="bg-chip" id="bgProgress"><span id="bgText">Memuat latar…</span></div>
+    </div>
+
+    <!-- Mobile back button -->
+    <button class="mobile-back" id="mobileBack">← Katalog</button>
+
+  </section>
+
+
+</div><!-- /.app -->
+
+<!-- Thumbnail strip -->
+<div id="thumbRow"><div class="thumblist" id="thumbList"></div></div>
+
+<!-- Zoom hint -->
+<div class="zoom-hint" id="zoomHint">Scroll untuk zoom · Drag untuk geser</div>
+
+<!-- Supabase (untuk cek role → arah tombol dashboard) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="supabase.js"></script>
+<script>
+(async function() {
+  const back = document.getElementById('dashboardBack');
+  try {
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+        back.href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        return;
+      }
+    }
+  } catch(e) {}
+  // Demo / tidak login → ke halaman utama
+  back.href = 'index.html';
+})();
+</script>
+<style>
+/* ── CATALOG DRAWER (overlay approach, no grid manipulation) ── */
+.cat-backdrop { display:none!important; }
+@keyframes pgSpin { to { transform:rotate(360deg); } }
+
+.cat-pane {
+  position:fixed!important;
+  top:var(--topbar-h,58px);left:0;right:0;bottom:0;
+  width:100%!important;
+  z-index:190;
+  transform:translateY(-100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow:0 8px 32px rgba(62,54,46,.18);
+  overflow-y:auto;
+}
+.cat-pane.open { transform:translateY(0); }
+
+/* grid buku lebih lebar ketika full-screen */
+.cat-pane.open .cp-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  max-width:900px;margin:0 auto;
+}
+
+/* flip-pane fills full width now (no grid column sharing) */
+.app { display:block!important; }
+.flip-pane { width:100%!important; height:calc(100vh - var(--topbar-h,58px))!important; }
+
+/* thumbnail strip: mulai dari kiri (bukan offset catalog 320px) */
+#thumbRow { left:0!important; }
+
+/* expanded mode tidak relevan lagi — sembunyikan btnExpand */
+#btnExpand { display:none!important; }
+
+/* close button di cp-head */
+.cp-head { position:relative; }
+.cp-close-btn {
+  position:absolute;top:50%;right:12px;transform:translateY(-50%);
+  width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--border,rgba(62,54,46,.15));
+  background:var(--bg3,#FAF7F0);cursor:pointer;
+  font-size:16px;font-weight:700;color:var(--brown2,#6B5D4F);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s;
+}
+.cp-close-btn:hover{background:var(--terra,#D4A373);color:#fff;}
+
+/* footer mulai baca — sticky di bawah */
+.cp-footer {
+  position:sticky;bottom:0;
+  background:var(--ivory,#FFFDF8);
+  border-top:1px solid var(--border,rgba(62,54,46,.1));
+  padding:12px 24px;
+  display:flex;justify-content:center;
+}
+.btn-lanjut {
+  width:100%;max-width:400px;
+  padding:13px 0;border-radius:100px;
+  background:var(--terra,#D4A373);color:#fff;
+  font-size:15px;font-weight:700;border:none;cursor:pointer;
+  transition:background .15s;font-family:inherit;
+}
+.btn-lanjut:hover{background:var(--terra-d,#B8855A);}
+
+/* cp-head: tampilkan judul di tengah dengan close di kanan */
+.cp-head {
+  padding:18px 24px 14px;
+  border-bottom:1px solid var(--border,rgba(62,54,46,.1));
+  text-align:center;
+}
+.cp-head h2 { font-size:1.3rem; }
+
+/* topbar catalog toggle button */
+.topbar-cat-btn {
+  display:flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:100px;
+  border:1px solid var(--border,rgba(62,54,46,.15));
+  background:var(--terra,#D4A373);color:#fff;
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:background .15s;
+  font-family:inherit;
+}
+.topbar-cat-btn:hover{background:var(--terra-d,#B8855A);}
+
+/* theme toggle button (dark/light) */
+.btn-theme {
+  display:flex;align-items:center;justify-content:center;
+  width:36px;height:36px;
+  border-radius:var(--r-pill,100px);
+  border:1px solid var(--border,rgba(62,54,46,.15));
+  background:transparent;color:var(--brown2,#6B5D4F);
+  font-size:16px;cursor:pointer;
+  transition:background .15s,color .15s,border-color .15s;
+  flex-shrink:0;
+}
+.btn-theme:hover{background:var(--terra,#D4A373);color:#fff;border-color:var(--terra,#D4A373);}
+
+/* ── MOBILE: topbar overflow fix ──
+   Default topbar has 5 items (Katalog, Dashboard, Keluar, Changelog, Checklist)
+   plus a long dynamic site name — this overflows the viewport at <=640px with
+   no way to reach Dashboard/Keluar/Changelog/Checklist (header-inner does not scroll). */
+@media (max-width: 640px) {
+  .header-inner { padding: 0 10px; gap: 6px; }
+  .logo-text {
+    max-width: 96px; overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap; font-size: 13px;
+  }
+  .topbar-right { gap: 4px; }
+  /* Secondary links: hide on mobile to keep Katalog/Dashboard/Keluar reachable */
+  .topbar-right a[href="profil.html"],
+  .topbar-right a[href="changelog.html"],
+  .topbar-right a[href="checklist.html"] { display: none; }
+  .topbar-cat-btn { padding: 6px 9px; font-size: 12px; gap: 4px; min-height: 44px; }
+  #dashboardBack { font-size: 11px; padding: 6px 8px; min-height: 44px; }
+  .topbar-right button[onclick="openLogoutModal()"] { font-size: 11px; padding: 6px 8px; min-height: 44px; }
+  .btn-theme { width: 44px; height: 44px; }
+}
+@media (max-width: 360px) {
+  .logo-text { max-width: 60px; }
+}
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;min-height:44px;display:flex;align-items:center;justify-content:center;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
+</style>
+<script>
+// ══════════════════════════════════════
+// THEME MANAGEMENT (diterapkan sedini mungkin agar tidak flash)
+// ══════════════════════════════════════
+(function initTheme() {
+  const saved = localStorage.getItem('sfp_theme');
+  if (saved) {
+    document.documentElement.setAttribute('data-theme', saved);
+  }
+})();
+function updateThemeIcon() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const icon = document.getElementById('themeIcon');
+  if (!icon) return;
+  let effective = cur;
+  if (!cur) {
+    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
+}
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  let effective = cur;
+  if (!effective) {
+    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  const next = effective === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sfp_theme', next);
+  updateThemeIcon();
+}
+document.addEventListener('DOMContentLoaded', updateThemeIcon);
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
+</script>
+<!-- pdf.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
+<script>
+function openCatalog() {
+  document.getElementById('catPane').classList.add('open');
+  document.getElementById('catBackdrop').classList.add('visible');
+}
+function closeCatalog() {
+  document.getElementById('catPane').classList.remove('open');
+  document.getElementById('catBackdrop').classList.remove('visible');
+  if (typeof buildBook === 'function') setTimeout(buildBook, 60);
+}
+function toggleCatalog() {
+  const open = document.getElementById('catPane').classList.contains('open');
+  open ? closeCatalog() : openCatalog();
+}
+function startReading() {
+  const sel = document.getElementById('btnLanjut')._selectedBook;
+  closeCatalog();
+  if (!sel) return;
+  // Paksa buka dari halaman 1 (clear currentPath agar openBook tidak skip)
+  if (typeof openBook === 'function') {
+    window._sfpCurrentPath = null; // sinyal ke script.js
+    openBook(sel.path, sel.title);
+  }
+}
+// Auth guard — redirect ke login jika belum login
+(async () => {
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) return; // demo mode — skip auth
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+  } catch(e) {}
+})();
+
+// Buka katalog saat load (user perlu pilih buku)
+openCatalog();
+</script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
+<script src="script.js"></script>
+<script>
+// ── LOGOUT ──
+async function doLogout() {
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
+  window.location.href = 'index.html';
+}
+
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
+</script>
+
+<!-- ── LOGOUT MODAL ── -->
+<div id="logoutModal" class="logout-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+  <div class="logout-modal-box">
+    <h3 id="lmTitle">Keluar dari SMART-FLIP?</h3>
+    <p>Progres belajar kamu tersimpan otomatis.</p>
+    <div class="logout-modal-actions">
+      <button class="logout-btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="logout-btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
