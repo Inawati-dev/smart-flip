@@ -20,6 +20,8 @@
   --line:#DDD5C4;--line2:#EDE8DF;
   --red:#B03020;
   --comment-dosen-bg:#FEF9F4;--comment-mhs-bg:#F4F7F3;
+  /* fixed-dark chrome surface: topbar (always dark w/ light text, regardless of theme) */
+  --chrome:#3E362E;
 
   /* semantic aliases */
   --bg:var(--cream);
@@ -39,6 +41,7 @@
     --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
     --red:#E87070;
     --comment-dosen-bg:rgba(232,184,136,.1);--comment-mhs-bg:rgba(159,180,154,.1);
+    --chrome:#0F0C08;
   }
 }
 
@@ -51,6 +54,7 @@
   --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
   --red:#E87070;
   --comment-dosen-bg:rgba(232,184,136,.1);--comment-mhs-bg:rgba(159,180,154,.1);
+  --chrome:#0F0C08;
 }
 
 /* ══ FORCE LIGHT ══ */
@@ -62,6 +66,7 @@
   --line:#DDD5C4;--line2:#EDE8DF;
   --red:#B03020;
   --comment-dosen-bg:#FEF9F4;--comment-mhs-bg:#F4F7F3;
+  --chrome:#3E362E;
 }
 
 html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif;transition:background .25s,color .25s}
@@ -69,9 +74,18 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 /* ── TOPBAR ── */
 .topbar{
   position:sticky;top:0;z-index:100;
-  background:var(--brown);height:54px;
+  background:var(--chrome);height:54px;
   display:flex;align-items:center;gap:.75rem;padding:0 1.25rem;
+  transition:background .25s;
 }
+.btn-logout-top{
+  background:transparent;border:none;cursor:pointer;
+  color:rgba(232,112,112,.85);font-family:'DM Sans',sans-serif;
+  font-size:.78rem;font-weight:600;padding:.35rem .5rem;
+  border-radius:7px;transition:background .15s,color .15s;flex-shrink:0;
+  display:flex;align-items:center;min-height:36px;
+}
+.btn-logout-top:hover{background:rgba(255,255,255,.1);color:#fff}
 .btn-back{
   color:rgba(255,255,255,.6);text-decoration:none;font-size:.82rem;
   display:flex;align-items:center;gap:.35rem;transition:color .15s;
@@ -95,6 +109,23 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 }
 .btn-theme:hover{background:rgba(255,255,255,.08);color:#fff}
 .btn-theme:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
+
+/* ── HAMBURGER + NAV DRAWER (mobile) ── */
+.hb-btn{display:none;width:44px;height:44px;border-radius:8px;border:none;background:transparent;cursor:pointer;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:20px;transition:all .18s;flex-shrink:0}
+.hb-btn:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:495;opacity:0;visibility:hidden;transition:opacity .25s}
+.nav-backdrop.open{opacity:1;visibility:visible}
+.nav-drawer{position:fixed;top:0;right:0;bottom:0;width:300px;max-width:85vw;background:var(--ivory);z-index:500;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 24px rgba(44,36,32,.18);display:flex;flex-direction:column;overflow-y:auto}
+.nav-drawer.open{transform:translateX(0)}
+.nav-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--line);flex-shrink:0}
+.nav-drawer-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:600;color:var(--brown)}
+.nav-drawer-close{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--brown2);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+.nav-drawer-close:hover{background:var(--terra);color:#fff}
+.nav-drawer-links{display:flex;flex-direction:column;padding:8px;gap:2px}
+.nav-drawer-links a,.nav-drawer-links button{display:flex;align-items:center;gap:10px;min-height:44px;padding:11px 14px;border-radius:8px;font-size:14px;font-weight:600;color:var(--brown2);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;width:100%;transition:background .15s,color .15s}
+.nav-drawer-links a:hover,.nav-drawer-links button:hover{background:var(--cream);color:var(--terra-d)}
+.nav-drawer-links .nav-link-danger{color:var(--red)}
+.nav-drawer-links .nav-link-danger:hover{background:rgba(232,112,112,.12);color:var(--red)}
 
 /* ── LAYOUT ── */
 .wrap{max-width:800px;margin:0 auto;padding:1.5rem 1.25rem 3rem}
@@ -262,6 +293,10 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   .btn-new-draft{font-size:.75rem;padding:0 .75rem;min-height:44px;height:auto}
   .tab-btn{min-height:44px;height:auto;padding:.5rem .9rem}
   .btn-back{min-height:44px;padding:.5rem .25rem}
+  .draft-count{display:none}
+  .btn-logout-top{min-height:44px;font-size:.72rem;padding:.35rem .4rem}
+  .btn-theme{width:44px;height:44px}
+  .topbar{padding:0 .75rem;gap:.4rem}
   .comment-input{font-size:16px}
   .btn-send-comment{height:44px}
   .status-select{height:44px;font-size:16px}
@@ -269,11 +304,15 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   .modal-card label input,
   .modal-card label textarea{font-size:16px}
 }
+@media(max-width:768px){
+  .btn-back,.draft-count,.btn-theme,.btn-logout-top{display:none}
+  .hb-btn{display:flex}
+}
 
 /* ── LOGOUT MODAL ── */
 .logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
 .logout-modal-overlay.open{display:flex}
-.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+.logout-modal-box{background:var(--ivory);color:var(--brown);border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out;transition:background .25s,color .25s}
 @keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
 .logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
@@ -298,7 +337,25 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
     <span id="themeIcon">🌙</span>
   </button>
+  <button class="btn-logout-top" onclick="openLogoutModal()" title="Keluar">Keluar</button>
+  <button class="hb-btn" id="hbBtn" aria-label="Buka menu" onclick="openNavDrawer()">☰</button>
 </div>
+
+<!-- ── NAV DRAWER (mobile) ── -->
+<div class="nav-backdrop" id="navBackdrop" onclick="closeNavDrawer()"></div>
+<aside class="nav-drawer" id="navDrawer" role="dialog" aria-modal="true" aria-label="Menu navigasi">
+  <div class="nav-drawer-head">
+    <span class="nav-drawer-title">Menu</span>
+    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Tutup menu">×</button>
+  </div>
+  <nav class="nav-drawer-links">
+    <a href="dashboard-mhs.html" id="navDashboard">🏠 Dashboard</a>
+    <a href="profil.html">👤 Profil</a>
+    <a href="changelog.html">📋 Changelog</a>
+    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
+    <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
+  </nav>
+</aside>
 
 <!-- ── MAIN ── -->
 <div class="wrap">
@@ -380,6 +437,19 @@ function toggleTheme() {
 }
 
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
+
+// ── NAV DRAWER (mobile hamburger) ──
+function openNavDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeNavDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNavDrawer(); });
 
 // ── Auth guard ─────────────────────────────────────────────────
 (async () => {
@@ -556,12 +626,15 @@ function attachCardEvents() {
 function setupPage() {
   // Topbar
   const backBtn = document.getElementById('btnBack');
+  const navDashboard = document.getElementById('navDashboard');
   if (IS_DOSEN) {
     document.getElementById('pageTitle').textContent = 'Asistensi Draf Mahasiswa';
     if (backBtn) backBtn.href = 'dashboard-dos.html';
+    if (navDashboard) navDashboard.href = 'dashboard-dos.html';
   } else {
     document.getElementById('pageTitle').textContent = 'Draf Saya';
     if (backBtn) backBtn.href = 'dashboard-mhs.html';
+    if (navDashboard) navDashboard.href = 'dashboard-mhs.html';
   }
 
   // New Draft button (mahasiswa only)

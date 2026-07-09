@@ -2,7 +2,7 @@
 
 ## Overview
 Perpustakaan Digital / Flipbook Reader untuk penelitian dana internal UM 2026.
-Live: https://jiakbar.github.io/smart-flipbook
+Live: https://inawati-dev.github.io/smart-flip
 Stack: GitHub Pages (frontend) + Supabase (PostgreSQL + Auth)
 
 ## Key Files
@@ -26,7 +26,6 @@ analitik.html       — Dasbor Analitik Kelas dosen (progress mahasiswa, grafik,
 profil.html         — Profil pengguna (edit data, hasil VARK, statistik belajar, riwayat kuis)
 manajemen.html      — Panel kelola modul dosen (edit metadata, status, urutan, bulk actions)
 changelog.html      — Riwayat versi
-checklist.html      — Checklist pengembangan
 script.js           — Flipbook engine (lazy PDF render, Map cache)
 style.css           — Global styles
 modules-data.js     — 9 modul + 45 soal kuis + jurnal referensi dummy
@@ -47,7 +46,6 @@ database/schema.sql — Supabase DB schema (8 tabel)
 ## Git Workflow
 ```bash
 # Dari Windows Terminal (bukan bash/shell Claude):
-cd "C:\1-Johan\10. Pengembangan\smart-flipbook"
 git add -- ":(exclude)supabase.js"
 git commit -m "vX.X — deskripsi singkat"
 git pull --rebase && git push

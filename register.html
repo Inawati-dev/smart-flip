@@ -377,10 +377,9 @@ function showAlert(msg, type = 'error') {
 async function handleRegister(e) {
   e.preventDefault();
 
-  // Demo mode: tidak bisa daftar, arahkan ke login
+  // Demo mode: tidak bisa daftar
   if (DEMO_MODE) {
-    showAlert('Pendaftaran memerlukan koneksi database. Gunakan tombol Demo di halaman Masuk.', 'error');
-    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
+    showAlert('Pendaftaran belum bisa diproses — konfigurasi server belum lengkap. Hubungi admin.', 'error');
     return;
   }
 

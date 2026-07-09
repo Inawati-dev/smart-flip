@@ -140,7 +140,7 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 
 /* Mobile hamburger */
 .tb-hamburger{
-  display:none;width:40px;height:40px;border-radius:8px;border:none;
+  display:none;width:44px;height:44px;border-radius:8px;border:none;
   background:transparent;cursor:pointer;flex-direction:column;
   align-items:center;justify-content:center;gap:4px;
   color:rgba(255,255,255,.7);transition:background .18s;
@@ -163,7 +163,7 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 }
 .drawer-logo{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--terra)}
 .drawer-close{
-  width:30px;height:30px;border-radius:7px;border:none;background:transparent;
+  width:44px;height:44px;border-radius:7px;border:none;background:transparent;
   cursor:pointer;display:flex;align-items:center;justify-content:center;
   color:rgba(255,255,255,.5);
 }
@@ -509,6 +509,7 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 ══════════════════════════════════════ */
 @media(max-width:768px){
   .tb-nav{display:none}
+  .tb-logout{display:none}
   .tb-hamburger{display:flex}
   .tb-btn{width:44px;height:44px}
   .wrap{padding:1.5rem 1rem 4rem}
@@ -546,7 +547,7 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   .bk-sangat-layak{background:#C0DD97!important;color:#27500A!important}
   .bk-layak{background:rgba(212,163,115,.25)!important;color:#7A4A10!important}
   .bk-cukup{background:#F5E8CB!important;color:#7A5A10!important}
-  .topbar,.riwayat-section,.hasil-actions,.toast,.modal-bg,.form-wrap{display:none!important}
+  .topbar,.riwayat-section,.hasil-actions,.toast,.modal-bg,.form-wrap,.drawer-overlay,.drawer{display:none!important}
   .hasil-wrap{display:block!important}
   .wrap{padding:0;max-width:100%}
   .card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
@@ -1551,7 +1552,7 @@ function closeLogoutModal() {
   if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
 }
 async function confirmLogout() { closeLogoutModal(); await doLogout(); }
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeLogoutModal(); closeDrawer(); } });
 (function() {
   const m = document.getElementById('logoutModal');
   if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });

@@ -18,10 +18,10 @@
       --terra: #D4A373; --terra-d: #B8855A;
       --brown: #3E362E; --brown2: #6B5D4F; --brown3: #9B8B7A; --brown4: #C5B8AD;
       --line: #DDD5C4; --border: rgba(62,54,46,.10);
-      --shadow-sm: 0 2px 10px rgba(62,54,46,.09);
-      --shadow-md: 0 8px 28px rgba(62,54,46,.13);
+      --shadow-sm: 0 2px 4px rgba(62,54,46,.10);
+      --shadow-md: 0 4px 16px rgba(62,54,46,.10);
       --topbar-bg: rgba(245,242,233,.92);
-      --red: #c0392b;
+      --red: #c0392b; --red-border: rgba(192,57,43,.3);
       --r: 12px; --r-sm: 8px; --r-pill: 100px;
       --topbar-h: 58px;
     }
@@ -34,10 +34,10 @@
         --terra: #E8B888; --terra-d: #D4A373;
         --brown: #F0EBE0; --brown2: #C8BDB0; --brown3: #7A6B5E; --brown4: #5A4D40;
         --line: rgba(255,255,255,.1); --border: rgba(255,255,255,.08);
-        --shadow-sm: 0 2px 10px rgba(0,0,0,.35);
-        --shadow-md: 0 8px 28px rgba(0,0,0,.45);
+        --shadow-sm: 0 2px 4px rgba(0,0,0,.35);
+        --shadow-md: 0 4px 16px rgba(0,0,0,.35);
         --topbar-bg: rgba(26,18,8,.85);
-        --red: #E87070;
+        --red: #E87070; --red-border: rgba(232,112,112,.35);
       }
     }
 
@@ -48,10 +48,10 @@
       --terra: #E8B888; --terra-d: #D4A373;
       --brown: #F0EBE0; --brown2: #C8BDB0; --brown3: #7A6B5E; --brown4: #5A4D40;
       --line: rgba(255,255,255,.1); --border: rgba(255,255,255,.08);
-      --shadow-sm: 0 2px 10px rgba(0,0,0,.35);
-      --shadow-md: 0 8px 28px rgba(0,0,0,.45);
+      --shadow-sm: 0 2px 4px rgba(0,0,0,.35);
+      --shadow-md: 0 4px 16px rgba(0,0,0,.35);
       --topbar-bg: rgba(26,18,8,.85);
-      --red: #E87070;
+      --red: #E87070; --red-border: rgba(232,112,112,.35);
     }
 
     /* ══ FORCE LIGHT ══ */
@@ -61,10 +61,10 @@
       --terra: #D4A373; --terra-d: #B8855A;
       --brown: #3E362E; --brown2: #6B5D4F; --brown3: #9B8B7A; --brown4: #C5B8AD;
       --line: #DDD5C4; --border: rgba(62,54,46,.10);
-      --shadow-sm: 0 2px 10px rgba(62,54,46,.09);
-      --shadow-md: 0 8px 28px rgba(62,54,46,.13);
+      --shadow-sm: 0 2px 4px rgba(62,54,46,.10);
+      --shadow-md: 0 4px 16px rgba(62,54,46,.10);
       --topbar-bg: rgba(245,242,233,.92);
-      --red: #c0392b;
+      --red: #c0392b; --red-border: rgba(192,57,43,.3);
     }
 
     html, body { min-height: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--brown); background: var(--bg); -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; }
@@ -81,6 +81,27 @@
     .btn-theme { width: 34px; height: 34px; border-radius: var(--r-pill); border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--brown3); font-size: 15px; transition: color .2s, border-color .2s; flex-shrink: 0; }
     .btn-theme:hover { color: var(--terra-d); border-color: var(--terra); }
     .btn-theme:focus-visible { outline: 2px solid rgba(212,163,115,.7); outline-offset: 2px; }
+
+    /* ── HAMBURGER + NAV DRAWER (mobile) ── */
+    .hb-btn { display: none; width: 44px; height: 44px; border-radius: var(--r-pill); border: 1px solid var(--border); background: transparent; cursor: pointer; align-items: center; justify-content: center; color: var(--brown2); font-size: 20px; transition: background .15s, color .15s, border-color .15s; flex-shrink: 0; }
+    .hb-btn:hover { background: var(--terra); color: #fff; border-color: var(--terra); }
+    .nav-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 495; opacity: 0; visibility: hidden; transition: opacity .25s; }
+    .nav-backdrop.open { opacity: 1; visibility: visible; }
+    .nav-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 300px; max-width: 85vw; background: var(--bg2); z-index: 500; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: var(--shadow-md); display: flex; flex-direction: column; overflow-y: auto; }
+    .nav-drawer.open { transform: translateX(0); }
+    .nav-drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .nav-drawer-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--brown); }
+    .nav-drawer-close { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: transparent; color: var(--brown2); font-size: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .15s, color .15s; }
+    .nav-drawer-close:hover { background: var(--terra); color: #fff; }
+    .nav-drawer-links { display: flex; flex-direction: column; padding: 8px; gap: 2px; }
+    .nav-drawer-links a, .nav-drawer-links button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 11px 14px; border-radius: var(--r-sm); font-size: 14px; font-weight: 600; color: var(--brown2); text-decoration: none; background: none; border: none; text-align: left; cursor: pointer; font-family: inherit; width: 100%; transition: background .15s, color .15s; }
+    .nav-drawer-links a:hover, .nav-drawer-links button:hover { background: var(--bg3); color: var(--terra-d); }
+    .nav-drawer-links .nav-link-danger { color: var(--red); }
+    .nav-drawer-links .nav-link-danger:hover { background: var(--red-border); color: var(--red); }
+    @media (max-width: 768px) {
+      .topbar-right { display: none; }
+      .hb-btn { display: flex; }
+    }
 
     /* ── LAYOUT ── */
     .page-wrap { max-width: 860px; margin: 0 auto; padding: 32px 24px 64px; }
@@ -229,12 +250,8 @@
       .jurnal-card, .kasus-card { padding:.9rem 1rem; }
       /* Video */
       .modul-video { padding: 14px; }
-      /* Topbar: hide extra links to prevent overflow */
+      /* Topbar: nav drawer replaces inline links at <=768px (see .hb-btn/.nav-drawer) */
       .header-inner { padding: 0 12px; }
-      .topbar-right { gap: 4px; }
-      .topbar-right .topbar-link:not(:first-child) { display: none; }
-      .btn-theme { width: 44px; height: 44px; }
-      .topbar-link { font-size: 11px; padding: 3px 8px; min-height: 44px; display: inline-flex; align-items: center; }
 
       /* Page wrap */
       .page-wrap { padding: 20px 14px 48px; }
@@ -282,7 +299,7 @@
 /* ── LOGOUT MODAL ── */
 .logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
 .logout-modal-overlay.open{display:flex}
-.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+.logout-modal-box{background:var(--bg2);color:var(--brown);border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out;transition:background .25s,color .25s}
 @keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
 .logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
@@ -307,10 +324,27 @@
       <a class="topbar-link" id="dashboardBack" href="index.html">← Dashboard</a>
       <a class="topbar-link" href="profil.html">👤 Profil</a>
       <a class="topbar-link" href="changelog.html">📋 Changelog</a>
-      <a class="topbar-link" href="checklist.html">✅ Checklist</a>
+      <button class="topbar-link" style="color:var(--red);border-color:var(--red-border);cursor:pointer;font:inherit" onclick="openLogoutModal()">Keluar</button>
     </div>
+    <button class="hb-btn" id="hbBtn" aria-label="Buka menu" onclick="openNavDrawer()">☰</button>
   </div>
 </header>
+
+<!-- ── NAV DRAWER (mobile) ── -->
+<div class="nav-backdrop" id="navBackdrop" onclick="closeNavDrawer()"></div>
+<aside class="nav-drawer" id="navDrawer" role="dialog" aria-modal="true" aria-label="Menu navigasi">
+  <div class="nav-drawer-head">
+    <span class="nav-drawer-title">Menu</span>
+    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Tutup menu">×</button>
+  </div>
+  <nav class="nav-drawer-links">
+    <a href="index.html" id="navDashboard">🏠 Dashboard</a>
+    <a href="profil.html">👤 Profil</a>
+    <a href="changelog.html">📋 Changelog</a>
+    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
+    <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
+  </nav>
+</aside>
 
 <div class="page-wrap">
 
@@ -479,13 +513,29 @@
         const href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
         document.getElementById('dashboardBack').href = href;
         document.getElementById('backLink').href = href;
+        document.getElementById('navDashboard').href = href;
         return;
       }
     }
   } catch(e) {}
   document.getElementById('dashboardBack').href = 'index.html';
   document.getElementById('backLink').href = 'index.html';
+  document.getElementById('navDashboard').href = 'index.html';
 })();
+</script>
+<script>
+// ── NAV DRAWER (mobile hamburger) ──
+function openNavDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navBackdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeNavDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navBackdrop').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNavDrawer(); });
 </script>
 <script>
 // ══════════════════════════════════════

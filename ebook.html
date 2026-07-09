@@ -23,11 +23,27 @@
       <a class="topbar-link" id="dashboardBack" href="index.html" title="Kembali ke Dashboard">← Dashboard</a>
       <a class="topbar-link" href="profil.html" title="Profil">👤 Profil</a>
       <a class="topbar-link" href="changelog.html" title="Changelog">📋 Changelog</a>
-      <a class="topbar-link" href="checklist.html" title="Checklist">✅ Checklist</a>
       <button class="topbar-link" style="color:var(--red);border-color:var(--red-border)" onclick="openLogoutModal()">Keluar</button>
     </div>
+    <button class="hb-btn" id="hbBtn" aria-label="Buka menu" onclick="openNavDrawer()">☰</button>
   </div>
 </header>
+
+<!-- ── NAV DRAWER (mobile) — separate from the book catalog drawer below ── -->
+<div class="nav-backdrop" id="navBackdrop" onclick="closeNavDrawer()"></div>
+<aside class="nav-drawer" id="navDrawer" role="dialog" aria-modal="true" aria-label="Menu navigasi">
+  <div class="nav-drawer-head">
+    <span class="nav-drawer-title">Menu</span>
+    <button class="nav-drawer-close" onclick="closeNavDrawer()" aria-label="Tutup menu">×</button>
+  </div>
+  <nav class="nav-drawer-links">
+    <a href="index.html" id="navDashboard">🏠 Dashboard</a>
+    <a href="profil.html">👤 Profil</a>
+    <a href="changelog.html">📋 Changelog</a>
+    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
+    <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
+  </nav>
+</aside>
 
 <div class="app" id="app">
 
@@ -135,13 +151,18 @@
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
         const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
-        back.href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        const href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+        back.href = href;
+        const navDash = document.getElementById('navDashboard');
+        if (navDash) navDash.href = href;
         return;
       }
     }
   } catch(e) {}
   // Demo / tidak login → ke halaman utama
   back.href = 'index.html';
+  const navDash = document.getElementById('navDashboard');
+  if (navDash) navDash.href = 'index.html';
 })();
 </script>
 <style>
@@ -180,11 +201,11 @@
 /* close button di cp-head */
 .cp-head { position:relative; }
 .cp-close-btn {
-  position:absolute;top:50%;right:12px;transform:translateY(-50%);
-  width:28px;height:28px;border-radius:50%;
+  position:absolute;top:50%;right:8px;transform:translateY(-50%);
+  width:44px;height:44px;border-radius:50%;
   border:1px solid var(--border,rgba(62,54,46,.15));
   background:var(--bg3,#FAF7F0);cursor:pointer;
-  font-size:16px;font-weight:700;color:var(--brown2,#6B5D4F);
+  font-size:18px;font-weight:700;color:var(--brown2,#6B5D4F);
   display:flex;align-items:center;justify-content:center;
   transition:background .15s;
 }
@@ -240,10 +261,40 @@
 }
 .btn-theme:hover{background:var(--terra,#D4A373);color:#fff;border-color:var(--terra,#D4A373);}
 
+/* ── HAMBURGER + NAV DRAWER (mobile) — separate from the book catalog drawer ── */
+.hb-btn{
+  display:none;width:44px;height:44px;
+  border-radius:var(--r-pill,100px);
+  border:1px solid var(--border,rgba(62,54,46,.15));
+  background:transparent;color:var(--brown2,#6B5D4F);
+  font-size:20px;cursor:pointer;align-items:center;justify-content:center;
+  transition:background .15s,color .15s,border-color .15s;flex-shrink:0;
+}
+.hb-btn:hover{background:var(--terra,#D4A373);color:#fff;border-color:var(--terra,#D4A373);}
+.nav-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:595;opacity:0;visibility:hidden;transition:opacity .25s;}
+.nav-backdrop.open{opacity:1;visibility:visible;}
+.nav-drawer{
+  position:fixed;top:0;right:0;bottom:0;width:300px;max-width:85vw;
+  background:var(--ivory,#FFFDF8);z-index:600;
+  transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  box-shadow:-4px 0 24px rgba(62,54,46,.18);
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.nav-drawer.open{transform:translateX(0);}
+.nav-drawer-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border,rgba(62,54,46,.1));flex-shrink:0;}
+.nav-drawer-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--brown,#3E362E);}
+.nav-drawer-close{width:44px;height:44px;border-radius:50%;border:1px solid var(--border,rgba(62,54,46,.15));background:transparent;color:var(--brown2,#6B5D4F);font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s;}
+.nav-drawer-close:hover{background:var(--terra,#D4A373);color:#fff;}
+.nav-drawer-links{display:flex;flex-direction:column;padding:8px;gap:2px;}
+.nav-drawer-links a,.nav-drawer-links button{display:flex;align-items:center;gap:10px;min-height:44px;padding:11px 14px;border-radius:8px;font-size:14px;font-weight:600;color:var(--brown2,#6B5D4F);text-decoration:none;background:none;border:none;text-align:left;cursor:pointer;font-family:inherit;width:100%;transition:background .15s,color .15s;}
+.nav-drawer-links a:hover,.nav-drawer-links button:hover{background:var(--bg3,#FAF7F0);color:var(--terra-d,#B8855A);}
+.nav-drawer-links .nav-link-danger{color:var(--red,#c0392b);}
+.nav-drawer-links .nav-link-danger:hover{background:var(--red-border,rgba(192,57,43,.12));color:var(--red,#c0392b);}
+
 /* ── MOBILE: topbar overflow fix ──
-   Default topbar has 5 items (Katalog, Dashboard, Keluar, Changelog, Checklist)
+   Default topbar has 4 items (Katalog, Dashboard, Keluar, Changelog)
    plus a long dynamic site name — this overflows the viewport at <=640px with
-   no way to reach Dashboard/Keluar/Changelog/Checklist (header-inner does not scroll). */
+   no way to reach Dashboard/Keluar/Changelog (header-inner does not scroll). */
 @media (max-width: 640px) {
   .header-inner { padding: 0 10px; gap: 6px; }
   .logo-text {
@@ -251,23 +302,26 @@
     white-space: nowrap; font-size: 13px;
   }
   .topbar-right { gap: 4px; }
-  /* Secondary links: hide on mobile to keep Katalog/Dashboard/Keluar reachable */
-  .topbar-right a[href="profil.html"],
-  .topbar-right a[href="changelog.html"],
-  .topbar-right a[href="checklist.html"] { display: none; }
   .topbar-cat-btn { padding: 6px 9px; font-size: 12px; gap: 4px; min-height: 44px; }
-  #dashboardBack { font-size: 11px; padding: 6px 8px; min-height: 44px; }
-  .topbar-right button[onclick="openLogoutModal()"] { font-size: 11px; padding: 6px 8px; min-height: 44px; }
-  .btn-theme { width: 44px; height: 44px; }
 }
 @media (max-width: 360px) {
   .logo-text { max-width: 60px; }
+}
+/* ── Nav drawer replaces inline secondary links at <=768px.
+   Katalog stays visible (primary action), rest moves into the drawer. ── */
+@media (max-width: 768px) {
+  #dashboardBack,
+  .topbar-right a[href="profil.html"],
+  .topbar-right a[href="changelog.html"],
+  .topbar-right button[onclick="openLogoutModal()"],
+  .btn-theme { display: none; }
+  .hb-btn { display: flex; }
 }
 
 /* ── LOGOUT MODAL ── */
 .logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
 .logout-modal-overlay.open{display:flex}
-.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+.logout-modal-box{background:var(--ivory);color:var(--brown);border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out;transition:background .25s,color .25s}
 @keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
 .logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
@@ -329,6 +383,16 @@ function toggleCatalog() {
   const open = document.getElementById('catPane').classList.contains('open');
   open ? closeCatalog() : openCatalog();
 }
+// ── NAV DRAWER (mobile hamburger) — separate overlay from the catalog above ──
+function openNavDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navBackdrop').classList.add('open');
+}
+function closeNavDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navBackdrop').classList.remove('open');
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNavDrawer(); });
 function startReading() {
   const sel = document.getElementById('btnLanjut')._selectedBook;
   closeCatalog();
