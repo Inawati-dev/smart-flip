@@ -645,7 +645,7 @@ const modulId = parseInt(params.get('id')) || 1;
     document.title = `Modul ${modul.id} — ${modul.title}`;
     document.getElementById('modulBadge').textContent = `Modul ${modul.id}`;
     document.getElementById('modulTitle').textContent = modul.title;
-    document.getElementById('modulSub').textContent   = modul.sub;
+    document.getElementById('modulSub').textContent   = modul.sub || '';
     document.getElementById('modulDesc').textContent  = modul.description;
 
     // Progress — gunakan DataLayer.getProgress() — siap Supabase nanti
