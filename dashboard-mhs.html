@@ -1682,10 +1682,10 @@ function modCardHTML(m, allProgress) {
       : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
 
   return `<div class="mod-card ${locked ? 'locked' : ''}">
-    <div class="mod-icon-wrap" style="background:${m.color}">${lockIcon}</div>
+    <div class="mod-icon-wrap" style="background:${m.color || 'var(--sage)'}">${lockIcon}</div>
     <div class="mod-body">
       <div class="mod-title">${m.no ?? m.id}. ${m.title}</div>
-      <div class="mod-sub">${m.sub}</div>
+      <div class="mod-sub">${m.sub || (m.description ? m.description.slice(0, 60) + (m.description.length > 60 ? '…' : '') : '')}</div>
       ${progBar}
       ${bukaBtn}
     </div>
