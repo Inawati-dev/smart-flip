@@ -6,6 +6,7 @@ import { LegacyStub } from './pages/LegacyStub'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
 import Modul from './pages/Modul'
+import Ebook from './pages/Ebook'
 
 const queryClient = new QueryClient()
 
@@ -30,7 +31,7 @@ export default function App() {
             <Route path="/modul/:id" element={<ProtectedRoute><Modul /></ProtectedRoute>} />
             <Route path="/modul/:id/kuis" element={<ProtectedRoute><LegacyStub legacyFile="kuis.html" /></ProtectedRoute>} />
             <Route path="/modul/:id/workshop" element={<ProtectedRoute><LegacyStub legacyFile="workshop.html" /></ProtectedRoute>} />
-            <Route path="/ebook" element={<ProtectedRoute><LegacyStub legacyFile="ebook.html" /></ProtectedRoute>} />
+            <Route path="/ebook" element={<ProtectedRoute><Ebook /></ProtectedRoute>} />
             <Route path="/vark" element={<ProtectedRoute><LegacyStub legacyFile="vark.html" /></ProtectedRoute>} />
             <Route path="/forum" element={<ProtectedRoute><LegacyStub legacyFile="forum.html" /></ProtectedRoute>} />
             <Route path="/draf" element={<ProtectedRoute><LegacyStub legacyFile="draf.html" /></ProtectedRoute>} />
