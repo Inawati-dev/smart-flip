@@ -2,10 +2,12 @@
 
 ## Overview
 Perpustakaan Digital / Flipbook Reader untuk penelitian dana internal UM 2026.
-Live: https://inawati-dev.github.io/smart-flip
-Stack: GitHub Pages (frontend) + Supabase (PostgreSQL + Auth)
+Live (legacy, GitHub Pages): https://inawati-dev.github.io/smart-flip
+Stack aktif (sejak v1.0.0): React 19 + Vite + TypeScript + Tailwind v4 + Supabase (PostgreSQL + Auth), target deploy Vercel (belum live — CLI login butuh aksi user)
 
-## Key Files
+**Strangler-fig migration**: aplikasi React (`src/`) adalah sumber kebenaran sekarang — semua 18 route live 100% React Router, nol dead-end ke halaman lama. `legacy/*.html` (daftar Key Files di bawah) dipertahankan sebagai file statis fallback, TIDAK ada navigasi live yang menunjuk ke sana lagi. Struktur React: `src/pages/*.tsx` (1 file per route), `src/components/` (Layout, LogoutModal, AuthShell), `src/lib/*.ts` (data layer dual-mode: Supabase kalau `isSupabaseConfigured`, fallback localStorage `sfp_*`), `src/lib/design-tokens.ts` + `src/index.css` (dua mekanisme token CSS yang harus disinkron manual).
+
+## Key Files (legacy/ — HTML statis, sudah tidak dinavigasi live)
 ```
 index.html          — Login / halaman utama
 register.html       — Registrasi mahasiswa/dosen
@@ -105,6 +107,18 @@ Spawn dedicated agent untuk:
 - Screenshot simulation semua halaman di 375px dan 768px
 - Cek semua form, button, nav, modal, tabel, grid di kedua ukuran
 - Fix inline — tidak perlu konfirmasi untuk layout fix
+
+## UI Interaction Rules — Modal & Transisi (WAJIB)
+Sumber: `kemampuan-web-dev.md` §128–§129. Berlaku semua halaman React (`src/pages/`, `src/components/`).
+
+1. **Setiap tombol aksi (Tambah/Edit/Hapus/CRUD) WAJIB buka modal — bukan inline-edit-di-tabel/baris.** Termasuk aksi destruktif (lihat pattern `LogoutModal` di atas) — jangan pakai `window.confirm()` native.
+2. **Setiap modal WAJIB animasi — backdrop fade + card slide-up, jangan muncul instan/statik.** Pola baku (durasi di atas ~200ms, di bawah itu "kerasa instan" walau teknisnya jalan — lihat §129):
+   ```css
+   @keyframes fadeInBg     { from{opacity:0} to{opacity:1} }
+   @keyframes slideUpModal { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+   ```
+   Backdrop: `animation:'fadeInBg 0.15-0.2s ease'`. Card: `animation:'slideUpModal 0.2-0.25s ease'`. Deklarasikan `@keyframes` sekali di `src/index.css` (bukan diulang per komponen modal).
+3. **Audit cepat komponen mana yang belum dikasih animasi:** cek tiap file yang punya backdrop `position:'fixed'`/`.fixed` apakah pasangan `animation:` fadeInBg/slideUpModal-nya ada. Jangan asumsikan komponen "generik" (`LogoutModal`, dsb) pasti sudah dikasih — cek eksplisit.
 
 ## Design Tokens (CSS Variables)
 ```css

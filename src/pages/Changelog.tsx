@@ -67,8 +67,28 @@ const c = (children: ReactNode) => <code className="bg-[#00000008] rounded px-1 
 
 const versions: VersionEntry[] = [
   {
-    version: 'v0.9.6',
+    version: 'v1.0.0',
     badge: 'current',
+    title: 'React Rewrite — React 19 + Vite + TypeScript + Tailwind v4',
+    date: '23 Jul 2026',
+    changes: [
+      { type: 'feat', content: <>Rewrite penuh 18 halaman dari vanilla HTML/JS ke React 19 + Vite + TypeScript + Tailwind v4 ({c('@theme')} CSS-first, tanpa {c('tailwind.config.ts')}), mengikuti stack SAKTI</> },
+      { type: 'feat', content: <>Strangler-fig migration: {c('legacy/*.html')} dipertahankan sebagai fallback statis, semua navigasi live sudah 100% React Router — nol dead-end ke halaman lama</> },
+      { type: 'feat', content: <>Data layer dual-mode di setiap modul ({c('src/lib/*.ts')}): query Supabase kalau {c('isSupabaseConfigured')}, fallback localStorage dengan key {c('sfp_*')} identik legacy</> },
+      { type: 'imp', content: <><strong>AuthShell</strong> — Login, Register &amp; Reset Password dikembalikan ke layout dua panel bermerek (panel kiri gelap: logo, tagline, info fakultas) sesuai desain asli, sempat disederhanakan jadi single-card saat porting awal</> },
+      { type: 'feat', content: <>Login: alur &quot;Lupa kata sandi?&quot; via {c('supabase.auth.resetPasswordForEmail')} inline (bukan native prompt) — kirim link reset ke email</> },
+      { type: 'fix', content: <>Font Playfair Display &amp; DM Sans akhirnya termuat — {c('<link>')} Google Fonts sempat tidak pernah ditambahkan ke {c('index.html')} sehingga 13 file yang mereferensikannya diam-diam fallback ke font sistem</> },
+      { type: 'fix', content: <>Isolasi env test dari kredensial Supabase asli — {c('.env.test.local')} kosong supaya {c('pnpm test')} tidak ikut kepakai kredensial dev lokal</> },
+      { type: 'fix', content: <>Migrasi skema {c('profiles')}: tambah kolom {c('jabatan')} &amp; {c('fakultas')} — satu-satunya gap ditemukan dari audit skema penuh 15 halaman baru vs Supabase live</> },
+      { type: 'fix', content: <>{c('ProtectedRoute')} fail-open saat fetch profil gagal — role {c('null')} bisa lolos role-gating; diperbaiki jadi fail-closed</> },
+      { type: 'imp', content: <>Login end-to-end diverifikasi dengan Supabase asli (bukan demo mode) — sign-in, fetch profile, redirect dashboard berjalan</> },
+      { type: 'doc', content: <>Rencana ke depan: sidebar + flyout navigasi ala SAKTI (ganti topbar), deploy Vercel</> },
+    ],
+    desc: 'Migrasi arsitektur — aplikasi lama tetap hidup di legacy/ sebagai jaring pengaman, tapi seluruh pengalaman pengguna sekarang React.',
+  },
+  {
+    version: 'v0.9.6',
+    badge: 'plain',
     title: 'Bug Sweep, CSS Animations & Profil Dosen',
     date: '18 Jun 2026',
     changes: [
@@ -447,7 +467,7 @@ const roadmap: RoadmapItem[] = [
   {
     version: 'v0.9.4',
     title: 'Onboarding, Skeleton & PWA',
-    status: 'current',
+    status: 'done',
     items: <>
       · Onboarding modal MHS (3-step) + DOS (2-step)<br />
       · Loading skeleton shimmer dashboard<br />
@@ -456,13 +476,33 @@ const roadmap: RoadmapItem[] = [
     </>,
   },
   {
-    version: 'v1.0',
-    title: 'Supabase Live + Rilis Penelitian',
+    version: 'v1.0.0',
+    title: 'React Rewrite + Supabase Live',
+    status: 'current',
+    items: <>
+      · 18 halaman React + Vite + TS + Tailwind v4<br />
+      · Strangler-fig — legacy/ tetap ada, nol dead-end<br />
+      · Skema Supabase live diverifikasi &amp; login diuji end-to-end<br />
+      · AuthShell dua-panel dikembalikan
+    </>,
+  },
+  {
+    version: 'v1.0.1',
+    title: 'Vercel Live + Sidebar/Flyout',
     status: 'planned',
     items: <>
-      · Progress sync ke Supabase<br />
+      · Deploy production ke Vercel<br />
+      · Layout: topbar → sidebar + flyout ala SAKTI<br />
+      · Cek 1-per-1 seluruh halaman di production
+    </>,
+  },
+  {
+    version: 'v1.1',
+    title: 'Rilis Penelitian',
+    status: 'planned',
+    items: <>
       · Uji lapangan (kelas penuh)<br />
-      · Analisis N-Gain SDL<br />
+      · Analisis N-Gain SDL data real<br />
       · HKI + artikel SINTA 3
     </>,
   },
