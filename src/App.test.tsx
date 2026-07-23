@@ -1,6 +1,6 @@
+// @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { MemoryRouter } from 'react-router'
 import App from './App'
 
 vi.mock('./lib/supabase', () => ({
@@ -15,11 +15,10 @@ vi.mock('./lib/supabase', () => ({
 
 describe('App', () => {
   it('renders the login route at / without throwing', () => {
-    const html = renderToStaticMarkup(
-      <MemoryRouter initialEntries={['/']}>
-        <App />
-      </MemoryRouter>,
-    )
+    // App.tsx owns its own <BrowserRouter> internally, so it must not be
+    // wrapped in another Router here (react-router forbids nested Routers).
+    // jsdom's default location is '/', which matches the Login route.
+    const html = renderToStaticMarkup(<App />)
     expect(html).toBeTruthy()
   })
 })
