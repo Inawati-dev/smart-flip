@@ -5,7 +5,9 @@ import * as pdfjsLib from 'pdfjs-dist'
 // setup, but resolved from the installed pdfjs-dist package instead of a CDN).
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
 import { saveProgress } from '../lib/progress'
+import { useModules } from '../hooks/useModules'
 import { Layout } from '../components/Layout'
+import { IconWarning, IconSkipBack, IconSkipForward, IconBook } from '../components/icons'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
 
@@ -26,8 +28,10 @@ type Status = 'loading' | 'ready' | 'error'
 //     overlay, pinch-zoom/pan/wheel-zoom, swipe navigation, keyboard
 //     shortcuts, and the "expand" fullscreen toggle.
 export function Ebook() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
   const book = searchParams.get('book') ?? ''
+  const { data: modules = [] } = useModules()
+  const catalog = modules.filter((m) => !!(m.path || m.pdf_path))
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pdfRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
@@ -47,11 +51,7 @@ export function Ebook() {
     setCurrentPage(1)
     pdfRef.current = null
 
-    if (!book) {
-      setStatus('error')
-      setErrorMsg('Tidak ada buku yang dipilih.')
-      return
-    }
+    if (!book) return // no book selected — the catalog grid renders instead, see JSX below
 
     pdfjsLib.getDocument(book).promise.then(
       (doc) => {
@@ -136,7 +136,7 @@ export function Ebook() {
 
   return (
     <Layout>
-      <div className="flex flex-col items-center p-4 md:p-6 gap-4">
+      <div className="page-fadein flex flex-col items-center p-4 md:p-6 gap-4">
         <div className="w-full max-w-3xl flex items-center justify-between gap-3">
           <Link to="/dashboard" className="text-xs md:text-sm text-brown-3">
             ← Kembali ke Dashboard
@@ -146,7 +146,37 @@ export function Ebook() {
           </span>
         </div>
 
-        {status === 'loading' && (
+        {!book && (
+          <div className="w-full max-w-3xl">
+            {catalog.length === 0 ? (
+              <div className="flex flex-col items-center gap-3 py-16 text-center">
+                <IconBook size={36} className="text-brown-3" />
+                <p className="text-sm text-brown-3">Belum ada PDF modul yang terpasang.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {catalog.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => setSearchParams({ book: m.path || m.pdf_path || '' })}
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-ivory text-center"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
+                    <div
+                      className="w-full aspect-[3/4] rounded-lg flex items-center justify-center"
+                      style={{ background: 'var(--bg3)' }}
+                    >
+                      <IconBook size={28} className="text-terra-d" />
+                    </div>
+                    <span className="text-xs font-semibold text-brown line-clamp-2">{m.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {book && status === 'loading' && (
           <div className="flex flex-col items-center gap-4 py-16" role="status">
             <div
               className="w-12 h-12 rounded-full animate-spin"
@@ -156,9 +186,9 @@ export function Ebook() {
           </div>
         )}
 
-        {status === 'error' && (
+        {book && status === 'error' && (
           <div className="flex flex-col items-center gap-3 py-16 text-center max-w-sm">
-            <div className="text-4xl">⚠️</div>
+            <IconWarning size={40} className="text-red" />
             <p className="text-sm text-brown-2 whitespace-pre-line">{errorMsg}</p>
             <Link
               to="/dashboard"
@@ -183,10 +213,10 @@ export function Ebook() {
                 onClick={goFirst}
                 disabled={currentPage <= 1}
                 title="Halaman pertama"
-                className="min-h-11 min-w-11 px-3 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+                className="min-h-11 min-w-11 px-3 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer inline-flex items-center justify-center"
                 style={{ borderColor: 'var(--border)' }}
               >
-                ⏮
+                <IconSkipBack size={16} />
               </button>
               <button
                 onClick={goPrev}
@@ -212,10 +242,10 @@ export function Ebook() {
                 onClick={goLast}
                 disabled={currentPage >= totalPages}
                 title="Halaman terakhir"
-                className="min-h-11 min-w-11 px-3 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
+                className="min-h-11 min-w-11 px-3 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer inline-flex items-center justify-center"
                 style={{ borderColor: 'var(--border)' }}
               >
-                ⏭
+                <IconSkipForward size={16} />
               </button>
             </div>
           </>

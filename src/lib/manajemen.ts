@@ -14,6 +14,7 @@ export interface ModulCustom {
   durasi?: string
   catatan?: string
   updatedAt?: string
+  pdfPath?: string
 }
 
 const CUSTOM_KEY_PREFIX = 'sfp_modul_custom_'
@@ -48,10 +49,13 @@ function lsSet(key: string, value: unknown): void {
 export async function saveModulCustom(moduleId: number, data: ModulCustom): Promise<void> {
   if (isSupabaseConfigured) {
     try {
-      const { error } = await supabase
-        .from('modules')
-        .update({ title: data.judul, description: data.deskripsi, is_active: data.status !== 'nonaktif' })
-        .eq('id', moduleId)
+      const update: Record<string, unknown> = {
+        title: data.judul,
+        description: data.deskripsi,
+        is_active: data.status !== 'nonaktif',
+      }
+      if (data.pdfPath) update.pdf_path = data.pdfPath
+      const { error } = await supabase.from('modules').update(update).eq('id', moduleId)
       if (error) throw error
       return
     } catch (e) {
@@ -59,6 +63,33 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
     }
   }
   lsSet(customKey(moduleId), data)
+}
+
+// Upload a dosen-provided PDF to the public `modul-pdf` Storage bucket (see
+// database/migration_v3_modul_pdf_storage.sql) and point the module's
+// pdf_path at the resulting public URL. Demo/localStorage mode has no
+// Storage backend, so it just stores the override locally instead — the
+// file itself never leaves the browser in that mode.
+export async function uploadModulPdf(moduleId: number, file: File): Promise<string> {
+  if (isSupabaseConfigured) {
+    const path = `modul-${moduleId}-${Date.now()}.pdf`
+    const { error: uploadError } = await supabase.storage
+      .from('modul-pdf')
+      .upload(path, file, { upsert: true, contentType: 'application/pdf' })
+    if (uploadError) throw uploadError
+    const { data } = supabase.storage.from('modul-pdf').getPublicUrl(path)
+    const { error: updateError } = await supabase
+      .from('modules')
+      .update({ pdf_path: data.publicUrl })
+      .eq('id', moduleId)
+    if (updateError) throw updateError
+    return data.publicUrl
+  }
+  // Demo mode: no Storage backend — keep the override local only.
+  const objectUrl = URL.createObjectURL(file)
+  const existing = lsGet<ModulCustom>(customKey(moduleId)) ?? {}
+  lsSet(customKey(moduleId), { ...existing, pdfPath: objectUrl })
+  return objectUrl
 }
 
 // Mirrors legacy/data-layer.js getModulCustom(). In Supabase mode only

@@ -111,9 +111,9 @@ describe('Ebook', () => {
     )
   })
 
-  it('shows an error message when no ?book= param is present', () => {
+  it('shows the catalog picker (not an error) when no ?book= param is present', () => {
     renderEbook(null)
-    expect(screen.getByText('Tidak ada buku yang dipilih.')).toBeTruthy()
+    expect(screen.getByText('Belum ada PDF modul yang terpasang.')).toBeTruthy()
   })
 
   it('shows a friendly "not available yet" message when the PDF fails to load (404)', async () => {
