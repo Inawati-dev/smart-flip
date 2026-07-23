@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useModulOrder, useModulCustoms } from '../hooks/useManajemen'
-import { saveModulCustom, saveModulOrder, type ModulCustom, type ModulStatus } from '../lib/manajemen'
+import { saveModulCustom, saveModulOrder, uploadModulPdf, type ModulCustom, type ModulStatus } from '../lib/manajemen'
 import { Layout } from '../components/Layout'
+import { IconDocument } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -42,6 +43,9 @@ export function Manajemen() {
   const [formDurasi, setFormDurasi] = useState('')
   const [formCatatan, setFormCatatan] = useState('')
   const [saving, setSaving] = useState(false)
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [uploadingPdf, setUploadingPdf] = useState(false)
+  const [pdfError, setPdfError] = useState('')
 
   const [bulkConfirm, setBulkConfirm] = useState<'aktif' | 'terkunci' | null>(null)
 
@@ -145,10 +149,32 @@ export function Manajemen() {
     setFormStatus((custom.status as ModulStatus) || 'aktif')
     setFormDurasi(custom.durasi || '')
     setFormCatatan(custom.catatan || '')
+    setPdfFile(null)
+    setPdfError('')
   }
 
   function closeEditModal() {
     setEditId(null)
+  }
+
+  async function handleUploadPdf() {
+    if (editId == null || !pdfFile) return
+    if (pdfFile.type !== 'application/pdf') {
+      setPdfError('File harus berformat PDF.')
+      return
+    }
+    setPdfError('')
+    setUploadingPdf(true)
+    try {
+      await uploadModulPdf(editId, pdfFile)
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+      setPdfFile(null)
+      showToast('PDF modul berhasil diunggah')
+    } catch {
+      setPdfError('Gagal mengunggah PDF. Coba lagi.')
+    } finally {
+      setUploadingPdf(false)
+    }
   }
 
   async function saveEdit() {
@@ -184,7 +210,7 @@ export function Manajemen() {
 
   return (
     <Layout>
-      <div className="max-w-[1000px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein max-w-[1000px] mx-auto p-4 md:p-6 pb-16">
         <div className="mb-5">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Kelola Modul</h1>
           <p className="text-sm text-brown-3 mt-1">
@@ -432,6 +458,36 @@ export function Manajemen() {
               />
               <span className="text-[11px] text-brown-3 text-right">{formCatatan.length} / 500</span>
             </label>
+
+            <div className="flex flex-col gap-1.5 text-xs font-semibold text-brown-2 mb-4">
+              <span>File PDF Modul</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <IconDocument size={16} className="text-brown-3 flex-shrink-0" />
+                <span className="text-[11px] font-normal text-brown-3 truncate max-w-[220px]">
+                  {editId != null && modMap[editId]?.pdf_path
+                    ? modMap[editId].pdf_path?.split('/').pop()
+                    : 'Belum ada PDF terpasang'}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => { setPdfFile(e.target.files?.[0] ?? null); setPdfError('') }}
+                  className="text-xs text-brown-2 flex-1 min-w-[160px]"
+                />
+                <button
+                  type="button"
+                  onClick={handleUploadPdf}
+                  disabled={!pdfFile || uploadingPdf}
+                  className="h-9 px-3.5 rounded-lg text-xs font-semibold disabled:opacity-50 flex-shrink-0"
+                  style={{ background: 'var(--terra)', color: 'white' }}
+                >
+                  {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
+                </button>
+              </div>
+              {pdfError && <span className="text-[11px] text-red">{pdfError}</span>}
+            </div>
 
             <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
               <button onClick={closeEditModal} className="h-[38px] px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
