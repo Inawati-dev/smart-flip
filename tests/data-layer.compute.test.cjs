@@ -25,7 +25,7 @@ global.sb = {
   },
 };
 
-const { computeModulDistribution, computeFeedbackAspectAvg, DataLayer } = require('../data-layer.js');
+const { computeModulDistribution, computeFeedbackAspectAvg, DataLayer } = require('../legacy/data-layer.js');
 
 // computeModulDistribution: % mahasiswa yang selesai tiap modul dari total mahasiswa
 {
