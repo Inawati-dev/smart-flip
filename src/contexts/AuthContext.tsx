@@ -41,11 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (active) setProfile(data as Profile | null)
     }
 
-    supabase.auth.getSession().then(({ data }) => {
+    supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return
       setUser(data.session?.user ?? null)
-      if (data.session?.user) loadProfile(data.session.user.id)
-      setLoading(false)
+      if (data.session?.user) await loadProfile(data.session.user.id)
+      if (active) setLoading(false)
     })
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
