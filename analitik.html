@@ -37,75 +37,6 @@
   --text3:#9B8B7A;
 }
 
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#1A1208;
-    --surface:#241C10;
-    --surface2:#2E2416;
-    --topnav-bg:#0F0C08;
-    --text:#F0EBE0;
-    --text2:#C8BDB0;
-    --text3:#7A6B5E;
-    --terra:#E8B888;
-    --terra-d:#D4A373;
-    --sage:#9FB49A;
-    --sage-d:#8FA287;
-    --sage-bg:rgba(159,180,154,.12);
-    --border:rgba(255,255,255,.08);
-    --line:rgba(255,255,255,.1);
-    --line2:rgba(255,255,255,.06);
-    --cream:#1A1208;
-    --ivory:#241C10;
-    --brown:#F0EBE0;
-    --brown2:#C8BDB0;
-    --brown3:#7A6B5E;
-  }
-}
-[data-theme="dark"]{
-  --bg:#1A1208;
-  --surface:#241C10;
-  --surface2:#2E2416;
-  --topnav-bg:#0F0C08;
-  --text:#F0EBE0;
-  --text2:#C8BDB0;
-  --text3:#7A6B5E;
-  --terra:#E8B888;
-  --terra-d:#D4A373;
-  --sage:#9FB49A;
-  --sage-d:#8FA287;
-  --sage-bg:rgba(159,180,154,.12);
-  --border:rgba(255,255,255,.08);
-  --line:rgba(255,255,255,.1);
-  --line2:rgba(255,255,255,.06);
-  --cream:#1A1208;
-  --ivory:#241C10;
-  --brown:#F0EBE0;
-  --brown2:#C8BDB0;
-  --brown3:#7A6B5E;
-}
-[data-theme="light"]{
-  --bg:#F5F2E9;
-  --surface:#FFFDF8;
-  --surface2:#FAF7F2;
-  --topnav-bg:#3E362E;
-  --text:#2C2420;
-  --text2:#4A3D33;
-  --text3:#9B8B7A;
-  --terra:#D4A373;
-  --terra-d:#B8855A;
-  --sage:#8FA287;
-  --sage-d:#6B7E64;
-  --sage-bg:#EBF0E7;
-  --border:rgba(62,54,46,.12);
-  --line:#DDD5C4;
-  --line2:#EDE8DF;
-  --cream:#F5F2E9;
-  --ivory:#FFFDF8;
-  --brown:#3E362E;
-  --brown2:#6B5D4F;
-  --brown3:#9B8B7A;
-}
-
 html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);transition:background .25s,color .25s}
 
 /* ── TOPNAV ── */
@@ -156,14 +87,6 @@ html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;
 .nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.75}
 .nav-item.active svg{opacity:1}
 .tn-right{display:flex;align-items:center;gap:.2rem;flex-shrink:0;margin-left:.5rem}
-.tn-btn{
-  width:38px;height:38px;border-radius:8px;
-  border:none;background:transparent;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0;
-}
-.tn-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
-.tn-btn svg{width:16px;height:16px}
 .avatar-wrap{position:relative;margin-left:.2rem}
 .avatar{
   width:32px;height:32px;border-radius:50%;
@@ -369,7 +292,6 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
   flex:1;height:20px;background:rgba(62,54,46,.06);
   border-radius:100px;overflow:hidden;position:relative;
 }
-[data-theme="dark"] .hbar-track{background:rgba(255,255,255,.06)}
 .hbar-fill{height:100%;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:2px;position:relative}
 .hbar-fill::after{
   content:attr(data-pct);position:absolute;right:6px;top:50%;
@@ -397,7 +319,6 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
 .kprak-row{display:flex;align-items:center;gap:.75rem}
 .kprak-label{font-size:.78rem;color:var(--text2);flex:1;min-width:0}
 .kprak-bar-track{width:120px;height:10px;background:rgba(62,54,46,.06);border-radius:100px;overflow:hidden;flex-shrink:0}
-[data-theme="dark"] .kprak-bar-track{background:rgba(255,255,255,.06)}
 .kprak-bar-fill{height:100%;border-radius:100px;background:var(--terra);transition:width .5s cubic-bezier(.4,0,.2,1)}
 .kprak-score{font-size:.8rem;font-weight:600;color:var(--terra-d);width:30px;text-align:right;flex-shrink:0}
 
@@ -496,7 +417,6 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
   .stat-grid{grid-template-columns:repeat(2,1fr);gap:.65rem}
   .chart-grid{grid-template-columns:1fr}
   .chart-card.full-width{grid-column:1}
-  .tn-btn{width:44px;height:44px}
   .avatar{width:44px;height:44px}
   .filter-select{height:44px}
   .btn-exp{height:44px}
@@ -575,10 +495,6 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
 
   <!-- Right controls -->
   <div class="tn-right">
-    <button class="tn-btn" id="btnTheme" title="Toggle dark mode" onclick="toggleTheme()" aria-label="Toggle tema">
-      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    </button>
     <div class="avatar-wrap">
       <div class="avatar" id="avatarBtn" onclick="toggleDD()">D</div>
       <div class="av-dd" id="avDD">
@@ -821,30 +737,6 @@ table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
 <div id="toast"></div>
 
 <script>
-/* ══════════════════════════════════════
-   THEME
-══════════════════════════════════════ */
-(function(){
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) document.documentElement.setAttribute('data-theme', saved);
-})();
-
-function updateThemeIcon(){
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
-    || (!document.documentElement.hasAttribute('data-theme') && window.matchMedia('(prefers-color-scheme:dark)').matches);
-  document.getElementById('iconMoon').style.display = isDark ? 'none' : '';
-  document.getElementById('iconSun').style.display  = isDark ? '' : 'none';
-}
-function toggleTheme(){
-  const cur  = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-updateThemeIcon();
-window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', updateThemeIcon);
-
 /* ══════════════════════════════════════
    SECURITY HELPER
 ══════════════════════════════════════ */

@@ -29,52 +29,6 @@
   --border-c:var(--border);
 }
 
-/* ══════════════════════════════════════
-   DARK MODE — via OS preference
-══════════════════════════════════════ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-    --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-    --terra:#E8B888;--terra-d:#D4A373;
-    --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-    --border:rgba(255,255,255,.08);
-    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-    --red:#E87070;--red-bg:rgba(232,112,112,.15);
-    --ink:#0F0C08;
-  }
-  :root:not([data-theme="light"]) .bk-sangat-layak{background:rgba(122,191,94,.22);color:#A8E080}
-  :root:not([data-theme="light"]) .bk-layak{background:rgba(232,184,136,.22);color:#F0D9B8}
-  :root:not([data-theme="light"]) .bk-cukup{background:rgba(232,180,90,.2);color:#F0D090}
-}
-
-/* ══ DARK MODE — via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-  --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-  --terra:#E8B888;--terra-d:#D4A373;
-  --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-  --border:rgba(255,255,255,.08);
-  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-  --red:#E87070;--red-bg:rgba(232,112,112,.15);
-  --ink:#0F0C08;
-}
-[data-theme="dark"] .bk-sangat-layak{background:rgba(122,191,94,.22);color:#A8E080}
-[data-theme="dark"] .bk-layak{background:rgba(232,184,136,.22);color:#F0D9B8}
-[data-theme="dark"] .bk-cukup{background:rgba(232,180,90,.2);color:#F0D090}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-  --terra:#D4A373;--terra-d:#B8855A;
-  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-  --border:rgba(62,54,46,.10);
-  --line:#DDD5C4;--line2:#EDE8DF;
-  --red:#B03020;--red-bg:#FDECEA;
-  --ink:#3E362E;
-}
-
 html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif;transition:background .25s,color .25s}
 
 /* ══════════════════════════════════════
@@ -122,13 +76,6 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 
 /* Right controls */
 .tb-right{display:flex;align-items:center;gap:.2rem;flex-shrink:0;margin-left:.5rem}
-.tb-btn{
-  width:36px;height:36px;border-radius:8px;border:none;background:transparent;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.5);transition:all .18s;
-}
-.tb-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
-.tb-btn svg{width:15px;height:15px}
 .tb-logout{
   display:flex;align-items:center;gap:.35rem;
   padding:.35rem .7rem;border-radius:7px;border:none;
@@ -511,7 +458,6 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
   .tb-nav{display:none}
   .tb-logout{display:none}
   .tb-hamburger{display:flex}
-  .tb-btn{width:44px;height:44px}
   .wrap{padding:1.5rem 1rem 4rem}
   .card{padding:1.25rem 1rem;border-radius:12px}
   .page-heading h1{font-size:1.3rem}
@@ -532,18 +478,6 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
    PRINT
 ══════════════════════════════════════ */
 @media print{
-  /* Force light-mode token values so print output never inherits dark mode,
-     regardless of data-theme or OS color-scheme preference */
-  :root{
-    --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-    --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-    --terra:#D4A373;--terra-d:#B8855A;
-    --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-    --border:rgba(62,54,46,.10);
-    --line:#DDD5C4;--line2:#EDE8DF;
-    --red:#B03020;--red-bg:#FDECEA;
-    --ink:#3E362E;
-  }
   .bk-sangat-layak{background:#C0DD97!important;color:#27500A!important}
   .bk-layak{background:rgba(212,163,115,.25)!important;color:#7A4A10!important}
   .bk-cukup{background:#F5E8CB!important;color:#7A5A10!important}
@@ -605,9 +539,6 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 
   <!-- Right controls -->
   <div class="tb-right">
-    <button class="tb-btn" id="btnTheme" onclick="toggleTheme()" aria-label="Ganti tema" title="Ganti tema">
-      <span id="themeIcon">🌙</span>
-    </button>
     <button class="tb-logout" onclick="openLogoutModal()" aria-label="Keluar">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Keluar
@@ -1072,44 +1003,6 @@ html,body{min-height:100%;background:var(--cream);color:var(--brown);font-family
 <script src="data-layer.js"></script>
 <script>
 'use strict';
-
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  // Determine effective theme
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-// Listen for system preference changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
 
 // ── XSS HELPER ──────────────────────────────────────────────────────────
 function escHtml(s) {

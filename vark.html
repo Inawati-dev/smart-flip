@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,53 +34,6 @@
   --border-c:var(--line);
 }
 
-/* ══ DARK MODE via media query (respects OS preference) ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-    --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-    --terra:#E8B888;--terra-d:#D4A373;
-    --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-    --brown-panel:#0F0C08;
-    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-    --err:#E87070;
-    --terra-tint-04:rgba(232,184,136,.08);
-    --terra-tint-07:rgba(232,184,136,.14);
-    --terra-tint-15:rgba(232,184,136,.24);
-    --terra-glow:rgba(232,184,136,.35);
-  }
-}
-
-/* ══ DARK MODE via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-  --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-  --terra:#E8B888;--terra-d:#D4A373;
-  --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-  --brown-panel:#0F0C08;
-  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-  --err:#E87070;
-  --terra-tint-04:rgba(232,184,136,.08);
-  --terra-tint-07:rgba(232,184,136,.14);
-  --terra-tint-15:rgba(232,184,136,.24);
-  --terra-glow:rgba(232,184,136,.35);
-}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-  --terra:#D4A373;--terra-d:#B8855A;
-  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-  --brown-panel:#3E362E;
-  --line:#DDD5C4;--line2:#EDE8DF;
-  --err:#B03020;
-  --terra-tint-04:rgba(212,163,115,.04);
-  --terra-tint-07:rgba(212,163,115,.07);
-  --terra-tint-15:rgba(212,163,115,.15);
-  --terra-glow:rgba(212,163,115,.3);
-}
-
 html,body{min-height:100vh}
 body{
   font-family:'DM Sans',sans-serif;background:var(--cream);
@@ -108,14 +61,6 @@ body{
 }
 .tb-skip:hover{color:var(--brown2);border-color:var(--brown3)}
 .tb-right{display:flex;align-items:center;gap:.5rem}
-.btn-theme{
-  width:36px;height:36px;border-radius:8px;border:1px solid var(--line);
-  background:transparent;cursor:pointer;flex-shrink:0;
-  display:flex;align-items:center;justify-content:center;
-  font-size:15px;color:var(--brown3);transition:all .18s;
-}
-.btn-theme:hover{border-color:var(--brown3);color:var(--brown2);background:var(--ivory2)}
-.btn-theme:focus-visible{outline:2px solid var(--terra);outline-offset:2px}
 
 /* ── MOBILE HAMBURGER ── */
 .tb-hamburger{
@@ -350,7 +295,6 @@ body{
   .bar-chart{gap:.5rem;height:100px}
   .bar-wrap{height:80px}
   .prog-label,.prog-pct-lbl,.tb-skip{font-size:.82rem}
-  .btn-theme{width:44px;height:44px}
 }
 @media(max-width:380px){
   .intro-meta{flex-direction:column;gap:.4rem}
@@ -360,7 +304,6 @@ body{
 @media(max-width:768px){
   .tb-skip{display:none}
   .tb-hamburger{display:flex}
-  .btn-theme{width:44px;height:44px}
 }
 
 /* ── LOGOUT MODAL ── */
@@ -388,9 +331,6 @@ body{
     <span class="tb-brand-ver">5.0</span>
   </a>
   <div class="tb-right">
-    <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-      <span id="themeIcon">🌙</span>
-    </button>
     <a class="tb-skip" href="dashboard-mhs.html">Lewati untuk sekarang</a>
     <button class="tb-hamburger" id="btnHamburger" onclick="toggleDrawer()" aria-label="Menu">
       <span></span><span></span><span></span>
@@ -517,42 +457,6 @@ body{
     if (!session) { window.location.replace('index.html'); return; }
   } catch(e) { /* network error — allow demo mode fallback */ }
 })();
-
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
 
 // ══════════════════════════════════════
 // VARK DATA

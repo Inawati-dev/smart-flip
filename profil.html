@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,75 +35,6 @@
   --amber:#633806;
   --topnav-h:56px;
   --r:10px;
-}
-
-/* ══ DARK MODE via media query ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#1A1208;
-    --surface:#241C10;
-    --surface2:#2E2416;
-    --topnav-bg:#0F0C08;
-    --text:#F0EBE0;
-    --text2:#C8BDB0;
-    --text3:#7A6B5E;
-    --terra:#E8B888;
-    --terra-d:#D4A373;
-    --sage:#9FB49A;
-    --sage-d:#7A9B77;
-    --sage-bg:rgba(143,162,135,.18);
-    --border:rgba(255,255,255,.08);
-    --border2:rgba(255,255,255,.04);
-    --line:rgba(255,255,255,.1);
-    --line2:rgba(255,255,255,.06);
-    --red:#E87070;
-    --green:#7ABF5E;
-    --amber:#E8B45A;
-  }
-}
-
-[data-theme="dark"]{
-  --bg:#1A1208;
-  --surface:#241C10;
-  --surface2:#2E2416;
-  --topnav-bg:#0F0C08;
-  --text:#F0EBE0;
-  --text2:#C8BDB0;
-  --text3:#7A6B5E;
-  --terra:#E8B888;
-  --terra-d:#D4A373;
-  --sage:#9FB49A;
-  --sage-d:#7A9B77;
-  --sage-bg:rgba(143,162,135,.18);
-  --border:rgba(255,255,255,.08);
-  --border2:rgba(255,255,255,.04);
-  --line:rgba(255,255,255,.1);
-  --line2:rgba(255,255,255,.06);
-  --red:#E87070;
-  --green:#7ABF5E;
-  --amber:#E8B45A;
-}
-
-[data-theme="light"]{
-  --bg:#F5F2E9;
-  --surface:#FFFDF8;
-  --surface2:#FAF7F2;
-  --topnav-bg:#3E362E;
-  --text:#2C2420;
-  --text2:#4A3D33;
-  --text3:#9B8B7A;
-  --terra:#D4A373;
-  --terra-d:#B8855A;
-  --sage:#8FA287;
-  --sage-d:#6B7E64;
-  --sage-bg:#EBF0E7;
-  --border:rgba(62,54,46,.12);
-  --border2:rgba(62,54,46,.06);
-  --line:#DDD5C4;
-  --line2:#EDE8DF;
-  --red:#B03020;
-  --green:#2A5010;
-  --amber:#633806;
 }
 
 html,body{min-height:100%;overflow:auto}
@@ -176,15 +107,6 @@ body{
 .nav-item svg{width:15px;height:15px;flex-shrink:0}
 
 .tn-right{display:flex;align-items:center;gap:.25rem;margin-left:auto;flex-shrink:0}
-
-.btn-theme{
-  width:40px;height:40px;border-radius:8px;border:none;
-  background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.5);font-size:17px;
-  transition:all .18s;flex-shrink:0;
-}
-.btn-theme:hover{background:rgba(255,255,255,.08);color:#fff}
 
 .btn-logout-top{
   display:flex;align-items:center;gap:.35rem;
@@ -594,7 +516,7 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 /* ══ PRINT STYLES ══ */
 @media print{
   .topnav,.nav-drawer,.nav-drawer-overlay,.toast,.modal-bg,
-  .btn-hamburger,.btn-theme,.btn-logout-top,
+  .btn-hamburger,.btn-logout-top,
   .btn-edit-profil,.btn-export-pdf,.edit-form-wrap,
   .btn-isi-vark,.settings-actions,button{display:none!important}
   html,body{background:#fff!important;color:#000!important;font-size:11pt}
@@ -657,9 +579,6 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 
   <!-- Right controls -->
   <div class="tn-right">
-    <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-      <span id="themeIcon">🌙</span>
-    </button>
     <button class="btn-logout-top" onclick="openLogoutModal()" aria-label="Keluar">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       Keluar
@@ -922,34 +841,6 @@ function escHtml(s) {
     .replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) document.documentElement.setAttribute('data-theme', saved);
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme')
-    || (window.matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change', updateThemeIcon);
 
 // ══════════════════════════════════════
 // AUTH GUARD

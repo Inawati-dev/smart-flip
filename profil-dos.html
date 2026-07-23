@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,30 +33,6 @@
   --red:#B03020;
   --topnav-h:56px;
 }
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#1A1208;--surface:#241C10;--surface2:#2E2416;
-    --topnav-bg:#0F0C08;--text:#F0EBE0;--text2:#C8BDB0;--text3:#7A6B5E;
-    --terra:#E8B888;--terra-d:#D4A373;--sage:#9FB49A;--sage-d:#8FA287;
-    --sage-bg:rgba(143,162,135,.18);--border:rgba(255,255,255,.08);
-    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);--red:#E87070;
-  }
-}
-[data-theme="dark"]{
-  --bg:#1A1208;--surface:#241C10;--surface2:#2E2416;
-  --topnav-bg:#0F0C08;--text:#F0EBE0;--text2:#C8BDB0;--text3:#7A6B5E;
-  --terra:#E8B888;--terra-d:#D4A373;--sage:#9FB49A;--sage-d:#8FA287;
-  --sage-bg:rgba(143,162,135,.18);--border:rgba(255,255,255,.08);
-  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);--red:#E87070;
-}
-[data-theme="light"]{
-  --bg:#F5F2E9;--surface:#FFFDF8;--surface2:#FAF7F2;
-  --topnav-bg:#3E362E;--text:#2C2420;--text2:#4A3D33;--text3:#9B8B7A;
-  --terra:#D4A373;--terra-d:#B8855A;--sage:#8FA287;--sage-d:#6B7E64;
-  --sage-bg:#EBF0E7;--border:rgba(62,54,46,.12);
-  --line:#DDD5C4;--line2:#EDE8DF;--red:#B03020;
-}
-
 html,body{min-height:100%;overflow:auto}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);transition:background .25s,color .25s}
 
@@ -90,13 +66,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);tra
 .nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.75}
 .nav-item.active svg{opacity:1}
 .tn-right{display:flex;align-items:center;gap:.2rem;flex-shrink:0;margin-left:.5rem}
-.tn-btn{
-  width:38px;height:38px;border-radius:8px;border:none;background:transparent;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.5);transition:all .18s;flex-shrink:0;
-}
-.tn-btn:hover{background:rgba(255,255,255,.1);color:rgba(255,255,255,.9)}
-.tn-btn svg{width:16px;height:16px}
 .avatar-wrap{position:relative;margin-left:.2rem}
 .avatar{
   width:32px;height:32px;border-radius:50%;
@@ -412,10 +381,6 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
   </div>
 
   <div class="tn-right">
-    <button class="tn-btn" id="btnTheme" title="Toggle dark mode" onclick="toggleTheme()" aria-label="Toggle tema">
-      <svg id="iconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      <svg id="iconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-    </button>
     <div class="avatar-wrap">
       <div class="avatar" id="avatarBtn" onclick="toggleDD()">AF</div>
       <div class="av-dd" id="avDD">
@@ -686,30 +651,6 @@ table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
 function escHtml(s){
   return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-
-// ══ THEME ══
-(function initTheme(){
-  const saved = localStorage.getItem('sfp_theme');
-  if(saved) document.documentElement.setAttribute('data-theme',saved);
-  updateThemeIcon();
-})();
-
-function updateThemeIcon(){
-  const isDark = document.documentElement.getAttribute('data-theme')==='dark'
-    ||(!document.documentElement.hasAttribute('data-theme')&&window.matchMedia('(prefers-color-scheme:dark)').matches);
-  document.getElementById('iconMoon').style.display = isDark?'none':'';
-  document.getElementById('iconSun').style.display  = isDark?'':'none';
-}
-
-function toggleTheme(){
-  const cur = document.documentElement.getAttribute('data-theme')
-    ||(window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
-  const next = cur==='dark'?'light':'dark';
-  document.documentElement.setAttribute('data-theme',next);
-  localStorage.setItem('sfp_theme',next);
-  updateThemeIcon();
-}
-window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',updateThemeIcon);
 
 // ══ AUTH GUARD ══
 (async()=>{

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -34,62 +34,6 @@
   --border-c:var(--border);
 }
 
-/* ══ DARK MODE via media query ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;
-    --ivory:#241C10;
-    --ivory2:#2E2416;
-    --sage:#9FB49A;
-    --sage-d:#8FA287;
-    --terra:#E8B888;
-    --terra-d:#D4A373;
-    --brown:#F0EBE0;
-    --brown2:#C8BDB0;
-    --brown3:#7A6B5E;
-    --border:rgba(255,255,255,.08);
-    --track-bg:rgba(255,255,255,.06);
-    --red:#E87070;
-    --topbar-bg:#0F0C08;
-  }
-}
-
-/* ══ DARK MODE via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;
-  --ivory:#241C10;
-  --ivory2:#2E2416;
-  --sage:#9FB49A;
-  --sage-d:#8FA287;
-  --terra:#E8B888;
-  --terra-d:#D4A373;
-  --brown:#F0EBE0;
-  --brown2:#C8BDB0;
-  --brown3:#7A6B5E;
-  --border:rgba(255,255,255,.08);
-  --track-bg:rgba(255,255,255,.06);
-  --red:#E87070;
-  --topbar-bg:#0F0C08;
-}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;
-  --ivory:#FFFDF8;
-  --ivory2:#FFFFFF;
-  --sage:#8FA287;
-  --sage-d:#6B7E64;
-  --terra:#D4A373;
-  --terra-d:#B8855A;
-  --brown:#3E362E;
-  --brown2:#6B5D4F;
-  --brown3:#9B8B7A;
-  --border:rgba(62,54,46,.10);
-  --track-bg:rgba(62,54,46,.06);
-  --red:#c0392b;
-  --topbar-bg:#3E362E;
-}
-
 html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--brown);transition:background .25s,color .25s}
 
 /* ── TOPBAR ── */
@@ -118,14 +62,6 @@ html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-ser
   border:1px solid rgba(212,163,115,.28);border-radius:100px;
   padding:.2rem .65rem;white-space:nowrap;
 }
-.tb-theme-toggle{
-  display:flex;align-items:center;justify-content:center;
-  width:32px;height:32px;border-radius:8px;border:none;
-  background:transparent;color:rgba(255,255,255,.65);
-  font-size:16px;cursor:pointer;transition:all .18s;flex-shrink:0;
-}
-.tb-theme-toggle:hover{background:rgba(255,255,255,.1);color:#fff}
-.tb-theme-toggle:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
 
 /* ── MOBILE HAMBURGER ── */
 .tb-hamburger{
@@ -337,7 +273,6 @@ html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-ser
   .tb-back{display:none}
   .tb-badge{display:none}
   .tb-hamburger{display:flex}
-  .tb-theme-toggle{min-height:44px;min-width:44px}
 }
 
 /* ── LOGOUT MODAL ── */
@@ -366,9 +301,6 @@ html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-ser
   <div class="tb-divider"></div>
   <span class="tb-title">N-Gain Calculator SDL</span>
   <div class="tb-spacer"></div>
-  <button class="tb-theme-toggle" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-    <span id="themeIcon">🌙</span>
-  </button>
   <a href="analitik.html" class="tb-back" style="flex-shrink:0">
     <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15" height="15"><rect x="3" y="12" width="4" height="9"/><rect x="10" y="7" width="4" height="14"/><rect x="17" y="3" width="4" height="18"/></svg>
     Analitik
@@ -577,42 +509,6 @@ html,body{min-height:100%;background:var(--cream);font-family:'DM Sans',sans-ser
 </div>
 
 <script>
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
-
 /* ── AUTH GUARD (dosen only) ── */
 (async () => {
   const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,7 +18,6 @@
       <span class="logo-text" id="siteName">Perpustakaan Digital</span>
     </a>
     <div class="topbar-right">
-      <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" title="Ganti tema" onclick="toggleTheme()"><span id="themeIcon">🌙</span></button>
       <button class="topbar-cat-btn" id="topbarCatBtn" onclick="toggleCatalog()" title="Buka/tutup katalog">📚 Katalog</button>
       <a class="topbar-link" id="dashboardBack" href="index.html" title="Kembali ke Dashboard">← Dashboard</a>
       <a class="topbar-link" href="profil.html" title="Profil">👤 Profil</a>
@@ -40,7 +39,6 @@
     <a href="index.html" id="navDashboard">🏠 Dashboard</a>
     <a href="profil.html">👤 Profil</a>
     <a href="changelog.html">📋 Changelog</a>
-    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
     <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
   </nav>
 </aside>
@@ -248,19 +246,6 @@
 }
 .topbar-cat-btn:hover{background:var(--terra-d,#B8855A);}
 
-/* theme toggle button (dark/light) */
-.btn-theme {
-  display:flex;align-items:center;justify-content:center;
-  width:36px;height:36px;
-  border-radius:var(--r-pill,100px);
-  border:1px solid var(--border,rgba(62,54,46,.15));
-  background:transparent;color:var(--brown2,#6B5D4F);
-  font-size:16px;cursor:pointer;
-  transition:background .15s,color .15s,border-color .15s;
-  flex-shrink:0;
-}
-.btn-theme:hover{background:var(--terra,#D4A373);color:#fff;border-color:var(--terra,#D4A373);}
-
 /* ── HAMBURGER + NAV DRAWER (mobile) — separate from the book catalog drawer ── */
 .hb-btn{
   display:none;width:44px;height:44px;
@@ -313,8 +298,7 @@
   #dashboardBack,
   .topbar-right a[href="profil.html"],
   .topbar-right a[href="changelog.html"],
-  .topbar-right button[onclick="openLogoutModal()"],
-  .btn-theme { display: none; }
+  .topbar-right button[onclick="openLogoutModal()"] { display: none; }
   .hb-btn { display: flex; }
 }
 
@@ -332,40 +316,6 @@
 .logout-btn-confirm:hover{opacity:.85}
 @media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
 </style>
-<script>
-// ══════════════════════════════════════
-// THEME MANAGEMENT (diterapkan sedini mungkin agar tidak flash)
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-})();
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-document.addEventListener('DOMContentLoaded', updateThemeIcon);
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
-</script>
 <!-- pdf.js -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>

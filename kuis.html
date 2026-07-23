@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,56 +27,6 @@
       --red-rgb: 192,57,43;
     }
 
-    /* ══ DARK MODE via media query ══ */
-    @media(prefers-color-scheme:dark){
-      :root:not([data-theme="light"]){
-        --bg: #1A1208; --bg2: #241C10; --bg3: #2E2416;
-        --sage: #9FB49A; --sage-d: #7A9B77; --sage-l: #6B8566;
-        --terra: #E8B888; --terra-d: #D4A373;
-        --brown: #F0EBE0; --brown2: #C8BDB0; --brown3: #7A6B5E; --brown4: #8A7A68;
-        --line: rgba(255,255,255,.12); --border: rgba(255,255,255,.08);
-        --shadow-sm: 0 2px 4px rgba(0,0,0,.35);
-        --shadow-md: 0 4px 16px rgba(0,0,0,.35);
-        --red: #E87070; --red-l: rgba(232,112,112,.14);
-        --bg-rgb: 26,18,8;
-        --terra-rgb: 232,184,136; --terra-d-rgb: 212,163,115;
-        --sage-rgb: 159,180,154; --sage-d-rgb: 122,155,119;
-        --red-rgb: 232,112,112;
-      }
-    }
-
-    /* ══ DARK MODE via manual toggle ══ */
-    [data-theme="dark"]{
-      --bg: #1A1208; --bg2: #241C10; --bg3: #2E2416;
-      --sage: #9FB49A; --sage-d: #7A9B77; --sage-l: #6B8566;
-      --terra: #E8B888; --terra-d: #D4A373;
-      --brown: #F0EBE0; --brown2: #C8BDB0; --brown3: #7A6B5E; --brown4: #8A7A68;
-      --line: rgba(255,255,255,.12); --border: rgba(255,255,255,.08);
-      --shadow-sm: 0 2px 4px rgba(0,0,0,.35);
-      --shadow-md: 0 4px 16px rgba(0,0,0,.35);
-      --red: #E87070; --red-l: rgba(232,112,112,.14);
-      --bg-rgb: 26,18,8;
-      --terra-rgb: 232,184,136; --terra-d-rgb: 212,163,115;
-      --sage-rgb: 159,180,154; --sage-d-rgb: 122,155,119;
-      --red-rgb: 232,112,112;
-    }
-
-    /* ══ FORCE LIGHT ══ */
-    [data-theme="light"]{
-      --bg: #F5F2E9; --bg2: #FFFDF8; --bg3: #FAF7F0;
-      --sage: #8FA287; --sage-d: #6B7E64; --sage-l: #B8CCB2;
-      --terra: #D4A373; --terra-d: #B8855A;
-      --brown: #3E362E; --brown2: #6B5D4F; --brown3: #9B8B7A; --brown4: #C5B8AD;
-      --line: #DDD5C4; --border: rgba(62,54,46,.10);
-      --shadow-sm: 0 2px 4px rgba(62,54,46,.10);
-      --shadow-md: 0 4px 16px rgba(62,54,46,.10);
-      --red: #c0392b; --red-l: #fdf2f0;
-      --bg-rgb: 245,242,233;
-      --terra-rgb: 212,163,115; --terra-d-rgb: 184,133,90;
-      --sage-rgb: 143,162,135; --sage-d-rgb: 107,126,100;
-      --red-rgb: 192,57,43;
-    }
-
     html, body { min-height: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--brown); background: var(--bg); -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; }
 
     /* ── TOPBAR ── */
@@ -88,10 +38,6 @@
     .topbar-right { display: flex; align-items: center; gap: 10px; }
     .topbar-link { font-size: 12px; font-weight: 600; color: var(--brown3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid var(--border); transition: color .2s, border-color .2s; }
     .topbar-link:hover { color: var(--terra-d); border-color: var(--terra); }
-    .btn-theme { width: 36px; height: 36px; border-radius: 8px; border: none; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--brown3); font-size: 15px; transition: all .18s; flex-shrink: 0; }
-    .btn-theme:hover { background: rgba(var(--terra-rgb),.12); color: var(--terra-d); }
-    .btn-theme:focus-visible { outline: 2px solid var(--terra); outline-offset: 2px; }
-
     /* ── HAMBURGER + NAV DRAWER (mobile) ── */
     .hb-btn { display: none; width: 44px; height: 44px; border-radius: var(--r-pill); border: 1px solid var(--border); background: transparent; cursor: pointer; align-items: center; justify-content: center; color: var(--brown2); font-size: 20px; transition: background .15s, color .15s, border-color .15s; flex-shrink: 0; }
     .hb-btn:hover { background: var(--terra); color: #fff; border-color: var(--terra); }
@@ -212,7 +158,6 @@
       .header-inner { padding: 0 12px; }
       .topbar-right { gap: 4px; }
       .topbar-link { font-size: 11px; padding: 3px 8px; min-height: 44px; display: inline-flex; align-items: center; }
-      .btn-theme { width: 44px; height: 44px; }
 
       /* Page wrap */
       .page-wrap { padding: 16px 14px 48px; }
@@ -291,9 +236,6 @@
       <span class="logo-text">Kuis Formatif</span>
     </a>
     <div class="topbar-right">
-      <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span>
-      </button>
       <a class="topbar-link" id="dashboardBack" href="index.html">← Dashboard</a>
       <button class="topbar-link" style="color:var(--red);border-color:rgba(var(--red-rgb),.3);cursor:pointer;font:inherit" onclick="openLogoutModal()">Keluar</button>
     </div>
@@ -313,7 +255,6 @@
     <a href="dashboard-mhs.html" id="navBackLink"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg><span id="navCrumbText">Kembali ke Modul</span></a>
     <a href="profil.html">👤 Profil</a>
     <a href="changelog.html">📋 Changelog</a>
-    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
     <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
   </nav>
 </aside>
@@ -430,45 +371,6 @@ function closeNavDrawer() {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNavDrawer(); });
-</script>
-<script>
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  // Determine effective theme
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-// Listen for system preference changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
 </script>
 <script>
 /* ══ KUIS ENGINE ══ */

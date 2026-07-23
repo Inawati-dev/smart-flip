@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,47 +30,6 @@
   --border-c:var(--border);
 }
 
-/* ══ DARK MODE via OS preference ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-    --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-    --terra:#E8B888;--terra-d:#D4A373;
-    --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-    --border:rgba(255,255,255,.08);
-    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-    --red:#E87070;
-    --ink:#0F0C08;
-    --star-off:rgba(255,255,255,.22);
-  }
-}
-
-/* ══ DARK MODE via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-  --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-  --terra:#E8B888;--terra-d:#D4A373;
-  --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-  --border:rgba(255,255,255,.08);
-  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-  --red:#E87070;
-  --ink:#0F0C08;
-  --star-off:rgba(255,255,255,.22);
-}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-  --terra:#D4A373;--terra-d:#B8855A;
-  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-  --border:rgba(62,54,46,.10);
-  --line:#DDD5C4;--line2:#EDE8DF;
-  --red:#B03020;
-  --ink:#3E362E;
-  --star-off:#DDD5C4;
-}
-
 html,body{min-height:100%}
 body{background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif;transition:background .25s,color .25s}
 
@@ -93,17 +52,6 @@ body{background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif
 }
 .topbar-spacer{width:80px;flex-shrink:0}
 .topbar-right{display:flex;align-items:center;gap:.35rem;margin-left:auto;flex-shrink:0}
-
-/* ── THEME TOGGLE ── */
-.btn-theme{
-  width:44px;height:44px;border-radius:8px;border:none;
-  background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.6);font-size:16px;
-  transition:all .18s;flex-shrink:0;
-}
-.btn-theme:hover{background:rgba(255,255,255,.08);color:#fff}
-.btn-theme:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
 
 /* ── MOBILE HAMBURGER ── */
 .tb-hamburger{
@@ -173,7 +121,6 @@ body{background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif
 @media(max-width:768px){
   .btn-back{display:none}
   .tb-hamburger{display:flex}
-  .btn-theme{width:44px;height:44px}
 }
 
 /* ── FORM ELEMENTS ── */
@@ -196,14 +143,6 @@ body{background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif
   transition:border-color .15s,background-image .15s;
 }
 .modul-select:focus{outline:none;border-color:var(--terra)}
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]) .modul-select{
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C8BDB0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  }
-}
-[data-theme="dark"] .modul-select{
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C8BDB0' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-}
 
 /* ── STAR RATING ── */
 .rating-aspect{
@@ -367,9 +306,6 @@ body{background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif
   </a>
   <span class="topbar-title">Form Kepraktisan</span>
   <div class="topbar-right">
-    <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-      <span id="themeIcon">🌙</span>
-    </button>
     <a href="profil.html" class="btn-back">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       Profil
@@ -543,43 +479,6 @@ body{background:var(--cream);color:var(--brown);font-family:'DM Sans',sans-serif
 <script src="data-layer.js"></script>
 <script>
 'use strict';
-
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-// Listen for system preference changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
 
 // ── XSS HELPER ──────────────────────────────────────────
 function escHtml(s) {
