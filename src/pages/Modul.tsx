@@ -1,8 +1,32 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router'
 import { useModule } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { moduleIdToPath } from '../lib/progress'
+
+// Only allow https:/http: DOI links — block javascript: and other dangerous
+// protocols. Ported verbatim from legacy/modul.html:904-907.
+export function safeDoi(doi: string | undefined): string {
+  if (typeof doi === 'string' && /^https?:\/\//i.test(doi.trim())) return doi
+  return '#'
+}
+
+// modul.jurnal/modul.studiKasus are typed `unknown[]` on ModuleRow (untyped JSON
+// column) — narrow to the shape this page actually consumes.
+interface JurnalItem {
+  judul: string
+  penulis: string
+  tahun: number
+  jurnal: string
+  abstrak: string
+  doi: string
+}
+interface StudiKasusItem {
+  judul: string
+  konteks: string
+  pertanyaan: string
+}
 
 export default function Modul() {
   const { id } = useParams()
@@ -10,6 +34,7 @@ export default function Modul() {
   const { data: modul, isLoading } = useModule(moduleId)
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useQuizAttempts(moduleId)
+  const [jTab, setJTab] = useState<'jurnal' | 'kasus'>('jurnal')
 
   if (isLoading) return <div className="p-8 text-brown-3">Memuat…</div>
   if (!modul) return <div className="p-8 text-brown">Modul tidak ditemukan</div>
@@ -141,7 +166,60 @@ export default function Modul() {
         )}
       </div>
 
-      <div id="modul-sections-placeholder" />
+      <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
+        <div className="flex items-center gap-2 mb-3">
+          <h2 className="font-bold text-brown flex items-center gap-2">📚 Jurnal &amp; Studi Kasus</h2>
+          <span className="text-xs text-brown-3 bg-bg3 border border-gray-200 rounded-full px-2.5 py-0.5 ml-auto">
+            {modul.jurnal.length} jurnal · {modul.studiKasus.length} kasus
+          </span>
+        </div>
+
+        <div className="flex gap-2 mb-4 border-b-2 border-gray-200 pb-2">
+          <button
+            onClick={() => setJTab('jurnal')}
+            className={`px-4 py-2 rounded-t-lg text-sm font-semibold ${jTab === 'jurnal' ? 'text-terra bg-terra/10' : 'text-brown-3'}`}
+          >
+            Referensi Jurnal
+          </button>
+          <button
+            onClick={() => setJTab('kasus')}
+            className={`px-4 py-2 rounded-t-lg text-sm font-semibold ${jTab === 'kasus' ? 'text-terra bg-terra/10' : 'text-brown-3'}`}
+          >
+            Studi Kasus
+          </button>
+        </div>
+
+        {jTab === 'jurnal' ? (
+          modul.jurnal.length ? (
+            (modul.jurnal as JurnalItem[]).map((j, i) => (
+              <div key={i} className="bg-cream border border-gray-200 rounded-xl p-5 mb-3">
+                <div className="font-semibold text-brown mb-1">{j.judul}</div>
+                <div className="text-sm text-brown-3 mb-2">
+                  {j.penulis} · {j.tahun} · <em>{j.jurnal}</em>
+                </div>
+                <p className="text-sm text-brown-2 leading-relaxed mb-3">{j.abstrak}</p>
+                <a href={safeDoi(j.doi)} target="_blank" rel="noopener noreferrer" className="text-sm text-terra">
+                  🔗 Buka DOI
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-brown-3 text-center py-8">Belum ada referensi jurnal.</p>
+          )
+        ) : modul.studiKasus.length ? (
+          (modul.studiKasus as StudiKasusItem[]).map((k, i) => (
+            <div key={i} className="bg-cream border-l-4 border-sage rounded-r-xl p-5 mb-3">
+              <div className="font-semibold text-brown mb-2">{k.judul}</div>
+              <p className="text-sm text-brown-2 mb-3">{k.konteks}</p>
+              <div className="bg-sage/10 rounded-lg p-3 text-sm text-brown">
+                <strong>💬 Diskusi:</strong> {k.pertanyaan}
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="text-brown-3 text-center py-8">Belum ada studi kasus.</p>
+        )}
+      </div>
     </div>
   )
 }
