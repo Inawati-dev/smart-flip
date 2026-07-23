@@ -27,7 +27,10 @@ describe('Layout', () => {
       </MemoryRouter>,
     )
     expect(html).toContain('page content')
-    expect(html).toContain('/legacy/profil.html')
-    expect(html).toContain('/legacy/changelog.html')
+    // Profil and Changelog are real ported routes now (fixed after both landed
+    // post-Layout) — nav must link to them in-app, not exit to legacy/*.html.
+    expect(html).toContain('href="/profil"')
+    expect(html).toContain('href="/changelog"')
+    expect(html).not.toContain('/legacy/')
   })
 })
