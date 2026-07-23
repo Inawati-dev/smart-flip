@@ -48,3 +48,41 @@ export async function fetchAllProgress(): Promise<ProgressMap> {
   }
   return result
 }
+
+// SMART-FLIP ships a fixed 9-module curriculum (see legacy/modules-data.js and
+// CLAUDE.md) — legacy/profil.html loops modules 1..9 directly when totaling
+// learning time and quiz history, so this mirrors that fixed range verbatim.
+export const TOTAL_MODULES = 9
+
+// Mirrors legacy/data-layer.js getTimeSpent(moduleId).
+export async function fetchTimeSpent(moduleId: number): Promise<number> {
+  if (isSupabaseConfigured) {
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const uid = userData.user?.id
+      if (uid) {
+        const { data, error } = await supabase
+          .from('user_progress')
+          .select('time_spent')
+          .eq('user_id', uid)
+          .eq('module_id', moduleId)
+          .maybeSingle()
+        if (error) throw error
+        return data?.time_spent || 0
+      }
+    } catch {
+      // fall through to localStorage
+    }
+  }
+  const raw = localStorage.getItem('sfp_time_' + moduleId)
+  return raw ? parseInt(raw, 10) || 0 : 0
+}
+
+// Mirrors the totaling loop in legacy/profil.html's renderStats().
+export async function fetchTotalTimeSpent(): Promise<number> {
+  let total = 0
+  for (let i = 1; i <= TOTAL_MODULES; i++) {
+    total += await fetchTimeSpent(i)
+  }
+  return total
+}

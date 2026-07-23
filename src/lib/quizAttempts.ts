@@ -46,3 +46,20 @@ export async function fetchQuizAttempts(moduleId: number): Promise<QuizAttempt[]
     return []
   }
 }
+
+export interface QuizAttemptWithModule extends QuizAttempt {
+  moduleId: number
+}
+
+// Mirrors the aggregation loop in legacy/profil.html's renderStats() /
+// renderQuizHistory() (both loop modules 1..9 and flatten every attempt).
+export async function fetchAllQuizAttempts(
+  totalModules: number,
+): Promise<QuizAttemptWithModule[]> {
+  const rows: QuizAttemptWithModule[] = []
+  for (let i = 1; i <= totalModules; i++) {
+    const attempts = await fetchQuizAttempts(i)
+    attempts.forEach((a) => rows.push({ ...a, moduleId: i }))
+  }
+  return rows
+}
