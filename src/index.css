@@ -12,4 +12,13 @@
   --color-brown-2: #6B5D4F;
   --color-brown-3: #9B8B7A;
   --color-red: #C04020;
+
+  /* Matches legacy/*.html's Google Fonts pair (loaded via <link> in index.html) —
+     --font-sans/--font-display back Tailwind's font-sans/font-display utilities. */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Playfair Display', ui-serif, serif;
+}
+
+body {
+  font-family: var(--font-sans);
 }
