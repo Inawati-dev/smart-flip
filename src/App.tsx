@@ -5,6 +5,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { LegacyStub } from './pages/LegacyStub'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
+import Modul from './pages/Modul'
 
 const queryClient = new QueryClient()
 
@@ -26,7 +27,7 @@ export default function App() {
               }
             />
             <Route path="/profil" element={<ProtectedRoute><LegacyStub legacyFile="profil.html" /></ProtectedRoute>} />
-            <Route path="/modul/:id" element={<ProtectedRoute><LegacyStub legacyFile="modul.html" /></ProtectedRoute>} />
+            <Route path="/modul/:id" element={<ProtectedRoute><Modul /></ProtectedRoute>} />
             <Route path="/modul/:id/kuis" element={<ProtectedRoute><LegacyStub legacyFile="kuis.html" /></ProtectedRoute>} />
             <Route path="/modul/:id/workshop" element={<ProtectedRoute><LegacyStub legacyFile="workshop.html" /></ProtectedRoute>} />
             <Route path="/ebook" element={<ProtectedRoute><LegacyStub legacyFile="ebook.html" /></ProtectedRoute>} />
