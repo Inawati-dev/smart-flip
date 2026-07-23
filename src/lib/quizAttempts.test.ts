@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { formatAttemptDate, fetchAllQuizAttempts } from './quizAttempts'
+import { formatAttemptDate, fetchAllQuizAttempts, fetchQuizAttempts, saveQuizAttempt } from './quizAttempts'
 
 vi.mock('./supabase', () => ({
   supabase: { auth: { getUser: async () => ({ data: { user: null } }) } },
@@ -35,5 +35,35 @@ describe('fetchAllQuizAttempts', () => {
 
   it('returns an empty array when no module has any attempts', async () => {
     expect(await fetchAllQuizAttempts(9)).toEqual([])
+  })
+})
+
+describe('saveQuizAttempt', () => {
+  beforeEach(() => localStorage.clear())
+
+  it('writes to the canonical sfp_quiz_<id> key (not sfp_kuis_<id>), so fetchQuizAttempts reads it straight back', async () => {
+    await saveQuizAttempt(3, { score: 80, answers: [0, 1, 2] })
+    expect(localStorage.getItem('sfp_kuis_3')).toBeNull()
+    const attempts = await fetchQuizAttempts(3)
+    expect(attempts).toHaveLength(1)
+    expect(attempts[0].score).toBe(80)
+    expect(attempts[0].answers).toEqual([0, 1, 2])
+  })
+
+  it('appends to existing attempts rather than overwriting them', async () => {
+    await saveQuizAttempt(4, { score: 60, answers: [] })
+    await saveQuizAttempt(4, { score: 90, answers: [] })
+    const attempts = await fetchQuizAttempts(4)
+    expect(attempts).toHaveLength(2)
+    expect(attempts.map((a) => a.score)).toEqual([60, 90])
+  })
+
+  it('caps stored attempts at the last 10, matching legacy behavior', async () => {
+    for (let i = 0; i < 12; i++) {
+      await saveQuizAttempt(6, { score: i, answers: [] })
+    }
+    const attempts = await fetchQuizAttempts(6)
+    expect(attempts).toHaveLength(10)
+    expect(attempts.map((a) => a.score)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
   })
 })
