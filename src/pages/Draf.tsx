@@ -275,14 +275,14 @@ export function Draf() {
       {modalOpen && (
         <div
           className="fixed inset-0 z-[400] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.45)' }}
+          style={{ background: 'rgba(44,36,32,.45)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setModalOpen(false)
           }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 w-full max-w-[480px] max-h-[90vh] overflow-y-auto"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.2)' }}
+            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.2)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown mb-4">Kirim Draf Baru</h3>
 

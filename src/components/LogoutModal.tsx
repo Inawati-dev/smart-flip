@@ -12,14 +12,18 @@ export function LogoutModal({
   return (
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-      style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)' }}
+      style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel()
       }}
     >
       <div
         className="rounded-2xl p-8 max-w-sm w-full text-center"
-        style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)' }}
+        style={{
+          background: 'var(--ivory)',
+          boxShadow: '0 8px 40px rgba(62,54,46,.22)',
+          animation: 'slideUpModal 0.22s ease',
+        }}
       >
         <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-2">
           Yakin ingin keluar?

@@ -347,10 +347,10 @@ export default function Workshop() {
       {confirmModal && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,.48)' }}
+          style={{ background: 'rgba(0,0,0,.48)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => { if (e.target === e.currentTarget) setConfirmModal(null) }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center">
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
               {confirmModal === 'checklist' ? 'Reset checklist kesiapan modul ini?' : 'Hapus semua jawaban lembar kerja modul ini?'}
             </h3>
