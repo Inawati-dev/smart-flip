@@ -89,7 +89,8 @@ export function Forum() {
 
   return (
     <Layout>
-      <div className="page-fadein max-w-[700px] mx-auto p-4 md:p-6">
+      <div className="page-fadein p-4 md:p-6">
+        <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-brown mb-1">Forum Diskusi</h1>
         <p className="text-brown-3 mb-4">{posts.length} diskusi</p>
 
@@ -305,11 +306,12 @@ export function Forum() {
             })}
           </div>
         )}
+        </div>
       </div>
 
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-xl text-sm font-semibold z-[999]"
+          className="fixed bottom-6 right-6 px-5 py-2.5 rounded-xl text-sm font-semibold z-[999]"
           style={{ background: 'var(--brown)', color: 'var(--terra)', boxShadow: '0 4px 20px rgba(0,0,0,.2)' }}
         >
           {toast}

@@ -19,7 +19,8 @@ import {
   IconLogout,
   IconMenu,
   IconX,
-  IconChevronRight,
+  IconSidebar,
+  IconGear,
 } from './icons'
 
 interface NavItem {
@@ -45,7 +46,8 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', color: '#C0704A', dosenOnly: true },
   { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', color: '#8B6BA0', dosenOnly: true },
   { to: '/profil', icon: IconUser, label: 'Profil', color: '#6B5D4F' },
-  { to: '/changelog', icon: IconClipboard, label: 'Changelog', color: '#9B8B7A' },
+  { to: '/changelog', icon: IconClipboard, label: 'Changelog', color: '#9B8B7A', dosenOnly: true },
+  { to: '/pengaturan', icon: IconGear, label: 'Pengaturan', color: '#6B5D4F' },
 ]
 
 const COLLAPSE_KEY = 'sfp_sidebar_collapsed'
@@ -102,7 +104,7 @@ export function Layout({ children }: { children: ReactNode }) {
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3 hover:text-brown hover:bg-[rgba(62,54,46,.05)] transition-colors"
           >
-            <IconChevronRight size={15} style={{ transform: collapsed ? undefined : 'rotate(180deg)', transition: 'transform .2s ease' }} />
+            <IconSidebar size={16} />
           </button>
         </div>
 

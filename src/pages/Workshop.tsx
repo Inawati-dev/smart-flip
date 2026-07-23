@@ -109,7 +109,8 @@ export default function Workshop() {
 
   return (
     <Layout>
-      <div className="page-fadein max-w-[860px] mx-auto p-6 pb-16">
+      <div className="page-fadein p-6 pb-16">
+       <div className="max-w-4xl mx-auto">
         <Link to={`/modul/${moduleId}`} className="text-brown-3 text-sm mb-6 inline-block">
           ← Kembali ke Modul
         </Link>
@@ -352,6 +353,7 @@ export default function Workshop() {
             Catatan: modul ini berada di luar kurikulum 9-modul standar.
           </p>
         )}
+       </div>
       </div>
 
       {/* CONFIRM MODAL — destructive actions (reset checklist / clear worksheet

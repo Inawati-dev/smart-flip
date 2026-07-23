@@ -231,7 +231,7 @@ export function Validasi() {
 
   return (
     <Layout>
-      <div className="page-fadein max-w-[760px] mx-auto p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
+      <div className="page-fadein p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
         {/* PAGE HEADING */}
         <div className="mb-7 print:hidden">
           <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown leading-tight">
@@ -711,7 +711,7 @@ export function Validasi() {
 
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-sm font-semibold z-[999] whitespace-nowrap print:hidden"
+          className="fixed bottom-6 right-6 px-5 py-2.5 rounded-full text-sm font-semibold z-[999] whitespace-nowrap print:hidden"
           style={{ background: 'var(--brown)', color: '#fff', boxShadow: '0 4px 16px rgba(62,54,46,.25)' }}
         >
           {toast}

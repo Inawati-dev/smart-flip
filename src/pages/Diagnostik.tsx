@@ -103,7 +103,8 @@ export function Diagnostik() {
 
   return (
     <Layout>
-      <div className="page-fadein max-w-[580px] mx-auto p-4 md:p-6">
+      <div className="page-fadein p-4 md:p-6">
+       <div className="max-w-[640px] mx-auto">
         {phase === 'intro' && (
           <div>
             <div
@@ -266,6 +267,7 @@ export function Diagnostik() {
             </Link>
           </div>
         )}
+       </div>
       </div>
     </Layout>
   )

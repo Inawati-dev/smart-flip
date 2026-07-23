@@ -34,15 +34,17 @@ body {
 }
 
 /* Page-transition — kemampuan-web-dev.md §128 point 3 / §129: every page root gets
-   this, not just favorites. translateY/scale read as janky next to the fixed
-   sidebar (content visibly sliding under a static rail) — plain opacity fade
-   only, still long enough (0.32s) to read as motion rather than a flash. */
+   this, not just favorites. iOS-style push: incoming page slides in from the
+   right with a fade, using UINavigationController's actual easing curve
+   (cubic-bezier(0.32, 0.72, 0, 1) — fast start, gentle settle). Motion stays
+   horizontal within the content area (right of the fixed sidebar), so it
+   doesn't cross/interact with the rail the way vertical translate did. */
 @keyframes fadeInUp {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 .page-fadein {
-  animation: fadeInUp 0.32s ease-out;
+  animation: fadeInUp 0.38s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

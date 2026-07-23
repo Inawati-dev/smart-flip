@@ -65,6 +65,22 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
   lsSet(customKey(moduleId), data)
 }
 
+// Creates a brand-new module row (dosen-only, gated by the same RLS as
+// saveModulCustom's UPDATE). Demo/localStorage mode has no modules dataset
+// to append to (fetchModules() always returns [] when Supabase isn't
+// configured — see src/lib/modules.ts) so there's nowhere for a new module
+// to persist there; callers should check isSupabaseConfigured and show a
+// "butuh koneksi Supabase" message instead of calling this in demo mode.
+export async function createModul(data: { judul: string; deskripsi: string; orderNum: number }): Promise<void> {
+  const { error } = await supabase.from('modules').insert({
+    title: data.judul,
+    description: data.deskripsi,
+    order_num: data.orderNum,
+    is_active: true,
+  })
+  if (error) throw error
+}
+
 // Upload a dosen-provided PDF to the public `modul-pdf` Storage bucket (see
 // database/migration_v3_modul_pdf_storage.sql) and point the module's
 // pdf_path at the resulting public URL. Demo/localStorage mode has no
