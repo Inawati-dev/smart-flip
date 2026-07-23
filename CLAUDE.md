@@ -194,4 +194,5 @@ profiles, modules, user_progress, quiz_questions, quiz_attempts, drafts, draft_c
 Data layer (data-layer.js) live sejak v0.9.7 — USE_SUPABASE auto-detect via `typeof sb`, fallback localStorage kalau Supabase gagal. Migration baru WAJIB dijalankan manual di SQL Editor sebelum data-layer aktif penuh (lihat checklist di akhir file migration_v1_livesync.sql).
 
 ## Local Dev
-Jalankan `serve.bat` dari Windows Explorer atau terminal, buka http://localhost:8080
+- **React app (src/, yang aktif)**: `pnpm install` lalu `pnpm dev` — buka http://localhost:5173
+- **Legacy statis (legacy/, arsip)**: `serve.bat` (double-click dari Explorer atau jalankan di terminal) — serve folder `legacy/` doang lewat `python -m http.server 8080`, buka http://localhost:8080. Sengaja dipertahankan di root (bukan didalam `legacy/`) biar gampang di-klik dari Explorer.
