@@ -13,7 +13,7 @@ export function ProtectedRoute({
 
   if (loading) return null
   if (!user) return <Navigate to="/" replace />
-  if (roles && role && !roles.includes(role)) return <Navigate to="/dashboard" replace />
+  if (roles && (!role || !roles.includes(role))) return <Navigate to="/dashboard" replace />
 
   return <>{children}</>
 }
