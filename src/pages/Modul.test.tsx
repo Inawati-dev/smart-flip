@@ -43,4 +43,45 @@ describe('Modul', () => {
     )
     expect(html).toBeTruthy()
   })
+
+  it('shows the quiz history empty-state message when there are no attempts', () => {
+    // renderToStaticMarkup is synchronous, so React Query's hooks are always still
+    // "loading" on first pass unless the cache is pre-seeded — otherwise the
+    // component's `!modul` guard short-circuits before this section ever renders
+    // (the bug flagged in the previous task's review). Seed the cache directly so
+    // this test actually exercises the quiz-history JSX instead of only checking
+    // that render doesn't throw.
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules', 1], {
+      id: 1,
+      order_num: 1,
+      title: 'Modul Uji',
+      description: null,
+      video_url: null,
+      pdf_path: null,
+      is_active: true,
+      path: 'books/modul-01.pdf',
+      videoId: null,
+      color: 'var(--sage)',
+      sub: '',
+      capaian: [],
+      materi: [],
+      kuis: [],
+      jurnal: [],
+      studiKasus: [],
+    })
+    queryClient.setQueryData(['progress', 'all'], {})
+    queryClient.setQueryData(['quizAttempts', 1], [])
+
+    const html = renderToStaticMarkup(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/modul/1']}>
+          <Routes>
+            <Route path="/modul/:id" element={<Modul />} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    expect(html).toContain('Belum pernah mengerjakan kuis')
+  })
 })
