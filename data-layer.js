@@ -87,6 +87,24 @@ const DataLayer = (() => {
     console.warn('[DataLayer] ' + method + ' → Supabase gagal, fallback localStorage:', e?.message || e);
   }
 
+  // Baris modules dari Supabase cuma punya kolom skema (pdf_path, video_url, dst) —
+  // UI expect bentuk MODULES_DATA (path, videoId, color, capaian, materi, kuis, sub, jurnal, studiKasus).
+  // Map di satu titik ini biar tiap halaman gak perlu guard field satu-satu.
+  function normalizeModuleRow(row) {
+    return {
+      ...row,
+      path: row.pdf_path || row.path,
+      videoId: row.videoId || null,
+      color: row.color || 'var(--sage)',
+      sub: row.sub || '',
+      capaian: row.capaian || [],
+      materi: row.materi || [],
+      kuis: row.kuis || [],
+      jurnal: row.jurnal || [],
+      studiKasus: row.studiKasus || [],
+    };
+  }
+
   // ─── INTERNAL HELPERS — Supabase ──────────────────────
   let _uidCache = null;
   async function getUid() {
@@ -317,7 +335,7 @@ const DataLayer = (() => {
         try {
           const { data, error } = await sb.from('modules').select('*').order('order_num');
           if (error) throw error;
-          if (data && data.length) return data;
+          if (data && data.length) return data.map(normalizeModuleRow);
         } catch(e) { warn('getModules', e); }
       }
       return typeof MODULES_DATA !== 'undefined' ? MODULES_DATA : [];
@@ -328,7 +346,7 @@ const DataLayer = (() => {
         try {
           const { data, error } = await sb.from('modules').select('*').eq('id', id).single();
           if (error) throw error;
-          if (data) return data;
+          if (data) return normalizeModuleRow(data);
         } catch(e) { warn('getModuleById', e); }
       }
       const all = await DataLayer.getModules();
