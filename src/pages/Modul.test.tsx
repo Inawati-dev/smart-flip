@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import Modul from './Modul'
+import Modul, { safeDoi } from './Modul'
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -83,5 +83,14 @@ describe('Modul', () => {
       </QueryClientProvider>,
     )
     expect(html).toContain('Belum pernah mengerjakan kuis')
+  })
+
+  it('only renders a DOI as a real link when it is an http(s) URL, otherwise falls back to #', () => {
+    // This is the one piece of real logic in this task (a security guard, ported
+    // verbatim from legacy/modul.html's `safeDoi` check) — test it directly as a
+    // pure function rather than through the full component tree.
+    expect(safeDoi('https://doi.org/10.1000/xyz')).toBe('https://doi.org/10.1000/xyz')
+    expect(safeDoi('javascript:alert(1)')).toBe('#')
+    expect(safeDoi(undefined)).toBe('#')
   })
 })
