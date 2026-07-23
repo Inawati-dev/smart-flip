@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, type ReactElement } from 'react'
 import { useParams, useNavigate, Link } from 'react-router'
 import { useModule } from '../hooks/useModules'
 import { saveQuizAttempt } from '../lib/quizAttempts'
 import { Layout } from '../components/Layout'
+import { IconTrophy, IconCheck, IconBook, IconRefresh, IconClipboard } from '../components/icons'
 
 // modul.kuis is typed `unknown[]` on ModuleRow (untyped JSON column) — narrow
 // to the shape this page actually consumes, same pattern src/pages/Modul.tsx
@@ -27,22 +28,22 @@ function verdictFor(score: number): Verdict {
 
 const VERDICT_COPY: Record<
   Verdict,
-  { emoji: string; title: string; msg: (score: number) => string }
+  { Icon: (p: { size?: number; className?: string }) => ReactElement; title: string; msg: (score: number) => string }
 > = {
   excellent: {
-    emoji: '🌟',
+    Icon: IconTrophy,
     title: 'Sangat Baik!',
     msg: (score) =>
       `Selamat! Kamu mendapatkan skor ${score}%. Pemahaman kamu terhadap materi modul ini sangat baik.`,
   },
   pass: {
-    emoji: '👍',
+    Icon: IconCheck,
     title: 'Lulus!',
     msg: (score) =>
       `Kamu mendapatkan skor ${score}%. Kamu telah memenuhi batas kelulusan. Tingkatkan lagi untuk hasil lebih baik!`,
   },
   fail: {
-    emoji: '📚',
+    Icon: IconBook,
     title: 'Perlu Mengulang',
     msg: (score) =>
       `Skor kamu ${score}% — di bawah batas kelulusan 60%. Disarankan untuk membaca kembali modul dan mencoba kuis ulang.`,
@@ -73,8 +74,8 @@ export default function Kuis() {
   const [score, setScore] = useState(0)
   const [saving, setSaving] = useState(false)
 
-  if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
-  if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
+  if (isLoading) return <Layout><div className="page-fadein p-8 text-brown-3">Memuat…</div></Layout>
+  if (!modul) return <Layout><div className="page-fadein p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
   const qs = (modul.kuis as QuizQuestion[]) || []
   const backHref = `/modul/${moduleId}`
@@ -82,7 +83,7 @@ export default function Kuis() {
   if (!Array.isArray(qs) || qs.length === 0) {
     return (
       <Layout>
-        <div className="p-6 max-w-2xl mx-auto">
+        <div className="page-fadein p-6 max-w-2xl mx-auto">
           <Link to={backHref} className="text-brown-3 text-sm mb-6 inline-block">
             ← Kembali
           </Link>
@@ -147,7 +148,7 @@ export default function Kuis() {
 
     return (
       <Layout>
-        <div className="p-6 max-w-2xl mx-auto">
+        <div className="page-fadein p-6 max-w-2xl mx-auto">
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-8 text-center mb-5">
             <div
               className={`w-[120px] h-[120px] rounded-full flex flex-col items-center justify-center mx-auto mb-5 border-[5px] ${CIRCLE_CLASS[verdict]}`}
@@ -158,7 +159,9 @@ export default function Kuis() {
               <div className="text-[11px] font-semibold text-brown-3">Skor</div>
             </div>
 
-            <div className="text-4xl mb-2.5">{copy.emoji}</div>
+            <div className={`flex justify-center mb-2.5 ${SCORE_TEXT_CLASS[verdict]}`}>
+              <copy.Icon size={40} />
+            </div>
             <div className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-2">
               {copy.title}
             </div>
@@ -182,9 +185,9 @@ export default function Kuis() {
             <div className="flex gap-2.5 justify-center flex-wrap">
               <button
                 onClick={retryKuis}
-                className="min-h-11 px-6 py-2.5 rounded-full border-[1.5px] border-[color:var(--border)] text-brown-2 text-sm font-semibold"
+                className="inline-flex items-center gap-1.5 min-h-11 px-6 py-2.5 rounded-full border-[1.5px] border-[color:var(--border)] text-brown-2 text-sm font-semibold"
               >
-                🔄 Coba Lagi
+                <IconRefresh size={15} /> Coba Lagi
               </button>
               <button
                 onClick={() => navigate(backHref)}
@@ -196,8 +199,8 @@ export default function Kuis() {
           </div>
 
           <div className="mb-2">
-            <h2 className="font-['Playfair_Display',serif] text-base font-bold text-brown mb-3.5">
-              📋 Pembahasan Soal
+            <h2 className="flex items-center gap-1.5 font-['Playfair_Display',serif] text-base font-bold text-brown mb-3.5">
+              <IconClipboard size={16} /> Pembahasan Soal
             </h2>
             {qs.map((qq, i) => {
               const userAns = answers[i] ?? -1
@@ -244,7 +247,7 @@ export default function Kuis() {
 
   return (
     <Layout>
-      <div className="p-6 max-w-2xl mx-auto">
+      <div className="page-fadein p-6 max-w-2xl mx-auto">
         <Link to={backHref} className="text-brown-3 text-sm mb-6 inline-block">
           ← Kembali
         </Link>

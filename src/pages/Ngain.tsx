@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { IconGear, IconChart, IconTrendingUp, IconDownload, IconLightbulb } from '../components/icons'
 import {
   computeNGain,
   computeNGainDistribution,
@@ -167,7 +168,7 @@ export default function Ngain() {
 
   return (
     <Layout>
-      <div className="max-w-[900px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein max-w-[900px] mx-auto p-4 md:p-6 pb-16">
         {/* PAGE HEADER */}
         <div className="mb-6 pb-4 border-b" style={BORDER}>
           <h1 className="font-['Playfair_Display',serif] text-xl sm:text-2xl font-bold text-brown mb-1">
@@ -182,7 +183,7 @@ export default function Ngain() {
         {/* CONFIG PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
           <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
-            <span aria-hidden="true">⚙️</span> Konfigurasi
+            <IconGear size={18} /> Konfigurasi
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
@@ -225,7 +226,7 @@ export default function Ngain() {
         {/* INPUT TABLE PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
           <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
-            <span aria-hidden="true">📊</span> Data Pre-Test &amp; Post-Test
+            <IconChart size={18} /> Data Pre-Test &amp; Post-Test
           </div>
 
           <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
@@ -353,7 +354,7 @@ export default function Ngain() {
         {distribution && (
           <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
             <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
-              <span aria-hidden="true">📈</span> Hasil Analisis N-Gain
+              <IconTrendingUp size={18} /> Hasil Analisis N-Gain
             </div>
 
             {/* Average */}
@@ -426,10 +427,10 @@ export default function Ngain() {
             <div className="flex items-center gap-3 flex-wrap">
               <button
                 onClick={exportCSV}
-                className="min-h-11 px-4 rounded-lg border-[1.5px] bg-[var(--bg3)] text-brown-2 text-sm font-semibold"
+                className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border-[1.5px] bg-[var(--bg3)] text-brown-2 text-sm font-semibold"
                 style={BORDER}
               >
-                ⬇️ Export CSV
+                <IconDownload size={16} /> Export CSV
               </button>
               <span className="text-xs text-brown-3">Unduh hasil sebagai file .csv untuk laporan penelitian</span>
             </div>
@@ -439,7 +440,7 @@ export default function Ngain() {
         {/* INTERPRETASI PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
           <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
-            <span aria-hidden="true">💡</span> Interpretasi N-Gain
+            <IconLightbulb size={18} /> Interpretasi N-Gain
           </div>
           <div className="bg-sage/[.08] border-l-[3px] border-sage rounded-r-lg p-4">
             <h4 className="text-sm font-semibold text-brown mb-2">Tentang N-Gain (Normalized Gain)</h4>

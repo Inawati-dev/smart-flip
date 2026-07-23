@@ -5,6 +5,7 @@ import { useAllProgress } from '../hooks/useProgress'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { moduleIdToPath } from '../lib/progress'
 import { Layout } from '../components/Layout'
+import { IconBook, IconDocument, IconEdit, IconFolder, IconTarget, IconChart, IconClipboard, IconChat, IconLink } from '../components/icons'
 
 // Only allow https:/http: DOI links — block javascript: and other dangerous
 // protocols. Ported verbatim from legacy/modul.html:904-907.
@@ -43,11 +44,13 @@ export default function Modul() {
   const bestScore = attempts.length ? Math.max(...attempts.map((a) => a.score)) : null
   const prog = progress[moduleIdToPath(modul.id)]
   const pct = prog?.pct ?? 0
-  const bacaLabel = pct >= 100 ? '📖 Baca Ulang' : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar'
+  const bacaLabel = pct >= 100
+    ? <><IconBook size={16} /> Baca Ulang</>
+    : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar'
 
   return (
     <Layout>
-    <div className="p-6 max-w-3xl mx-auto">
+    <div className="page-fadein p-6 max-w-3xl mx-auto">
       <Link to="/dashboard" className="text-brown-3 text-sm mb-6 inline-block">
         ← Kembali ke Dashboard
       </Link>
@@ -57,7 +60,7 @@ export default function Modul() {
           className="w-[140px] h-[186px] rounded-xl flex items-center justify-center text-4xl flex-shrink-0"
           style={{ background: `linear-gradient(135deg, ${modul.color} 0%, var(--bg3) 100%)` }}
         >
-          📄
+          <IconDocument size={36} />
         </div>
         <div className="flex flex-col gap-2 pt-1">
           <span className="inline-flex bg-terra text-white text-xs font-bold px-2.5 py-0.5 rounded-full w-fit">
@@ -90,20 +93,20 @@ export default function Modul() {
               to={`/modul/${modul.id}/kuis`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-gray-300 text-brown-2 text-sm font-semibold"
             >
-              ✏️ Mulai Kuis
+              <IconEdit size={16} /> Mulai Kuis
             </Link>
             <Link
               to={`/modul/${modul.id}/workshop`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-gray-300 text-brown-2 text-sm font-semibold"
             >
-              🗂️ Panduan Workshop
+              <IconFolder size={16} /> Panduan Workshop
             </Link>
           </div>
         </div>
       </div>
 
       <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2">🎯 Capaian Pembelajaran</h2>
+        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconTarget size={18} /> Capaian Pembelajaran</h2>
         <div className="flex flex-col gap-2">
           {modul.capaian.map((c, i) => (
             <div key={i} className="flex items-start gap-2.5 text-sm text-brown-2">
@@ -115,7 +118,7 @@ export default function Modul() {
       </div>
 
       <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2">📚 Materi per Sesi</h2>
+        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconBook size={18} /> Materi per Sesi</h2>
         <div className="flex flex-col">
           {modul.materi.map((m, i) => (
             <div key={i} className="flex items-center gap-3.5 py-2.5 border-b border-gray-100 last:border-0 text-sm text-brown-2">
@@ -129,7 +132,7 @@ export default function Modul() {
       </div>
 
       <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2">📊 Riwayat Belajar</h2>
+        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconChart size={18} /> Riwayat Belajar</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="bg-bg3 rounded-lg p-3.5">
             <div className="text-xl font-bold text-brown">{pct}%</div>
@@ -151,7 +154,7 @@ export default function Modul() {
       </div>
 
       <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2">📝 Riwayat Kuis</h2>
+        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconClipboard size={18} /> Riwayat Kuis</h2>
         {attempts.length ? (
           <div className="flex flex-col gap-2">
             {attempts.slice().reverse().map((a, i) => (
@@ -170,7 +173,7 @@ export default function Modul() {
 
       <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-3">
-          <h2 className="font-bold text-brown flex items-center gap-2">📚 Jurnal &amp; Studi Kasus</h2>
+          <h2 className="font-bold text-brown flex items-center gap-2"><IconBook size={18} /> Jurnal &amp; Studi Kasus</h2>
           <span className="text-xs text-brown-3 bg-bg3 border border-gray-200 rounded-full px-2.5 py-0.5 ml-auto">
             {modul.jurnal.length} jurnal · {modul.studiKasus.length} kasus
           </span>
@@ -200,8 +203,8 @@ export default function Modul() {
                   {j.penulis} · {j.tahun} · <em>{j.jurnal}</em>
                 </div>
                 <p className="text-sm text-brown-2 leading-relaxed mb-3">{j.abstrak}</p>
-                <a href={safeDoi(j.doi)} target="_blank" rel="noopener noreferrer" className="text-sm text-terra">
-                  🔗 Buka DOI
+                <a href={safeDoi(j.doi)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-terra">
+                  <IconLink size={14} /> Buka DOI
                 </a>
               </div>
             ))
@@ -214,7 +217,7 @@ export default function Modul() {
               <div className="font-semibold text-brown mb-2">{k.judul}</div>
               <p className="text-sm text-brown-2 mb-3">{k.konteks}</p>
               <div className="bg-sage/10 rounded-lg p-3 text-sm text-brown">
-                <strong>💬 Diskusi:</strong> {k.pertanyaan}
+                <span className="inline-flex items-center gap-1 font-bold"><IconChat size={14} /> Diskusi:</span> {k.pertanyaan}
               </div>
             </div>
           ))

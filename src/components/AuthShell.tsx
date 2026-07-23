@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { IconClipboard } from './icons'
 
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-cream grid lg:grid-cols-[1.2fr_420px] gap-10 lg:gap-16 px-5 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-20 items-center">
+    <div className="page-fadein min-h-screen bg-cream grid lg:grid-cols-[1.2fr_420px] gap-10 lg:gap-16 px-5 py-10 sm:px-10 sm:py-14 lg:px-16 lg:py-20 items-center">
       <div className="max-w-[52ch]">
         <p className="text-[11px] tracking-[.12em] uppercase font-semibold text-terra-d mb-6">
           SMART-FLIP 5.0
@@ -24,9 +25,9 @@ export function AuthShell({ children }: { children: ReactNode }) {
         </div>
         <Link
           to="/changelog"
-          className="inline-block mt-5 text-xs font-medium text-brown-3 hover:text-terra-d"
+          className="inline-flex items-center gap-1.5 mt-5 text-xs font-medium text-brown-3 hover:text-terra-d"
         >
-          📋 Changelog
+          <IconClipboard size={14} /> Changelog
         </Link>
       </div>
 

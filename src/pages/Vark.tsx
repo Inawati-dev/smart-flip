@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, type ReactElement } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useVarkResult } from '../hooks/useVarkResult'
 import { saveVarkResult, clearVarkResult, computeVarkDominant, VARK_KEYS, type VarkKey, type VarkScores } from '../lib/vark'
 import { Layout } from '../components/Layout'
+import { IconTarget, IconClipboard, IconClock, IconLock, IconEye, IconHeadphones, IconBook, IconCompass, IconStar } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -129,7 +130,16 @@ const VARK_LABELS: Record<VarkKey, string> = {
   R: 'Read/Write Learner',
   K: 'Kinesthetic Learner',
 }
-const VARK_ICONS: Record<VarkKey, string> = { V: '📊', A: '🎧', R: '📝', K: '⚙️' }
+const VARK_ICONS: Record<VarkKey, (p: { size?: number; className?: string }) => ReactElement> = {
+  V: IconEye,
+  A: IconHeadphones,
+  R: IconBook,
+  K: IconCompass,
+}
+function VarkIcon({ k, size = 14, className }: { k: VarkKey; size?: number; className?: string }) {
+  const Icon = VARK_ICONS[k]
+  return <Icon size={size} className={className} />
+}
 const VARK_COLORS: Record<VarkKey, string> = { V: '#8FA287', A: '#D4A373', R: '#4A7EA0', K: '#8B6BA0' }
 const VARK_NAMES: Record<VarkKey, string> = { V: 'Visual', A: 'Auditory', R: 'Read/Write', K: 'Kinestetik' }
 const VARK_DESCS: Record<VarkKey, string> = {
@@ -222,14 +232,16 @@ export function Vark() {
 
   return (
     <Layout>
-      <div className="max-w-[580px] mx-auto p-4 md:p-6">
+      <div className="page-fadein max-w-[580px] mx-auto p-4 md:p-6">
         {phase === 'intro' && (
           <div>
             <div
               className="rounded-2xl md:rounded-[18px] p-6 md:p-8 pb-6 text-center mb-4 relative overflow-hidden"
               style={{ background: 'var(--brown)' }}
             >
-              <div className="text-4xl mb-3">🎯</div>
+              <div className="flex justify-center mb-3 text-terra">
+                <IconTarget size={40} />
+              </div>
               <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-white mb-2">
                 Asesmen Gaya Belajar VARK
               </h1>
@@ -238,9 +250,15 @@ export function Vark() {
                 pengalaman belajar di SMART-FLIP lebih personal dan efektif.
               </p>
               <div className="inline-flex flex-wrap items-center justify-center gap-3 md:gap-4 bg-white/[.06] rounded-lg px-4 py-2 text-xs text-white/45 mb-5">
-                <span>📝 12 pertanyaan</span>
-                <span>⏱ ± 3 menit</span>
-                <span>🔒 Tersimpan lokal</span>
+                <span className="inline-flex items-center gap-1">
+                  <IconClipboard size={13} /> 12 pertanyaan
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <IconClock size={13} /> ± 3 menit
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <IconLock size={13} /> Tersimpan lokal
+                </span>
               </div>
               <div>
                 <button
@@ -260,8 +278,8 @@ export function Vark() {
                 </p>
               )}
               {existingDom && (
-                <div className="mt-2 inline-block bg-[rgba(212,163,115,.15)] rounded-lg px-3 py-1.5 text-xs text-terra">
-                  Gaya belajarmu saat ini: {VARK_ICONS[existingDom]} {VARK_LABELS[existingDom]}
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-[rgba(212,163,115,.15)] rounded-lg px-3 py-1.5 text-xs text-terra">
+                  Gaya belajarmu saat ini: <VarkIcon k={existingDom} size={14} /> {VARK_LABELS[existingDom]}
                 </div>
               )}
             </div>
@@ -368,7 +386,7 @@ export function Vark() {
                 className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-['Playfair_Display',serif] text-base md:text-lg font-semibold"
                 style={{ background: 'var(--brown)', color: 'var(--terra)' }}
               >
-                {VARK_ICONS[result.dominant]} Gaya Belajar Kamu: {VARK_LABELS[result.dominant]}
+                <VarkIcon k={result.dominant} size={18} /> Gaya Belajar Kamu: {VARK_LABELS[result.dominant]}
               </div>
               <p className="text-sm text-brown-3 leading-relaxed">
                 Berikut adalah profil lengkap gaya belajarmu berdasarkan 12 pertanyaan yang telah kamu jawab.
@@ -437,9 +455,9 @@ export function Vark() {
                       style={{ background: VARK_COLORS[k] }}
                     />
                     <div>
-                      <div className="text-sm font-semibold text-brown mb-0.5">
-                        {VARK_ICONS[k]} {VARK_LABELS[k]} — skor: {result.scores[k]}/{total}
-                        {isDom ? ' ⭐' : ''}
+                      <div className="flex items-center flex-wrap gap-1.5 text-sm font-semibold text-brown mb-0.5">
+                        <VarkIcon k={k} size={15} /> {VARK_LABELS[k]} — skor: {result.scores[k]}/{total}
+                        {isDom && <IconStar size={13} className="text-terra" />}
                       </div>
                       <div className="text-[13px] text-brown-3 leading-relaxed">{VARK_DESCS[k]}</div>
                     </div>

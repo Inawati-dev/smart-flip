@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import type { ModuleRow } from '../lib/modules'
 import type { ProgressEntry } from '../lib/progress'
+import { IconBook, IconPlay } from './icons'
 
 export function ModuleCard({
   module,
@@ -12,7 +13,8 @@ export function ModuleCard({
   const pct = progress?.pct ?? 0
   const status = pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : 'not_started'
   const badgeText = status === 'completed' ? 'Selesai' : status === 'in_progress' ? 'Sedang' : 'Belum Mulai'
-  const btnLabel = pct >= 100 ? '📖 Baca Ulang' : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar'
+  const BtnIcon = pct >= 100 ? IconBook : IconPlay
+  const btnText = pct >= 100 ? 'Baca Ulang' : pct > 0 ? 'Lanjut Belajar' : 'Mulai Belajar'
   const sub = module.sub || (module.description ? module.description.slice(0, 60) : '')
 
   return (
@@ -36,8 +38,9 @@ export function ModuleCard({
             />
           </div>
         )}
-        <Link to={`/modul/${module.id}`} className="text-sm text-terra font-semibold">
-          {btnLabel}
+        <Link to={`/modul/${module.id}`} className="inline-flex items-center gap-1 text-sm text-terra font-semibold">
+          <BtnIcon size={14} />
+          {btnText}
         </Link>
       </div>
       <span className="text-xs font-semibold text-brown-3">{badgeText}</span>

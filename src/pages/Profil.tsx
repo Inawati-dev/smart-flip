@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
@@ -12,8 +12,28 @@ import { TOTAL_MODULES } from '../lib/progress'
 import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { LogoutModal } from '../components/LogoutModal'
+import {
+  IconChart,
+  IconHeadphones,
+  IconEdit,
+  IconGear,
+  IconTarget,
+  IconDocument,
+  IconChat,
+  IconUser,
+  IconGraduationCap,
+  IconPrinter,
+  IconBook,
+  IconUsers,
+  IconCheck,
+  IconClock,
+  IconTrophy,
+  IconTrash,
+} from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
+
+type IconComp = (props: { size?: number }) => ReactElement
 
 // ── VARK reference data — ported verbatim from legacy/profil.html ──
 const VARK_LABELS: Record<string, string> = {
@@ -22,7 +42,7 @@ const VARK_LABELS: Record<string, string> = {
   R: 'Read/Write Learner',
   K: 'Kinesthetic Learner',
 }
-const VARK_ICONS: Record<string, string> = { V: '📊', A: '🎧', R: '📝', K: '⚙️' }
+const VARK_ICONS: Record<string, IconComp> = { V: IconChart, A: IconHeadphones, R: IconEdit, K: IconGear }
 const VARK_COLORS: Record<string, string> = {
   V: '#8FA287',
   A: '#D4A373',
@@ -47,17 +67,23 @@ const JABATAN_OPTIONS = ['Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Profesor']
 // Ported verbatim from legacy/profil-dos.html's static "Aktivitas Kelas
 // Terkini" table — no per-class activity feed exists yet (see report: deferred).
 const DUMMY_ACTIVITY = [
-  { icon: '📄', who: 'Citra Dewi Lestari', label: 'Submit Draf Modul 3', kind: 'draf', time: '2 jam lalu' },
-  { icon: '🎯', who: 'Budi Santoso', label: 'Selesai Kuis Modul 2 — Skor 88', kind: 'kuis', time: '3 jam lalu' },
-  { icon: '💬', who: 'Forum Modul 1', label: '3 balasan baru', kind: 'forum', time: '5 jam lalu' },
-  { icon: '📄', who: 'Eka Wulandari', label: 'Submit Draf Modul 2', kind: 'draf', time: '1 hari lalu' },
-  { icon: '🎯', who: 'Gita Puspita', label: 'Selesai Kuis Modul 4 — Skor 90', kind: 'kuis', time: '1 hari lalu' },
+  { who: 'Citra Dewi Lestari', label: 'Submit Draf Modul 3', kind: 'draf', time: '2 jam lalu' },
+  { who: 'Budi Santoso', label: 'Selesai Kuis Modul 2 — Skor 88', kind: 'kuis', time: '3 jam lalu' },
+  { who: 'Forum Modul 1', label: '3 balasan baru', kind: 'forum', time: '5 jam lalu' },
+  { who: 'Eka Wulandari', label: 'Submit Draf Modul 2', kind: 'draf', time: '1 hari lalu' },
+  { who: 'Gita Puspita', label: 'Selesai Kuis Modul 4 — Skor 90', kind: 'kuis', time: '1 hari lalu' },
 ] as const
 
 const ACTIVITY_BADGE: Record<string, { bg: string; color: string }> = {
   draf: { bg: '#FAE8A0', color: '#705010' },
   kuis: { bg: '#C0DD97', color: '#27500A' },
   forum: { bg: 'rgba(143,162,135,.2)', color: 'var(--sage-d)' },
+}
+
+const ACTIVITY_ICON: Record<string, IconComp> = {
+  draf: IconDocument,
+  kuis: IconTarget,
+  forum: IconChat,
 }
 
 function initialsOf(name: string): string {
@@ -269,7 +295,7 @@ export function Profil() {
 
   return (
     <Layout>
-      <div className="max-w-[860px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein max-w-[860px] mx-auto p-4 md:p-6 pb-16">
         <div className="mb-5">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">
             {isDosen ? 'Profil Dosen' : 'Profil Saya'}
@@ -299,14 +325,18 @@ export function Profil() {
                     : { background: 'rgba(143,162,135,.15)', color: 'var(--sage-d)' }
                 }
               >
-                {isDosen ? '👨‍🏫 Dosen' : '🎓 Mahasiswa'}
+                {isDosen ? (
+                  <span className="inline-flex items-center gap-1"><IconUser size={13} /> Dosen</span>
+                ) : (
+                  <span className="inline-flex items-center gap-1"><IconGraduationCap size={13} /> Mahasiswa</span>
+                )}
               </span>
               <button
                 onClick={openEdit}
-                className="h-9 px-4 rounded-lg border text-sm font-semibold text-brown-2"
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg border text-sm font-semibold text-brown-2"
                 style={BORDER}
               >
-                ✏️ Edit Profil
+                <IconEdit size={16} /> Edit Profil
               </button>
             </div>
           </div>
@@ -414,7 +444,7 @@ export function Profil() {
         {!isDosen && (
           <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
             <div className="flex items-center gap-2 px-5 py-3.5 border-b" style={BORDER}>
-              <span>🎯</span>
+              <IconTarget size={16} />
               <span className="text-sm font-semibold text-brown">Gaya Belajar VARK</span>
             </div>
             <div className="p-5">
@@ -444,7 +474,11 @@ export function Profil() {
                     <>
                       <div className="flex items-center gap-3 flex-wrap mb-4">
                         <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-brown text-terra font-['Playfair_Display',serif] text-sm font-semibold">
-                          {VARK_ICONS[dom] || '🎯'} {VARK_LABELS[dom] || vark.dominant}
+                          {(() => {
+                            const VarkIconComp = VARK_ICONS[dom] || IconTarget
+                            return <VarkIconComp size={15} />
+                          })()}{' '}
+                          {VARK_LABELS[dom] || vark.dominant}
                         </span>
                         {dateStr && <span className="text-xs text-brown-3">Diisi: {dateStr}</span>}
                       </div>
@@ -494,7 +528,7 @@ export function Profil() {
         {/* ── STATISTIK ── */}
         <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
           <div className="flex items-center gap-2 px-5 py-3.5 border-b" style={BORDER}>
-            <span>📊</span>
+            <IconChart size={16} />
             <span className="text-sm font-semibold text-brown">
               {isDosen ? 'Statistik Mengajar' : 'Statistik Belajar'}
             </span>
@@ -505,26 +539,26 @@ export function Profil() {
                 style={{ borderColor: 'var(--terra)' }}
                 title="Unduh laporan sebagai PDF"
               >
-                🖨️ Unduh Laporan PDF
+                <IconPrinter size={15} /> Unduh Laporan PDF
               </button>
             )}
           </div>
           <div className="p-5 grid grid-cols-2 md:grid-cols-3 gap-3">
             {isDosen ? (
               <>
-                <StatCard icon="📚" val={String(modulAktif)} label="Modul Aktif" sub={`dari ${totalModules} modul`} bar="var(--sage)" />
-                <StatCard icon="👥" val="28" label="Mahasiswa Terdaftar" sub="Kelas A" bar="var(--terra)" />
-                <StatCard icon="✅" val="64%" label="Rata-rata Completeness" sub="mahasiswa selesai" bar="#B9A88A" />
-                <StatCard icon="🎯" val="76%" label="Rata-rata Skor Kuis" sub="semua modul" bar="#4A7EA0" />
+                <StatCard icon={IconBook} val={String(modulAktif)} label="Modul Aktif" sub={`dari ${totalModules} modul`} bar="var(--sage)" />
+                <StatCard icon={IconUsers} val="28" label="Mahasiswa Terdaftar" sub="Kelas A" bar="var(--terra)" />
+                <StatCard icon={IconCheck} val="64%" label="Rata-rata Completeness" sub="mahasiswa selesai" bar="#B9A88A" />
+                <StatCard icon={IconTarget} val="76%" label="Rata-rata Skor Kuis" sub="semua modul" bar="#4A7EA0" />
               </>
             ) : (
               <>
-                <StatCard icon="📚" val={`${modulSelesai}/${totalModules}`} label="Modul selesai" bar="var(--sage)" />
-                <StatCard icon="⏱" val={formatWaktu(totalSec)} label="Total waktu belajar" bar="var(--terra)" />
-                <StatCard icon="🎯" val={`${avgScore}%`} label="Rata-rata skor kuis" bar="#B9A88A" />
-                <StatCard icon="🏆" val={`${bestScore}%`} label="Kuis terbaik" sub={bestMod ? `Modul ${bestMod}` : ''} bar="#4A7EA0" />
-                <StatCard icon="💬" val={String(forumCount)} label="Postingan forum" bar="#8B6BA0" />
-                <StatCard icon="📝" val={String(totalKuis)} label="Total percobaan kuis" bar="var(--sage-d)" />
+                <StatCard icon={IconBook} val={`${modulSelesai}/${totalModules}`} label="Modul selesai" bar="var(--sage)" />
+                <StatCard icon={IconClock} val={formatWaktu(totalSec)} label="Total waktu belajar" bar="var(--terra)" />
+                <StatCard icon={IconTarget} val={`${avgScore}%`} label="Rata-rata skor kuis" bar="#B9A88A" />
+                <StatCard icon={IconTrophy} val={`${bestScore}%`} label="Kuis terbaik" sub={bestMod ? `Modul ${bestMod}` : ''} bar="#4A7EA0" />
+                <StatCard icon={IconChat} val={String(forumCount)} label="Postingan forum" bar="#8B6BA0" />
+                <StatCard icon={IconEdit} val={String(totalKuis)} label="Total percobaan kuis" bar="var(--sage-d)" />
               </>
             )}
           </div>
@@ -562,11 +596,14 @@ export function Profil() {
               </thead>
               <tbody>
                 {isDosen
-                  ? DUMMY_ACTIVITY.map((a, i) => (
+                  ? DUMMY_ACTIVITY.map((a, i) => {
+                      const ActivityIconComp = ACTIVITY_ICON[a.kind] || IconDocument
+                      return (
                       <tr key={i} className="border-t" style={BORDER}>
                         <td className="px-4 py-2.5 text-brown-2">
-                          <span className="mr-1">{a.icon}</span>
-                          {a.who}
+                          <span className="inline-flex items-center gap-1.5">
+                            <ActivityIconComp size={14} /> {a.who}
+                          </span>
                         </td>
                         <td className="px-4 py-2.5">
                           <span
@@ -578,7 +615,8 @@ export function Profil() {
                         </td>
                         <td className="px-4 py-2.5 text-brown-3">{a.time}</td>
                       </tr>
-                    ))
+                      )
+                    })
                   : recentQuiz.length === 0
                     ? (
                       <tr>
@@ -613,7 +651,7 @@ export function Profil() {
         {/* ── PENGATURAN ── */}
         <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
           <div className="flex items-center gap-2 px-5 py-3.5 border-b" style={BORDER}>
-            <span>⚙️</span>
+            <IconGear size={16} />
             <span className="text-sm font-semibold text-brown">Pengaturan</span>
           </div>
           <div className="p-5">
@@ -644,10 +682,10 @@ export function Profil() {
               {!isDosen && (
                 <button
                   onClick={() => setResetOpen(true)}
-                  className="h-9 px-4 rounded-lg border text-xs font-semibold text-red"
+                  className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg border text-xs font-semibold text-red"
                   style={{ borderColor: 'rgba(176,48,32,.35)' }}
                 >
-                  🗑 Reset Data Demo
+                  <IconTrash size={14} /> Reset Data Demo
                 </button>
               )}
               <button
@@ -717,13 +755,13 @@ export function Profil() {
 }
 
 function StatCard({
-  icon,
+  icon: IconComponent,
   val,
   label,
   sub,
   bar,
 }: {
-  icon: string
+  icon: IconComp
   val: string
   label: string
   sub?: string
@@ -732,7 +770,9 @@ function StatCard({
   return (
     <div className="relative overflow-hidden rounded-xl border bg-bg3 px-4 py-3.5" style={BORDER}>
       <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
-      <div className="text-xl mb-1">{icon}</div>
+      <div className="text-brown-2 mb-1.5">
+        <IconComponent size={22} />
+      </div>
       <div className="text-xl font-bold text-brown leading-none">{val}</div>
       <div className="text-[11px] text-brown-3 mt-1">{label}</div>
       {sub && <div className="text-[10px] text-brown-3 mt-0.5 opacity-80">{sub}</div>}

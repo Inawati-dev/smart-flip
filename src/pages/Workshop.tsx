@@ -1,8 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import { Link, useParams } from 'react-router'
 import { Layout } from '../components/Layout'
 import { useModule } from '../hooks/useModules'
 import { TOTAL_MODULES } from '../lib/progress'
+import {
+  IconTarget,
+  IconClipboard,
+  IconCheck,
+  IconEdit,
+  IconClock,
+  IconUsers,
+  IconPrinter,
+  IconTrash,
+} from '../components/icons'
 import {
   WORKSHOP_DATA,
   readChecklistState,
@@ -14,12 +24,13 @@ import {
 } from '../lib/workshop'
 
 type TabId = 'tujuan' | 'aktivitas' | 'checklist' | 'lembarkerja'
+type TabIcon = (props: { size?: number }) => ReactElement
 
-const TABS: { id: TabId; label: string; icon: string }[] = [
-  { id: 'tujuan', label: 'Tujuan', icon: '🎯' },
-  { id: 'aktivitas', label: 'Aktivitas', icon: '📋' },
-  { id: 'checklist', label: 'Checklist', icon: '✅' },
-  { id: 'lembarkerja', label: 'Lembar Kerja', icon: '📝' },
+const TABS: { id: TabId; label: string; icon: TabIcon }[] = [
+  { id: 'tujuan', label: 'Tujuan', icon: IconTarget },
+  { id: 'aktivitas', label: 'Aktivitas', icon: IconClipboard },
+  { id: 'checklist', label: 'Checklist', icon: IconCheck },
+  { id: 'lembarkerja', label: 'Lembar Kerja', icon: IconEdit },
 ]
 
 export default function Workshop() {
@@ -98,7 +109,7 @@ export default function Workshop() {
 
   return (
     <Layout>
-      <div className="max-w-[860px] mx-auto p-6 pb-16">
+      <div className="page-fadein max-w-[860px] mx-auto p-6 pb-16">
         <Link to={`/modul/${moduleId}`} className="text-brown-3 text-sm mb-6 inline-block">
           ← Kembali ke Modul
         </Link>
@@ -106,7 +117,7 @@ export default function Workshop() {
         {/* HERO */}
         <section className="bg-brown rounded-xl p-8 pb-6 mb-6 relative overflow-hidden">
           <div className="inline-flex items-center gap-1.5 bg-sage/20 border border-sage/35 text-sage text-xs font-semibold tracking-wide rounded-full px-3 py-1 mb-4">
-            <span>📋</span> Sesi Tatap Muka
+            <IconClipboard size={14} /> Sesi Tatap Muka
           </div>
           <div className="text-xs font-semibold text-terra tracking-widest uppercase mb-1">
             MODUL {moduleId}
@@ -115,27 +126,30 @@ export default function Workshop() {
             {workshop.judul}
           </h1>
           <div className="flex items-center gap-1.5 mt-3 text-white/55 text-sm">
-            <span>🕐</span>
+            <IconClock size={16} />
             <span>{workshop.durasi}</span>
           </div>
         </section>
 
         {/* TAB NAV */}
         <nav role="tablist" className="flex gap-1 bg-ivory border border-[color:var(--border)] rounded-xl p-1.5 mb-5 overflow-x-auto">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 min-h-11 flex items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === tab.id ? 'bg-brown text-white font-semibold' : 'text-brown-3'
-              }`}
-            >
-              <span aria-hidden="true">{tab.icon}</span>
-              {tab.label}
-            </button>
-          ))}
+          {TABS.map((tab) => {
+            const TabIconComp = tab.icon
+            return (
+              <button
+                key={tab.id}
+                role="tab"
+                aria-selected={activeTab === tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex-1 min-h-11 flex items-center justify-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  activeTab === tab.id ? 'bg-brown text-white font-semibold' : 'text-brown-3'
+                }`}
+              >
+                <TabIconComp size={16} />
+                {tab.label}
+              </button>
+            )
+          })}
         </nav>
 
         {/* TAB: TUJUAN */}
@@ -181,7 +195,7 @@ export default function Workshop() {
                     <div className="font-semibold text-[0.92rem] text-brown mb-1.5">{a.nama}</div>
                     <div className="text-sm leading-relaxed text-brown-2 mb-1.5">{a.deskripsi}</div>
                     <span className="inline-flex items-center gap-1 text-xs font-semibold tracking-wide text-terra-d bg-terra/10 border border-terra/25 rounded-full px-2.5 py-1">
-                      👥 {a.peran}
+                      <IconUsers size={13} /> {a.peran}
                     </span>
                   </div>
                 </div>
@@ -276,13 +290,13 @@ export default function Workshop() {
                 onClick={() => window.print()}
                 className="flex items-center justify-center gap-1.5 min-h-11 px-4 py-2 rounded-lg bg-brown text-white text-sm font-semibold"
               >
-                🖨️ Cetak Lembar Kerja
+                <IconPrinter size={16} /> Cetak Lembar Kerja
               </button>
               <button
                 onClick={() => setConfirmModal('lembarkerja')}
                 className="flex items-center justify-center gap-1.5 min-h-11 px-4 py-2 rounded-lg bg-cream border border-[color:var(--border)] text-brown-2 text-sm font-semibold"
               >
-                🗑️ Bersihkan Jawaban
+                <IconTrash size={16} /> Bersihkan Jawaban
               </button>
             </div>
           </div>

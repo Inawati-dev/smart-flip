@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { IconDownload, IconStar, IconTrendingUp, IconChart, IconWarning, IconBell, IconCheck } from '../components/icons'
 import { useModules } from '../hooks/useModules'
 import { useStudentStats, useModulDistributionStats, useFeedbackAspectAvg } from '../hooks/useAnalitik'
 import { TOTAL_MODULES } from '../lib/progress'
@@ -119,7 +120,7 @@ export function Analitik() {
 
   return (
     <Layout>
-      <div className="max-w-[1100px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein max-w-[1100px] mx-auto p-4 md:p-6 pb-16">
         <div className="mb-5">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Analitik Kelas</h1>
           <p className="text-sm text-brown-3 mt-1">
@@ -161,7 +162,7 @@ export function Analitik() {
                 className="h-9 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 flex items-center gap-1.5"
                 style={{ ...BORDER, minHeight: 44 }}
               >
-                ⬇ Export CSV
+                <IconDownload size={14} /> Export CSV
               </button>
             </div>
           </div>
@@ -211,7 +212,7 @@ export function Analitik() {
                         <td className="px-3.5 py-2.5 text-center text-brown-2">{s.jam}</td>
                         <td className="px-3.5 py-2.5 text-center">
                           {s.kepraktisan != null ? (
-                            <span className="text-terra text-sm">⭐{s.kepraktisan.toFixed(1)}</span>
+                            <span className="inline-flex items-center gap-0.5 text-terra text-sm"><IconStar size={12} />{s.kepraktisan.toFixed(1)}</span>
                           ) : (
                             <span className="text-brown-3 text-xs">—</span>
                           )}
@@ -239,7 +240,7 @@ export function Analitik() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-5">
           {/* Distribusi modul (horizontal bar) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5" style={BORDER}>
-            <div className="text-sm font-semibold text-brown mb-4">📈 Penyelesaian per Modul</div>
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4"><IconTrendingUp size={16} /> Penyelesaian per Modul</div>
             <div className="flex flex-col gap-2.5">
               {modulDist.map((m) => (
                 <div key={m.label} className="flex items-center gap-2.5">
@@ -266,7 +267,7 @@ export function Analitik() {
 
           {/* Distribusi skor kuis (vertical bar) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5" style={BORDER}>
-            <div className="text-sm font-semibold text-brown mb-4">📊 Distribusi Skor Kuis</div>
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4"><IconChart size={16} /> Distribusi Skor Kuis</div>
             <div className="flex items-end gap-2 md:gap-2.5 h-[130px] px-1">
               {kuisDist.map((k) => (
                 <div key={k.label} className="flex flex-col items-center flex-1 gap-1.5 justify-end h-full">
@@ -292,8 +293,8 @@ export function Analitik() {
 
           {/* Kepraktisan per aspek (full width) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5 md:col-span-2" style={BORDER}>
-            <div className="text-sm font-semibold text-brown mb-4">
-              ⭐ Kepraktisan per Aspek (rata-rata skala 1–5)
+            <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4">
+              <IconStar size={16} /> Kepraktisan per Aspek (rata-rata skala 1–5)
             </div>
             <div className="flex flex-col gap-3">
               {kepraktisanAspek.map((a) => (
@@ -320,7 +321,7 @@ export function Analitik() {
             className="flex items-center gap-2.5 px-4 md:px-5 py-3.5 border-b flex-wrap"
             style={{ ...BORDER, background: 'rgba(176,48,32,.04)' }}
           >
-            <span>⚠️</span>
+            <IconWarning size={18} />
             <span className="text-sm font-semibold text-brown">Mahasiswa Tidak Aktif</span>
             <span className="ml-auto text-xs text-brown-3">Tidak aktif 3+ hari terakhir</span>
           </div>
@@ -354,10 +355,10 @@ export function Analitik() {
                       onClick={() => handleRemind(s.id, s.nama)}
                       disabled={reminded}
                       aria-label={`Kirim pengingat ke ${s.nama}`}
-                      className="min-h-11 px-3.5 rounded-lg border text-xs font-semibold whitespace-nowrap flex-shrink-0 disabled:opacity-60"
+                      className="min-h-11 px-3.5 rounded-lg border text-xs font-semibold whitespace-nowrap flex-shrink-0 disabled:opacity-60 inline-flex items-center justify-center gap-1"
                       style={{ borderColor: 'rgba(212,163,115,.4)', background: 'rgba(212,163,115,.08)', color: 'var(--terra-d)' }}
                     >
-                      {reminded ? '✓ Terkirim' : '🔔 Kirim Pengingat'}
+                      {reminded ? <><IconCheck size={14} /> Terkirim</> : <><IconBell size={14} /> Kirim Pengingat</>}
                     </button>
                   </div>
                 )

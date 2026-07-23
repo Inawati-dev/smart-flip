@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Layout } from '../components/Layout'
+import { IconClipboard, IconCompass } from '../components/icons'
 
 type ChangeType = 'feat' | 'fix' | 'imp' | 'sec' | 'doc' | 'refac'
 
@@ -569,10 +570,10 @@ function RoadmapCard({ item }: { item: RoadmapItem }) {
 export default function Changelog() {
   return (
     <Layout>
-      <div className="max-w-[760px] mx-auto p-6 pb-20">
+      <div className="page-fadein max-w-[760px] mx-auto p-6 pb-20">
         <div className="mb-12">
-          <h1 className="font-['Playfair_Display',serif] text-[32px] sm:text-[36px] font-bold text-brown leading-tight">
-            Changelog 📋
+          <h1 className="flex items-center gap-2.5 font-['Playfair_Display',serif] text-[32px] sm:text-[36px] font-bold text-brown leading-tight">
+            Changelog <IconClipboard size={28} />
           </h1>
           <p className="text-brown-3 mt-2 text-sm">
             Riwayat perubahan Perpustakaan Digital · SMART-FLIP 5.0 ·{' '}
@@ -611,8 +612,8 @@ export default function Changelog() {
         ))}
 
         <div className="mt-12">
-          <h2 className="font-['Playfair_Display',serif] text-[22px] font-bold text-brown mb-5">
-            Rencana ke Depan 🗺️
+          <h2 className="flex items-center gap-2 font-['Playfair_Display',serif] text-[22px] font-bold text-brown mb-5">
+            Rencana ke Depan <IconCompass size={20} />
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
             {roadmap.map((item) => (
