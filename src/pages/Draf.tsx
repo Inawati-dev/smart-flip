@@ -13,6 +13,7 @@ import {
   type DraftStatus,
 } from '../lib/draf'
 import { Layout } from '../components/Layout'
+import { IconDocument, IconChat } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 const FILTERS: Array<{ key: 'all' | DraftStatus; label: string }> = [
@@ -119,7 +120,7 @@ export function Draf() {
 
   return (
     <Layout>
-      <div className="max-w-[800px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein max-w-[800px] mx-auto p-4 md:p-6 pb-16">
         <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown mb-1">
           {isDosen ? 'Asistensi Draf Mahasiswa' : 'Draf Saya'}
         </h1>
@@ -155,7 +156,7 @@ export function Draf() {
           <div className="flex items-center justify-center py-8 text-brown-3 text-sm gap-2">Memuat draf...</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-10 px-4 text-brown-3">
-            <span className="text-4xl block mb-2.5">📄</span>
+            <span className="flex justify-center mb-2.5"><IconDocument size={40} /></span>
             <p className="text-sm leading-relaxed">
               {filter === 'all' ? 'Belum ada draf. Klik "+ Draf Baru" untuk mulai.' : 'Tidak ada draf dengan status ini.'}
             </p>
@@ -197,7 +198,7 @@ export function Draf() {
                       onClick={() => setOpenComments((o) => ({ ...o, [d.id]: !o[d.id] }))}
                       className="inline-flex items-center gap-1.5 text-xs text-brown-3 px-2 py-1 rounded-md"
                     >
-                      💬 {d.comments.length} Komentar
+                      <IconChat size={14} /> {d.comments.length} Komentar
                     </button>
                     {isDosen && (
                       <select

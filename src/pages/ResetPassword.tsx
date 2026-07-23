@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell } from '../components/AuthShell'
+import { IconCheck } from '../components/icons'
 
 type View = 'loading' | 'form' | 'success' | 'error'
 
@@ -142,7 +143,7 @@ export function ResetPassword() {
 
   return (
     <AuthShell>
-      <div>
+      <div className="page-fadein">
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight mb-1">
           {view === 'error' ? errorTitle : 'Buat Password Baru'}
         </h1>
@@ -255,8 +256,8 @@ export function ResetPassword() {
 
         {view === 'success' && (
           <div className="flex flex-col items-center gap-3 text-center py-2">
-            <div className="w-14 h-14 rounded-full bg-sage/20 border-2 border-sage flex items-center justify-center text-2xl">
-              ✓
+            <div className="w-14 h-14 rounded-full bg-sage/20 border-2 border-sage flex items-center justify-center text-sage-d">
+              <IconCheck size={28} />
             </div>
             <p className="font-bold text-brown">Password Berhasil Diperbarui!</p>
             <p className="text-sm text-brown-3">

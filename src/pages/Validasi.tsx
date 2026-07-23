@@ -14,6 +14,7 @@ import {
   type ValidasiData,
 } from '../lib/validasi'
 import { Layout } from '../components/Layout'
+import { IconPrinter } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -230,7 +231,7 @@ export function Validasi() {
 
   return (
     <Layout>
-      <div className="max-w-[760px] mx-auto p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
+      <div className="page-fadein max-w-[760px] mx-auto p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
         {/* PAGE HEADING */}
         <div className="mb-7 print:hidden">
           <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown leading-tight">
@@ -632,7 +633,7 @@ export function Validasi() {
                   className="flex-1 h-11 rounded-[10px] border-[1.5px] text-sm font-medium text-brown-2 cursor-pointer flex items-center justify-center gap-1.5"
                   style={BORDER}
                 >
-                  🖨️ Cetak Hasil
+                  <IconPrinter size={16} /> Cetak Hasil
                 </button>
                 <button
                   onClick={isiUlang}

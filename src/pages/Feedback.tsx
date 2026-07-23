@@ -5,6 +5,7 @@ import { useModules } from '../hooks/useModules'
 import { useFeedback } from '../hooks/useFeedback'
 import { saveFeedback, computeRataRata, type FeedbackRatings } from '../lib/feedback'
 import { Layout } from '../components/Layout'
+import { IconClipboard, IconStar } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -80,7 +81,7 @@ export function Feedback() {
 
   return (
     <Layout>
-      <div className="max-w-[640px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein max-w-[640px] mx-auto p-4 md:p-6 pb-16">
         <div className="text-center mb-7">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown leading-tight">
             Penilaian Kepraktisan Modul
@@ -246,7 +247,9 @@ export function Feedback() {
                 <div className="text-center py-8 text-brown-3 text-sm">Memuat riwayat...</div>
               ) : feedbacks.length === 0 ? (
                 <div className="text-center py-8 px-4 text-brown-3 text-sm">
-                  <span className="text-3xl block mb-2">📋</span>
+                  <span className="flex justify-center mb-2">
+                    <IconClipboard size={28} />
+                  </span>
                   Belum ada penilaian yang diberikan{selectedModuleId ? ' untuk modul ini' : ''}.
                 </div>
               ) : (
@@ -282,7 +285,7 @@ export function Feedback() {
                         className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold bg-sage/15"
                         style={{ color: 'var(--sage-d)' }}
                       >
-                        <span>⭐</span>
+                        <IconStar size={13} />
                         Rata-rata: <strong>{fb.rataRata ?? computeRataRata(fb)}</strong> / 5
                       </div>
                       {fb.komentar && (

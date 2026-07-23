@@ -5,6 +5,7 @@ import { useModules } from '../hooks/useModules'
 import { useForumPosts } from '../hooks/useForum'
 import { addPost, addReply, likePost, timeAgo, initials, avatarColor } from '../lib/forum'
 import { Layout } from '../components/Layout'
+import { IconChat, IconThumbsUp } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -88,7 +89,7 @@ export function Forum() {
 
   return (
     <Layout>
-      <div className="max-w-[700px] mx-auto p-4 md:p-6">
+      <div className="page-fadein max-w-[700px] mx-auto p-4 md:p-6">
         <h1 className="text-2xl font-bold text-brown mb-1">Forum Diskusi</h1>
         <p className="text-brown-3 mb-4">{posts.length} diskusi</p>
 
@@ -166,7 +167,9 @@ export function Forum() {
           <div className="flex items-center justify-center py-8 text-brown-3 text-sm gap-2">Memuat diskusi...</div>
         ) : posts.length === 0 ? (
           <div className="text-center py-10 px-5 text-brown-3">
-            <span className="text-4xl block mb-2.5">💬</span>
+            <span className="flex justify-center mb-2.5">
+              <IconChat size={32} />
+            </span>
             <p className="text-sm leading-relaxed">
               Belum ada diskusi di sini.
               <br />
@@ -228,7 +231,7 @@ export function Forum() {
                           : BORDER
                       }
                     >
-                      👍 {p.likes}
+                      <IconThumbsUp size={14} /> {p.likes}
                     </button>
                     <button
                       onClick={() => setOpenReplies((o) => ({ ...o, [p.id]: !o[p.id] }))}
@@ -241,7 +244,7 @@ export function Forum() {
                           : BORDER
                       }
                     >
-                      💬 Balas{p.replies.length ? ` (${p.replies.length})` : ''}
+                      <IconChat size={14} /> Balas{p.replies.length ? ` (${p.replies.length})` : ''}
                     </button>
                   </div>
 

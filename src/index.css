@@ -32,3 +32,22 @@ body {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* Page-transition — kemampuan-web-dev.md §128 point 3 / §129: every page root gets
+   this, not just favorites. §129's exact gotcha applies here too — the first pass
+   (0.22s, translateY(8px)) read as instant, so this uses a longer duration, more
+   travel, and a slight scale-settle so it actually reads as motion, not a flash. */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.page-fadein {
+  animation: fadeInUp 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fadein,
+  [style*="animation"] {
+    animation: none !important;
+  }
+}
