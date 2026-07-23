@@ -20,4 +20,5 @@ kemampuan.md
 node_modules/
 dist/
 .env.local
+.env*.local
 *.tsbuildinfo
