@@ -30,12 +30,12 @@ export function Layout({ children }: { children: ReactNode }) {
             <Link to="/dashboard" className="text-xs font-semibold text-brown-3 px-2.5 py-1 rounded-full border border-[color:var(--border)]">
               ← Dashboard
             </Link>
-            <a href="/legacy/profil.html" className="text-xs font-semibold text-brown-3 px-2.5 py-1 rounded-full border border-[color:var(--border)]">
+            <Link to="/profil" className="text-xs font-semibold text-brown-3 px-2.5 py-1 rounded-full border border-[color:var(--border)]">
               👤 Profil
-            </a>
-            <a href="/legacy/changelog.html" className="text-xs font-semibold text-brown-3 px-2.5 py-1 rounded-full border border-[color:var(--border)]">
+            </Link>
+            <Link to="/changelog" className="text-xs font-semibold text-brown-3 px-2.5 py-1 rounded-full border border-[color:var(--border)]">
               📋 Changelog
-            </a>
+            </Link>
             <button
               onClick={() => setLogoutOpen(true)}
               className="text-xs font-semibold text-red px-2.5 py-1 rounded-full border border-red/30"
@@ -82,12 +82,12 @@ export function Layout({ children }: { children: ReactNode }) {
           <Link to="/dashboard" className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2">
             🏠 Dashboard
           </Link>
-          <a href="/legacy/profil.html" className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2">
+          <Link to="/profil" className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2">
             👤 Profil
-          </a>
-          <a href="/legacy/changelog.html" className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2">
+          </Link>
+          <Link to="/changelog" className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2">
             📋 Changelog
-          </a>
+          </Link>
           <button
             onClick={() => { setDrawerOpen(false); setLogoutOpen(true) }}
             className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-red text-left"
