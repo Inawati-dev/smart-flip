@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -26,47 +26,6 @@
       --topbar-h: 58px;
     }
 
-    /* ══ DARK MODE via media query ══ */
-    @media(prefers-color-scheme:dark){
-      :root:not([data-theme="light"]){
-        --bg: #1A1208; --bg2: #241C10; --bg3: #2E2416;
-        --sage: #9FB49A; --sage-d: #7A9B77; --sage-bg: rgba(143,162,135,.18);
-        --terra: #E8B888; --terra-d: #D4A373;
-        --brown: #F0EBE0; --brown2: #C8BDB0; --brown3: #7A6B5E; --brown4: #5A4D40;
-        --line: rgba(255,255,255,.1); --border: rgba(255,255,255,.08);
-        --shadow-sm: 0 2px 4px rgba(0,0,0,.35);
-        --shadow-md: 0 4px 16px rgba(0,0,0,.35);
-        --topbar-bg: rgba(26,18,8,.85);
-        --red: #E87070; --red-border: rgba(232,112,112,.35);
-      }
-    }
-
-    /* ══ DARK MODE via manual toggle ══ */
-    [data-theme="dark"]{
-      --bg: #1A1208; --bg2: #241C10; --bg3: #2E2416;
-      --sage: #9FB49A; --sage-d: #7A9B77; --sage-bg: rgba(143,162,135,.18);
-      --terra: #E8B888; --terra-d: #D4A373;
-      --brown: #F0EBE0; --brown2: #C8BDB0; --brown3: #7A6B5E; --brown4: #5A4D40;
-      --line: rgba(255,255,255,.1); --border: rgba(255,255,255,.08);
-      --shadow-sm: 0 2px 4px rgba(0,0,0,.35);
-      --shadow-md: 0 4px 16px rgba(0,0,0,.35);
-      --topbar-bg: rgba(26,18,8,.85);
-      --red: #E87070; --red-border: rgba(232,112,112,.35);
-    }
-
-    /* ══ FORCE LIGHT ══ */
-    [data-theme="light"]{
-      --bg: #F5F2E9; --bg2: #FFFDF8; --bg3: #FAF7F0;
-      --sage: #8FA287; --sage-d: #6B7E64; --sage-bg: rgba(143,162,135,.1);
-      --terra: #D4A373; --terra-d: #B8855A;
-      --brown: #3E362E; --brown2: #6B5D4F; --brown3: #9B8B7A; --brown4: #C5B8AD;
-      --line: #DDD5C4; --border: rgba(62,54,46,.10);
-      --shadow-sm: 0 2px 4px rgba(62,54,46,.10);
-      --shadow-md: 0 4px 16px rgba(62,54,46,.10);
-      --topbar-bg: rgba(245,242,233,.92);
-      --red: #c0392b; --red-border: rgba(192,57,43,.3);
-    }
-
     html, body { min-height: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--brown); background: var(--bg); -webkit-font-smoothing: antialiased; transition: background .25s, color .25s; }
 
     /* ── TOPBAR ── */
@@ -78,10 +37,6 @@
     .topbar-right { display: flex; align-items: center; gap: 10px; }
     .topbar-link { font-size: 12px; font-weight: 600; color: var(--brown3); text-decoration: none; padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid var(--border); transition: color .2s, border-color .2s; }
     .topbar-link:hover { color: var(--terra-d); border-color: var(--terra); }
-    .btn-theme { width: 34px; height: 34px; border-radius: var(--r-pill); border: 1px solid var(--border); background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--brown3); font-size: 15px; transition: color .2s, border-color .2s; flex-shrink: 0; }
-    .btn-theme:hover { color: var(--terra-d); border-color: var(--terra); }
-    .btn-theme:focus-visible { outline: 2px solid rgba(212,163,115,.7); outline-offset: 2px; }
-
     /* ── HAMBURGER + NAV DRAWER (mobile) ── */
     .hb-btn { display: none; width: 44px; height: 44px; border-radius: var(--r-pill); border: 1px solid var(--border); background: transparent; cursor: pointer; align-items: center; justify-content: center; color: var(--brown2); font-size: 20px; transition: background .15s, color .15s, border-color .15s; flex-shrink: 0; }
     .hb-btn:hover { background: var(--terra); color: #fff; border-color: var(--terra); }
@@ -320,7 +275,6 @@
       <span class="logo-text">E-Modul Adaptif</span>
     </a>
     <div class="topbar-right">
-      <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()"><span id="themeIcon">🌙</span></button>
       <a class="topbar-link" id="dashboardBack" href="index.html">← Dashboard</a>
       <a class="topbar-link" href="profil.html">👤 Profil</a>
       <a class="topbar-link" href="changelog.html">📋 Changelog</a>
@@ -341,7 +295,6 @@
     <a href="index.html" id="navDashboard">🏠 Dashboard</a>
     <a href="profil.html">👤 Profil</a>
     <a href="changelog.html">📋 Changelog</a>
-    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
     <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
   </nav>
 </aside>
@@ -537,45 +490,6 @@ function closeNavDrawer() {
 }
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeNavDrawer(); });
 </script>
-<script>
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  // Determine effective theme
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-// Listen for system preference changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
-</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
@@ -692,14 +606,14 @@ const modulId = parseInt(params.get('id')) || 1;
     }
 
     // Capaian
-    document.getElementById('capaianList').innerHTML = modul.capaian.map(c => `
+    document.getElementById('capaianList').innerHTML = (modul.capaian || []).map(c => `
       <div class="capaian-item">
         <div class="capaian-check"><svg viewBox="0 0 12 12"><polyline points="2 6 5 9 10 3"/></svg></div>
         <span>${c}</span>
       </div>`).join('');
 
     // Materi
-    document.getElementById('materiList').innerHTML = modul.materi.map(m => `
+    document.getElementById('materiList').innerHTML = (modul.materi || []).map(m => `
       <div class="materi-item">
         <div class="sesi-badge">${m.sesi}</div>
         <span>${m.topik}</span>
