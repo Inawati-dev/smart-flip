@@ -61,13 +61,10 @@ describe('Changelog', () => {
     expect(html).toContain('v1.0')
   })
 
-  it('renders the change-type legend', () => {
+  it('renders Keep a Changelog category headers (Added/Changed/Fixed)', () => {
     const html = renderChangelog()
-    expect(html).toContain('FEAT')
-    expect(html).toContain('FIX')
-    expect(html).toContain('IMP')
-    expect(html).toContain('REFAC')
-    expect(html).toContain('SEC')
-    expect(html).toContain('DOC')
+    expect(html).toContain('Ditambahkan')
+    expect(html).toContain('Diubah')
+    expect(html).toContain('Diperbaiki')
   })
 })
