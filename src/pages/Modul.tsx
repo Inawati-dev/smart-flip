@@ -80,24 +80,24 @@ export default function Modul() {
           )}
 
           <div className="flex gap-2.5 flex-wrap mt-3">
-            <a
-              href={`/legacy/ebook.html?book=${encodeURIComponent(modul.path)}`}
+            <Link
+              to={`/ebook?book=${encodeURIComponent(modul.path)}`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
             >
               {bacaLabel}
-            </a>
-            <a
-              href={`/legacy/kuis.html?modul=${modul.id}`}
+            </Link>
+            <Link
+              to={`/modul/${modul.id}/kuis`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-gray-300 text-brown-2 text-sm font-semibold"
             >
               ✏️ Mulai Kuis
-            </a>
-            <a
-              href={`/legacy/workshop.html?id=${modul.id}`}
+            </Link>
+            <Link
+              to={`/modul/${modul.id}/workshop`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-gray-300 text-brown-2 text-sm font-semibold"
             >
               🗂️ Panduan Workshop
-            </a>
+            </Link>
           </div>
         </div>
       </div>
