@@ -81,7 +81,7 @@ function pageStep()  { return isMobile() ? 1 : 2; }
 /* ─── CATALOG ─── */
 async function loadCatalog() {
   try {
-    const res = await fetch('config.json');
+    const res = await fetch('/config.json');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const cfg = await res.json();
     const books = (cfg.pdfs || []).map(f => ({

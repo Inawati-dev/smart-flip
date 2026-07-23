@@ -1,6 +1,6 @@
 import { cpSync, existsSync } from 'node:fs'
 
-const targets = ['legacy', 'books', 'assets', 'manifest.json', 'sw.js']
+const targets = ['legacy', 'books', 'assets', 'manifest.json', 'sw.js', 'config.json']
 
 for (const target of targets) {
   if (existsSync(target)) {
