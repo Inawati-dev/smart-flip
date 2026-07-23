@@ -83,13 +83,15 @@ export default function Kuis() {
   if (!Array.isArray(qs) || qs.length === 0) {
     return (
       <Layout>
-        <div className="page-fadein p-6 max-w-2xl mx-auto">
+        <div className="page-fadein p-6">
+         <div className="max-w-2xl mx-auto">
           <Link to={backHref} className="text-brown-3 text-sm mb-6 inline-block">
             ← Kembali
           </Link>
           <p className="text-brown-3 text-center py-12">
             Soal kuis untuk modul ini belum tersedia.
           </p>
+         </div>
         </div>
       </Layout>
     )
@@ -148,7 +150,8 @@ export default function Kuis() {
 
     return (
       <Layout>
-        <div className="page-fadein p-6 max-w-2xl mx-auto">
+        <div className="page-fadein p-6">
+         <div className="max-w-2xl mx-auto">
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-8 text-center mb-5">
             <div
               className={`w-[120px] h-[120px] rounded-full flex flex-col items-center justify-center mx-auto mb-5 border-[5px] ${CIRCLE_CLASS[verdict]}`}
@@ -240,6 +243,7 @@ export default function Kuis() {
               )
             })}
           </div>
+         </div>
         </div>
       </Layout>
     )
@@ -247,7 +251,8 @@ export default function Kuis() {
 
   return (
     <Layout>
-      <div className="page-fadein p-6 max-w-2xl mx-auto">
+      <div className="page-fadein p-6">
+       <div className="max-w-2xl mx-auto">
         <Link to={backHref} className="text-brown-3 text-sm mb-6 inline-block">
           ← Kembali
         </Link>
@@ -354,6 +359,7 @@ export default function Kuis() {
             {isLastQ ? (saving ? 'Menyimpan…' : 'Lihat Hasil ✓') : 'Selanjutnya →'}
           </button>
         </div>
+       </div>
       </div>
     </Layout>
   )

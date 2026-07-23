@@ -147,7 +147,7 @@ export default function Modul() {
 
   return (
     <Layout>
-    <div className="page-fadein p-6 max-w-3xl mx-auto">
+    <div className="page-fadein p-6">
       <Link to="/dashboard" className="text-brown-3 text-sm mb-6 inline-block">
         ← Kembali ke Dashboard
       </Link>
@@ -181,7 +181,7 @@ export default function Modul() {
 
           <div className="flex gap-2.5 flex-wrap mt-3">
             <Link
-              to={`/ebook?book=${encodeURIComponent(modul.path)}`}
+              to={`/ebook?book=${modul.id}`}
               className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
             >
               {bacaLabel}

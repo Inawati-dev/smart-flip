@@ -21,6 +21,7 @@ import { Validasi } from './pages/Validasi'
 import { Analitik } from './pages/Analitik'
 import { Manajemen } from './pages/Manajemen'
 import Changelog from './pages/Changelog'
+import { Pengaturan } from './pages/Pengaturan'
 
 const queryClient = new QueryClient()
 
@@ -63,6 +64,7 @@ export default function App() {
             <Route path="/analitik" element={<ProtectedRoute roles={['dosen']}><Analitik /></ProtectedRoute>} />
             <Route path="/manajemen" element={<ProtectedRoute roles={['dosen']}><Manajemen /></ProtectedRoute>} />
             <Route path="/changelog" element={<Changelog />} />
+            <Route path="/pengaturan" element={<ProtectedRoute><Pengaturan /></ProtectedRoute>} />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

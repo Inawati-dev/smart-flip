@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useModulOrder, useModulCustoms } from '../hooks/useManajemen'
-import { saveModulCustom, saveModulOrder, uploadModulPdf, type ModulCustom, type ModulStatus } from '../lib/manajemen'
+import { saveModulCustom, saveModulOrder, uploadModulPdf, createModul, type ModulCustom, type ModulStatus } from '../lib/manajemen'
+import { isSupabaseConfigured } from '../lib/supabase'
 import {
   fetchDiagnosticQuestions,
   createDiagnosticQuestion,
@@ -44,6 +45,7 @@ export function Manajemen() {
   const [toast, setToast] = useState<string | null>(null)
 
   const [editId, setEditId] = useState<number | null>(null)
+  const [creatingNew, setCreatingNew] = useState(false)
   const [formJudul, setFormJudul] = useState('')
   const [formDeskripsi, setFormDeskripsi] = useState('')
   const [formStatus, setFormStatus] = useState<ModulStatus>('aktif')
@@ -231,6 +233,7 @@ export function Manajemen() {
   function openEditModal(id: number) {
     const m = modMap[id]
     const custom = customFor(id)
+    setCreatingNew(false)
     setEditId(id)
     setFormJudul(custom.judul || m?.title || '')
     setFormDeskripsi(custom.deskripsi || m?.description || '')
@@ -241,8 +244,21 @@ export function Manajemen() {
     setPdfError('')
   }
 
+  function openCreateModal() {
+    setEditId(null)
+    setCreatingNew(true)
+    setFormJudul('')
+    setFormDeskripsi('')
+    setFormStatus('aktif')
+    setFormDurasi('')
+    setFormCatatan('')
+    setPdfFile(null)
+    setPdfError('')
+  }
+
   function closeEditModal() {
     setEditId(null)
+    setCreatingNew(false)
   }
 
   async function handleUploadPdf() {
@@ -266,9 +282,31 @@ export function Manajemen() {
   }
 
   async function saveEdit() {
-    if (editId == null) return
     const judul = formJudul.trim()
     if (!judul) return
+
+    if (creatingNew) {
+      if (!isSupabaseConfigured) {
+        showToast('Tambah modul butuh koneksi Supabase — belum tersedia di mode demo.')
+        return
+      }
+      setSaving(true)
+      try {
+        const nextOrderNum = Math.max(0, ...modules.map((m) => m.order_num)) + 1
+        await createModul({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum })
+        await queryClient.invalidateQueries({ queryKey: ['modules'] })
+        setEditId(null)
+        setCreatingNew(false)
+        showToast('Modul baru ditambahkan')
+      } catch {
+        showToast('Gagal menambahkan modul')
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+
+    if (editId == null) return
     setSaving(true)
     try {
       const updated: ModulCustom = {
@@ -298,7 +336,7 @@ export function Manajemen() {
 
   return (
     <Layout>
-      <div className="page-fadein max-w-[1000px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein p-4 md:p-6 pb-16">
         <div className="mb-5">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Kelola Modul</h1>
           <p className="text-sm text-brown-3 mt-1">
@@ -315,6 +353,13 @@ export function Manajemen() {
         <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
           <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
             <span className="text-sm font-semibold text-brown">Daftar Modul</span>
+            <button
+              onClick={openCreateModal}
+              className="h-9 px-3.5 rounded-lg text-xs font-semibold text-white"
+              style={{ background: 'var(--terra)' }}
+            >
+              + Tambah Modul
+            </button>
           </div>
 
           {selectedIds.size > 0 && (
@@ -532,8 +577,8 @@ export function Manajemen() {
         </div>
       </div>
 
-      {/* Edit modal — matches legacy #editModal fields exactly */}
-      {editId != null && (
+      {/* Edit/create modal — matches legacy #editModal fields exactly */}
+      {(editId != null || creatingNew) && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
@@ -544,7 +589,7 @@ export function Manajemen() {
           <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown">
-                Edit — {modMap[editId]?.title || ''}
+                {creatingNew ? 'Tambah Modul Baru' : `Edit — ${modMap[editId!]?.title || ''}`}
               </h3>
               <button onClick={closeEditModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
                 ×
@@ -816,7 +861,7 @@ export function Manajemen() {
 
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
+          className="fixed bottom-6 right-6 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
           style={{ background: 'var(--brown)', color: 'var(--terra)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
         >
           {toast}

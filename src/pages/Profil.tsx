@@ -295,7 +295,7 @@ export function Profil() {
 
   return (
     <Layout>
-      <div className="page-fadein max-w-[860px] mx-auto p-4 md:p-6 pb-16">
+      <div className="page-fadein p-4 md:p-6 pb-16">
         <div className="mb-5">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">
             {isDosen ? 'Profil Dosen' : 'Profil Saya'}
@@ -702,7 +702,7 @@ export function Profil() {
 
       {toast && (
         <div
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
+          className="fixed bottom-6 right-6 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
           style={{ background: 'var(--brown)', color: 'var(--terra)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
         >
           {toast}

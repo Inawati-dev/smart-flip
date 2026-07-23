@@ -27,10 +27,12 @@ describe('Layout', () => {
       </MemoryRouter>,
     )
     expect(html).toContain('page content')
-    // Profil and Changelog are real ported routes now (fixed after both landed
-    // post-Layout) — nav must link to them in-app, not exit to legacy/*.html.
+    // Profil and Pengaturan are visible to every role — nav must link to them
+    // in-app, not exit to legacy/*.html. Changelog is dosenOnly, so it's
+    // deliberately absent here (no role/dosen mocked in this render).
     expect(html).toContain('href="/profil"')
-    expect(html).toContain('href="/changelog"')
+    expect(html).toContain('href="/pengaturan"')
+    expect(html).not.toContain('href="/changelog"')
     expect(html).not.toContain('/legacy/')
   })
 })
