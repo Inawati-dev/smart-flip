@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,41 +33,6 @@
   --text:var(--brown);
   --text2:var(--brown2);
   --border-c:var(--border);
-}
-
-/* ══ DARK MODE via system preference ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-    --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-    --terra:#E8B888;--terra-d:#D4A373;
-    --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-    --border:rgba(255,255,255,.08);
-    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-    --topnav-bg:#0F0C08;--topnav-bg-2:#2E2416;
-  }
-}
-
-/* ══ DARK MODE via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-  --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-  --terra:#E8B888;--terra-d:#D4A373;
-  --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-  --border:rgba(255,255,255,.08);
-  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-  --topnav-bg:#0F0C08;--topnav-bg-2:#2E2416;
-}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-  --terra:#D4A373;--terra-d:#B8855A;
-  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-  --border:rgba(62,54,46,.10);
-  --line:#DDD5C4;--line2:#EDE8DF;
-  --topnav-bg:#3E362E;--topnav-bg-2:#6B5D4F;
 }
 
 html{scroll-behavior:smooth}
@@ -121,17 +86,6 @@ body{
 }
 .btn-print:hover{background:var(--terra-d)}
 .btn-print svg{width:15px;height:15px}
-
-/* Theme toggle */
-.btn-theme{
-  width:40px;height:40px;border-radius:8px;border:none;
-  background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.55);font-size:17px;
-  transition:all .18s;flex-shrink:0;
-}
-.btn-theme:hover{background:rgba(255,255,255,.1);color:#fff}
-.btn-theme:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
 
 /* ── MOBILE HAMBURGER ── */
 .tb-hamburger{
@@ -475,23 +429,11 @@ body{
 @media(max-width:768px){
   .tb-back{display:none}
   .tb-hamburger{display:flex}
-  .btn-theme{width:44px;height:44px}
 }
 
 /* ── PRINT ── */
 @media print{
-  /* Force light-mode token values — printed pages must stay legible on
-     white paper regardless of the active screen theme (dark mode). */
-  :root,:root:not([data-theme="light"]),[data-theme="dark"],[data-theme="light"]{
-    --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-    --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-    --terra:#D4A373;--terra-d:#B8855A;
-    --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-    --border:rgba(62,54,46,.10);
-    --line:#DDD5C4;--line2:#EDE8DF;
-    --topnav-bg:#3E362E;--topnav-bg-2:#6B5D4F;
-  }
-  .topbar,.modul-selector,.btn-print,.btn-theme,.tab-nav,.modul-nav,.drawer-overlay,.drawer{display:none !important}
+  .topbar,.modul-selector,.btn-print,.tab-nav,.modul-nav,.drawer-overlay,.drawer{display:none !important}
   body{background:white;font-size:11pt}
   .main{max-width:100%;padding:0}
   .hero{background:#3E362E;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -542,9 +484,6 @@ body{
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
     Profil
   </a>
-  <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-    <span id="themeIcon">🌙</span>
-  </button>
   <button class="btn-print" onclick="window.print()" aria-label="Cetak halaman">
     <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a1 1 0 001 1h6a1 1 0 001-1v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zm2 0h6v3H7V4zm-1 9a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
     <span>Cetak</span>
@@ -672,42 +611,6 @@ body{
 </main>
 
 <script>
-/* ══════════════════════════════════════════════════
-   THEME MANAGEMENT
-   ══════════════════════════════════════════════════ */
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
-
 /* ══════════════════════════════════════════════════
    WORKSHOP DATA — 9 Modul
    MK Metode Penelitian & Pengembangan, UM 2026

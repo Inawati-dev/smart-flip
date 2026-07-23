@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -42,50 +42,6 @@
   --border-c:var(--border);
 }
 
-/* ══ DARK MODE via OS preference ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-    --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-    --terra:#E8B888;--terra-d:#D4A373;
-    --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-    --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-    --border:rgba(255,255,255,.08);
-    --err:#E87070;
-    --chrome:#0F0C08;
-    --terra-rgb:232,184,136;
-    --sage-rgb:159,180,154;
-  }
-}
-
-/* ══ DARK MODE via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-  --sage:#9FB49A;--sage-d:#7A9B77;--sage-bg:rgba(143,162,135,.18);
-  --terra:#E8B888;--terra-d:#D4A373;
-  --brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-  --line:rgba(255,255,255,.1);--line2:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.08);
-  --err:#E87070;
-  --chrome:#0F0C08;
-  --terra-rgb:232,184,136;
-  --sage-rgb:159,180,154;
-}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
-  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
-  --terra:#D4A373;--terra-d:#B8855A;
-  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-  --line:#DDD5C4;--line2:#EDE8DF;
-  --border:rgba(44,36,32,.12);
-  --err:#B03020;
-  --chrome:#3E362E;
-  --terra-rgb:212,163,115;
-  --sage-rgb:143,162,135;
-}
-
 body{
   background:var(--cream);
   font-family:'DM Sans',sans-serif;
@@ -115,15 +71,6 @@ body{
   font-size:1.05rem;font-weight:600;flex:1;color:#fff;
 }
 .topbar-sub{font-size:12px;color:rgba(255,255,255,.5);flex-shrink:0;white-space:nowrap}
-.btn-theme{
-  width:36px;height:36px;border-radius:8px;border:none;
-  background:transparent;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,.55);font-size:16px;
-  transition:all .18s;flex-shrink:0;
-}
-.btn-theme:hover{background:rgba(255,255,255,.1);color:#fff}
-.btn-theme:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
 
 /* ── HAMBURGER + NAV DRAWER (mobile) ── */
 .hb-btn{display:none;width:44px;height:44px;border-radius:8px;border:none;background:transparent;cursor:pointer;align-items:center;justify-content:center;color:rgba(255,255,255,.7);font-size:20px;transition:all .18s;flex-shrink:0}
@@ -322,7 +269,6 @@ body{
   .btn-back{min-height:44px;padding:8px 10px;display:inline-flex;align-items:center}
   .tab-btn{min-height:44px;height:auto;padding:8px 14px}
   .btn-post-submit{height:44px}
-  .btn-theme{width:44px;height:44px}
   .btn-logout-top{min-height:44px;font-size:12px;padding:6px 6px}
   .topbar{padding:0 10px;gap:8px}
   .topbar-title{font-size:.95rem}
@@ -333,7 +279,7 @@ body{
   .new-post-card,.post-card{padding:12px}
 }
 @media(max-width:768px){
-  .btn-back,.topbar-sub,.btn-theme,.btn-logout-top{display:none}
+  .btn-back,.topbar-sub,.btn-logout-top{display:none}
   .hb-btn{display:flex}
 }
 
@@ -359,9 +305,6 @@ body{
   <a href="dashboard-mhs.html" class="btn-back">← Dashboard</a>
   <h1 class="topbar-title">Forum Diskusi</h1>
   <span class="topbar-sub" id="postCount"></span>
-  <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-    <span id="themeIcon">🌙</span>
-  </button>
   <button class="btn-logout-top" onclick="openLogoutModal()" title="Keluar">Keluar</button>
   <button class="hb-btn" id="hbBtn" aria-label="Buka menu" onclick="openNavDrawer()">☰</button>
 </div>
@@ -377,7 +320,6 @@ body{
     <a href="dashboard-mhs.html" id="navDashboard">🏠 Dashboard</a>
     <a href="profil.html">👤 Profil</a>
     <a href="changelog.html">📋 Changelog</a>
-    <button onclick="toggleTheme()">🌙 Ganti Tema</button>
     <button class="nav-link-danger" onclick="closeNavDrawer();openLogoutModal();">🚪 Keluar</button>
   </nav>
 </aside>
@@ -415,42 +357,6 @@ body{
 
 <script>
 'use strict';
-
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
 
 // ── NAV DRAWER (mobile hamburger) ──
 function openNavDrawer() {

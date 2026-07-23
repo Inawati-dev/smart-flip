@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,65 +30,6 @@
       --r:        12px;
       --r-sm:     7px;
       --r-pill:   100px;
-      --shadow-sm: 0 2px 10px rgba(62,54,46,.09);
-      --shadow-md: 0 8px 28px rgba(62,54,46,.13);
-    }
-
-    /* ══ DARK MODE via OS preference ══ */
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg:       #1A1208;
-        --bg2:      #241C10;
-        --bg3:      #2E2416;
-        --sage:     #9FB49A;
-        --sage-dark: #7A9B77;
-        --terra:    #E8B888;
-        --terra-d:  #D4A373;
-        --brown:    #F0EBE0;
-        --brown2:   #C8BDB0;
-        --brown3:   #7A6B5E;
-        --border:   rgba(255,255,255,.08);
-        --border2:  rgba(255,255,255,.04);
-        --topbar-bg: rgba(26,18,8,.85);
-        --shadow-sm: 0 2px 10px rgba(0,0,0,.28);
-        --shadow-md: 0 8px 28px rgba(0,0,0,.36);
-      }
-    }
-
-    /* ══ DARK MODE via manual toggle ══ */
-    [data-theme="dark"] {
-      --bg:       #1A1208;
-      --bg2:      #241C10;
-      --bg3:      #2E2416;
-      --sage:     #9FB49A;
-      --sage-dark: #7A9B77;
-      --terra:    #E8B888;
-      --terra-d:  #D4A373;
-      --brown:    #F0EBE0;
-      --brown2:   #C8BDB0;
-      --brown3:   #7A6B5E;
-      --border:   rgba(255,255,255,.08);
-      --border2:  rgba(255,255,255,.04);
-      --topbar-bg: rgba(26,18,8,.85);
-      --shadow-sm: 0 2px 10px rgba(0,0,0,.28);
-      --shadow-md: 0 8px 28px rgba(0,0,0,.36);
-    }
-
-    /* ══ FORCE LIGHT ══ */
-    [data-theme="light"] {
-      --bg:       #F5F2E9;
-      --bg2:      #FFFDF8;
-      --bg3:      #FAF7F0;
-      --sage:     #8FA287;
-      --sage-dark: #6B7E64;
-      --terra:    #D4A373;
-      --terra-d:  #B8855A;
-      --brown:    #3E362E;
-      --brown2:   #6B5D4F;
-      --brown3:   #9B8B7A;
-      --border:   rgba(62,54,46,.10);
-      --border2:  rgba(62,54,46,.06);
-      --topbar-bg: rgba(245,242,233,.9);
       --shadow-sm: 0 2px 10px rgba(62,54,46,.09);
       --shadow-md: 0 8px 28px rgba(62,54,46,.13);
     }
@@ -129,17 +70,6 @@
       font-size: 16px; font-weight: 700;
       color: var(--brown);
     }
-    .btn-theme {
-      display: flex; align-items: center; justify-content: center;
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 1px solid var(--border); background: var(--bg2);
-      color: var(--brown2); font-size: 15px; cursor: pointer;
-      transition: background .15s, color .15s, border-color .15s;
-      flex-shrink: 0;
-    }
-    .btn-theme:hover { background: var(--terra); color: #fff; border-color: var(--terra); }
-    .btn-theme:focus-visible { outline: 2px solid var(--terra); outline-offset: 2px; }
-
     /* ── PAGE LAYOUT ── */
     .page { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
 
@@ -293,7 +223,6 @@
     @media (max-width: 768px) {
       .back-btn { min-height: 44px; }
       .topbar-link { min-height: 44px; display: inline-flex; align-items: center; }
-      .btn-theme { width: 44px; height: 44px; }
     }
     @media (max-width: 480px) {
       .page-hero h1 { font-size: 28px; }
@@ -307,11 +236,6 @@
   <div class="header-inner">
     <a class="back-btn" id="backBtn" href="index.html">← Kembali</a>
     <span class="topbar-title">Changelog</span>
-    <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-      <button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span>
-      </button>
-    </div>
   </div>
 </header>
 
@@ -817,44 +741,6 @@
 
 </div><!-- /.page -->
 
-<script>
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-// Listen for system preference changes
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
-</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="supabase.js"></script>
 <script>

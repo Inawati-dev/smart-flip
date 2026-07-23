@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="">
+<html lang="id">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,45 +28,6 @@
   --border-c:var(--line);
 }
 
-/* ══ DARK MODE via OS preference ══ */
-@media(prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-    --sage:#9FB49A;--sage-d:#7A9B77;
-    --terra:#E8B888;--brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-    --line:rgba(255,255,255,.14);--err:#E87070;
-    --ink:#0F0C08;
-    --hover-tint:rgba(255,255,255,.06);
-    --focus-ring:rgba(232,184,136,.25);
-  }
-  :root:not([data-theme="light"]) .alert.error{background:rgba(184,48,32,.18);border-color:rgba(232,112,112,.35)}
-  :root:not([data-theme="light"]) .alert.success{background:rgba(42,80,16,.22);border-color:rgba(122,191,94,.35);color:#8FD46B}
-}
-
-/* ══ DARK MODE via manual toggle ══ */
-[data-theme="dark"]{
-  --cream:#1A1208;--ivory:#241C10;--ivory2:#2E2416;
-  --sage:#9FB49A;--sage-d:#7A9B77;
-  --terra:#E8B888;--brown:#F0EBE0;--brown2:#C8BDB0;--brown3:#7A6B5E;
-  --line:rgba(255,255,255,.14);--err:#E87070;
-  --ink:#0F0C08;
-  --hover-tint:rgba(255,255,255,.06);
-  --focus-ring:rgba(232,184,136,.25);
-}
-[data-theme="dark"] .alert.error{background:rgba(184,48,32,.18);border-color:rgba(232,112,112,.35)}
-[data-theme="dark"] .alert.success{background:rgba(42,80,16,.22);border-color:rgba(122,191,94,.35);color:#8FD46B}
-
-/* ══ FORCE LIGHT ══ */
-[data-theme="light"]{
-  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#F0EDE6;
-  --sage:#8FA287;--sage-d:#5A7353;
-  --terra:#D4A373;--brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
-  --line:#CFC8BB;--err:#B03020;
-  --ink:#3E362E;
-  --hover-tint:rgba(44,36,32,.04);
-  --focus-ring:rgba(44,36,32,.07);
-}
-
 body{
   min-height:100vh;background:var(--cream);
   font-family:'DM Sans',sans-serif;
@@ -74,19 +35,6 @@ body{
   padding:1.5rem 1rem;
   transition:background .25s,color .25s;
 }
-
-/* ── THEME TOGGLE ── */
-.btn-theme{
-  position:fixed;top:1rem;right:1rem;z-index:50;
-  width:44px;height:44px;border-radius:11px;
-  border:1.5px solid var(--line);background:var(--ivory);
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:18px;color:var(--brown2);
-  box-shadow:0 2px 10px rgba(44,36,32,.12);
-  transition:all .18s;
-}
-.btn-theme:hover{background:var(--ivory2);color:var(--brown)}
-.btn-theme:focus-visible{outline:2px solid var(--terra);outline-offset:2px}
 
 /* ── CARD ── */
 .card{
@@ -229,9 +177,6 @@ body{
 </style>
 </head>
 <body>
-<button class="btn-theme" id="btnTheme" aria-label="Ganti tema" onclick="toggleTheme()">
-  <span id="themeIcon">🌙</span>
-</button>
 <div class="card">
 
   <!-- ── LEFT ── -->
@@ -316,42 +261,6 @@ body{
 
 <script src="supabase.js"></script>
 <script>
-// ══════════════════════════════════════
-// THEME MANAGEMENT
-// ══════════════════════════════════════
-(function initTheme() {
-  const saved = localStorage.getItem('sfp_theme');
-  if (saved) {
-    document.documentElement.setAttribute('data-theme', saved);
-  }
-  updateThemeIcon();
-})();
-
-function updateThemeIcon() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const icon = document.getElementById('themeIcon');
-  if (!icon) return;
-  let effective = cur;
-  if (!cur) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  icon.textContent = effective === 'dark' ? '☀️' : '🌙';
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  let effective = cur;
-  if (!effective) {
-    effective = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  }
-  const next = effective === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('sfp_theme', next);
-  updateThemeIcon();
-}
-
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeIcon);
-
 const DEMO_MODE = typeof sb === 'undefined';
 let selectedRole = 'mahasiswa';
 
