@@ -72,6 +72,32 @@ export default function Modul() {
         </div>
       </div>
 
+      <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
+        <h2 className="font-bold text-brown mb-3 flex items-center gap-2">🎯 Capaian Pembelajaran</h2>
+        <div className="flex flex-col gap-2">
+          {modul.capaian.map((c, i) => (
+            <div key={i} className="flex items-start gap-2.5 text-sm text-brown-2">
+              <span className="w-4.5 h-4.5 rounded-full bg-sage flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-xs">✓</span>
+              <span>{c}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
+        <h2 className="font-bold text-brown mb-3 flex items-center gap-2">📚 Materi per Sesi</h2>
+        <div className="flex flex-col">
+          {modul.materi.map((m, i) => (
+            <div key={i} className="flex items-center gap-3.5 py-2.5 border-b border-gray-100 last:border-0 text-sm text-brown-2">
+              <span className="w-7 h-7 rounded-full bg-bg3 border border-gray-200 flex items-center justify-center text-xs font-bold text-brown-3 flex-shrink-0">
+                {m.sesi}
+              </span>
+              <span>{m.topik}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div id="modul-sections-placeholder" />
     </div>
   )
