@@ -11,7 +11,7 @@ export function LogoutModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 z-[600] flex items-center justify-center p-4"
       style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel()
