@@ -32,11 +32,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true
 
     async function loadProfile(uid: string) {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('profiles')
         .select('full_name, role, nim_nidn, learning_style')
         .eq('id', uid)
         .single()
+      if (error) console.error('[AuthContext] failed to load profile:', error.message)
       if (active) setProfile(data as Profile | null)
     }
 
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })
 
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return
       setUser(session?.user ?? null)
       if (session?.user) loadProfile(session.user.id)
       else setProfile(null)
