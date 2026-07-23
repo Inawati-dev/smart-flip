@@ -1,10 +1,17 @@
 import { useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useModulOrder, useModulCustoms } from '../hooks/useManajemen'
 import { saveModulCustom, saveModulOrder, uploadModulPdf, type ModulCustom, type ModulStatus } from '../lib/manajemen'
+import {
+  fetchDiagnosticQuestions,
+  createDiagnosticQuestion,
+  updateDiagnosticQuestion,
+  deleteDiagnosticQuestion,
+  type DiagnosticQuestion,
+} from '../lib/diagnostic'
 import { Layout } from '../components/Layout'
-import { IconDocument } from '../components/icons'
+import { IconDocument, IconEdit, IconTrash } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -52,6 +59,87 @@ export function Manajemen() {
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 2800)
+  }
+
+  // Diagnostic placement test question bank — see "Admin edit (dosen)" in
+  // docs/superpowers/specs/2026-07-23-diagnostic-adaptive-roadmap-design.md.
+  // Separate query/state from the module-management block above; only shares
+  // the page's Layout, toast, and modal styling conventions.
+  const { data: diagQuestions = [] } = useQuery({
+    queryKey: ['diagnostic-questions'],
+    queryFn: fetchDiagnosticQuestions,
+  })
+  const sortedDiagQuestions = useMemo(
+    () => [...diagQuestions].sort((a, b) => a.order_num - b.order_num),
+    [diagQuestions],
+  )
+
+  const [diagEditId, setDiagEditId] = useState<number | 'new' | null>(null)
+  const [diagPertanyaan, setDiagPertanyaan] = useState('')
+  const [diagOpsi, setDiagOpsi] = useState<string[]>(['', '', '', ''])
+  const [diagJawaban, setDiagJawaban] = useState(0)
+  const [diagOrderNum, setDiagOrderNum] = useState(1)
+  const [diagSaving, setDiagSaving] = useState(false)
+  const [diagDeleteId, setDiagDeleteId] = useState<number | null>(null)
+
+  function openDiagAddModal() {
+    const maxOrder = diagQuestions.reduce((m, q) => Math.max(m, q.order_num), 0)
+    setDiagEditId('new')
+    setDiagPertanyaan('')
+    setDiagOpsi(['', '', '', ''])
+    setDiagJawaban(0)
+    setDiagOrderNum(maxOrder + 1)
+  }
+
+  function openDiagEditModal(q: DiagnosticQuestion) {
+    setDiagEditId(q.id)
+    setDiagPertanyaan(q.pertanyaan)
+    setDiagOpsi([...q.opsi])
+    setDiagJawaban(q.jawaban)
+    setDiagOrderNum(q.order_num)
+  }
+
+  function closeDiagModal() {
+    setDiagEditId(null)
+  }
+
+  function updateDiagOpsi(idx: number, value: string) {
+    setDiagOpsi((prev) => prev.map((o, i) => (i === idx ? value : o)))
+  }
+
+  async function saveDiagQuestion() {
+    const pertanyaan = diagPertanyaan.trim()
+    const opsi = diagOpsi.map((o) => o.trim())
+    if (!pertanyaan || opsi.some((o) => !o)) return
+    setDiagSaving(true)
+    try {
+      const payload = { pertanyaan, opsi, jawaban: diagJawaban, order_num: diagOrderNum }
+      if (diagEditId === 'new') {
+        await createDiagnosticQuestion(payload)
+      } else if (diagEditId != null) {
+        await updateDiagnosticQuestion(diagEditId, payload)
+      }
+      await queryClient.invalidateQueries({ queryKey: ['diagnostic-questions'] })
+      showToast(diagEditId === 'new' ? 'Soal diagnostik ditambahkan' : 'Soal diagnostik disimpan')
+      setDiagEditId(null)
+    } catch {
+      showToast('Gagal menyimpan soal diagnostik')
+    } finally {
+      setDiagSaving(false)
+    }
+  }
+
+  async function confirmDeleteDiag() {
+    if (diagDeleteId == null) return
+    try {
+      await deleteDiagnosticQuestion(diagDeleteId)
+      await queryClient.invalidateQueries({ queryKey: ['diagnostic-questions'] })
+      showToast('Soal diagnostik dihapus')
+    } catch {
+      showToast('Gagal menghapus soal diagnostik')
+    } finally {
+      setDiagDeleteId(null)
+    }
   }
 
   // Mirrors legacy init(): use saved order only when it matches the current
@@ -373,6 +461,75 @@ export function Manajemen() {
             </table>
           </div>
         </div>
+
+        {/* Diagnostic placement test question bank — dosen-only CRUD, see
+            docs/superpowers/specs/2026-07-23-diagnostic-adaptive-roadmap-design.md's
+            "Admin edit (dosen)" section. Same table/modal/confirm-modal pattern
+            as the module-management block above — no new UI pattern invented. */}
+        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+          <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
+            <span className="text-sm font-semibold text-brown">Soal Tes Diagnostik</span>
+            <button
+              onClick={openDiagAddModal}
+              className="h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap"
+              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+            >
+              + Tambah Soal
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-bg3">
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-14">Urutan</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Jawaban Benar</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedDiagQuestions.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-8 text-brown-3 text-sm">
+                      Belum ada soal tes diagnostik.
+                    </td>
+                  </tr>
+                ) : (
+                  sortedDiagQuestions.map((q) => {
+                    const pertanyaanTrunc = q.pertanyaan.length > 70 ? q.pertanyaan.slice(0, 70) + '…' : q.pertanyaan
+                    return (
+                      <tr key={q.id} className="border-t" style={BORDER}>
+                        <td className="px-3 py-2.5 font-semibold text-brown">{q.order_num}</td>
+                        <td className="px-3 py-2.5 text-brown min-w-[200px]">{pertanyaanTrunc}</td>
+                        <td className="px-3 py-2.5 text-brown-2">Opsi {q.jawaban + 1}</td>
+                        <td className="px-3 py-2.5">
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => openDiagEditModal(q)}
+                              aria-label={`Edit soal urutan ${q.order_num}`}
+                              className="w-8 h-8 rounded-md border text-brown-2 flex items-center justify-center flex-shrink-0"
+                              style={BORDER}
+                            >
+                              <IconEdit size={15} />
+                            </button>
+                            <button
+                              onClick={() => setDiagDeleteId(q.id)}
+                              aria-label={`Hapus soal urutan ${q.order_num}`}
+                              className="w-8 h-8 rounded-md border border-red/20 bg-red/10 text-red flex items-center justify-center flex-shrink-0"
+                            >
+                              <IconTrash size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Edit modal — matches legacy #editModal fields exactly */}
@@ -535,6 +692,122 @@ export function Manajemen() {
                 style={{ background: bulkConfirm === 'aktif' ? 'var(--sage-d)' : 'var(--red)' }}
               >
                 {bulkConfirm === 'aktif' ? 'Ya, Aktifkan' : 'Ya, Kunci'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diagnostic question add/edit modal — reuses the exact fadeInBg/slideUpModal
+          modal styling as the module edit modal above. */}
+      {diagEditId != null && (
+        <div
+          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
+          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeDiagModal()
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown">
+                {diagEditId === 'new' ? 'Tambah Soal Diagnostik' : `Edit Soal — Urutan ${diagOrderNum}`}
+              </h3>
+              <button onClick={closeDiagModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
+                ×
+              </button>
+            </div>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
+              Pertanyaan
+              <textarea
+                value={diagPertanyaan}
+                onChange={(e) => setDiagPertanyaan(e.target.value)}
+                rows={3}
+                className="rounded-lg border px-3 py-2 text-sm text-brown resize-y min-h-[70px]"
+                style={BORDER}
+              />
+            </label>
+
+            <div className="flex flex-col gap-2 mb-3">
+              <span className="text-xs font-semibold text-brown-2">
+                4 Opsi Jawaban <span className="font-normal text-brown-3">— pilih radio di sebelah opsi yang benar</span>
+              </span>
+              {diagOpsi.map((opsi, idx) => (
+                <label key={idx} className="flex items-center gap-2.5">
+                  <input
+                    type="radio"
+                    name="diagJawaban"
+                    checked={diagJawaban === idx}
+                    onChange={() => setDiagJawaban(idx)}
+                    aria-label={`Tandai opsi ${idx + 1} sebagai jawaban benar`}
+                    className="w-4 h-4 accent-terra cursor-pointer flex-shrink-0"
+                  />
+                  <input
+                    value={opsi}
+                    onChange={(e) => updateDiagOpsi(idx, e.target.value)}
+                    placeholder={`Opsi ${idx + 1}`}
+                    className="h-10 flex-1 min-w-0 rounded-lg border px-3 text-sm text-brown"
+                    style={BORDER}
+                  />
+                </label>
+              ))}
+            </div>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4 max-w-[140px]">
+              Urutan (order_num)
+              <input
+                type="number"
+                min={1}
+                value={diagOrderNum}
+                onChange={(e) => setDiagOrderNum(parseInt(e.target.value, 10) || 1)}
+                className="h-10 rounded-lg border px-3 text-sm text-brown"
+                style={BORDER}
+              />
+            </label>
+
+            <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
+              <button onClick={closeDiagModal} className="h-[38px] px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+                Batal
+              </button>
+              <button
+                onClick={() => void saveDiagQuestion()}
+                disabled={diagSaving || !diagPertanyaan.trim() || diagOpsi.some((o) => !o.trim())}
+                className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
+                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              >
+                {diagSaving ? 'Menyimpan…' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Diagnostic question delete confirmation modal — destructive action per
+          CLAUDE.md, mirrors bulkConfirm above / Ngain.tsx's per-row delete confirm. */}
+      {diagDeleteId != null && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDiagDeleteId(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus soal ini?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Soal tes diagnostik ini akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setDiagDeleteId(null)} className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2" style={BORDER}>
+                Batal
+              </button>
+              <button
+                onClick={() => void confirmDeleteDiag()}
+                className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold"
+                style={{ background: 'var(--red)' }}
+              >
+                Ya, Hapus
               </button>
             </div>
           </div>
