@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import * as pdfjsLib from 'pdfjs-dist'
 // Vite-bundled worker asset (mirrors legacy/ebook.html's CDN <script> worker
 // setup, but resolved from the installed pdfjs-dist package instead of a CDN).
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
-import { saveProgress } from '../lib/progress'
+import { saveProgress, moduleIdToPath } from '../lib/progress'
 import { useModules } from '../hooks/useModules'
 import { Layout } from '../components/Layout'
 import { IconWarning, IconSkipBack, IconSkipForward, IconBook } from '../components/icons'
@@ -13,9 +13,63 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
 
 type Status = 'loading' | 'ready' | 'error'
 
+// A small first-page-only render used as the catalog card's cover — mirrors
+// legacy/script.js's per-card async cover render, just against pdf.js
+// directly instead of the legacy IndexedDB cache.
+function CoverThumb({ src }: { src: string }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    setFailed(false)
+    pdfjsLib.getDocument(src).promise.then(
+      async (doc) => {
+        if (cancelled) return
+        const page = await doc.getPage(1)
+        const canvas = canvasRef.current
+        if (!canvas || cancelled) return
+        const baseViewport = page.getViewport({ scale: 1 })
+        const scale = 220 / baseViewport.width
+        const viewport = page.getViewport({ scale })
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) return
+        try {
+          await page.render({ canvasContext: ctx, viewport }).promise
+        } catch {
+          // cancelled by unmount — ignore, matches Ebook's main renderPage
+        }
+      },
+      () => {
+        if (!cancelled) setFailed(true)
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [src])
+
+  if (failed) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <IconBook size={28} className="text-terra-d" />
+      </div>
+    )
+  }
+  return <canvas ref={canvasRef} className="w-full h-full object-contain" />
+}
+
 // Ported (MVP core only) from legacy/ebook.html + legacy/script.js: load the
-// PDF named by ?book=<path>, render the current page to a canvas, prev/next
-// navigation, page-number display, and progress saving.
+// PDF belonging to ?book=<moduleId>, render the current page to a canvas,
+// prev/next navigation, page-number display, and progress saving.
+//
+// ?book= carries the module's numeric id, not its Supabase Storage URL —
+// resolving the actual file source from useModules() keeps the raw storage
+// path out of the address bar (it's still visible in the Network tab once
+// the PDF is fetched, same as any client-rendered file, but it's no longer
+// a bookmarkable/shareable link that exposes the storage bucket layout).
 //
 // Deferred vs. legacy/script.js (see PR description for rationale):
 //   - Desktop two-page spread + 3D CSS flip animation (buildBook/navigate's
@@ -24,14 +78,17 @@ type Status = 'loading' | 'ready' | 'error'
 //   - Full-book background pre-render + in-memory Map page cache
 //     (preRenderAll/pageCache) — this renders only the page(s) actually
 //     viewed, on demand.
-//   - Thumbnail strip sidebar (buildThumbs/toggleThumbs), catalog drawer
-//     overlay, pinch-zoom/pan/wheel-zoom, swipe navigation, keyboard
-//     shortcuts, and the "expand" fullscreen toggle.
+//   - Thumbnail strip sidebar (buildThumbs/toggleThumbs), pinch-zoom/pan/
+//     wheel-zoom, swipe navigation, keyboard shortcuts, and the "expand"
+//     fullscreen toggle.
 export function Ebook() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const book = searchParams.get('book') ?? ''
+  const bookId = searchParams.get('book')
+  const moduleId = bookId ? Number(bookId) : null
   const { data: modules = [] } = useModules()
-  const catalog = modules.filter((m) => !!(m.path || m.pdf_path))
+  const catalog = useMemo(() => modules.filter((m) => !!(m.path || m.pdf_path)), [modules])
+  const currentModule = moduleId != null ? modules.find((m) => m.id === moduleId) : undefined
+  const src = currentModule?.path || currentModule?.pdf_path || ''
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const pdfRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
@@ -42,7 +99,7 @@ export function Ebook() {
   const [totalPages, setTotalPages] = useState(0)
   const [currentPage, setCurrentPage] = useState(1) // 1-based, matches PDF.js page numbering
 
-  // ── Load the PDF whenever ?book= changes ──
+  // ── Load the PDF whenever the resolved source changes ──
   useEffect(() => {
     let cancelled = false
     setStatus('loading')
@@ -51,9 +108,18 @@ export function Ebook() {
     setCurrentPage(1)
     pdfRef.current = null
 
-    if (!book) return // no book selected — the catalog grid renders instead, see JSX below
+    if (!moduleId) return // no book selected — the catalog grid renders instead, see JSX below
+    if (!src) {
+      // Modules are still loading, or this module genuinely has no PDF yet —
+      // useModules() resolves async, so don't flash an error before it settles.
+      if (modules.length > 0) {
+        setErrorMsg('PDF modul ini belum tersedia.\nFile akan ditambahkan segera.')
+        setStatus('error')
+      }
+      return
+    }
 
-    pdfjsLib.getDocument(book).promise.then(
+    pdfjsLib.getDocument(src).promise.then(
       (doc) => {
         if (cancelled) return
         pdfRef.current = doc
@@ -77,7 +143,7 @@ export function Ebook() {
     return () => {
       cancelled = true
     }
-  }, [book])
+  }, [moduleId, src, modules.length])
 
   // ── Render the current page into the canvas ──
   const renderPage = useCallback(async (num: number) => {
@@ -114,12 +180,15 @@ export function Ebook() {
   }, [status, currentPage, renderPage])
 
   // ── Save progress on every page change (mirrors legacy/script.js's
-  // renderView() -> saveProgress() firing on every navigate()) ──
+  // renderView() -> saveProgress() firing on every navigate()). Keyed by the
+  // synthetic moduleIdToPath() string (not the actual PDF source URL) so
+  // progress tracking is identical whether the file lives in books/ or was
+  // uploaded to Supabase Storage. ──
   useEffect(() => {
-    if (status !== 'ready' || totalPages <= 0 || !book) return
+    if (status !== 'ready' || totalPages <= 0 || !moduleId) return
     const pct = Math.min(100, Math.round((currentPage / totalPages) * 100))
-    saveProgress(book, { pct, currentPage, lastOpened: new Date().toISOString() }).catch(() => {})
-  }, [status, currentPage, totalPages, book])
+    saveProgress(moduleIdToPath(moduleId), { pct, currentPage, lastOpened: new Date().toISOString() }).catch(() => {})
+  }, [status, currentPage, totalPages, moduleId])
 
   function goFirst() {
     setCurrentPage(1)
@@ -136,37 +205,37 @@ export function Ebook() {
 
   return (
     <Layout>
-      <div className="page-fadein flex flex-col items-center p-4 md:p-6 gap-4">
-        <div className="w-full max-w-3xl flex items-center justify-between gap-3">
-          <Link to="/dashboard" className="text-xs md:text-sm text-brown-3">
-            ← Kembali ke Dashboard
+      <div className="page-fadein flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
+        <div className="w-full max-w-4xl flex items-center justify-between gap-3">
+          <Link to={moduleId ? '/ebook' : '/dashboard'} className="text-xs md:text-sm text-brown-3 hover:text-brown">
+            ← {moduleId ? 'Katalog' : 'Kembali ke Dashboard'}
           </Link>
           <span className="text-sm font-semibold text-brown truncate text-right">
-            {book ? book.split('/').pop()?.replace(/\.pdf$/i, '') : 'Perpustakaan Digital'}
+            {currentModule?.title ?? (moduleId ? '' : 'Perpustakaan Digital')}
           </span>
         </div>
 
-        {!book && (
-          <div className="w-full max-w-3xl">
+        {!moduleId && (
+          <div className="w-full max-w-4xl">
             {catalog.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <IconBook size={36} className="text-brown-3" />
                 <p className="text-sm text-brown-3">Belum ada PDF modul yang terpasang.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {catalog.map((m) => (
                   <button
                     key={m.id}
-                    onClick={() => setSearchParams({ book: m.path || m.pdf_path || '' })}
-                    className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-ivory text-center"
+                    onClick={() => setSearchParams({ book: String(m.id) })}
+                    className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-ivory text-center transition-shadow hover:shadow-md"
                     style={{ borderColor: 'var(--border)' }}
                   >
                     <div
-                      className="w-full aspect-[3/4] rounded-lg flex items-center justify-center"
+                      className="w-full aspect-[3/4] rounded-lg overflow-hidden flex items-center justify-center shadow-sm"
                       style={{ background: 'var(--bg3)' }}
                     >
-                      <IconBook size={28} className="text-terra-d" />
+                      <CoverThumb src={m.path || m.pdf_path || ''} />
                     </div>
                     <span className="text-xs font-semibold text-brown line-clamp-2">{m.title}</span>
                   </button>
@@ -176,8 +245,8 @@ export function Ebook() {
           </div>
         )}
 
-        {book && status === 'loading' && (
-          <div className="flex flex-col items-center gap-4 py-16" role="status">
+        {moduleId != null && status === 'loading' && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16" role="status">
             <div
               className="w-12 h-12 rounded-full animate-spin"
               style={{ border: '4px solid var(--border)', borderTopColor: 'var(--terra)' }}
@@ -186,15 +255,15 @@ export function Ebook() {
           </div>
         )}
 
-        {book && status === 'error' && (
-          <div className="flex flex-col items-center gap-3 py-16 text-center max-w-sm">
+        {moduleId != null && status === 'error' && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center max-w-sm">
             <IconWarning size={40} className="text-red" />
             <p className="text-sm text-brown-2 whitespace-pre-line">{errorMsg}</p>
             <Link
-              to="/dashboard"
+              to="/ebook"
               className="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terra text-white text-sm font-semibold no-underline"
             >
-              Kembali ke Dashboard
+              Kembali ke Katalog
             </Link>
           </div>
         )}
@@ -202,10 +271,10 @@ export function Ebook() {
         {status === 'ready' && (
           <>
             <div
-              className="w-full max-w-3xl flex justify-center bg-bg3 rounded-xl border overflow-auto p-2 md:p-4"
-              style={{ borderColor: 'var(--border)', maxHeight: 'calc(100vh - 220px)' }}
+              className="w-full max-w-4xl flex-1 flex justify-center items-start bg-bg3 rounded-2xl border overflow-auto p-4 md:p-8"
+              style={{ borderColor: 'var(--border)', minHeight: '60vh', maxHeight: 'calc(100vh - 200px)' }}
             >
-              <canvas ref={canvasRef} className="max-w-full h-auto shadow-md rounded-sm" />
+              <canvas ref={canvasRef} className="max-w-full h-auto shadow-lg rounded-sm" />
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-2.5 flex-wrap justify-center">
