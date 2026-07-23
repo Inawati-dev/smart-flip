@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { AuthShell } from '../components/AuthShell'
 
 type View = 'loading' | 'form' | 'success' | 'error'
 
@@ -140,9 +141,9 @@ export function ResetPassword() {
   const strength = calcStrength(password)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cream px-4 py-6">
-      <div className="bg-ivory p-8 rounded-xl shadow-md w-full max-w-sm">
-        <h1 className="text-xl font-bold text-brown mb-1">
+    <AuthShell>
+      <div>
+        <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight mb-1">
           {view === 'error' ? errorTitle : 'Buat Password Baru'}
         </h1>
         {view === 'form' && (
@@ -292,6 +293,6 @@ export function ResetPassword() {
           </div>
         )}
       </div>
-    </div>
+    </AuthShell>
   )
 }
