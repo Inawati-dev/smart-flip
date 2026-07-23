@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
@@ -421,12 +421,12 @@ export function Profil() {
               {!vark || !vark.dominant ? (
                 <div className="flex flex-col items-center gap-2 text-center py-2">
                   <p className="text-sm text-brown-3">Kamu belum mengisi asesmen gaya belajar VARK.</p>
-                  <a
-                    href="/legacy/vark.html"
+                  <Link
+                    to="/vark"
                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-terra text-white text-sm font-semibold"
                   >
                     Isi Sekarang →
-                  </a>
+                  </Link>
                 </div>
               ) : (
                 (() => {
@@ -479,9 +479,9 @@ export function Profil() {
                         })}
                       </div>
                       <div className="text-right mt-2">
-                        <a href="/legacy/vark.html" className="text-xs text-sage-d">
+                        <Link to="/vark" className="text-xs text-sage-d">
                           Isi ulang asesmen →
-                        </a>
+                        </Link>
                       </div>
                     </>
                   )
