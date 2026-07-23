@@ -6,6 +6,7 @@ import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { ResetPassword } from './pages/ResetPassword'
 import { Dashboard } from './pages/Dashboard'
+import { Diagnostik } from './pages/Diagnostik'
 import { Profil } from './pages/Profil'
 import Modul from './pages/Modul'
 import Kuis from './pages/Kuis'
@@ -41,6 +42,14 @@ export default function App() {
               }
             />
             <Route path="/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
+            <Route
+              path="/diagnostik"
+              element={
+                <ProtectedRoute roles={['mahasiswa']}>
+                  <Diagnostik />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/modul/:id" element={<ProtectedRoute><Modul /></ProtectedRoute>} />
             <Route path="/modul/:id/kuis" element={<ProtectedRoute><Kuis /></ProtectedRoute>} />
             <Route path="/modul/:id/workshop" element={<ProtectedRoute><Workshop /></ProtectedRoute>} />
