@@ -4,6 +4,7 @@ import { useModule } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { moduleIdToPath } from '../lib/progress'
+import { Layout } from '../components/Layout'
 
 // Only allow https:/http: DOI links — block javascript: and other dangerous
 // protocols. Ported verbatim from legacy/modul.html:904-907.
@@ -36,8 +37,8 @@ export default function Modul() {
   const { data: attempts = [] } = useQuizAttempts(moduleId)
   const [jTab, setJTab] = useState<'jurnal' | 'kasus'>('jurnal')
 
-  if (isLoading) return <div className="p-8 text-brown-3">Memuat…</div>
-  if (!modul) return <div className="p-8 text-brown">Modul tidak ditemukan</div>
+  if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
+  if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
   const bestScore = attempts.length ? Math.max(...attempts.map((a) => a.score)) : null
   const prog = progress[moduleIdToPath(modul.id)]
@@ -45,7 +46,8 @@ export default function Modul() {
   const bacaLabel = pct >= 100 ? '📖 Baca Ulang' : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar'
 
   return (
-    <div className="min-h-screen bg-cream p-6 max-w-3xl mx-auto">
+    <Layout>
+    <div className="p-6 max-w-3xl mx-auto">
       <Link to="/dashboard" className="text-brown-3 text-sm mb-6 inline-block">
         ← Kembali ke Dashboard
       </Link>
@@ -221,5 +223,6 @@ export default function Modul() {
         )}
       </div>
     </div>
+    </Layout>
   )
 }
