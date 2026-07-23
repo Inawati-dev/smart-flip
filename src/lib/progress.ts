@@ -54,6 +54,76 @@ export async function fetchAllProgress(): Promise<ProgressMap> {
 // learning time and quiz history, so this mirrors that fixed range verbatim.
 export const TOTAL_MODULES = 9
 
+// modulePath 'books/modul-01.pdf' -> module_id (order_num) 1.
+// Mirrors legacy/data-layer.js's pathToModuleId().
+function pathToModuleId(modulePath: string): number | null {
+  const m = /modul-(\d+)\.pdf/.exec(modulePath || '')
+  return m ? parseInt(m[1], 10) : null
+}
+
+export interface SaveProgressInput {
+  pct: number
+  currentPage: number
+  lastOpened?: string
+}
+
+// Ported from legacy/data-layer.js's DataLayer.saveProgress(): upsert into
+// Supabase `user_progress` when configured (keyed by user_id+module_id,
+// deriving module_id from the modulePath via pathToModuleId), else merge into
+// the localStorage 'sfp_<modulePath>' key — matching fetchAllProgress's
+// existing key format exactly (e.g. 'sfp_books/modul-01.pdf').
+export async function saveProgress(modulePath: string, data: SaveProgressInput): Promise<void> {
+  const lastOpened = data.lastOpened || new Date().toISOString()
+
+  if (isSupabaseConfigured) {
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const uid = userData.user?.id
+      const moduleId = pathToModuleId(modulePath)
+      if (uid && moduleId) {
+        const { error } = await supabase.from('user_progress').upsert(
+          {
+            user_id: uid,
+            module_id: moduleId,
+            pct: data.pct,
+            current_page: data.currentPage,
+            last_opened: lastOpened,
+            status: data.pct >= 100 ? 'completed' : data.pct > 0 ? 'in_progress' : 'not_started',
+            started_at: new Date().toISOString(),
+            completed_at: data.pct >= 100 ? new Date().toISOString() : null,
+          },
+          { onConflict: 'user_id,module_id' },
+        )
+        if (error) throw error
+        return
+      }
+    } catch (e) {
+      console.warn('[progress] saveProgress → Supabase gagal, fallback localStorage:', e)
+    }
+  }
+
+  try {
+    const existingRaw = localStorage.getItem('sfp_' + modulePath)
+    let existing: Partial<ProgressEntry> = {}
+    if (existingRaw) {
+      try {
+        existing = JSON.parse(existingRaw) as Partial<ProgressEntry>
+      } catch {
+        existing = {}
+      }
+    }
+    const merged: ProgressEntry = {
+      ...existing,
+      pct: data.pct,
+      currentPage: data.currentPage,
+      lastOpened,
+    }
+    localStorage.setItem('sfp_' + modulePath, JSON.stringify(merged))
+  } catch {
+    // ignore quota/serialization errors, matches legacy/data-layer.js lsSet behavior
+  }
+}
+
 // Mirrors legacy/data-layer.js getTimeSpent(moduleId).
 export async function fetchTimeSpent(moduleId: number): Promise<number> {
   if (isSupabaseConfigured) {
