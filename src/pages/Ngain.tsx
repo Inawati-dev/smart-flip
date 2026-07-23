@@ -71,6 +71,7 @@ export default function Ngain() {
   const [overMaxIds, setOverMaxIds] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
   const [resetModalOpen, setResetModalOpen] = useState(false)
+  const [deleteRowId, setDeleteRowId] = useState<string | null>(null)
 
   const max = parseFloat(skorMax) || 100
 
@@ -317,7 +318,7 @@ export default function Ngain() {
                       </td>
                       <td className="px-2 py-2 text-center">
                         <button
-                          onClick={() => deleteRow(row.id)}
+                          onClick={() => setDeleteRowId(row.id)}
                           aria-label={`Hapus baris ${row.nama || i + 1}`}
                           className="w-11 h-11 rounded-md border-[1.5px] border-red/20 bg-red/10 text-red text-lg font-bold inline-flex items-center justify-center"
                         >
@@ -495,10 +496,10 @@ export default function Ngain() {
       {resetModalOpen && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,.48)' }}
+          style={{ background: 'rgba(0,0,0,.48)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => { if (e.target === e.currentTarget) setResetModalOpen(false) }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center">
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Reset tabel data?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Semua data pre-test/post-test yang sudah diinput akan diganti dengan data contoh. Tindakan ini tidak
@@ -516,6 +517,36 @@ export default function Ngain() {
                 className="flex-1 h-11 rounded-lg bg-red text-white text-sm font-semibold"
               >
                 Ya, Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE ROW CONFIRMATION MODAL — destructive action per CLAUDE.md Modal Wajib rule */}
+      {deleteRowId != null && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteRowId(null) }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus baris ini?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Data pre-test/post-test mahasiswa ini akan dihapus dari tabel. Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setDeleteRowId(null)}
+                className="flex-1 h-11 rounded-lg border border-[color:var(--border)] text-sm text-brown-2"
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => { deleteRow(deleteRowId); setDeleteRowId(null) }}
+                className="flex-1 h-11 rounded-lg bg-red text-white text-sm font-semibold"
+              >
+                Ya, Hapus
               </button>
             </div>
           </div>

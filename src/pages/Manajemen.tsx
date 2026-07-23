@@ -353,12 +353,12 @@ export function Manajemen() {
       {editId != null && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)' }}
+          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) closeEditModal()
           }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}>
+          <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown">
                 Edit — {modMap[editId]?.title || ''}
@@ -456,12 +456,12 @@ export function Manajemen() {
       {bulkConfirm && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.48)' }}
+          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setBulkConfirm(null)
           }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center">
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
               {bulkConfirm === 'aktif' ? 'Aktifkan modul terpilih?' : 'Kunci modul terpilih?'}
             </h3>

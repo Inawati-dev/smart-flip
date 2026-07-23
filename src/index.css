@@ -22,3 +22,13 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* Modal animation — kemampuan-web-dev.md §128/§129: durasi di atas ~200ms, jangan diulang per komponen modal */
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUpModal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
