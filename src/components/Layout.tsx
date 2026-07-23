@@ -26,22 +26,26 @@ interface NavItem {
   to: string
   icon: ComponentType<{ size?: number }>
   label: string
+  color: string
   dosenOnly?: boolean
 }
 
+// Each item gets its own accent (reuses hues already established elsewhere in
+// the app, e.g. Profil.tsx's VARK_COLORS) so the rail reads as a set of
+// distinct destinations, not one flat monochrome column.
 const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', icon: IconHome, label: 'Dashboard' },
-  { to: '/ebook', icon: IconBook, label: 'Katalog Modul' },
-  { to: '/forum', icon: IconChat, label: 'Forum' },
-  { to: '/draf', icon: IconEdit, label: 'Draf' },
-  { to: '/feedback', icon: IconStar, label: 'Feedback' },
-  { to: '/vark', icon: IconCompass, label: 'Gaya Belajar' },
-  { to: '/ngain', icon: IconChart, label: 'N-Gain', dosenOnly: true },
-  { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },
-  { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
-  { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
-  { to: '/profil', icon: IconUser, label: 'Profil' },
-  { to: '/changelog', icon: IconClipboard, label: 'Changelog' },
+  { to: '/dashboard', icon: IconHome, label: 'Dashboard', color: '#B8855A' },
+  { to: '/ebook', icon: IconBook, label: 'Katalog Modul', color: '#6B7EAF' },
+  { to: '/forum', icon: IconChat, label: 'Forum', color: '#8FA287' },
+  { to: '/draf', icon: IconEdit, label: 'Draf', color: '#B07A3E' },
+  { to: '/feedback', icon: IconStar, label: 'Feedback', color: '#D4A373' },
+  { to: '/vark', icon: IconCompass, label: 'Gaya Belajar', color: '#8B6BA0' },
+  { to: '/ngain', icon: IconChart, label: 'N-Gain', color: '#6B7EAF', dosenOnly: true },
+  { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', color: '#6B9B7E', dosenOnly: true },
+  { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', color: '#C0704A', dosenOnly: true },
+  { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', color: '#8B6BA0', dosenOnly: true },
+  { to: '/profil', icon: IconUser, label: 'Profil', color: '#6B5D4F' },
+  { to: '/changelog', icon: IconClipboard, label: 'Changelog', color: '#9B8B7A' },
 ]
 
 const COLLAPSE_KEY = 'sfp_sidebar_collapsed'
@@ -86,19 +90,20 @@ export function Layout({ children }: { children: ReactNode }) {
         }`}
         onMouseLeave={() => setFlyout(null)}
       >
-        <div className={`flex items-center mb-5 ${collapsed ? 'justify-center' : 'justify-between px-1'}`}>
+        <div className={`flex items-center mb-5 ${collapsed ? 'flex-col gap-2' : 'justify-between px-1'}`}>
           <Link to="/dashboard" className="w-11 h-11 rounded-xl flex items-center justify-center text-brown flex-shrink-0" aria-label="Beranda">
             <IconBook size={22} />
           </Link>
-          {!collapsed && (
-            <button
-              onClick={toggleCollapsed}
-              aria-label="Ciutkan sidebar"
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3 hover:text-brown hover:bg-[rgba(62,54,46,.05)]"
-            >
-              <IconChevronRight size={15} style={{ transform: 'rotate(180deg)' }} />
-            </button>
-          )}
+          {/* Always visible (both states) so there's always an obvious click target
+              to expand back out — not just discoverable from one state. */}
+          <button
+            onClick={toggleCollapsed}
+            aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+            title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3 hover:text-brown hover:bg-[rgba(62,54,46,.05)] transition-colors"
+          >
+            <IconChevronRight size={15} style={{ transform: collapsed ? undefined : 'rotate(180deg)', transition: 'transform .2s ease' }} />
+          </button>
         </div>
 
         <nav className={`flex-1 flex flex-col gap-1 ${collapsed ? 'items-center w-full' : ''}`}>
@@ -118,12 +123,16 @@ export function Layout({ children }: { children: ReactNode }) {
                       ? 'w-11 h-11 rounded-xl flex items-center justify-center transition-colors'
                       : 'h-11 px-3 rounded-xl flex items-center gap-2.5 transition-colors text-sm font-semibold'
                   }
-                  style={active ? { background: 'var(--brown)', color: 'var(--terra)' } : { color: 'var(--brown-2)' }}
+                  style={
+                    active
+                      ? { background: 'var(--brown)', color: item.color }
+                      : { color: item.color }
+                  }
                   aria-label={item.label}
                   aria-current={active ? 'page' : undefined}
                 >
                   <Icon size={19} />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
+                  {!collapsed && <span className="truncate" style={{ color: active ? item.color : 'var(--brown-2)' }}>{item.label}</span>}
                 </Link>
                 {collapsed && flyout === item.to && (
                   <div
@@ -137,16 +146,6 @@ export function Layout({ children }: { children: ReactNode }) {
             )
           })}
         </nav>
-
-        {collapsed && (
-          <button
-            onClick={toggleCollapsed}
-            aria-label="Perluas sidebar"
-            className="w-11 h-11 rounded-xl flex items-center justify-center text-brown-3 hover:text-brown mb-1"
-          >
-            <IconChevronRight size={15} />
-          </button>
-        )}
 
         <button
           onClick={() => setLogoutOpen(true)}
@@ -223,7 +222,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 onClick={() => setDrawerOpen(false)}
                 className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2"
               >
-                <Icon size={17} /> {item.label}
+                <span style={{ color: item.color }} className="inline-flex"><Icon size={17} /></span> {item.label}
               </Link>
             )
           })}
