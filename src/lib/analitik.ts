@@ -12,6 +12,8 @@ export interface StudentStat {
   jam: number
   kepraktisan: number | null
   status: StudentStatus
+  jalur?: 'cepat' | 'mendalam' | null
+  kelas?: string | null
 }
 
 export interface ModulDistItem {
@@ -234,7 +236,7 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
   if (!isSupabaseConfigured) return null
   try {
     const [studentsRes, progressRes, quizRes, feedbackRes] = await Promise.all([
-      supabase.from('profiles').select('id, full_name').eq('role', 'mahasiswa'),
+      supabase.from('profiles').select('id, full_name, jalur, classes(name)').eq('role', 'mahasiswa'),
       supabase.from('user_progress').select('user_id, module_id, status, time_spent'),
       supabase.from('quiz_attempts').select('user_id, score'),
       supabase.from('feedback').select('user_id, rata_rata'),
@@ -257,6 +259,8 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
         .map((f) => +f.rata_rata)
         .filter((n) => !isNaN(n))
       const kepraktisan = fb.length ? +(fb.reduce((a, b) => a + b, 0) / fb.length).toFixed(1) : null
+      const classRel = (s as { classes?: { name: string } | { name: string }[] | null }).classes
+      const kelas = Array.isArray(classRel) ? classRel[0]?.name ?? null : classRel?.name ?? null
       return {
         id: s.id as string,
         nama: s.full_name as string,
@@ -265,6 +269,8 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
         jam,
         kepraktisan,
         status: computeStudentStatus(jam),
+        jalur: (s as { jalur?: 'cepat' | 'mendalam' | null }).jalur ?? null,
+        kelas,
       }
     })
   } catch (e) {
