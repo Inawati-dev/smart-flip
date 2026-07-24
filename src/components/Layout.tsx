@@ -28,7 +28,6 @@ interface NavItem {
   to: string
   icon: ComponentType<{ size?: number }>
   label: string
-  color: string
   dosenOnly?: boolean
 }
 
@@ -38,53 +37,54 @@ interface NavSection {
   items: NavItem[]
 }
 
-// Each item gets its own accent (reuses hues already established elsewhere in
-// the app, e.g. Profil.tsx's VARK_COLORS) so the rail reads as a set of
-// distinct destinations, not one flat monochrome column. Grouped into
-// sections so the expanded sidebar can render as a collapsible accordion
-// (same rail/accordion/flyout split as SAKTI's IconRailV2).
+// Neutral icon+label everywhere, distinguished only by hover/active state —
+// per-item accent colors were tried and explicitly reverted (felt noisy at
+// this density). Grouped into sections so the expanded sidebar can render as
+// a collapsible accordion (same rail/accordion/flyout split as SAKTI's
+// IconRailV2). Shared by every role — fixing hover/spacing here covers both
+// mahasiswa and dosen at once.
 const NAV_SECTIONS: NavSection[] = [
   {
     key: 'utama',
     label: 'Utama',
     items: [
-      { to: '/dashboard', icon: IconHome, label: 'Dashboard', color: '#B8855A' },
-      { to: '/ebook', icon: IconBook, label: 'Katalog Modul', color: '#6B7EAF' },
+      { to: '/dashboard', icon: IconHome, label: 'Dashboard' },
+      { to: '/ebook', icon: IconBook, label: 'Katalog Modul' },
     ],
   },
   {
     key: 'kolaborasi',
     label: 'Kolaborasi',
     items: [
-      { to: '/forum', icon: IconChat, label: 'Forum', color: '#8FA287' },
-      { to: '/draf', icon: IconEdit, label: 'Draf', color: '#B07A3E' },
+      { to: '/forum', icon: IconChat, label: 'Forum' },
+      { to: '/draf', icon: IconEdit, label: 'Draf' },
     ],
   },
   {
     key: 'belajar',
     label: 'Belajar',
     items: [
-      { to: '/feedback', icon: IconStar, label: 'Feedback', color: '#D4A373' },
-      { to: '/vark', icon: IconCompass, label: 'Gaya Belajar', color: '#8B6BA0' },
+      { to: '/feedback', icon: IconStar, label: 'Feedback' },
+      { to: '/vark', icon: IconCompass, label: 'Gaya Belajar' },
     ],
   },
   {
     key: 'kelola-kelas',
     label: 'Kelola Kelas',
     items: [
-      { to: '/ngain', icon: IconChart, label: 'N-Gain', color: '#6B7EAF', dosenOnly: true },
-      { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', color: '#6B9B7E', dosenOnly: true },
-      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', color: '#C0704A', dosenOnly: true },
-      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', color: '#8B6BA0', dosenOnly: true },
-      { to: '/changelog', icon: IconClipboard, label: 'Changelog', color: '#9B8B7A', dosenOnly: true },
+      { to: '/ngain', icon: IconChart, label: 'N-Gain', dosenOnly: true },
+      { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },
+      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
+      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
+      { to: '/changelog', icon: IconClipboard, label: 'Changelog', dosenOnly: true },
     ],
   },
   {
     key: 'akun',
     label: 'Akun',
     items: [
-      { to: '/profil', icon: IconUser, label: 'Profil', color: '#6B5D4F' },
-      { to: '/pengaturan', icon: IconGear, label: 'Pengaturan', color: '#6B5D4F' },
+      { to: '/profil', icon: IconUser, label: 'Profil' },
+      { to: '/pengaturan', icon: IconGear, label: 'Pengaturan' },
     ],
   },
 ]
@@ -170,17 +170,14 @@ export function Layout({ children }: { children: ReactNode }) {
       >
         <Link
           to={item.to}
-          className={
-            collapsed
-              ? 'w-11 h-11 rounded-xl flex items-center justify-center transition-colors'
-              : 'h-11 px-3 rounded-xl flex items-center gap-2.5 transition-colors text-sm font-semibold'
-          }
-          style={active ? { background: 'var(--brown)', color: item.color } : { color: item.color }}
+          className={`cursor-pointer transition-colors ${
+            collapsed ? 'w-11 h-11 rounded-xl flex items-center justify-center' : 'h-11 px-3 rounded-xl flex items-center gap-2.5 text-sm font-semibold'
+          } ${active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'}`}
           aria-label={item.label}
           aria-current={active ? 'page' : undefined}
         >
           <Icon size={19} />
-          {!collapsed && <span className="truncate" style={{ color: active ? item.color : 'var(--brown-2)' }}>{item.label}</span>}
+          {!collapsed && <span className="truncate">{item.label}</span>}
         </Link>
         {collapsed && flyout === item.to && (
           <div
@@ -228,14 +225,14 @@ export function Layout({ children }: { children: ReactNode }) {
         ) : (
           // Expanded: section headers double as accordion triggers, matching
           // SAKTI IconRailV2's expanded-mode grouping.
-          <nav className="flex-1 flex flex-col gap-2.5 overflow-y-auto">
+          <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
             {sections.map((section) => {
               const open = openSections[section.key] ?? true
               return (
                 <div key={section.key}>
                   <button
                     onClick={() => toggleSection(section.key)}
-                    className="w-full flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brown-3 hover:text-brown-2 transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-1 rounded-lg cursor-pointer text-[11px] font-bold uppercase tracking-wide text-brown-3 hover:bg-[rgba(62,54,46,.06)] hover:text-brown transition-colors"
                     aria-expanded={open}
                   >
                     <span>{section.label}</span>
@@ -245,7 +242,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     />
                   </button>
                   {open && (
-                    <div className="flex flex-col gap-1 mt-1">
+                    <div className="flex flex-col gap-0.5 mt-0.5">
                       {section.items.map(renderNavItem)}
                     </div>
                   )}
@@ -320,20 +317,23 @@ export function Layout({ children }: { children: ReactNode }) {
             <IconX size={17} />
           </button>
         </div>
-        <nav className="flex flex-col p-2 gap-2.5">
+        <nav className="flex flex-col p-2 gap-1.5">
           {sections.map((section) => (
             <div key={section.key} className="flex flex-col gap-0.5">
               <span className="px-3.5 pt-1 text-[11px] font-bold uppercase tracking-wide text-brown-3">{section.label}</span>
               {section.items.map((item) => {
+                const active = location.pathname === item.to
                 const Icon = item.icon
                 return (
                   <Link
                     key={item.to}
                     to={item.to}
                     onClick={() => setDrawerOpen(false)}
-                    className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2"
+                    className={`min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm cursor-pointer transition-colors ${
+                      active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'
+                    }`}
                   >
-                    <span style={{ color: item.color }} className="inline-flex"><Icon size={17} /></span> {item.label}
+                    <Icon size={17} /> {item.label}
                   </Link>
                 )
               })}
