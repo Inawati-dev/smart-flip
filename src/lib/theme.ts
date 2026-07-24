@@ -1,12 +1,8 @@
-// Theme picker (Pengaturan.tsx) — swaps the warm-palette color tokens at
-// runtime via injectDesignTokens(). Two references pulled live from SAKTI's
-// own theme picker (sakti-ku.vercel.app, Settings -> Tema) at the user's
-// request: "Seline" (SAKTI's "Mode Terang", cool neutral + blue accent) and
-// "Claude" (SAKTI's own claude.ai-signature terracotta theme). "Bawaan" is
-// this project's existing warm parchment palette, unchanged.
-//
-// Only the color tokens are swappable — shadows/radii stay constant across
-// themes (not part of any of the 3 reference palettes, no reason to vary).
+// Theme picker (Pengaturan.tsx) — swaps design tokens at runtime via
+// injectDesignTokens(). "Bawaan" is this project's existing warm parchment
+// palette. "Seline" and "Claude" reference two other theme palettes shown
+// live during development, adapted to this project's token set (colors +
+// button fill/text + soft-accent tint, not just the accent hue).
 
 export type ThemeId = 'bawaan' | 'seline' | 'claude'
 
@@ -22,6 +18,9 @@ export interface ThemeColors {
   brown4: string
   border: string
   border2: string
+  btnBg: string
+  btnText: string
+  accentSoft: string
 }
 
 export const THEMES: Record<ThemeId, { label: string; desc: string; colors: ThemeColors }> = {
@@ -40,11 +39,14 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       brown4: '#C5B8AD',
       border: 'rgba(62,54,46,.10)',
       border2: 'rgba(62,54,46,.06)',
+      btnBg: '#D4A373',
+      btnText: '#FFFFFF',
+      accentSoft: 'rgba(212,163,115,.12)',
     },
   },
   seline: {
     label: 'Seline',
-    desc: 'Netral terang, aksen biru — signature asli "Mode Terang" SAKTI.',
+    desc: 'Netral terang, aksen biru.',
     colors: {
       cream: '#FAFAF9',
       ivory: '#FFFFFF',
@@ -57,11 +59,14 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       brown4: '#C9C3BD',
       border: '#E8E6E5',
       border2: '#F0EFEE',
+      btnBg: '#3BA6F1',
+      btnText: '#FFFFFF',
+      accentSoft: '#EEF7FE',
     },
   },
   claude: {
     label: 'Claude',
-    desc: 'Bone parchment, aksen terracotta jarang — signature asli claude.ai.',
+    desc: 'Bone parchment, aksen terracotta jarang.',
     colors: {
       cream: '#F8F8F6',
       ivory: '#FFFFFF',
@@ -74,6 +79,9 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       brown4: '#B5AFA8',
       border: '#E7E6E1',
       border2: '#F0EFEA',
+      btnBg: '#121212',
+      btnText: '#FFFFFF',
+      accentSoft: 'rgba(217,119,87,.12)',
     },
   },
 }
