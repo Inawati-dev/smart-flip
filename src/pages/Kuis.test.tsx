@@ -40,8 +40,8 @@ const MODULE_BASE = {
 }
 
 const TWO_QUESTIONS = [
-  { q: 'Soal pertama?', options: ['Salah A', 'Benar B'], answer: 1 },
-  { q: 'Soal kedua?', options: ['Benar A', 'Salah B'], answer: 0 },
+  { id: 1, module_id: 1, question: 'Soal pertama?', options: ['Salah A', 'Benar B'], answer_idx: 1, explanation: null, order_num: 1 },
+  { id: 2, module_id: 1, question: 'Soal kedua?', options: ['Benar A', 'Salah B'], answer_idx: 0, explanation: null, order_num: 2 },
 ]
 
 function newQueryClient() {
@@ -71,7 +71,8 @@ function renderKuis(queryClient: QueryClient) {
 describe('Kuis', () => {
   it('renders without throwing once module data loads', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules', 1], { ...MODULE_BASE, kuis: TWO_QUESTIONS })
+    queryClient.setQueryData(['modules', 1], MODULE_BASE)
+    queryClient.setQueryData(['kuis-soal', 1], TWO_QUESTIONS)
     const html = renderToStaticMarkup(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/modul/1/kuis']}>
@@ -87,7 +88,8 @@ describe('Kuis', () => {
 
   it('shows an empty-state message when the module has no quiz questions yet', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules', 1], { ...MODULE_BASE, kuis: [] })
+    queryClient.setQueryData(['modules', 1], MODULE_BASE)
+    queryClient.setQueryData(['kuis-soal', 1], [])
     const html = renderToStaticMarkup(
       <QueryClientProvider client={queryClient}>
         <MemoryRouter initialEntries={['/modul/1/kuis']}>
@@ -102,7 +104,8 @@ describe('Kuis', () => {
 
   it('locks in an answer on click, shows immediate feedback, and enables Selanjutnya', () => {
     const queryClient = newQueryClient()
-    queryClient.setQueryData(['modules', 1], { ...MODULE_BASE, kuis: TWO_QUESTIONS })
+    queryClient.setQueryData(['modules', 1], MODULE_BASE)
+    queryClient.setQueryData(['kuis-soal', 1], TWO_QUESTIONS)
     renderKuis(queryClient)
 
     const nextBtn = screen.getByText('Selanjutnya →') as HTMLButtonElement
@@ -117,7 +120,8 @@ describe('Kuis', () => {
   it('computes the percentage score correctly, saves the attempt via saveQuizAttempt, and shows the pass/fail result', async () => {
     saveQuizAttemptMock.mockClear()
     const queryClient = newQueryClient()
-    queryClient.setQueryData(['modules', 1], { ...MODULE_BASE, kuis: TWO_QUESTIONS })
+    queryClient.setQueryData(['modules', 1], MODULE_BASE)
+    queryClient.setQueryData(['kuis-soal', 1], TWO_QUESTIONS)
     renderKuis(queryClient)
 
     // Q1: pick the correct option ("Benar B", index 1)
@@ -142,7 +146,8 @@ describe('Kuis', () => {
 
   it('navigates back to the module detail page when "Kembali ke Modul" is clicked on the result screen', async () => {
     const queryClient = newQueryClient()
-    queryClient.setQueryData(['modules', 1], { ...MODULE_BASE, kuis: TWO_QUESTIONS })
+    queryClient.setQueryData(['modules', 1], MODULE_BASE)
+    queryClient.setQueryData(['kuis-soal', 1], TWO_QUESTIONS)
     renderKuis(queryClient)
 
     fireEvent.click(screen.getByText('Benar B'))

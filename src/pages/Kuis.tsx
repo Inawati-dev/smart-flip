@@ -1,13 +1,12 @@
 import { useState, type ReactElement } from 'react'
 import { useParams, useNavigate, Link } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import { useModule } from '../hooks/useModules'
 import { saveQuizAttempt } from '../lib/quizAttempts'
+import { fetchKuisSoal } from '../lib/kuisSoal'
 import { Layout } from '../components/Layout'
 import { IconTrophy, IconCheck, IconBook, IconRefresh, IconClipboard } from '../components/icons'
 
-// modul.kuis is typed `unknown[]` on ModuleRow (untyped JSON column) — narrow
-// to the shape this page actually consumes, same pattern src/pages/Modul.tsx
-// used for jurnal/studiKasus.
 interface QuizQuestion {
   q: string
   options: string[]
@@ -65,7 +64,11 @@ export default function Kuis() {
   const { id } = useParams()
   const moduleId = parseInt(id ?? '1', 10) || 1
   const navigate = useNavigate()
-  const { data: modul, isLoading } = useModule(moduleId)
+  const { data: modul, isLoading: modulLoading } = useModule(moduleId)
+  const { data: soal, isLoading: soalLoading } = useQuery({
+    queryKey: ['kuis-soal', moduleId],
+    queryFn: () => fetchKuisSoal(moduleId),
+  })
 
   const [currentQ, setCurrentQ] = useState(0)
   const [answers, setAnswers] = useState<Record<number, number>>({})
@@ -74,10 +77,10 @@ export default function Kuis() {
   const [score, setScore] = useState(0)
   const [saving, setSaving] = useState(false)
 
-  if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
+  if (modulLoading || soalLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
   if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
-  const qs = (modul.kuis as QuizQuestion[]) || []
+  const qs: QuizQuestion[] = (soal ?? []).map((s) => ({ q: s.question, options: s.options, answer: s.answer_idx }))
   const backHref = `/modul/${moduleId}`
 
   if (!Array.isArray(qs) || qs.length === 0) {
