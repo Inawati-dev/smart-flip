@@ -8,6 +8,7 @@ export interface Profile {
   nim_nidn: string | null
   learning_style: string | null
   jalur: 'cepat' | 'mendalam' | null
+  avatar_url: string | null
 }
 
 interface AuthContextValue {
@@ -40,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, role, nim_nidn, learning_style, jalur')
+        .select('full_name, role, nim_nidn, learning_style, jalur, avatar_url')
         .eq('id', uid)
         .single()
       if (error) console.error('[AuthContext] failed to load profile:', error.message)

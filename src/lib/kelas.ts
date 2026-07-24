@@ -194,8 +194,12 @@ export function summarizeKelas(classes: KelasWithCount[]): KelasSummary {
   for (const c of classes) {
     byAngkatanMap.set(c.angkatan, (byAngkatanMap.get(c.angkatan) ?? 0) + c.studentCount)
   }
+  // Angkatan with 0 students (a kelas created but nobody's joined yet, or a
+  // leftover test kelas) is noise on the dashboard, not signal -- omit it
+  // rather than showing a permanent "Angkatan 2024: 0" card.
   const byAngkatan = Array.from(byAngkatanMap.entries())
     .map(([angkatan, total]) => ({ angkatan, total }))
+    .filter((a) => a.total > 0)
     .sort((a, b) => b.angkatan - a.angkatan)
   return { totalStudents, byAngkatan }
 }

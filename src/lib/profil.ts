@@ -86,6 +86,7 @@ export interface SaveProfilInput {
   angkatan?: string
   jabatan?: string
   fakultas?: string
+  avatarUrl?: string
 }
 
 // Mirrors legacy/data-layer.js saveProfil(). Saves the core (real-schema)
@@ -98,11 +99,13 @@ export async function saveProfilExtra(data: SaveProfilInput): Promise<void> {
       const { data: userData } = await supabase.auth.getUser()
       const uid = userData.user?.id
       if (uid) {
-        await supabase.from('profiles').upsert({
+        const row: { id: string; full_name: string; nim_nidn?: string; avatar_url?: string } = {
           id: uid,
           full_name: data.nama,
           nim_nidn: data.nim,
-        })
+        }
+        if (data.avatarUrl !== undefined) row.avatar_url = data.avatarUrl
+        await supabase.from('profiles').upsert(row)
       }
     } catch {
       // ignore — still mirrored to localStorage below

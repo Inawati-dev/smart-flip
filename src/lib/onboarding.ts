@@ -1,7 +1,9 @@
-// Onboarding-modal seen/dismissed flags — pure localStorage, same keys as
-// the legacy vanilla app (sfp_onboarded_v1 / sfp_onboarded_dos_v1), so this
-// is deliberately per-browser only, not synced through Supabase like the
-// rest of src/lib/*.ts.
+// Onboarding-modal seen/dismissed flags — sessionStorage (NOT localStorage):
+// the welcome tour should reappear every fresh login, not just once ever per
+// browser. sessionStorage clears itself when the tab/browser closes, and
+// doLogout (Layout.tsx / Profil.tsx) also clears it explicitly on sign-out,
+// so re-logging in — even as a different account in the same tab — always
+// shows the tour again instead of it being permanently dismissed.
 
 export type OnboardingRole = 'mahasiswa' | 'dosen'
 
@@ -11,7 +13,7 @@ function onboardingKey(role: OnboardingRole): string {
 
 export function hasSeenOnboarding(role: OnboardingRole): boolean {
   try {
-    return Boolean(localStorage.getItem(onboardingKey(role)))
+    return Boolean(sessionStorage.getItem(onboardingKey(role)))
   } catch {
     return true
   }
@@ -19,7 +21,7 @@ export function hasSeenOnboarding(role: OnboardingRole): boolean {
 
 export function markOnboardingSeen(role: OnboardingRole): void {
   try {
-    localStorage.setItem(onboardingKey(role), '1')
+    sessionStorage.setItem(onboardingKey(role), '1')
   } catch {
     // ignore — worst case the modal reappears next visit, not destructive
   }
@@ -27,7 +29,7 @@ export function markOnboardingSeen(role: OnboardingRole): void {
 
 export function resetOnboarding(role: OnboardingRole): void {
   try {
-    localStorage.removeItem(onboardingKey(role))
+    sessionStorage.removeItem(onboardingKey(role))
   } catch {
     // ignore
   }

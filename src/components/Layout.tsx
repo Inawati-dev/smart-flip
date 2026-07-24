@@ -197,7 +197,7 @@ export function Layout({ children }: { children: ReactNode }) {
             collapsed ? 'w-10 h-10 rounded-xl flex items-center justify-center' : 'h-9 px-3 rounded-lg flex items-center gap-2.5 text-sm font-semibold'
           } ${
             active
-              ? 'bg-brown text-terra'
+              ? 'bg-brown text-btn-text'
               : collapsed
                 // Collapsed rail already shows a flyout label on hover (below) —
                 // a second background-box highlight on the bare icon reads as a
@@ -369,7 +369,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     to={item.to}
                     onClick={() => setDrawerOpen(false)}
                     className={`min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm cursor-pointer transition-colors ${
-                      active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
+                      active ? 'bg-brown text-btn-text' : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
                     }`}
                   >
                     <Icon size={17} /> {item.label}

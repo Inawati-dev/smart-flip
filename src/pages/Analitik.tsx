@@ -59,6 +59,7 @@ export function Analitik() {
   const { data: rawModulDist } = useModulDistributionStats()
   const { data: rawKprakAspek } = useFeedbackAspectAvg()
 
+  const [tab, setTab] = useState<'progress' | 'distribusi' | 'perhatian'>('progress')
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('semua')
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortAsc, setSortAsc] = useState(true)
@@ -139,10 +140,31 @@ export function Analitik() {
           <StatCard bar="#B07A3E" val={summary.avgKepraktisan.toFixed(1)} label="Rata-rata Kepraktisan" sub="dari 5 skala rating" />
         </div>
 
-        {/* ── TABEL PROGRESS MAHASISWA ── */}
-        <SectionDivider label="Progress Mahasiswa" />
+        {/* ── TAB NAV ── */}
+        <div className="flex gap-1.5 mb-5 border-b overflow-x-auto" style={BORDER}>
+          {(
+            [
+              { key: 'progress', label: 'Progress Mahasiswa' },
+              { key: 'distribusi', label: 'Distribusi & Grafik' },
+              { key: 'perhatian', label: `Perhatian Khusus${inactiveStudents.length ? ` (${inactiveStudents.length})` : ''}` },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="px-3.5 min-h-11 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px"
+              style={{
+                borderColor: tab === t.key ? 'var(--terra)' : 'transparent',
+                color: tab === t.key ? 'var(--terra-d)' : 'var(--brown-3)',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
 
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-5" style={BORDER}>
+        {/* ── TABEL PROGRESS MAHASISWA ── */}
+        <div className={`bg-ivory rounded-2xl border overflow-hidden mb-5 ${tab === 'progress' ? '' : 'hidden'}`} style={BORDER}>
           <div className="flex items-center justify-between gap-2.5 px-4 md:px-5 py-3.5 border-b flex-wrap" style={BORDER}>
             <div>
               <div className="text-sm font-semibold text-brown">Tabel Progress Mahasiswa</div>
@@ -239,9 +261,7 @@ export function Analitik() {
         </div>
 
         {/* ── GRAFIK SECTION ── */}
-        <SectionDivider label="Distribusi & Analitik" />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-5">
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-5 ${tab === 'distribusi' ? '' : 'hidden'}`}>
           {/* Distribusi modul (horizontal bar) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5" style={BORDER}>
             <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4"><IconTrendingUp size={16} /> Penyelesaian per Modul</div>
@@ -318,9 +338,7 @@ export function Analitik() {
         </div>
 
         {/* ── FLAG MAHASISWA TIDAK AKTIF ── */}
-        <SectionDivider label="Perhatian Khusus" />
-
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-5" style={BORDER}>
+        <div className={`bg-ivory rounded-2xl border overflow-hidden mb-5 ${tab === 'perhatian' ? '' : 'hidden'}`} style={BORDER}>
           <div
             className="flex items-center gap-2.5 px-4 md:px-5 py-3.5 border-b flex-wrap"
             style={{ ...BORDER, background: 'rgba(176,48,32,.04)' }}
@@ -419,15 +437,6 @@ export function Analitik() {
   )
 }
 
-function SectionDivider({ label }: { label: string }) {
-  return (
-    <div className="flex items-center gap-3 my-6">
-      <div className="flex-1 h-px" style={{ background: 'var(--border2, var(--border))' }} />
-      <div className="text-[11px] font-bold tracking-widest uppercase text-brown-3 whitespace-nowrap">{label}</div>
-      <div className="flex-1 h-px" style={{ background: 'var(--border2, var(--border))' }} />
-    </div>
-  )
-}
 
 function StatCard({ bar, val, label, sub }: { bar: string; val: string; label: string; sub: string }) {
   return (

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactElement } from 'react'
+import { useEffect, useState, type ReactElement, type ChangeEvent } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
@@ -7,6 +7,9 @@ import { useAllProgress, useTotalTimeSpent } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useVarkResult } from '../hooks/useVarkResult'
 import { useProfilExtra } from '../hooks/useProfil'
+import { useStudentStats, useRecentActivity } from '../hooks/useAnalitik'
+import { computeStatSummary } from '../lib/analitik'
+import { timeAgo } from '../lib/forum'
 import { saveProfilExtra } from '../lib/profil'
 import { resetOnboarding } from '../lib/onboarding'
 import { printLaporanPdf } from '../lib/reportPdf'
@@ -67,26 +70,18 @@ const VARK_DESCS: Record<string, string> = {
 
 const JABATAN_OPTIONS = ['Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Profesor']
 
-// Ported verbatim from legacy/profil-dos.html's static "Aktivitas Kelas
-// Terkini" table — no per-class activity feed exists yet (see report: deferred).
-const DUMMY_ACTIVITY = [
-  { who: 'Citra Dewi Lestari', label: 'Submit Draf Modul 3', kind: 'draf', time: '2 jam lalu' },
-  { who: 'Budi Santoso', label: 'Selesai Kuis Modul 2 — Skor 88', kind: 'kuis', time: '3 jam lalu' },
-  { who: 'Forum Modul 1', label: '3 balasan baru', kind: 'forum', time: '5 jam lalu' },
-  { who: 'Eka Wulandari', label: 'Submit Draf Modul 2', kind: 'draf', time: '1 hari lalu' },
-  { who: 'Gita Puspita', label: 'Selesai Kuis Modul 4 — Skor 90', kind: 'kuis', time: '1 hari lalu' },
-] as const
-
 const ACTIVITY_BADGE: Record<string, { bg: string; color: string }> = {
   draf: { bg: '#FAE8A0', color: '#705010' },
   kuis: { bg: '#C0DD97', color: '#27500A' },
   forum: { bg: 'rgba(143,162,135,.2)', color: 'var(--sage-d)' },
+  modul: { bg: 'rgba(74,126,160,.15)', color: '#2E5A78' },
 }
 
 const ACTIVITY_ICON: Record<string, IconComp> = {
   draf: IconDocument,
   kuis: IconTarget,
   forum: IconChat,
+  modul: IconBook,
 }
 
 function initialsOf(name: string): string {
@@ -113,7 +108,7 @@ function scorePillStyle(pct: number): { bg: string; color: string } {
 export function Profil() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { user, profile, role, loading: authLoading } = useAuth()
+  const { user, profile, role, loading: authLoading, refreshProfile } = useAuth()
   const isDosen = role === 'dosen'
 
   const { data: modules = [] } = useModules()
@@ -122,12 +117,16 @@ export function Profil() {
   const { data: totalTimeSpent = 0 } = useTotalTimeSpent()
   const { data: vark } = useVarkResult()
   const { data: extra } = useProfilExtra()
+  const { data: dosenStudents } = useStudentStats()
+  const { data: recentActivity } = useRecentActivity(5)
 
   // Local overrides so the hero card reflects a save immediately, without
   // waiting on AuthContext's own session-driven refresh — mirrors legacy's
   // `currentProfil` variable mutation in profil.html/profil-dos.html.
   const [namaOverride, setNamaOverride] = useState<string | null>(null)
   const [nimOverride, setNimOverride] = useState<string | null>(null)
+  const [avatarOverride, setAvatarOverride] = useState<string | null>(null)
+  const avatarUrl = avatarOverride ?? profile?.avatar_url ?? null
 
   const nama = namaOverride ?? profile?.full_name ?? extra?.nama ?? (isDosen ? 'Dosen' : 'Mahasiswa')
   const nimNidn = nimOverride ?? profile?.nim_nidn ?? extra?.nim ?? ''
@@ -144,7 +143,27 @@ export function Profil() {
   const [formAngkatan, setFormAngkatan] = useState('')
   const [formJabatan, setFormJabatan] = useState('Lektor Kepala')
   const [formFakultas, setFormFakultas] = useState('')
+  const [formAvatar, setFormAvatar] = useState('')
   const [saving, setSaving] = useState(false)
+
+  const MAX_AVATAR_BYTES = 2 * 1024 * 1024
+
+  function handleAvatarPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      showToast('File harus berupa gambar')
+      return
+    }
+    if (file.size > MAX_AVATAR_BYTES) {
+      showToast('Ukuran gambar maksimal 2MB')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = () => setFormAvatar(String(reader.result))
+    reader.readAsDataURL(file)
+  }
 
   const [toast, setToast] = useState<string | null>(null)
   const [resetOpen, setResetOpen] = useState(false)
@@ -174,6 +193,7 @@ export function Profil() {
     setFormAngkatan(angkatan)
     setFormJabatan(jabatan)
     setFormFakultas(fakultas)
+    setFormAvatar(avatarUrl ?? '')
     setEditOpen(true)
   }
 
@@ -192,10 +212,13 @@ export function Profil() {
         angkatan: formAngkatan.trim(),
         jabatan: isDosen ? formJabatan : undefined,
         fakultas: isDosen ? formFakultas.trim() : undefined,
+        avatarUrl: formAvatar,
       })
       setNamaOverride(trimmedNama)
+      setAvatarOverride(formAvatar || null)
       if (isDosen) setNimOverride(formNidn.trim())
       await queryClient.invalidateQueries({ queryKey: ['profil'] })
+      await refreshProfile()
       setEditOpen(false)
       showToast('Profil berhasil disimpan ✓')
     } finally {
@@ -294,8 +317,9 @@ export function Profil() {
     })
     .slice(0, 5)
 
-  // ── Dosen stats (ported from legacy/profil-dos.html renderStats) ──
+  // ── Dosen stats (real Supabase aggregate, see lib/analitik.ts) ──
   const modulAktif = modules.filter((m) => m.is_active).length || totalModules
+  const dosenSummary = computeStatSummary(dosenStudents ?? [], totalModules)
 
   function handleDownloadLaporan() {
     printLaporanPdf({
@@ -336,8 +360,12 @@ export function Profil() {
 
         {/* ── HERO CARD ── */}
         <div className="bg-ivory rounded-2xl border p-5 md:p-6 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4" style={BORDER}>
-          <div className="w-20 h-20 rounded-full bg-terra text-white flex items-center justify-center font-display text-3xl font-bold flex-shrink-0">
-            {initialsOf(nama)}
+          <div className="w-20 h-20 rounded-full bg-terra text-white flex items-center justify-center font-display text-3xl font-bold flex-shrink-0 overflow-hidden">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={nama} className="w-full h-full object-cover" />
+            ) : (
+              initialsOf(nama)
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-display text-xl font-bold text-brown mb-1.5">{nama}</div>
@@ -375,12 +403,42 @@ export function Profil() {
           </div>
         </div>
 
-        {/* ── EDIT FORM ── */}
+        {/* ── EDIT FORM (modal) ── */}
         {editOpen && (
-          <div className="bg-ivory rounded-2xl border-2 p-5 mb-4" style={{ borderColor: 'var(--terra)' }}>
+          <div
+            className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+            style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setEditOpen(false)
+            }}
+          >
+          <div
+            className="bg-ivory rounded-2xl border-2 p-5 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            style={{ borderColor: 'var(--terra)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
+          >
             <div className="text-sm font-semibold text-brown mb-4 pb-2 border-b" style={BORDER}>
               {isDosen ? 'Edit Data Diri Dosen' : 'Edit Profil'}
             </div>
+
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-16 h-16 rounded-full bg-terra text-white flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
+                {formAvatar ? <img src={formAvatar} alt={formNama} className="w-full h-full object-cover" /> : initialsOf(formNama)}
+              </div>
+              <label className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 cursor-pointer" style={BORDER}>
+                <IconEdit size={14} /> Ganti Foto
+                <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden" />
+              </label>
+              {formAvatar && (
+                <button
+                  type="button"
+                  onClick={() => setFormAvatar('')}
+                  className="text-xs text-brown-3 underline"
+                >
+                  Hapus
+                </button>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
                 Nama Lengkap
@@ -465,6 +523,7 @@ export function Profil() {
                 Batal
               </button>
             </div>
+          </div>
           </div>
         )}
 
@@ -575,9 +634,9 @@ export function Profil() {
             {isDosen ? (
               <>
                 <StatCard icon={IconBook} val={String(modulAktif)} label="Modul Aktif" sub={`dari ${totalModules} modul`} bar="var(--sage)" />
-                <StatCard icon={IconUsers} val="28" label="Mahasiswa Terdaftar" sub="Kelas A" bar="var(--terra)" />
-                <StatCard icon={IconCheck} val="64%" label="Rata-rata Completeness" sub="mahasiswa selesai" bar="#B9A88A" />
-                <StatCard icon={IconTarget} val="76%" label="Rata-rata Skor Kuis" sub="semua modul" bar="#4A7EA0" />
+                <StatCard icon={IconUsers} val={String(dosenSummary.totalStudents)} label="Mahasiswa Terdaftar" bar="var(--terra)" />
+                <StatCard icon={IconCheck} val={`${dosenSummary.avgModulPct}%`} label="Rata-rata Completeness" sub="mahasiswa selesai" bar="#B9A88A" />
+                <StatCard icon={IconTarget} val={`${dosenSummary.avgKuis}%`} label="Rata-rata Skor Kuis" sub="semua modul" bar="#4A7EA0" />
               </>
             ) : (
               <>
@@ -599,7 +658,7 @@ export function Profil() {
               {isDosen ? 'Aktivitas Kelas Terkini' : 'Riwayat Kuis (5 Terakhir)'}
             </span>
             <span className="text-xs text-brown-3">
-              {isDosen ? '5 aktivitas terakhir' : allAttempts.length ? `${allAttempts.length} percobaan total` : ''}
+              {isDosen ? (recentActivity?.length ? `${recentActivity.length} aktivitas terakhir` : '') : allAttempts.length ? `${allAttempts.length} percobaan total` : ''}
             </span>
           </div>
           <div className="overflow-x-auto">
@@ -624,8 +683,17 @@ export function Profil() {
               </thead>
               <tbody>
                 {isDosen
-                  ? DUMMY_ACTIVITY.map((a, i) => {
+                  ? !recentActivity?.length
+                    ? (
+                      <tr>
+                        <td colSpan={3} className="text-center text-brown-3 py-6 text-sm">
+                          Belum ada aktivitas mahasiswa
+                        </td>
+                      </tr>
+                    )
+                    : recentActivity.map((a, i) => {
                       const ActivityIconComp = ACTIVITY_ICON[a.kind] || IconDocument
+                      const badge = ACTIVITY_BADGE[a.kind] || { bg: 'var(--bg3)', color: 'var(--brown-2)' }
                       return (
                       <tr key={i} className="border-t" style={BORDER}>
                         <td className="px-4 py-2.5 text-brown-2">
@@ -636,12 +704,12 @@ export function Profil() {
                         <td className="px-4 py-2.5">
                           <span
                             className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
-                            style={{ background: ACTIVITY_BADGE[a.kind].bg, color: ACTIVITY_BADGE[a.kind].color }}
+                            style={{ background: badge.bg, color: badge.color }}
                           >
                             {a.label}
                           </span>
                         </td>
-                        <td className="px-4 py-2.5 text-brown-3">{a.time}</td>
+                        <td className="px-4 py-2.5 text-brown-3">{timeAgo(a.iso)}</td>
                       </tr>
                       )
                     })

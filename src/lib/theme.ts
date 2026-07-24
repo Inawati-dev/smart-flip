@@ -169,7 +169,7 @@ export function getTheme(): ThemeId {
   } catch {
     // ignore — falls through to default
   }
-  return 'bawaan'
+  return 'soft-pill'
 }
 
 export function setTheme(theme: ThemeId): void {
