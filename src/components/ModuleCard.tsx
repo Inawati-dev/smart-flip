@@ -38,7 +38,10 @@ export function ModuleCard({
             />
           </div>
         )}
-        <Link to={`/modul/${module.id}`} className="inline-flex items-center gap-1 text-sm text-terra font-semibold">
+        <Link
+          to={`/modul/${module.id}`}
+          className="inline-flex items-center gap-1 min-h-11 text-sm text-terra font-semibold"
+        >
           <BtnIcon size={14} />
           {btnText}
         </Link>
