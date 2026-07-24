@@ -182,7 +182,7 @@ export function Login() {
           className="flex-1 h-11 rounded-[9px] border-[1.5px] text-sm font-semibold transition-colors"
           style={
             role === 'mahasiswa'
-              ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--terra)' }
+              ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--btn-text)' }
               : { borderColor: 'var(--border)', color: 'var(--brown-2)' }
           }
         >
@@ -194,7 +194,7 @@ export function Login() {
           className="flex-1 h-11 rounded-[9px] border-[1.5px] text-sm font-semibold transition-colors"
           style={
             role === 'dosen'
-              ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--terra)' }
+              ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--btn-text)' }
               : { borderColor: 'var(--border)', color: 'var(--brown-2)' }
           }
         >

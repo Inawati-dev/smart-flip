@@ -639,7 +639,7 @@ export function Validasi() {
                 <button
                   onClick={isiUlang}
                   className="flex-1 h-11 rounded-[10px] border-none text-sm font-semibold cursor-pointer flex items-center justify-center gap-1.5"
-                  style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                  style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
                 >
                   ↺ Isi Ulang
                 </button>

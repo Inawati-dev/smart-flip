@@ -145,7 +145,7 @@ export function Draf() {
             <button
               onClick={openDraftModal}
               className="ml-auto min-h-11 px-4 rounded-full text-sm font-semibold whitespace-nowrap"
-              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
             >
               + Draf Baru
             </button>
@@ -264,7 +264,7 @@ export function Draf() {
                           onClick={() => handleSendComment(d.id)}
                           disabled={!!sendingComment[d.id]}
                           className="min-h-11 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50"
-                          style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                          style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
                         >
                           Kirim
                         </button>
@@ -342,7 +342,7 @@ export function Draf() {
                 onClick={handleSubmitDraft}
                 disabled={submitting}
                 className="flex-[2] min-h-11 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 {submitting ? 'Mengirim...' : 'Kirim Draf'}
               </button>
@@ -354,7 +354,7 @@ export function Draf() {
       {toast && (
         <div
           className="fixed bottom-6 right-6 px-5 py-2.5 rounded-xl text-sm font-semibold z-[999]"
-          style={{ background: 'var(--brown)', color: 'var(--terra)', boxShadow: '0 4px 20px rgba(0,0,0,.2)' }}
+          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 4px 20px rgba(0,0,0,.2)' }}
         >
           {toast}
         </div>

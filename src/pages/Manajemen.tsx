@@ -699,7 +699,7 @@ export function Manajemen() {
                             <button
                               onClick={() => openEditModal(id)}
                               className="h-11 px-3 rounded-md text-xs font-semibold whitespace-nowrap"
-                              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
                             >
                               Edit
                             </button>
@@ -731,7 +731,7 @@ export function Manajemen() {
             <button
               onClick={openDiagAddModal}
               className="h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap"
-              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
             >
               + Tambah Soal
             </button>
@@ -810,7 +810,7 @@ export function Manajemen() {
               onClick={openKuisAddModal}
               disabled={kuisModuleId == null}
               className="h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap disabled:opacity-50"
-              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
             >
               + Tambah Soal
             </button>
@@ -890,7 +890,7 @@ export function Manajemen() {
               onClick={openWsEditModal}
               disabled={wsModuleId == null}
               className="h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap disabled:opacity-50"
-              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
             >
               <span className="inline-flex items-center gap-1.5"><IconEdit size={13} /> Edit Konten</span>
             </button>
@@ -1049,7 +1049,7 @@ export function Manajemen() {
                 onClick={saveEdit}
                 disabled={saving || !formJudul.trim()}
                 className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 {saving ? 'Menyimpan…' : 'Simpan'}
               </button>
@@ -1169,7 +1169,7 @@ export function Manajemen() {
                 onClick={() => void saveDiagQuestion()}
                 disabled={diagSaving || !diagPertanyaan.trim() || diagOpsi.some((o) => !o.trim())}
                 className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 {diagSaving ? 'Menyimpan…' : 'Simpan'}
               </button>
@@ -1296,7 +1296,7 @@ export function Manajemen() {
                 onClick={() => void saveKuisQuestion()}
                 disabled={kuisSaving || !kuisPertanyaan.trim() || kuisOpsi.some((o) => !o.trim())}
                 className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 {kuisSaving ? 'Menyimpan…' : 'Simpan'}
               </button>
@@ -1421,7 +1421,7 @@ export function Manajemen() {
                 onClick={() => void saveWsContent()}
                 disabled={wsSaving || !wsJudul.trim()}
                 className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 {wsSaving ? 'Menyimpan…' : 'Simpan'}
               </button>
@@ -1433,7 +1433,7 @@ export function Manajemen() {
       {toast && (
         <div
           className="fixed bottom-6 right-6 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
-          style={{ background: 'var(--brown)', color: 'var(--terra)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
+          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
         >
           {toast}
         </div>

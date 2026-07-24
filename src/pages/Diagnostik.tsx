@@ -135,7 +135,7 @@ export function Diagnostik() {
               </div>
               <div
                 className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-display text-base md:text-lg font-semibold"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 Kamu di {JALUR_COPY[profile.jalur].title}
               </div>
@@ -302,7 +302,7 @@ export function Diagnostik() {
               </div>
               <div
                 className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-display text-base md:text-lg font-semibold"
-                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 Kamu masuk {JALUR_COPY[result.jalur].title}
               </div>
