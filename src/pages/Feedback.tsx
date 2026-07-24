@@ -84,7 +84,7 @@ export function Feedback() {
       <div className="p-4 md:p-6 pb-16">
         <div>
         <div className="text-center mb-7">
-          <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown leading-tight">
+          <h1 className="font-display text-2xl font-bold text-brown leading-tight">
             Penilaian Kepraktisan Modul
           </h1>
           <p className="text-sm text-brown-3 mt-1.5">
@@ -325,7 +325,7 @@ export function Feedback() {
             >
               <IconStar size={22} className="text-red" />
             </div>
-            <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-2">Belum Lengkap</h3>
+            <h3 className="font-display text-lg font-bold text-brown mb-2">Belum Lengkap</h3>
             <p className="text-sm text-brown-2 mb-6 opacity-80">
               Semua aspek harus diberi nilai bintang sebelum penilaian bisa dikirim.
             </p>

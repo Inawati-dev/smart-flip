@@ -156,7 +156,7 @@ export default function Kuis() {
             <div
               className={`w-[120px] h-[120px] rounded-full flex flex-col items-center justify-center mx-auto mb-5 border-[5px] ${CIRCLE_CLASS[verdict]}`}
             >
-              <div className={`font-['Playfair_Display',serif] text-3xl font-bold ${SCORE_TEXT_CLASS[verdict]}`}>
+              <div className={`font-display text-3xl font-bold ${SCORE_TEXT_CLASS[verdict]}`}>
                 {score}%
               </div>
               <div className="text-[11px] font-semibold text-brown-3">Skor</div>
@@ -165,7 +165,7 @@ export default function Kuis() {
             <div className={`flex justify-center mb-2.5 ${SCORE_TEXT_CLASS[verdict]}`}>
               <copy.Icon size={40} />
             </div>
-            <div className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-2">
+            <div className="font-display text-xl font-bold text-brown mb-2">
               {copy.title}
             </div>
             <p className="text-sm text-brown-3 mb-6 leading-relaxed">{copy.msg(score)}</p>
@@ -202,7 +202,7 @@ export default function Kuis() {
           </div>
 
           <div className="mb-2">
-            <h2 className="flex items-center gap-1.5 font-['Playfair_Display',serif] text-base font-bold text-brown mb-3.5">
+            <h2 className="flex items-center gap-1.5 font-display text-base font-bold text-brown mb-3.5">
               <IconClipboard size={16} /> Pembahasan Soal
             </h2>
             {qs.map((qq, i) => {
@@ -261,7 +261,7 @@ export default function Kuis() {
           <span className="inline-flex bg-terra text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full mb-2">
             Modul {modul.order_num}
           </span>
-          <h1 className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-1">
+          <h1 className="font-display text-xl font-bold text-brown mb-1">
             {modul.title}
           </h1>
           <p className="text-[13px] text-brown-3">

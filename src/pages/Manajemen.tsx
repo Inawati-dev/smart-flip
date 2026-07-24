@@ -364,7 +364,7 @@ export function Manajemen() {
     <Layout>
       <div className="p-4 md:p-6 pb-16">
         <div className="mb-5">
-          <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Kelola Modul</h1>
+          <h1 className="font-display text-2xl font-bold text-brown">Kelola Modul</h1>
           <p className="text-sm text-brown-3 mt-1">
             Manajemen {totalModul} modul pembelajaran — edit metadata, atur status &amp; urutan
           </p>
@@ -614,7 +614,7 @@ export function Manajemen() {
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown">
+              <h3 className="font-display text-lg font-semibold text-brown">
                 {creatingNew ? 'Tambah Modul Baru' : `Edit — ${modMap[editId!]?.title || ''}`}
               </h3>
               <button onClick={closeEditModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
@@ -785,7 +785,7 @@ export function Manajemen() {
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown">
+              <h3 className="font-display text-lg font-semibold text-brown">
                 {diagEditId === 'new' ? 'Tambah Soal Diagnostik' : `Edit Soal — Urutan ${diagOrderNum}`}
               </h3>
               <button onClick={closeDiagModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">

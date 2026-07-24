@@ -138,8 +138,21 @@ button:not(:disabled):active {
   transform-origin: right center;
   animation: readerFlipPrev 0.6s cubic-bezier(.4,.1,.2,1) forwards;
 }
-@keyframes readerFlipNext { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
-@keyframes readerFlipPrev { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+/* Brightness dip mid-turn simulates the shadow a real page casts on itself
+   as it lifts off the spine -- without it, `perspective` alone still reads
+   as a flat card rotating, not paper folding. Peaks before the 90°
+   (edge-on) point where backface-visibility:hidden makes it vanish, since
+   there's nothing left to visibly darken right at that instant. */
+@keyframes readerFlipNext {
+  0% { transform: rotateY(0deg); filter: brightness(1); }
+  35% { filter: brightness(0.72); }
+  100% { transform: rotateY(-180deg); filter: brightness(1); }
+}
+@keyframes readerFlipPrev {
+  0% { transform: rotateY(0deg); filter: brightness(1); }
+  35% { filter: brightness(0.72); }
+  100% { transform: rotateY(180deg); filter: brightness(1); }
+}
 
 .reader-flip-overlay.style-slide.dir-next {
   animation: readerSlideOutNext 0.38s cubic-bezier(.32,.72,0,1) forwards;

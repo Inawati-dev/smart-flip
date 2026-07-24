@@ -617,7 +617,7 @@ export default function Changelog() {
     <Layout>
       <div className="p-6 pb-20">
         <div className="mb-12">
-          <h1 className="flex items-center gap-2.5 font-['Playfair_Display',serif] text-[32px] sm:text-[36px] font-bold text-brown leading-tight">
+          <h1 className="flex items-center gap-2.5 font-display text-[32px] sm:text-[36px] font-bold text-brown leading-tight">
             Changelog <IconClipboard size={28} />
           </h1>
           <p className="text-brown-3 mt-2 text-sm">
@@ -649,7 +649,7 @@ export default function Changelog() {
         </div>
 
         <div className="mt-12">
-          <h2 className="flex items-center gap-2 font-['Playfair_Display',serif] text-[22px] font-bold text-brown mb-5">
+          <h2 className="flex items-center gap-2 font-display text-[22px] font-bold text-brown mb-5">
             Rencana ke Depan <IconCompass size={20} />
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5">

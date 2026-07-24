@@ -2,6 +2,7 @@ import { useState, type ComponentType, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
 import {
   IconHome,
@@ -74,13 +75,13 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'kelola-kelas',
     label: 'Kelola Kelas',
+    // Alfabetis by label -- gampang di-scan sekarang isinya 5 item.
     items: [
+      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
       { to: '/kelas', icon: IconUsers, label: 'Kelas', dosenOnly: true },
+      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
       { to: '/ngain', icon: IconChart, label: 'N-Gain', dosenOnly: true },
       { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },
-      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
-      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
-      { to: '/changelog', icon: IconClipboard, label: 'Changelog', dosenOnly: true },
     ],
   },
   {
@@ -89,6 +90,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/profil', icon: IconUser, label: 'Profil' },
       { to: '/pengaturan', icon: IconGear, label: 'Pengaturan' },
+      { to: '/changelog', icon: IconClipboard, label: 'Changelog', dosenOnly: true },
     ],
   },
 ]
@@ -164,6 +166,10 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   async function doLogout() {
+    // Onboarding is "seen" per-browser (localStorage), not per-session — reset
+    // it on logout so the next login (even the same person, same browser)
+    // shows WelcomeModal again, instead of only ever once per browser forever.
+    if (role) resetOnboarding(role)
     try {
       await supabase.auth.signOut()
     } catch {
@@ -312,7 +318,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <div className="h-full px-4 flex items-center justify-between gap-4">
           <Link to="/dashboard" className="flex items-center gap-2 no-underline text-brown">
             <IconBook size={20} />
-            <span className="font-['Playfair_Display',serif] font-bold text-brown">E-Modul Adaptif</span>
+            <span className="font-display font-bold text-brown">E-Modul Adaptif</span>
           </Link>
           <button
             onClick={() => setDrawerOpen(true)}
@@ -341,7 +347,7 @@ export function Layout({ children }: { children: ReactNode }) {
         }`}
       >
         <div className="flex items-center justify-between p-4 border-b border-[color:var(--border)]">
-          <span className="font-['Playfair_Display',serif] font-bold text-brown">Menu</span>
+          <span className="font-display font-bold text-brown">Menu</span>
           <button
             onClick={() => setDrawerOpen(false)}
             aria-label="Tutup menu"

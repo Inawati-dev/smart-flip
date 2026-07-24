@@ -236,6 +236,7 @@ export function Profil() {
   }
 
   async function doLogout() {
+    if (role) resetOnboarding(role)
     try {
       await supabase.auth.signOut()
     } catch {
@@ -322,7 +323,7 @@ export function Profil() {
     <Layout>
       <div className="p-4 md:p-6 pb-16">
         <div className="mb-5">
-          <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">
+          <h1 className="font-display text-2xl font-bold text-brown">
             {isDosen ? 'Profil Dosen' : 'Profil Saya'}
           </h1>
           <p className="text-sm text-brown-3 mt-1">
@@ -334,11 +335,11 @@ export function Profil() {
 
         {/* ── HERO CARD ── */}
         <div className="bg-ivory rounded-2xl border p-5 md:p-6 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4" style={BORDER}>
-          <div className="w-20 h-20 rounded-full bg-terra text-white flex items-center justify-center font-['Playfair_Display',serif] text-3xl font-bold flex-shrink-0">
+          <div className="w-20 h-20 rounded-full bg-terra text-white flex items-center justify-center font-display text-3xl font-bold flex-shrink-0">
             {initialsOf(nama)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-1">{nama}</div>
+            <div className="font-display text-xl font-bold text-brown mb-1">{nama}</div>
             <div className="text-sm text-brown-3 leading-relaxed">{isDosen ? 'NIDN' : 'NIM'}: {nimNidn || '—'}</div>
             <div className="text-sm text-brown-3 mb-3 leading-relaxed">{email || '—'}</div>
             <div className="flex items-center gap-2.5 flex-wrap">
@@ -498,7 +499,7 @@ export function Profil() {
                   return (
                     <>
                       <div className="flex items-center gap-3 flex-wrap mb-4">
-                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-brown text-terra font-['Playfair_Display',serif] text-sm font-semibold">
+                        <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-brown text-terra font-display text-sm font-semibold">
                           {(() => {
                             const VarkIconComp = VARK_ICONS[dom] || IconTarget
                             return <VarkIconComp size={15} />
