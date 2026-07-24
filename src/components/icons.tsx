@@ -263,6 +263,19 @@ export function IconChevronRight({ size = 18, ...p }: IconProps) {
   )
 }
 
+// Custom <Select> trigger's closed-state chevron — same path the native
+// <select> rule in index.css already draws via a data-URI background-image
+// ('m6 9 6 6 6-6'), kept as a real icon component here since the custom
+// component can't rely on that CSS background-image trick (it isn't a real
+// <select> element).
+export function IconChevronDown({ size = 18, ...p }: IconProps) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="m6 9 6 6 6-6" />
+    </svg>
+  )
+}
+
 // Sidebar collapse/expand toggle — a panel outline with a divider, the same
 // visual convention VS Code/Notion use, rather than a bare arrow glyph.
 export function IconSidebar({ size = 18, ...p }: IconProps) {
