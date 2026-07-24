@@ -151,7 +151,7 @@ DECLARE
   real_code        TEXT;
   final_role       TEXT := 'mahasiswa';
   submitted_class  TEXT := NEW.raw_user_meta_data->>'class_code';
-  matched_class    classes%ROWTYPE;
+  matched_class    public.classes%ROWTYPE;
   current_count    INT;
   final_class_id   UUID := NULL;
 BEGIN
@@ -167,10 +167,20 @@ BEGIN
   -- UI, Register.tsx only sends it for role='mahasiswa') is intentionally
   -- ignored rather than trusted, same fail-closed spirit as the rest of this
   -- function.
-  IF final_role = 'mahasiswa' AND submitted_code IS NOT NULL AND length(trim(submitted_code)) > 0 THEN
-    SELECT * INTO matched_class FROM classes WHERE code = upper(trim(submitted_code));
+  --
+  -- `public.` prefix on classes/profiles below is NOT decorative -- found
+  -- live (2026-07-24): this function's SECURITY DEFINER context doesn't
+  -- carry `public` on its search_path, so the earlier unqualified `classes`/
+  -- `profiles` references failed with "relation classes does not exist"
+  -- (Postgres 42P01) on EVERY signup, aborting the whole trigger (and thus
+  -- the whole signup) regardless of whether this IF branch even ran --
+  -- plpgsql resolves `matched_class classes%ROWTYPE`'s type at first-call
+  -- time no matter which branch executes. `SET search_path` below fixes the
+  -- root cause; the schema prefixes stay too as cheap, explicit redundancy.
+  IF final_role = 'mahasiswa' AND submitted_class IS NOT NULL AND length(trim(submitted_class)) > 0 THEN
+    SELECT * INTO matched_class FROM public.classes WHERE code = upper(trim(submitted_class));
     IF FOUND THEN
-      SELECT count(*) INTO current_count FROM profiles WHERE class_id = matched_class.id;
+      SELECT count(*) INTO current_count FROM public.profiles WHERE class_id = matched_class.id;
       IF current_count < matched_class.max_students THEN
         final_class_id := matched_class.id;
       END IF;
@@ -188,7 +198,7 @@ BEGIN
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Trigger `on_auth_user_created` (schema.sql) already points at
 -- handle_new_user() by name — CREATE OR REPLACE above updates its body in

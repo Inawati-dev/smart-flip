@@ -13,16 +13,15 @@
 // browser — anyone could pull it out of DevTools and get full,
 // RLS-bypassing access to the whole database. So this runs here instead.
 //
-// SUPABASE_URL / SUPABASE_ANON_KEY are injected automatically. The
-// service-role credential is NOT auto-injected as a working one here: this
-// project's auto-injected SUPABASE_SERVICE_ROLE_KEY is the NEW
-// `sb_secret_...` key format, which Auth's Admin API rejects with
-// "invalid JWT ... unrecognized JWT kid" (confirmed live, 2026-07-24) even
-// though it works fine for plain PostgREST table queries. Fix: a manually
-// set secret `LEGACY_SERVICE_ROLE_KEY` holding the classic long-form
-// service_role JWT (Project Settings -> API Keys -> "Legacy anon,
-// service_role API keys" tab) -- set via Dashboard -> Edge Functions ->
-// Secrets, read below via Deno.env.get('LEGACY_SERVICE_ROLE_KEY').
+// SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are all
+// auto-injected -- no manual secret needed. One wrinkle found live
+// (2026-07-24): this project has fully migrated to ES256 JWT Signing Keys
+// (Project Settings -> JWT Keys), and supabase-js's `auth.admin.
+// createUser()` helper fails against BOTH this project's new
+// `sb_secret_...` service-role key AND its legacy HS256 service_role JWT
+// when called through the SDK. The user-creation call below therefore hits
+// the Admin REST endpoint directly via fetch() instead of the SDK helper --
+// see the comment above SUPABASE_SERVICE_ROLE_KEY further down for detail.
 //
 // Called from the frontend via src/lib/kelas.ts's importMahasiswaCSV(),
 // which does `supabase.functions.invoke('import-mahasiswa', { body: {...} })`
@@ -115,16 +114,19 @@ Deno.serve(async (req: Request) => {
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
   const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')
-  // NOT the auto-injected SUPABASE_SERVICE_ROLE_KEY -- on this project that
-  // env var resolves to the NEW `sb_secret_...` key format, which works fine
-  // for plain PostgREST queries (profiles/classes) but fails Auth's Admin
-  // API specifically: `auth.admin.createUser()` throws "invalid JWT ...
-  // unrecognized JWT kid" against it (confirmed live, 2026-07-24). The
-  // Admin API still expects the classic long-form service_role JWT, so this
-  // reads a manually-set secret holding that legacy key instead (Project
-  // Settings -> API Keys -> "Legacy anon, service_role API keys" tab).
-  const LEGACY_SERVICE_ROLE_KEY = Deno.env.get('LEGACY_SERVICE_ROLE_KEY')
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !LEGACY_SERVICE_ROLE_KEY) {
+  // This project has fully migrated to ES256 JWT Signing Keys (Project
+  // Settings -> JWT Keys) -- its legacy HS256 service_role JWT is kept only
+  // to VERIFY old still-live tokens, not to mint new ones, and supabase-js's
+  // `auth.admin.createUser()` rejects BOTH the new `sb_secret_...` key
+  // ("invalid JWT ... unverifiable") and the legacy HS256 JWT
+  // ("unrecognized JWT kid ... ES256") when used through the SDK's admin
+  // helper (confirmed live, 2026-07-24). Fix: skip the SDK helper for this
+  // one call and hit the Admin REST endpoint directly via fetch() -- the
+  // `sb_secret_...` key (this project's own docs confirm it's the full
+  // replacement for service_role) works fine there, and it's what already
+  // works for the plain table queries below via supabase-js's `.from()`.
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
     return jsonResponse({ error: 'Konfigurasi server tidak lengkap.' }, 500)
   }
 
@@ -152,7 +154,7 @@ Deno.serve(async (req: Request) => {
     // ── 2. ONE admin client, service_role key, used for every privileged
     //    operation from here on (role check, ownership check, createUser,
     //    profiles.class_id update). Never logged, never returned. ──
-    const adminClient = createClient(SUPABASE_URL, LEGACY_SERVICE_ROLE_KEY, {
+    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
 
@@ -224,30 +226,39 @@ Deno.serve(async (req: Request) => {
 
       const password = generateSecurePassword()
 
-      const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true, // admin-provisioned account -- skip email confirmation flow
-        user_metadata: {
-          full_name: nama,
-          role: 'mahasiswa',
-          nim_nidn: nim,
+      // Raw REST call to the Admin API instead of adminClient.auth.admin.
+      // createUser() -- see the SUPABASE_SERVICE_ROLE_KEY comment above for
+      // why the SDK helper doesn't work on this project right now.
+      const createRes = await fetch(`${SUPABASE_URL}/auth/v1/admin/users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         },
+        body: JSON.stringify({
+          email,
+          password,
+          email_confirm: true, // admin-provisioned account -- skip email confirmation flow
+          user_metadata: {
+            full_name: nama,
+            role: 'mahasiswa',
+            nim_nidn: nim,
+          },
+        }),
       })
-      if (createErr || !created?.user) {
-        // TEMPORARY DEBUG (2026-07-24) -- createErr.message alone was
-        // showing up empty ("{}") in production; surface every field the
-        // AuthError-like object might carry to find out why.
-        const e = createErr as unknown as { message?: string; status?: number; name?: string; code?: string } | null
+      const createBody = await createRes.json().catch(() => null)
+      if (!createRes.ok || !createBody?.id) {
         results.push({
           nama,
           nim,
           email,
           status: 'error',
-          error: `DEBUG name=${e?.name ?? '?'} status=${e?.status ?? '?'} code=${e?.code ?? '?'} message=${e?.message ?? '?'} raw=${JSON.stringify(createErr)}`,
+          error: createBody?.msg ?? createBody?.message ?? `Gagal membuat akun (HTTP ${createRes.status}).`,
         })
         continue
       }
+      const createdUserId = createBody.id as string
 
       // handle_new_user() (migration_v7_kelas.sql) already inserted a
       // profiles row with class_id NULL (no class_code in this metadata
@@ -256,7 +267,7 @@ Deno.serve(async (req: Request) => {
       const { error: updateErr } = await adminClient
         .from('profiles')
         .update({ class_id: classId, nim_nidn: nim })
-        .eq('id', created.user.id)
+        .eq('id', createdUserId)
       if (updateErr) {
         results.push({
           nama,
