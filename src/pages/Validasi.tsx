@@ -231,7 +231,7 @@ export function Validasi() {
 
   return (
     <Layout>
-      <div className="page-fadein p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
+      <div className="p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
         {/* PAGE HEADING */}
         <div className="mb-7 print:hidden">
           <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown leading-tight">

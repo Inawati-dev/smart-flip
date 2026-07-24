@@ -74,8 +74,8 @@ export default function Kuis() {
   const [score, setScore] = useState(0)
   const [saving, setSaving] = useState(false)
 
-  if (isLoading) return <Layout><div className="page-fadein p-8 text-brown-3">Memuat…</div></Layout>
-  if (!modul) return <Layout><div className="page-fadein p-8 text-brown">Modul tidak ditemukan</div></Layout>
+  if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
+  if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
   const qs = (modul.kuis as QuizQuestion[]) || []
   const backHref = `/modul/${moduleId}`
@@ -83,8 +83,8 @@ export default function Kuis() {
   if (!Array.isArray(qs) || qs.length === 0) {
     return (
       <Layout>
-        <div className="page-fadein p-6">
-         <div className="max-w-2xl mx-auto">
+        <div className="p-6">
+         <div>
           <Link to={backHref} className="text-brown-3 text-sm mb-6 inline-block">
             ← Kembali
           </Link>
@@ -150,8 +150,8 @@ export default function Kuis() {
 
     return (
       <Layout>
-        <div className="page-fadein p-6">
-         <div className="max-w-2xl mx-auto">
+        <div className="p-6">
+         <div>
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-8 text-center mb-5">
             <div
               className={`w-[120px] h-[120px] rounded-full flex flex-col items-center justify-center mx-auto mb-5 border-[5px] ${CIRCLE_CLASS[verdict]}`}
@@ -251,8 +251,8 @@ export default function Kuis() {
 
   return (
     <Layout>
-      <div className="page-fadein p-6">
-       <div className="max-w-2xl mx-auto">
+      <div className="p-6">
+       <div>
         <Link to={backHref} className="text-brown-3 text-sm mb-6 inline-block">
           ← Kembali
         </Link>

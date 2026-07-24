@@ -595,7 +595,7 @@ function RoadmapCard({ item }: { item: RoadmapItem }) {
 export default function Changelog() {
   return (
     <Layout>
-      <div className="page-fadein p-6 pb-20">
+      <div className="p-6 pb-20">
         <div className="mb-12">
           <h1 className="flex items-center gap-2.5 font-['Playfair_Display',serif] text-[32px] sm:text-[36px] font-bold text-brown leading-tight">
             Changelog <IconClipboard size={28} />
@@ -613,10 +613,7 @@ export default function Changelog() {
           </p>
         </div>
 
-        {/* Versioned entries are prose-heavy (changelog bullet lists) — kept at
-            a readable max-width even though the page root is now full-width,
-            per CLAUDE.md's request to free up space for the roadmap grid below. */}
-        <div className="max-w-[760px]">
+        <div>
           {versions.map((entry) => (
             <VersionBlock key={entry.version} entry={entry} />
           ))}
