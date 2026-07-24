@@ -147,7 +147,7 @@ export default function Modul() {
 
   return (
     <Layout>
-    <div className="page-fadein p-6">
+    <div className="p-6">
       <Link to="/dashboard" className="text-brown-3 text-sm mb-6 inline-block">
         ← Kembali ke Dashboard
       </Link>

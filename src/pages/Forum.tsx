@@ -89,8 +89,8 @@ export function Forum() {
 
   return (
     <Layout>
-      <div className="page-fadein p-4 md:p-6">
-        <div className="max-w-2xl mx-auto">
+      <div className="p-4 md:p-6">
+        <div>
         <h1 className="text-2xl font-bold text-brown mb-1">Forum Diskusi</h1>
         <p className="text-brown-3 mb-4">{posts.length} diskusi</p>
 
