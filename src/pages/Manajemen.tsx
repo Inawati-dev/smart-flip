@@ -12,6 +12,7 @@ import {
   type DiagnosticQuestion,
 } from '../lib/diagnostic'
 import { Layout } from '../components/Layout'
+import { Select } from '../components/Select'
 import { IconDocument, IconEdit, IconTrash } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -649,16 +650,17 @@ export function Manajemen() {
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
               Status
-              <select
+              <Select
                 value={formStatus}
-                onChange={(e) => setFormStatus(e.target.value as ModulStatus)}
+                onChange={(v) => setFormStatus(v as ModulStatus)}
                 className="h-10 rounded-lg border px-3 text-sm text-brown cursor-pointer"
                 style={BORDER}
-              >
-                <option value="aktif">Aktif — mahasiswa bisa akses</option>
-                <option value="draf">Draf — belum dipublish</option>
-                <option value="terkunci">Terkunci — dikunci manual dosen</option>
-              </select>
+                options={[
+                  { value: 'aktif', label: 'Aktif — mahasiswa bisa akses' },
+                  { value: 'draf', label: 'Draf — belum dipublish' },
+                  { value: 'terkunci', label: 'Terkunci — dikunci manual dosen' },
+                ]}
+              />
             </label>
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
