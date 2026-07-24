@@ -309,17 +309,17 @@ export function Profil() {
         </div>
 
         {/* ── HERO CARD ── */}
-        <div className="bg-ivory rounded-2xl border p-5 md:p-6 mb-4 flex flex-col md:flex-row items-start md:items-center gap-4" style={BORDER}>
+        <div className="bg-ivory rounded-2xl border p-5 md:p-6 mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4" style={BORDER}>
           <div className="w-20 h-20 rounded-full bg-terra text-white flex items-center justify-center font-['Playfair_Display',serif] text-3xl font-bold flex-shrink-0">
             {initialsOf(nama)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-0.5">{nama}</div>
-            <div className="text-sm text-brown-3">{isDosen ? 'NIDN' : 'NIM'}: {nimNidn || '—'}</div>
-            <div className="text-sm text-brown-3 mb-2">{email || '—'}</div>
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-1">{nama}</div>
+            <div className="text-sm text-brown-3 leading-relaxed">{isDosen ? 'NIDN' : 'NIM'}: {nimNidn || '—'}</div>
+            <div className="text-sm text-brown-3 mb-3 leading-relaxed">{email || '—'}</div>
+            <div className="flex items-center gap-2.5 flex-wrap">
               <span
-                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold"
+                className="inline-flex items-center gap-1 min-h-11 px-3.5 rounded-full text-xs font-semibold"
                 style={
                   isDosen
                     ? { background: 'rgba(212,163,115,.15)', color: 'var(--terra-d)' }
@@ -334,7 +334,7 @@ export function Profil() {
               </span>
               <button
                 onClick={openEdit}
-                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg border text-sm font-semibold text-brown-2"
+                className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2"
                 style={BORDER}
               >
                 <IconEdit size={16} /> Edit Profil

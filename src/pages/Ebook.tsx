@@ -451,7 +451,7 @@ export function Ebook() {
         {status === 'ready' && (
           <>
             <div
-              className="w-full max-w-4xl flex-1 flex justify-center items-start bg-bg3 rounded-2xl border overflow-auto p-4 md:p-8"
+              className="w-fit max-w-full flex-1 flex justify-center items-start bg-bg3 rounded-2xl border overflow-auto p-4 md:p-8"
               style={{ borderColor: 'var(--border)', minHeight: '60vh', maxHeight: 'calc(100vh - 200px)' }}
             >
               {effectiveStyle === 'spread' ? (

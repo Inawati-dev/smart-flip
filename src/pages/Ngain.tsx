@@ -72,6 +72,7 @@ export default function Ngain() {
   const [overMaxIds, setOverMaxIds] = useState<Set<string>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
   const [resetModalOpen, setResetModalOpen] = useState(false)
+  const [exportConfirmOpen, setExportConfirmOpen] = useState(false)
   const [deleteRowId, setDeleteRowId] = useState<string | null>(null)
 
   const max = parseFloat(skorMax) || 100
@@ -134,7 +135,7 @@ export default function Ngain() {
     setResetModalOpen(false)
   }
 
-  function exportCSV() {
+  function confirmExportCSV() {
     let csv = 'No,Nama Mahasiswa,Pre-Test,Post-Test,N-Gain,Kategori\n'
     rows.forEach((row, i) => {
       const r = results?.[row.id]
@@ -157,6 +158,7 @@ export default function Ngain() {
     a.click()
     document.body.removeChild(a)
     URL.revokeObjectURL(url)
+    setExportConfirmOpen(false)
   }
 
   const distribution =
@@ -426,7 +428,7 @@ export default function Ngain() {
             {/* Export */}
             <div className="flex items-center gap-3 flex-wrap">
               <button
-                onClick={exportCSV}
+                onClick={() => setExportConfirmOpen(true)}
                 className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border-[1.5px] bg-[var(--bg3)] text-brown-2 text-sm font-semibold"
                 style={BORDER}
               >
@@ -518,6 +520,36 @@ export default function Ngain() {
                 className="flex-1 h-11 rounded-lg bg-red text-white text-sm font-semibold"
               >
                 Ya, Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EXPORT CSV CONFIRMATION MODAL — downloads shouldn't fire silently on click */}
+      {exportConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => { if (e.target === e.currentTarget) setExportConfirmOpen(false) }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Unduh CSV?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Rekap N-Gain {rows.length} mahasiswa akan diunduh ke perangkatmu.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setExportConfirmOpen(false)}
+                className="flex-1 h-11 rounded-lg border border-[color:var(--border)] text-sm text-brown-2"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmExportCSV}
+                className="flex-1 h-11 rounded-lg bg-terra text-white text-sm font-semibold inline-flex items-center justify-center gap-1.5"
+              >
+                <IconDownload size={15} /> Unduh
               </button>
             </div>
           </div>
