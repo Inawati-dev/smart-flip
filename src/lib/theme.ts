@@ -64,8 +64,11 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       // reuse `brown` as a big hero/CTA/active-nav FILL color too (Vark.tsx,
       // Diagnostik.tsx, etc.) -- filling a whole banner with near-pure-black
       // reads as harsh/"legam" in a way the same value never does as text.
-      // Cool dark slate keeps Seline's neutral-blue identity without that.
-      brown: '#22262C',
+      // Vivid saturated blue, not dark-navy-that-still-reads-as-black --
+      // user flagged the navy attempt as still "gelap" twice. This is
+      // clearly a BLUE hero, not a dark neutral block, while still dark
+      // enough for white text on top.
+      brown: '#1D5FA8',
       brown2: '#78716C',
       brown3: '#A39C95',
       brown4: '#C9C3BD',
@@ -88,7 +91,9 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       bg3: '#F3F2EE',
       terra: '#D97757',
       terraD: '#C05F3F',
-      brown: '#121212',
+      // Vivid terracotta-brown, not near-black -- same fix as Seline's blue
+      // above: a colorful hero tied to the accent hue, not a dark neutral.
+      brown: '#8B4A2E',
       brown2: '#373734',
       brown3: '#7B7974',
       brown4: '#B5AFA8',
