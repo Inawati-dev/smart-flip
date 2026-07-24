@@ -425,13 +425,13 @@ export function Profil() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="h-[38px] px-5 rounded-lg bg-terra text-white text-sm font-semibold disabled:opacity-50"
+                className="min-h-11 px-5 rounded-lg bg-terra text-white text-sm font-semibold disabled:opacity-50"
               >
                 {saving ? 'Menyimpan…' : 'Simpan'}
               </button>
               <button
                 onClick={() => setEditOpen(false)}
-                className="h-[38px] px-4 rounded-lg border text-sm text-brown-2"
+                className="min-h-11 px-4 rounded-lg border text-sm text-brown-2"
                 style={BORDER}
               >
                 Batal
@@ -535,7 +535,7 @@ export function Profil() {
             {!isDosen && (
               <button
                 onClick={() => window.print()}
-                className="ml-auto h-9 px-3.5 rounded-lg border text-xs font-semibold text-terra flex items-center gap-1.5"
+                className="ml-auto min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-terra flex items-center gap-1.5"
                 style={{ borderColor: 'var(--terra)' }}
                 title="Unduh laporan sebagai PDF"
               >
@@ -682,7 +682,7 @@ export function Profil() {
               {!isDosen && (
                 <button
                   onClick={() => setResetOpen(true)}
-                  className="inline-flex items-center gap-1.5 h-9 px-4 rounded-lg border text-xs font-semibold text-red"
+                  className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border text-xs font-semibold text-red"
                   style={{ borderColor: 'rgba(176,48,32,.35)' }}
                 >
                   <IconTrash size={14} /> Reset Data Demo
@@ -690,7 +690,7 @@ export function Profil() {
               )}
               <button
                 onClick={() => setLogoutOpen(true)}
-                className="h-9 px-4 rounded-lg border text-xs font-semibold text-brown-2"
+                className="min-h-11 px-4 rounded-lg border text-xs font-semibold text-brown-2"
                 style={BORDER}
               >
                 Keluar dari Akun
@@ -726,14 +726,14 @@ export function Profil() {
             <div className="flex gap-2.5">
               <button
                 onClick={() => setResetOpen(false)}
-                className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2"
+                className="flex-1 min-h-11 rounded-lg border text-sm text-brown-2"
                 style={BORDER}
               >
                 Batal
               </button>
               <button
                 onClick={resetDemoData}
-                className="flex-1 h-[38px] rounded-lg bg-red text-white text-sm font-semibold"
+                className="flex-1 min-h-11 rounded-lg bg-red text-white text-sm font-semibold"
               >
                 Ya, Reset
               </button>
@@ -797,16 +797,17 @@ function ToggleRow({
         <div className="text-sm text-brown-2">{label}</div>
         <div className="text-xs text-brown-3 mt-0.5">{sub}</div>
       </div>
-      <label className="relative inline-block w-10 h-[22px] flex-shrink-0 cursor-pointer">
-        <input type="checkbox" checked={checked} onChange={onChange} className="opacity-0 w-0 h-0 peer" />
+      <label className="relative inline-flex items-center justify-center min-w-11 min-h-11 w-11 h-11 flex-shrink-0 cursor-pointer">
+        <input type="checkbox" checked={checked} onChange={onChange} className="opacity-0 w-0 h-0 peer absolute" />
         <span
-          className="absolute inset-0 rounded-full transition-colors peer-checked:bg-sage"
+          className="relative inline-block w-10 h-[22px] rounded-full transition-colors peer-checked:bg-sage pointer-events-none"
           style={{ background: checked ? 'var(--sage)' : 'var(--border)' }}
-        />
-        <span
-          className="absolute left-[3px] bottom-[3px] w-4 h-4 rounded-full bg-white transition-transform"
-          style={{ transform: checked ? 'translateX(18px)' : 'translateX(0)' }}
-        />
+        >
+          <span
+            className="absolute left-[3px] bottom-[3px] w-4 h-4 rounded-full bg-white transition-transform"
+            style={{ transform: checked ? 'translateX(18px)' : 'translateX(0)' }}
+          />
+        </span>
       </label>
     </div>
   )

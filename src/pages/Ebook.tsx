@@ -22,10 +22,20 @@ function CoverThumb({ src }: { src: string }) {
 
   useEffect(() => {
     let cancelled = false
+    // Each catalog card loads its own PDFDocumentProxy just to render page 1
+    // as a thumbnail — without destroying it, every catalog render (e.g.
+    // navigating back and forth) piles up undestroyed documents. docRef
+    // tracks this effect run's own doc so the cleanup below can destroy
+    // exactly one, whether cancellation happens before or after it loads.
+    let doc: pdfjsLib.PDFDocumentProxy | null = null
     setFailed(false)
     pdfjsLib.getDocument(src).promise.then(
-      async (doc) => {
-        if (cancelled) return
+      async (loadedDoc) => {
+        if (cancelled) {
+          loadedDoc.destroy().catch(() => {})
+          return
+        }
+        doc = loadedDoc
         const page = await doc.getPage(1)
         const canvas = canvasRef.current
         if (!canvas || cancelled) return
@@ -48,6 +58,10 @@ function CoverThumb({ src }: { src: string }) {
     )
     return () => {
       cancelled = true
+      if (doc) {
+        doc.destroy().catch(() => {})
+        doc = null
+      }
     }
   }, [src])
 
@@ -84,7 +98,13 @@ function CoverThumb({ src }: { src: string }) {
 export function Ebook() {
   const [searchParams, setSearchParams] = useSearchParams()
   const bookId = searchParams.get('book')
-  const moduleId = bookId ? Number(bookId) : null
+  // A non-numeric bookId (stale bookmark, typo) must collapse cleanly to
+  // null — otherwise Number(bookId) === NaN is falsy in some checks below
+  // (!moduleId) but "present" in others (moduleId != null, since NaN isn't
+  // null/undefined), letting the catalog grid and the loading spinner both
+  // render at once with no error shown.
+  const parsedModuleId = bookId ? Number(bookId) : NaN
+  const moduleId = Number.isFinite(parsedModuleId) ? parsedModuleId : null
   const { data: modules = [] } = useModules()
   const catalog = useMemo(() => modules.filter((m) => !!(m.path || m.pdf_path)), [modules])
   const currentModule = moduleId != null ? modules.find((m) => m.id === moduleId) : undefined
@@ -100,15 +120,22 @@ export function Ebook() {
   const [currentPage, setCurrentPage] = useState(1) // 1-based, matches PDF.js page numbering
 
   // ── Load the PDF whenever the resolved source changes ──
+  // The PDFDocumentProxy loaded here must be .destroy()'d — otherwise it
+  // leaks (worker resources, cached page data) on every module switch and on
+  // unmount. The cleanup below (which fires both when this effect re-runs
+  // for a new moduleId/src and on unmount) is the single place that owns
+  // that lifecycle: it destroys whatever this run stored in pdfRef.current,
+  // and — if the getDocument() promise settles after cancellation — the
+  // .then handler destroys the doc directly since it never made it into the
+  // ref.
   useEffect(() => {
     let cancelled = false
     setStatus('loading')
     setErrorMsg('')
     setTotalPages(0)
     setCurrentPage(1)
-    pdfRef.current = null
 
-    if (!moduleId) return // no book selected — the catalog grid renders instead, see JSX below
+    if (moduleId == null) return // no book selected — the catalog grid renders instead, see JSX below
     if (!src) {
       // Modules are still loading, or this module genuinely has no PDF yet —
       // useModules() resolves async, so don't flash an error before it settles.
@@ -121,7 +148,12 @@ export function Ebook() {
 
     pdfjsLib.getDocument(src).promise.then(
       (doc) => {
-        if (cancelled) return
+        if (cancelled) {
+          // Switched away (or unmounted) while this doc was in flight —
+          // it never got assigned to pdfRef.current, so destroy it here.
+          doc.destroy().catch(() => {})
+          return
+        }
         pdfRef.current = doc
         setTotalPages(doc.numPages)
         setCurrentPage(1)
@@ -142,6 +174,10 @@ export function Ebook() {
 
     return () => {
       cancelled = true
+      if (pdfRef.current) {
+        pdfRef.current.destroy().catch(() => {})
+        pdfRef.current = null
+      }
     }
   }, [moduleId, src, modules.length])
 
@@ -185,7 +221,7 @@ export function Ebook() {
   // progress tracking is identical whether the file lives in books/ or was
   // uploaded to Supabase Storage. ──
   useEffect(() => {
-    if (status !== 'ready' || totalPages <= 0 || !moduleId) return
+    if (status !== 'ready' || totalPages <= 0 || moduleId == null) return
     const pct = Math.min(100, Math.round((currentPage / totalPages) * 100))
     saveProgress(moduleIdToPath(moduleId), { pct, currentPage, lastOpened: new Date().toISOString() }).catch(() => {})
   }, [status, currentPage, totalPages, moduleId])
@@ -207,15 +243,15 @@ export function Ebook() {
     <Layout>
       <div className="page-fadein flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
         <div className="w-full max-w-4xl flex items-center justify-between gap-3">
-          <Link to={moduleId ? '/ebook' : '/dashboard'} className="text-xs md:text-sm text-brown-3 hover:text-brown">
-            ← {moduleId ? 'Katalog' : 'Kembali ke Dashboard'}
+          <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="text-xs md:text-sm text-brown-3 hover:text-brown">
+            ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
           </Link>
           <span className="text-sm font-semibold text-brown truncate text-right">
-            {currentModule?.title ?? (moduleId ? '' : 'Perpustakaan Digital')}
+            {currentModule?.title ?? (moduleId != null ? '' : 'Perpustakaan Digital')}
           </span>
         </div>
 
-        {!moduleId && (
+        {moduleId == null && (
           <div className="w-full max-w-4xl">
             {catalog.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">

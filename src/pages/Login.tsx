@@ -245,7 +245,7 @@ export function Login() {
           <button
             type="button"
             onClick={() => setForgotMode(true)}
-            className="text-xs font-medium text-sage-d hover:underline"
+            className="text-[13px] font-medium text-sage-d hover:underline"
           >
             Lupa kata sandi?
           </button>
@@ -263,7 +263,7 @@ export function Login() {
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-        <div className="text-xs font-medium text-brown-3">atau</div>
+        <div className="text-[13px] font-medium text-brown-3">atau</div>
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
       </div>
 
