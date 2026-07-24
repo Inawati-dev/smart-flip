@@ -115,6 +115,12 @@ export function Layout({ children }: { children: ReactNode }) {
   // label get clipped by any ancestor's overflow/stacking quirks; fixed
   // positioning against the real viewport can't be "submerged" by anything.
   const [flyoutTop, setFlyoutTop] = useState(0)
+  // Collapsed-rail group flyout (ala SAKTI's IconRailV2): hovering any icon
+  // in a section pops a small card listing that WHOLE section's items with
+  // labels, instead of a single-item tooltip -- lets the ciut rail stay
+  // navigable by section without needing to expand.
+  const [groupFlyout, setGroupFlyout] = useState<string | null>(null)
+  const [groupFlyoutTop, setGroupFlyoutTop] = useState(0)
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && window.localStorage.getItem(COLLAPSE_KEY) === '1',
   )
@@ -177,48 +183,25 @@ export function Layout({ children }: { children: ReactNode }) {
     navigate('/')
   }
 
+  // Only used for the expanded desktop accordion now — the collapsed rail
+  // renders its own icon-only Links inline (see the group-flyout block
+  // below), since it needs per-SECTION hover state, not per-item.
   function renderNavItem(item: NavItem) {
     const active = location.pathname === item.to
     const Icon = item.icon
     return (
-      <div
-        key={item.to}
-        className={collapsed ? 'relative w-full flex justify-center' : 'relative'}
-        onMouseEnter={(e) => {
-          if (!collapsed) return
-          setFlyout(item.to)
-          setFlyoutTop(e.currentTarget.getBoundingClientRect().top + e.currentTarget.getBoundingClientRect().height / 2)
-        }}
-      >
+      <div key={item.to} className="relative">
         <Link
           to={item.to}
-          className={`cursor-pointer transition-colors ${
-            collapsed ? 'w-10 h-10 rounded-xl flex items-center justify-center' : 'h-9 px-3 rounded-lg flex items-center gap-2.5 text-sm font-semibold'
-          } ${
-            active
-              ? 'bg-brown text-btn-text'
-              : collapsed
-                // Collapsed rail already shows a flyout label on hover (below) —
-                // a second background-box highlight on the bare icon reads as a
-                // stray floating rectangle with no label to anchor it. Just
-                // shift the icon color instead.
-                ? 'text-brown-2 hover:text-brown'
-                : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
+          className={`cursor-pointer transition-colors h-9 px-3 rounded-lg flex items-center gap-2.5 text-sm font-semibold ${
+            active ? 'bg-brown text-btn-text' : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
           }`}
           aria-label={item.label}
           aria-current={active ? 'page' : undefined}
         >
           <Icon size={17} />
-          {!collapsed && <span className="truncate">{item.label}</span>}
+          <span className="truncate">{item.label}</span>
         </Link>
-        {collapsed && flyout === item.to && (
-          <div
-            className="fixed left-[80px] z-[999] whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
-            style={{ top: flyoutTop, transform: 'translateY(-50%)', background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
-          >
-            {item.label}
-          </div>
-        )}
       </div>
     )
   }
@@ -252,15 +235,68 @@ export function Layout({ children }: { children: ReactNode }) {
           // kept visually via a hairline divider between each section's
           // icons (mirrors SAKTI's collapsed IconRailV2) instead of flattening
           // everything into one undifferentiated list.
-          <nav className="flex-1 flex flex-col items-center w-full overflow-y-auto">
+          <nav
+            className="flex-1 flex flex-col items-center w-full overflow-y-auto"
+            onMouseLeave={() => setGroupFlyout(null)}
+          >
             {sections.map((section, i) => (
               <div
                 key={section.key}
-                className={`flex flex-col gap-0.5 items-center w-full ${
+                className={`relative flex flex-col gap-0.5 items-center w-full ${
                   i > 0 ? 'mt-2 pt-2 border-t border-[color:var(--border)]' : ''
                 }`}
+                onMouseEnter={(e) => {
+                  setGroupFlyout(section.key)
+                  setGroupFlyoutTop(e.currentTarget.getBoundingClientRect().top)
+                }}
               >
-                {section.items.map(renderNavItem)}
+                {section.items.map((item) => {
+                  const active = location.pathname === item.to
+                  const Icon = item.icon
+                  return (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-colors ${
+                        active ? 'bg-brown text-btn-text' : 'text-brown-2 hover:text-brown'
+                      }`}
+                      aria-label={item.label}
+                      aria-current={active ? 'page' : undefined}
+                    >
+                      <Icon size={17} />
+                    </Link>
+                  )
+                })}
+
+                {groupFlyout === section.key && (
+                  <div
+                    className="fixed left-[80px] z-[999] rounded-2xl overflow-hidden bg-ivory border border-[color:var(--border)] shadow-[0_8px_24px_rgba(62,54,46,.18)] min-w-[180px]"
+                    style={{ top: groupFlyoutTop, animation: 'fadeInBg 0.12s ease' }}
+                  >
+                    <div className="px-3.5 pt-2.5 pb-1.5 text-[11px] font-bold uppercase tracking-wide text-brown-3">
+                      {section.label}
+                    </div>
+                    <div className="flex flex-col pb-1.5">
+                      {section.items.map((item) => {
+                        const active = location.pathname === item.to
+                        const Icon = item.icon
+                        return (
+                          <Link
+                            key={item.to}
+                            to={item.to}
+                            className={`flex items-center gap-2.5 px-3.5 h-9 text-sm font-medium transition-colors ${
+                              active ? 'bg-brown/[0.06] text-brown font-semibold' : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
+                            }`}
+                            aria-current={active ? 'page' : undefined}
+                          >
+                            <Icon size={16} />
+                            <span className="truncate">{item.label}</span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </nav>
