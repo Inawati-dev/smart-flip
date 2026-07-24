@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analitik Kelas — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="supabase.js" onerror="console.warn('supabase.js not found — demo mode')"></script>
+<script src="modules-data.js" onerror="console.warn('modules-data.js not found')"></script>
+<script src="data-layer.js" onerror="console.warn('data-layer.js not found')"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cream:#F5F2E9;
+  --ivory:#FFFDF8;
+  --sage:#8FA287;
+  --sage-d:#6B7E64;
+  --sage-bg:#EBF0E7;
+  --terra:#D4A373;
+  --terra-d:#B8855A;
+  --brown:#3E362E;
+  --brown2:#6B5D4F;
+  --brown3:#9B8B7A;
+  --border:rgba(62,54,46,.10);
+  --line:#DDD5C4;
+  --line2:#EDE8DF;
+  --red:#B03020;
+  --red-bg:#FDECEA;
+  --topnav-h:56px;
+  --topnav-bg:#3E362E;
+  --surface:#FFFDF8;
+  --surface2:#FAF7F2;
+  --bg:#F5F2E9;
+  --text:#2C2420;
+  --text2:#4A3D33;
+  --text3:#9B8B7A;
+}
+
+html,body{min-height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--text);transition:background .25s,color .25s}
+
+/* ── TOPNAV ── */
+.topnav{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--topnav-h);z-index:300;
+  background:var(--topnav-bg);
+  display:flex;align-items:center;
+  padding:0 1rem;gap:.25rem;
+  box-shadow:0 1px 0 rgba(255,255,255,.04);
+}
+.tn-logo{
+  display:flex;align-items:center;gap:.5rem;
+  text-decoration:none;flex-shrink:0;margin-right:.75rem;
+}
+.tn-logo-icon{font-size:1.1rem;line-height:1}
+.tn-logo-text{
+  font-family:'Playfair Display',serif;
+  font-size:1rem;font-weight:700;
+  color:var(--terra);letter-spacing:.01em;
+}
+.tn-logo-text span{color:var(--sage)}
+.tn-logo-ver{
+  font-size:.58rem;color:var(--terra);
+  opacity:.65;letter-spacing:.1em;
+  align-self:flex-end;margin-bottom:.15rem;margin-left:.1rem;
+}
+.tn-nav{display:flex;align-items:center;gap:.1rem;flex:1;overflow-x:auto;scrollbar-width:none}
+.tn-nav::-webkit-scrollbar{display:none}
+.nav-item{
+  display:flex;align-items:center;gap:.35rem;
+  padding:.4rem .65rem;border-radius:7px;
+  font-size:.82rem;font-weight:400;
+  color:rgba(255,255,255,.6);
+  cursor:pointer;text-decoration:none;
+  white-space:nowrap;flex-shrink:0;
+  border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;
+  transition:all .18s;position:relative;
+  line-height:1;
+}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.07)}
+.nav-item.active{color:var(--terra);background:rgba(212,163,115,.1)}
+.nav-item.active::after{
+  content:'';position:absolute;bottom:-1px;left:.35rem;right:.35rem;
+  height:2px;border-radius:2px 2px 0 0;background:var(--terra);
+}
+.nav-item svg{width:14px;height:14px;flex-shrink:0;opacity:.75}
+.nav-item.active svg{opacity:1}
+.tn-right{display:flex;align-items:center;gap:.2rem;flex-shrink:0;margin-left:.5rem}
+.avatar-wrap{position:relative;margin-left:.2rem}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--terra);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;
+  cursor:pointer;border:2px solid rgba(212,163,115,.4);
+  transition:border-color .2s;flex-shrink:0;
+}
+.avatar:hover{border-color:var(--terra)}
+.av-dd{
+  position:absolute;top:calc(100% + 10px);right:0;
+  background:var(--surface);border:1px solid var(--line);
+  border-radius:12px;box-shadow:0 8px 32px rgba(44,36,32,.2);
+  min-width:200px;z-index:400;display:none;overflow:hidden;
+}
+.av-dd.open{display:block}
+.dd-hd{padding:.8rem 1rem;border-bottom:1px solid var(--line2)}
+.dd-name{font-size:.85rem;font-weight:600;color:var(--text)}
+.dd-sub{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+.dd-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem 1rem;font-size:.82rem;color:var(--text2);
+  cursor:pointer;transition:background .15s;
+}
+.dd-item:hover{background:var(--bg)}
+.dd-item svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.dd-sep{height:1px;background:var(--line2);margin:.2rem 0}
+.dd-red{color:var(--red)!important}
+
+/* Hamburger */
+.tn-hamburger{
+  display:none;width:42px;height:42px;
+  border-radius:8px;border:none;background:transparent;
+  cursor:pointer;flex-direction:column;align-items:center;justify-content:center;
+  gap:4.5px;color:rgba(255,255,255,.7);
+  transition:background .18s;flex-shrink:0;
+}
+.tn-hamburger:hover{background:rgba(255,255,255,.1)}
+.tn-hamburger span{display:block;width:18px;height:1.5px;background:currentColor;border-radius:2px;transition:all .22s}
+
+/* ── DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:490;display:none}
+.drawer-overlay.open{display:block}
+.drawer{
+  position:fixed;top:0;left:0;bottom:0;
+  width:260px;background:var(--topnav-bg);
+  z-index:500;transform:translateX(-100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  overflow-y:auto;padding-top:.5rem;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);
+  margin-bottom:.5rem;
+}
+.drawer-logo{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:var(--terra)}
+.drawer-close{
+  width:32px;height:32px;border-radius:7px;border:none;
+  background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);
+}
+.drawer-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.drawer-close svg{width:16px;height:16px}
+.drawer .nav-item{margin:.5px .5rem;width:calc(100% - 1rem);border-radius:9px}
+.drawer .nav-item.active::after{display:none}
+.drawer .nav-item.active{background:rgba(212,163,115,.15);color:var(--terra)}
+.drawer-sect{
+  padding:.6rem 1rem .25rem;
+  font-size:.6rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+.drawer-div{height:1px;background:rgba(255,255,255,.07);margin:.4rem .75rem}
+
+/* ── MAIN WRAP ── */
+.main-wrap{padding-top:var(--topnav-h);min-height:100vh;background:var(--bg)}
+.page-wrap{max-width:1100px;margin:0 auto;padding:2rem 1.5rem 4rem}
+
+/* ── PAGE HEADER ── */
+.page-header{margin-bottom:1.75rem}
+.page-header h1{
+  font-family:'Playfair Display',serif;
+  font-size:1.65rem;font-weight:700;color:var(--text);margin-bottom:.3rem;
+}
+.page-header p{font-size:.85rem;color:var(--text3);line-height:1.5}
+
+/* ── TOOLBAR ROW ── */
+.toolbar-row{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;
+}
+.toolbar-left{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.filter-select{
+  height:36px;padding:0 .8rem;border:1.5px solid var(--line);
+  border-radius:8px;background:var(--surface);
+  font-family:'DM Sans',sans-serif;font-size:.82rem;
+  color:var(--text);outline:none;cursor:pointer;
+  transition:border-color .18s;
+}
+.filter-select:focus{border-color:var(--terra)}
+.btn-exp{
+  height:36px;padding:0 .9rem;border-radius:8px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;
+  color:var(--text2);cursor:pointer;
+  display:flex;align-items:center;gap:.4rem;transition:all .15s;flex-shrink:0;
+}
+.btn-exp:hover{border-color:var(--terra);color:var(--terra)}
+.btn-exp svg{width:14px;height:14px}
+
+/* ── STAT CARDS ── */
+.stat-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:.85rem;margin-bottom:1.5rem;
+}
+.stat-card{
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--line);padding:1rem 1.1rem;
+  position:relative;overflow:hidden;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;
+  height:3px;border-radius:12px 12px 0 0;
+}
+.sc1::before{background:var(--sage)}
+.sc2::before{background:var(--terra)}
+.sc3::before{background:#6B7EAF}
+.sc4::before{background:#B07A3E}
+.s-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:.6rem;
+}
+.s-icon svg{width:16px;height:16px}
+.gi{background:var(--sage-bg);color:var(--sage-d)}
+.ti{background:rgba(212,163,115,.12);color:var(--terra-d)}
+.bi{background:rgba(107,126,175,.12);color:#4A5E8A}
+.oi{background:rgba(176,122,62,.12);color:#8A5E2A}
+.s-val{font-size:1.65rem;font-weight:500;color:var(--text);line-height:1}
+.s-lbl{font-size:.7rem;color:var(--text3);margin-top:.3rem}
+.s-sub{font-size:.7rem;margin-top:.25rem;font-weight:500;color:var(--text3)}
+
+/* ── DATA CARD ── */
+.data-card{
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--line);overflow:hidden;margin-bottom:1.25rem;
+}
+.dc-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.85rem 1.1rem;border-bottom:1px solid var(--line);
+  flex-wrap:wrap;gap:.5rem;
+}
+.dc-title{font-size:.88rem;font-weight:600;color:var(--text)}
+.dc-sub{font-size:.75rem;color:var(--text3)}
+
+/* ── TABLE ── */
+table.dt{width:100%;border-collapse:collapse;font-size:.8rem}
+.dt th{
+  text-align:left;padding:.55rem .9rem;
+  font-size:.7rem;font-weight:600;color:var(--text3);
+  background:var(--surface2);border-bottom:1px solid var(--line);
+  cursor:pointer;user-select:none;white-space:nowrap;
+}
+.dt th:hover{color:var(--text)}
+.dt th .sort-icon{display:inline-block;margin-left:.3rem;opacity:.5;font-size:.65rem}
+.dt th.sort-asc .sort-icon::after{content:'▲'}
+.dt th.sort-desc .sort-icon::after{content:'▼'}
+.dt th:not(.sort-asc):not(.sort-desc) .sort-icon::after{content:'⇅'}
+.dt td{padding:.65rem .9rem;color:var(--text2);border-bottom:1px solid var(--line2);vertical-align:middle}
+.dt tr:last-child td{border-bottom:none}
+.dt tr:hover td{background:var(--bg)}
+.dt tr.row-tidak td{background:rgba(212,163,115,.07)}
+.dt tr.row-tidak:hover td{background:rgba(212,163,115,.12)}
+
+.badge{font-size:.67rem;font-weight:600;padding:.22rem .65rem;border-radius:100px;white-space:nowrap}
+.b-aktif{background:#C0DD97;color:#27500A}
+.b-tidak{background:#FAD9B0;color:#7A4010}
+
+.star-rating{color:var(--terra);font-size:.8rem}
+.no-rating{color:var(--text3);font-size:.75rem}
+
+/* ── CHART GRID ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.chart-card{
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--line);padding:1.1rem 1.2rem;
+}
+.chart-card.full-width{grid-column:1/-1}
+.chart-title{
+  font-size:.88rem;font-weight:600;color:var(--text);
+  margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;
+}
+.chart-title svg{width:15px;height:15px;color:var(--terra);flex-shrink:0}
+.chart-legend{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;font-size:.72rem;color:var(--text3)}
+.legend-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:.3rem;flex-shrink:0}
+
+/* ── HORIZONTAL BAR CHART (modul distribution) ── */
+.hbar-wrap{display:flex;flex-direction:column;gap:.55rem}
+.hbar-row{display:flex;align-items:center;gap:.65rem}
+.hbar-label{font-size:.75rem;color:var(--text2);width:58px;text-align:right;flex-shrink:0;white-space:nowrap}
+.hbar-track{
+  flex:1;height:20px;background:rgba(62,54,46,.06);
+  border-radius:100px;overflow:hidden;position:relative;
+}
+.hbar-fill{height:100%;border-radius:100px;transition:width .6s cubic-bezier(.4,0,.2,1);min-width:2px;position:relative}
+.hbar-fill::after{
+  content:attr(data-pct);position:absolute;right:6px;top:50%;
+  transform:translateY(-50%);font-size:.68rem;font-weight:700;color:#fff;
+  white-space:nowrap;pointer-events:none;
+}
+.hbar-fill.color-sage{background:var(--sage)}
+.hbar-fill.color-terra{background:var(--terra)}
+.hbar-fill.color-muted{background:var(--brown3)}
+.hbar-pct{font-size:.73rem;color:var(--text3);width:36px;flex-shrink:0;text-align:left;font-variant-numeric:tabular-nums}
+
+/* ── VERTICAL BAR CHART (kuis distribution) ── */
+.vbar-wrap{display:flex;align-items:flex-end;gap:.6rem;height:130px;padding:0 .2rem}
+.vbar-col{display:flex;flex-direction:column;align-items:center;flex:1;gap:.3rem;justify-content:flex-end}
+.vbar-count{font-size:.72rem;font-weight:700;color:var(--text2)}
+.vbar-bar{
+  width:100%;border-radius:5px 5px 0 0;min-height:4px;
+  position:relative;cursor:pointer;transition:opacity .2s;
+}
+.vbar-bar:hover{opacity:.8}
+.vbar-label{font-size:.65rem;color:var(--text3);text-align:center;white-space:nowrap;line-height:1.3}
+
+/* ── KEPRAKTISAN CHART ── */
+.kprak-wrap{display:flex;flex-direction:column;gap:.7rem}
+.kprak-row{display:flex;align-items:center;gap:.75rem}
+.kprak-label{font-size:.78rem;color:var(--text2);flex:1;min-width:0}
+.kprak-bar-track{width:120px;height:10px;background:rgba(62,54,46,.06);border-radius:100px;overflow:hidden;flex-shrink:0}
+.kprak-bar-fill{height:100%;border-radius:100px;background:var(--terra);transition:width .5s cubic-bezier(.4,0,.2,1)}
+.kprak-score{font-size:.8rem;font-weight:600;color:var(--terra-d);width:30px;text-align:right;flex-shrink:0}
+
+/* ── FLAG CARD ── */
+.flag-card{
+  background:var(--surface);border-radius:12px;
+  border:1px solid var(--line);overflow:hidden;margin-bottom:1.25rem;
+}
+.flag-hd{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.85rem 1.1rem;border-bottom:1px solid var(--line);
+  background:rgba(176,48,32,.04);
+}
+.flag-hd-icon{font-size:1rem}
+.flag-hd-title{font-size:.88rem;font-weight:600;color:var(--text)}
+.flag-hd-sub{font-size:.75rem;color:var(--text3);margin-left:auto}
+.flag-list{padding:.65rem 1.1rem;display:flex;flex-direction:column;gap:.55rem}
+.flag-item{
+  display:flex;align-items:center;gap:.85rem;
+  padding:.65rem .85rem;border-radius:10px;
+  background:rgba(212,163,115,.06);border:1px solid rgba(212,163,115,.15);
+}
+.flag-avatar{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:var(--terra);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;
+}
+.flag-info{flex:1;min-width:0}
+.flag-name{font-size:.84rem;font-weight:600;color:var(--text)}
+.flag-meta{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+.btn-remind{
+  height:32px;padding:0 .75rem;border-radius:7px;
+  border:1.5px solid rgba(212,163,115,.4);background:rgba(212,163,115,.08);
+  font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;
+  color:var(--terra-d);cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0;
+  min-height:44px;min-width:44px;display:flex;align-items:center;
+}
+.btn-remind:hover{background:var(--terra);border-color:var(--terra);color:#fff}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--brown);color:var(--terra);
+  padding:.6rem 1.2rem;border-radius:100px;
+  font-size:.82rem;font-weight:500;
+  box-shadow:0 4px 20px rgba(44,36,32,.25);
+  z-index:900;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── MODAL LOGOUT ── */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(44,36,32,.55);
+  z-index:600;display:none;align-items:center;justify-content:center;
+}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:16px;
+  padding:1.6rem 1.8rem;max-width:360px;width:90%;
+  text-align:center;box-shadow:0 16px 48px rgba(44,36,32,.25);
+}
+.modal h3{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:.4rem}
+.modal p{font-size:.82rem;color:var(--text3);margin-bottom:1.3rem;line-height:1.5}
+.modal-btns{display:flex;gap:.6rem}
+.btn-cancel{
+  flex:1;height:38px;border-radius:9px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text2);cursor:pointer;
+}
+.btn-ok{
+  flex:1;height:38px;border-radius:9px;
+  border:none;background:var(--topnav-bg);
+  font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--surface);cursor:pointer;
+}
+.btn-ok:hover{background:var(--terra)}
+
+/* ── SECTION DIVIDER ── */
+.sec-divider{
+  display:flex;align-items:center;gap:.75rem;
+  margin:1.75rem 0 1rem;
+}
+.sec-divider-line{flex:1;height:1px;background:var(--line2)}
+.sec-divider-label{
+  font-size:.68rem;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text3);white-space:nowrap;
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .tn-nav{display:none}
+  .tn-hamburger{display:flex}
+  .page-wrap{padding:1.25rem 1rem 3rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:.65rem}
+  .chart-grid{grid-template-columns:1fr}
+  .chart-card.full-width{grid-column:1}
+  .avatar{width:44px;height:44px}
+  .filter-select{height:44px}
+  .btn-exp{height:44px}
+}
+@media(max-width:640px){
+  .page-wrap{padding:1rem .85rem 3rem}
+  .page-header h1{font-size:1.3rem}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:.55rem}
+  .s-val{font-size:1.4rem}
+  .filter-select{font-size:16px}
+  .toolbar-row{flex-direction:column;align-items:stretch}
+  .toolbar-left{flex-wrap:wrap}
+  .dc-hd{flex-direction:column;align-items:flex-start}
+  .kprak-bar-track{width:80px}
+  .flag-item{flex-wrap:wrap;gap:.5rem}
+}
+@media(max-width:480px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .hbar-label{width:44px;font-size:.7rem}
+}
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem;transition:opacity .15s}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem;transition:opacity .15s}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     TOP NAVIGATION BAR
+══════════════════════════════════════ -->
+<nav class="topnav" id="topnav">
+  <a class="tn-logo" href="dashboard-dos.html">
+    <span class="tn-logo-icon">📖</span>
+    <span class="tn-logo-text">SMART<span>-FLIP</span></span>
+    <span class="tn-logo-ver">5.0</span>
+  </a>
+
+  <!-- Nav items (desktop) -->
+  <div class="tn-nav" id="tnNav">
+    <a class="nav-item" href="dashboard-dos.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </a>
+    <a class="nav-item active" href="analitik.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+      Analitik
+    </a>
+    <a class="nav-item" href="draf.html?view=dosen">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Validasi
+    </a>
+    <a class="nav-item" href="ngain.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      N-Gain
+    </a>
+    <a class="nav-item" href="workshop.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Workshop
+    </a>
+    <a class="nav-item" href="ebook.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Ebook
+    </a>
+  </div>
+
+  <!-- Right controls -->
+  <div class="tn-right">
+    <div class="avatar-wrap">
+      <div class="avatar" id="avatarBtn" onclick="toggleDD()">D</div>
+      <div class="av-dd" id="avDD">
+        <div class="dd-hd">
+          <div class="dd-name" id="ddName">Dosen</div>
+          <div class="dd-sub" id="ddNidn">NIDN: —</div>
+        </div>
+        <a class="dd-item" href="dashboard-dos.html">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <div class="dd-sep"></div>
+        <div class="dd-item dd-red" onclick="openLogoutModal();closeDD()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Keluar
+        </div>
+      </div>
+    </div>
+    <button class="tn-hamburger" id="btnHamburger" onclick="toggleDrawer()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════
+     MOBILE DRAWER
+══════════════════════════════════════ -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hd">
+    <span class="drawer-logo">SMART-FLIP 5.0</span>
+    <button class="drawer-close" onclick="closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="drawer-sect">Utama</div>
+  <a class="nav-item" href="dashboard-dos.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </a>
+  <a class="nav-item active" href="analitik.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    Analitik
+  </a>
+  <div class="drawer-sect">Tools</div>
+  <a class="nav-item" href="draf.html?view=dosen">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/></svg>
+    Validasi Draf
+  </a>
+  <a class="nav-item" href="ngain.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    N-Gain SDL
+  </a>
+  <a class="nav-item" href="workshop.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Workshop
+  </a>
+  <a class="nav-item" href="ebook.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+    Perpustakaan
+  </a>
+  <div class="drawer-div"></div>
+  <div class="nav-item" style="color:var(--red)" onclick="openLogoutModal();closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Keluar
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MAIN CONTENT
+══════════════════════════════════════ -->
+<div class="main-wrap">
+<div class="page-wrap">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1>Analitik Kelas</h1>
+    <p>Dasbor progress, nilai, dan kepraktisan seluruh mahasiswa — MK Metpen &amp; Pengembangan, Kelas A</p>
+  </div>
+
+  <!-- ── STAT CARDS ── -->
+  <div class="stat-grid">
+    <div class="stat-card sc1">
+      <div class="s-icon gi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="s-val" id="statAktif">—</div>
+      <div class="s-lbl">Mahasiswa Aktif</div>
+      <div class="s-sub" id="statTotalSub">dari 10 terdaftar</div>
+    </div>
+    <div class="stat-card sc2">
+      <div class="s-icon ti">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="s-val" id="statProgress">—</div>
+      <div class="s-lbl">Rata-rata Progress Modul</div>
+      <div class="s-sub">dari 9 modul total</div>
+    </div>
+    <div class="stat-card sc3">
+      <div class="s-icon bi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div class="s-val" id="statKuis">—</div>
+      <div class="s-lbl">Rata-rata Skor Kuis</div>
+      <div class="s-sub">formatif per modul</div>
+    </div>
+    <div class="stat-card sc4">
+      <div class="s-icon oi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="s-val" id="statKepraktisan">—</div>
+      <div class="s-lbl">Rata-rata Kepraktisan</div>
+      <div class="s-sub">dari 5 skala rating</div>
+    </div>
+  </div>
+
+  <!-- ── TABEL PROGRESS MAHASISWA ── -->
+  <div class="sec-divider">
+    <div class="sec-divider-line"></div>
+    <div class="sec-divider-label">Progress Mahasiswa</div>
+    <div class="sec-divider-line"></div>
+  </div>
+
+  <div class="data-card">
+    <div class="dc-hd">
+      <div>
+        <div class="dc-title">Tabel Progress Mahasiswa</div>
+        <div class="dc-sub">Klik header kolom untuk mengurutkan</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+        <select class="filter-select" id="filterStatus" onchange="applyFilter()" aria-label="Filter status">
+          <option value="semua">Semua</option>
+          <option value="aktif">Aktif</option>
+          <option value="tidak">Tidak Aktif</option>
+        </select>
+        <button class="btn-exp" onclick="exportCSV()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
+        </button>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="dt" id="progressTable">
+        <thead>
+          <tr>
+            <th onclick="sortTable(0)" data-col="0"><span>No</span><span class="sort-icon"></span></th>
+            <th onclick="sortTable(1)" data-col="1"><span>Nama</span><span class="sort-icon"></span></th>
+            <th onclick="sortTable(2)" data-col="2"><span>Modul Selesai</span><span class="sort-icon"></span></th>
+            <th onclick="sortTable(3)" data-col="3"><span>Avg Kuis</span><span class="sort-icon"></span></th>
+            <th onclick="sortTable(4)" data-col="4"><span>Waktu (jam)</span><span class="sort-icon"></span></th>
+            <th onclick="sortTable(5)" data-col="5"><span>Kepraktisan</span><span class="sort-icon"></span></th>
+            <th onclick="sortTable(6)" data-col="6"><span>Status</span><span class="sort-icon"></span></th>
+          </tr>
+        </thead>
+        <tbody id="progressTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── GRAFIK SECTION ── -->
+  <div class="sec-divider">
+    <div class="sec-divider-line"></div>
+    <div class="sec-divider-label">Distribusi &amp; Analitik</div>
+    <div class="sec-divider-line"></div>
+  </div>
+
+  <div class="chart-grid">
+    <!-- Distribusi modul (horizontal bar) -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Penyelesaian per Modul
+      </div>
+      <div class="hbar-wrap" id="modulBarChart"></div>
+      <div class="chart-legend">
+        <span><span class="legend-dot" style="background:var(--sage)"></span>≥70% selesai</span>
+        <span><span class="legend-dot" style="background:var(--terra)"></span>30–69%</span>
+        <span><span class="legend-dot" style="background:var(--brown3)"></span>&lt;30%</span>
+      </div>
+    </div>
+
+    <!-- Distribusi skor kuis (vertical bar) -->
+    <div class="chart-card">
+      <div class="chart-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Distribusi Skor Kuis
+      </div>
+      <div class="vbar-wrap" id="kuisBarChart"></div>
+      <div style="display:flex;gap:.6rem;margin-top:.6rem;justify-content:center;flex-wrap:wrap">
+        <span style="font-size:.7rem;color:var(--text3)">0–59: Kurang</span>
+        <span style="font-size:.7rem;color:var(--text3)">60–69: Cukup</span>
+        <span style="font-size:.7rem;color:var(--text3)">70–79: Baik</span>
+        <span style="font-size:.7rem;color:var(--text3)">80–89: Sangat Baik</span>
+        <span style="font-size:.7rem;color:var(--text3)">90–100: Sempurna</span>
+      </div>
+    </div>
+
+    <!-- Kepraktisan per aspek (full width) -->
+    <div class="chart-card full-width">
+      <div class="chart-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Kepraktisan per Aspek (rata-rata skala 1–5)
+      </div>
+      <div class="kprak-wrap" id="kepraktisanChart"></div>
+    </div>
+  </div>
+
+  <!-- ── FLAG MAHASISWA TIDAK AKTIF ── -->
+  <div class="sec-divider">
+    <div class="sec-divider-line"></div>
+    <div class="sec-divider-label">Perhatian Khusus</div>
+    <div class="sec-divider-line"></div>
+  </div>
+
+  <div class="flag-card">
+    <div class="flag-hd">
+      <span class="flag-hd-icon">⚠️</span>
+      <span class="flag-hd-title">Mahasiswa Tidak Aktif</span>
+      <span class="flag-hd-sub">Tidak aktif 3+ hari terakhir</span>
+    </div>
+    <div class="flag-list" id="flagList"></div>
+  </div>
+
+</div><!-- /page-wrap -->
+</div><!-- /main-wrap -->
+
+<!-- MODAL LOGOUT -->
+<div class="modal-bg" id="logoutModal">
+  <div class="modal">
+    <h3>Keluar dari akun?</h3>
+    <p>Semua data sudah tersimpan secara otomatis.</p>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="btn-ok" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════
+   SECURITY HELPER
+══════════════════════════════════════ */
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+/* ══════════════════════════════════════
+   AUTH GUARD (dosen only)
+══════════════════════════════════════ */
+(async () => {
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) {
+    // Demo mode: cek role — hanya dosen yang boleh masuk
+    if (localStorage.getItem('sfp_role') !== 'dosen') { window.location.replace('dashboard-mhs.html'); return; }
+    return;
+  }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+    try {
+      const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+      if (p) {
+        if (p.role !== 'dosen') { window.location.replace('dashboard-mhs.html'); return; }
+        const name = p.full_name || session.user.email.split('@')[0];
+        const ini  = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+        document.getElementById('avatarBtn').textContent = ini;
+        document.getElementById('ddName').textContent   = name;
+        document.getElementById('ddNidn').textContent   = 'NIDN: ' + (p.nim_nidn || '—');
+      }
+    } catch(e) {}
+  } catch(e) { console.error('[analitik] auth guard error:', e); }
+})();
+
+/* ══════════════════════════════════════
+   DUMMY DATA (fallback: demo mode / Supabase gagal)
+══════════════════════════════════════ */
+const DUMMY_STUDENTS = [
+  { id:1, nama:'Ahmad Rizki',   modul:3, kuis:78, jam:4.2, kepraktisan:4.2, status:'aktif'  },
+  { id:2, nama:'Budi Santoso',  modul:2, kuis:85, jam:3.1, kepraktisan:4.5, status:'aktif'  },
+  { id:3, nama:'Citra Dewi',    modul:3, kuis:72, jam:5.0, kepraktisan:3.8, status:'aktif'  },
+  { id:4, nama:'Dian Pratama',  modul:1, kuis:60, jam:1.5, kepraktisan:3.5, status:'tidak'  },
+  { id:5, nama:'Eka Putri',     modul:3, kuis:90, jam:4.8, kepraktisan:4.7, status:'aktif'  },
+  { id:6, nama:'Fajar Hidayat', modul:2, kuis:68, jam:2.3, kepraktisan:4.0, status:'aktif'  },
+  { id:7, nama:'Gita Rahayu',   modul:0, kuis:0,  jam:0.5, kepraktisan:null,status:'tidak'  },
+  { id:8, nama:'Hendra Wijaya', modul:3, kuis:82, jam:3.9, kepraktisan:4.3, status:'aktif'  },
+  { id:9, nama:'Indah Sari',    modul:2, kuis:75, jam:2.7, kepraktisan:4.1, status:'aktif'  },
+  { id:10,nama:'Joko Susanto',  modul:1, kuis:55, jam:1.2, kepraktisan:3.2, status:'tidak'  },
+];
+
+const DUMMY_MODUL_DIST = [
+  { label:'Modul 1', pct:100 },
+  { label:'Modul 2', pct:90  },
+  { label:'Modul 3', pct:80  },
+  { label:'Modul 4', pct:70  },
+  { label:'Modul 5', pct:50  },
+  { label:'Modul 6', pct:40  },
+  { label:'Modul 7', pct:20  },
+  { label:'Modul 8', pct:10  },
+  { label:'Modul 9', pct:0   },
+];
+
+const DUMMY_KEPRAKTISAN_ASPEK = [
+  { label:'Kualitas Konten',       nilai:4.3 },
+  { label:'Kemudahan Penggunaan',  nilai:4.1 },
+  { label:'Keterbacaan',           nilai:4.4 },
+  { label:'Kebermanfaatan',        nilai:4.5 },
+];
+
+let STUDENTS = DUMMY_STUDENTS;
+let MODUL_DIST = DUMMY_MODUL_DIST;
+let KUIS_DIST = [];
+let KEPRAKTISAN_ASPEK = DUMMY_KEPRAKTISAN_ASPEK;
+let TIDAK_AKTIF = STUDENTS.filter(s => s.status === 'tidak');
+
+// Bucket skor kuis mahasiswa jadi 5 kategori (0-59/60-69/70-79/80-89/90-100)
+function bucketKuisDist(students) {
+  const buckets = [
+    { label:'0–59',  sublabel:'Kurang',     min:0,  max:59,  count:0, color:'#C0392B' },
+    { label:'60–69', sublabel:'Cukup',      min:60, max:69,  count:0, color:'#E8A44A' },
+    { label:'70–79', sublabel:'Baik',       min:70, max:79,  count:0, color:'#8FA287' },
+    { label:'80–89', sublabel:'Sangat Baik',min:80, max:89,  count:0, color:'#6B7E64' },
+    { label:'90–100',sublabel:'Sempurna',   min:90, max:100, count:0, color:'#4A6040' },
+  ];
+  students.filter(s => s.kuis > 0).forEach(s => {
+    const b = buckets.find(b => s.kuis >= b.min && s.kuis <= b.max);
+    if (b) b.count++;
+  });
+  return buckets;
+}
+
+/* ══════════════════════════════════════
+   SORT STATE
+══════════════════════════════════════ */
+let sortCol = -1;
+let sortAsc = true;
+let currentFilter = 'semua';
+
+/* ══════════════════════════════════════
+   INIT — coba data real Supabase, fallback dummy
+══════════════════════════════════════ */
+(async function init(){
+  try {
+    const real = typeof DataLayer !== 'undefined' ? await DataLayer.getStudentStats() : null;
+    if (real && real.length) {
+      STUDENTS = real;
+      TIDAK_AKTIF = STUDENTS.filter(s => s.status === 'tidak');
+      const [modulDist, kprakAspek] = await Promise.all([
+        DataLayer.getModulDistribution(),
+        DataLayer.getFeedbackAspectAvg(),
+      ]);
+      if (modulDist) MODUL_DIST = modulDist;
+      if (kprakAspek) KEPRAKTISAN_ASPEK = kprakAspek;
+    }
+  } catch(e) { console.warn('[analitik] gagal load data real, pakai dummy:', e); }
+  KUIS_DIST = bucketKuisDist(STUDENTS);
+  computeStatCards();
+  renderTable(STUDENTS);
+  renderModulChart();
+  renderKuisChart();
+  renderKepraktisanChart();
+  renderFlagList();
+})();
+
+/* ══════════════════════════════════════
+   STAT CARDS
+══════════════════════════════════════ */
+function computeStatCards(){
+  const aktif = STUDENTS.filter(s => s.status === 'aktif');
+  const withKuis = STUDENTS.filter(s => s.kuis > 0);
+  const withKprak = STUDENTS.filter(s => s.kepraktisan != null);
+
+  const totalAktif = aktif.length;
+  const avgModul = (STUDENTS.reduce((a,s) => a + s.modul, 0) / STUDENTS.length);
+  const avgKuis  = withKuis.length ? (withKuis.reduce((a,s) => a + s.kuis, 0) / withKuis.length) : 0;
+  const avgKprak = withKprak.length ? (withKprak.reduce((a,s) => a + s.kepraktisan, 0) / withKprak.length) : 0;
+
+  document.getElementById('statAktif').textContent = totalAktif;
+  document.getElementById('statTotalSub').textContent = 'dari ' + STUDENTS.length + ' terdaftar';
+  document.getElementById('statProgress').textContent = (avgModul / 9 * 100).toFixed(0) + '%';
+  document.getElementById('statKuis').textContent = avgKuis.toFixed(1);
+  document.getElementById('statKepraktisan').textContent = avgKprak.toFixed(1);
+}
+
+/* ══════════════════════════════════════
+   TABEL PROGRESS
+══════════════════════════════════════ */
+function renderTable(data){
+  const tbody = document.getElementById('progressTbody');
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:2rem;color:var(--text3)">Tidak ada data untuk filter ini.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.map((s, i) => {
+    const isAktif   = s.status === 'aktif';
+    const rowClass  = isAktif ? '' : ' class="row-tidak"';
+    const badgeHtml = isAktif
+      ? '<span class="badge b-aktif">Aktif</span>'
+      : '<span class="badge b-tidak">Tidak Aktif</span>';
+    const kprakHtml = s.kepraktisan != null
+      ? `<span class="star-rating">⭐${s.kepraktisan.toFixed(1)}</span>`
+      : `<span class="no-rating">—</span>`;
+    const kuisDisplay = s.kuis > 0 ? escHtml(String(s.kuis)) : '—';
+    return `<tr${rowClass}>
+      <td style="color:var(--text3);font-size:.78rem;text-align:center">${escHtml(String(i+1))}</td>
+      <td style="font-weight:500">${escHtml(s.nama)}</td>
+      <td style="text-align:center">${escHtml(String(s.modul))}/9</td>
+      <td style="text-align:center">${kuisDisplay}</td>
+      <td style="text-align:center">${escHtml(String(s.jam))}</td>
+      <td style="text-align:center">${kprakHtml}</td>
+      <td style="text-align:center">${badgeHtml}</td>
+    </tr>`;
+  }).join('');
+}
+
+function applyFilter(){
+  currentFilter = document.getElementById('filterStatus').value;
+  let data;
+  if (currentFilter === 'aktif')  data = STUDENTS.filter(s => s.status === 'aktif');
+  else if (currentFilter === 'tidak') data = STUDENTS.filter(s => s.status === 'tidak');
+  else data = [...STUDENTS];
+  sortAndRender(data);
+}
+
+function sortTable(col){
+  const ths = document.querySelectorAll('#progressTable thead th');
+  if (sortCol === col) {
+    sortAsc = !sortAsc;
+  } else {
+    sortCol = col;
+    sortAsc = true;
+  }
+  ths.forEach((th, i) => {
+    th.classList.remove('sort-asc','sort-desc');
+    if (i === col) th.classList.add(sortAsc ? 'sort-asc' : 'sort-desc');
+  });
+  let data;
+  if (currentFilter === 'aktif')  data = STUDENTS.filter(s => s.status === 'aktif');
+  else if (currentFilter === 'tidak') data = STUDENTS.filter(s => s.status === 'tidak');
+  else data = [...STUDENTS];
+  sortAndRender(data);
+}
+
+function sortAndRender(data){
+  if (sortCol < 0) { renderTable(data); return; }
+  const keys = ['id','nama','modul','kuis','jam','kepraktisan','status'];
+  const key  = keys[sortCol];
+  const sorted = [...data].sort((a, b) => {
+    let va = a[key], vb = b[key];
+    if (va == null) va = sortAsc ? Infinity : -Infinity;
+    if (vb == null) vb = sortAsc ? Infinity : -Infinity;
+    if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+    return sortAsc ? va - vb : vb - va;
+  });
+  renderTable(sorted);
+}
+
+/* ══════════════════════════════════════
+   GRAFIK MODUL (horizontal bar)
+══════════════════════════════════════ */
+function modulBarColor(pct){
+  if (pct >= 70) return 'color-sage';
+  if (pct >= 30) return 'color-terra';
+  return 'color-muted';
+}
+
+function renderModulChart(){
+  const wrap = document.getElementById('modulBarChart');
+  wrap.innerHTML = MODUL_DIST.map(m => {
+    const colorClass = modulBarColor(m.pct);
+    const pctDisplay = m.pct > 0 ? (m.pct + '%') : '';
+    return `<div class="hbar-row">
+      <div class="hbar-label">${escHtml(m.label)}</div>
+      <div class="hbar-track">
+        <div class="hbar-fill ${colorClass}" style="width:${m.pct}%" data-pct="${pctDisplay}"></div>
+      </div>
+      <div class="hbar-pct">${escHtml(String(m.pct))}%</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   GRAFIK KUIS (vertical bar)
+══════════════════════════════════════ */
+function renderKuisChart(){
+  const wrap   = document.getElementById('kuisBarChart');
+  const maxCnt = Math.max(...KUIS_DIST.map(k => k.count), 1);
+  wrap.innerHTML = KUIS_DIST.map(k => {
+    const heightPct = (k.count / maxCnt * 100);
+    return `<div class="vbar-col">
+      <div class="vbar-count">${escHtml(String(k.count))}</div>
+      <div class="vbar-bar" style="height:${heightPct}%;background:${escHtml(k.color)}" title="${escHtml(k.sublabel)}: ${escHtml(String(k.count))} mahasiswa"></div>
+      <div class="vbar-label">${escHtml(k.label)}<br><span style="font-size:.6rem;opacity:.8">${escHtml(k.sublabel)}</span></div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   GRAFIK KEPRAKTISAN (mini bar)
+══════════════════════════════════════ */
+function renderKepraktisanChart(){
+  const wrap = document.getElementById('kepraktisanChart');
+  wrap.innerHTML = KEPRAKTISAN_ASPEK.map(a => {
+    const pct = (a.nilai / 5 * 100).toFixed(0);
+    return `<div class="kprak-row">
+      <div class="kprak-label">${escHtml(a.label)}</div>
+      <div class="kprak-bar-track">
+        <div class="kprak-bar-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="kprak-score">${escHtml(a.nilai.toFixed(1))}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════
+   FLAG MAHASISWA TIDAK AKTIF
+   (TIDAK_AKTIF diisi di init() — lihat atas)
+══════════════════════════════════════ */
+function renderFlagList(){
+  const list = document.getElementById('flagList');
+  if (!TIDAK_AKTIF.length) {
+    list.innerHTML = '<div style="padding:.5rem 0;font-size:.83rem;color:var(--text3)">Tidak ada mahasiswa yang tidak aktif. Semua baik-baik saja!</div>';
+    return;
+  }
+  list.innerHTML = TIDAK_AKTIF.map(s => {
+    const ini = s.nama.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const moduLabel = s.modul === 0 ? 'Belum memulai modul' : `${s.modul} modul selesai`;
+    const lastSeen  = s.modul === 0 ? 'Terakhir aktif: lebih dari 7 hari lalu' : 'Terakhir aktif: 3+ hari lalu';
+    return `<div class="flag-item">
+      <div class="flag-avatar">${escHtml(ini)}</div>
+      <div class="flag-info">
+        <div class="flag-name">${escHtml(s.nama)}</div>
+        <div class="flag-meta">${escHtml(moduLabel)} · ${escHtml(lastSeen)}</div>
+      </div>
+      <button class="btn-remind" onclick="sendReminder(this,'${escHtml(s.nama)}')" aria-label="Kirim pengingat ke ${escHtml(s.nama)}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;margin-right:.3rem"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Kirim Pengingat
+      </button>
+    </div>`;
+  }).join('');
+}
+
+function sendReminder(btn, nama){
+  btn.disabled = true;
+  btn.textContent = '✓ Terkirim';
+  btn.style.opacity = '.6';
+  showToast('Pengingat terkirim ke ' + nama);
+  setTimeout(() => {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;margin-right:.3rem"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>Kirim Pengingat`;
+    btn.style.opacity = '1';
+  }, 4000);
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let _toastTimer;
+function showToast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+
+/* ══════════════════════════════════════
+   EXPORT CSV
+══════════════════════════════════════ */
+function exportCSV(){
+  let csv = 'No,Nama,Modul Selesai,Avg Kuis,Waktu (jam),Kepraktisan,Status\n';
+  STUDENTS.forEach((s, i) => {
+    const nama     = (s.nama || '').replace(/"/g, '""');
+    const kprak    = s.kepraktisan != null ? s.kepraktisan : '';
+    const statusLbl = s.status === 'aktif' ? 'Aktif' : 'Tidak Aktif';
+    csv += `${i+1},"${nama}",${s.modul},${s.kuis},${s.jam},${kprak},${statusLbl}\n`;
+  });
+  // Summary
+  csv += '\nRingkasan\n';
+  csv += `Mahasiswa Aktif,${STUDENTS.filter(s=>s.status==='aktif').length}\n`;
+  csv += `Rata-rata Modul Selesai,${(STUDENTS.reduce((a,s)=>a+s.modul,0)/STUDENTS.length).toFixed(2)}\n`;
+  const withKuis = STUDENTS.filter(s=>s.kuis>0);
+  csv += `Rata-rata Skor Kuis,${withKuis.length?(withKuis.reduce((a,s)=>a+s.kuis,0)/withKuis.length).toFixed(2):'—'}\n`;
+  const withKprak = STUDENTS.filter(s=>s.kepraktisan!=null);
+  csv += `Rata-rata Kepraktisan,${withKprak.length?(withKprak.reduce((a,s)=>a+s.kepraktisan,0)/withKprak.length).toFixed(2):'—'}\n`;
+
+  const blob = new Blob(['﻿' + csv], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'analitik-kelas-' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('File CSV berhasil diunduh');
+}
+
+/* ══════════════════════════════════════
+   NAV (drawer / avatar dropdown)
+══════════════════════════════════════ */
+function toggleDD(){
+  document.getElementById('avDD').classList.toggle('open');
+}
+function closeDD(){
+  document.getElementById('avDD').classList.remove('open');
+}
+function toggleDrawer(){
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawerOverlay').classList.toggle('open');
+}
+function closeDrawer(){
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+document.addEventListener('click', function(e){
+  const avWrap = document.querySelector('.avatar-wrap');
+  if (avWrap && !avWrap.contains(e.target)) closeDD();
+});
+
+/* ══════════════════════════════════════
+   LOGOUT
+══════════════════════════════════════ */
+async function doLogout(){
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e){}
+  window.location.href = 'index.html';
+}
+
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
+</script>
+</body>
+</html>

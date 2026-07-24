@@ -2,10 +2,12 @@
 
 ## Overview
 Perpustakaan Digital / Flipbook Reader untuk penelitian dana internal UM 2026.
-Live: https://jiakbar.github.io/smart-flipbook
-Stack: GitHub Pages (frontend) + Supabase (PostgreSQL + Auth)
+Live (legacy, GitHub Pages): https://inawati-dev.github.io/smart-flip
+Stack aktif (sejak v1.0.0): React 19 + Vite + TypeScript + Tailwind v4 + Supabase (PostgreSQL + Auth), target deploy Vercel (belum live — CLI login butuh aksi user)
 
-## Key Files
+**Strangler-fig migration**: aplikasi React (`src/`) adalah sumber kebenaran sekarang — semua 18 route live 100% React Router, nol dead-end ke halaman lama. `legacy/*.html` (daftar Key Files di bawah) dipertahankan sebagai file statis fallback, TIDAK ada navigasi live yang menunjuk ke sana lagi. Struktur React: `src/pages/*.tsx` (1 file per route), `src/components/` (Layout, LogoutModal, AuthShell), `src/lib/*.ts` (data layer dual-mode: Supabase kalau `isSupabaseConfigured`, fallback localStorage `sfp_*`), `src/lib/design-tokens.ts` + `src/index.css` (dua mekanisme token CSS yang harus disinkron manual).
+
+## Key Files (legacy/ — HTML statis, sudah tidak dinavigasi live)
 ```
 index.html          — Login / halaman utama
 register.html       — Registrasi mahasiswa/dosen
@@ -26,7 +28,6 @@ analitik.html       — Dasbor Analitik Kelas dosen (progress mahasiswa, grafik,
 profil.html         — Profil pengguna (edit data, hasil VARK, statistik belajar, riwayat kuis)
 manajemen.html      — Panel kelola modul dosen (edit metadata, status, urutan, bulk actions)
 changelog.html      — Riwayat versi
-checklist.html      — Checklist pengembangan
 script.js           — Flipbook engine (lazy PDF render, Map cache)
 style.css           — Global styles
 modules-data.js     — 9 modul + 45 soal kuis + jurnal referensi dummy
@@ -47,7 +48,6 @@ database/schema.sql — Supabase DB schema (8 tabel)
 ## Git Workflow
 ```bash
 # Dari Windows Terminal (bukan bash/shell Claude):
-cd "C:\1-Johan\10. Pengembangan\smart-flipbook"
 git add -- ":(exclude)supabase.js"
 git commit -m "vX.X — deskripsi singkat"
 git pull --rebase && git push
@@ -108,6 +108,18 @@ Spawn dedicated agent untuk:
 - Cek semua form, button, nav, modal, tabel, grid di kedua ukuran
 - Fix inline — tidak perlu konfirmasi untuk layout fix
 
+## UI Interaction Rules — Modal & Transisi (WAJIB)
+Sumber: `kemampuan-web-dev.md` §128–§129. Berlaku semua halaman React (`src/pages/`, `src/components/`).
+
+1. **Setiap tombol aksi (Tambah/Edit/Hapus/CRUD) WAJIB buka modal — bukan inline-edit-di-tabel/baris.** Termasuk aksi destruktif (lihat pattern `LogoutModal` di atas) — jangan pakai `window.confirm()` native.
+2. **Setiap modal WAJIB animasi — backdrop fade + card slide-up, jangan muncul instan/statik.** Pola baku (durasi di atas ~200ms, di bawah itu "kerasa instan" walau teknisnya jalan — lihat §129):
+   ```css
+   @keyframes fadeInBg     { from{opacity:0} to{opacity:1} }
+   @keyframes slideUpModal { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+   ```
+   Backdrop: `animation:'fadeInBg 0.15-0.2s ease'`. Card: `animation:'slideUpModal 0.2-0.25s ease'`. Deklarasikan `@keyframes` sekali di `src/index.css` (bukan diulang per komponen modal).
+3. **Audit cepat komponen mana yang belum dikasih animasi:** cek tiap file yang punya backdrop `position:'fixed'`/`.fixed` apakah pasangan `animation:` fadeInBg/slideUpModal-nya ada. Jangan asumsikan komponen "generik" (`LogoutModal`, dsb) pasti sudah dikasih — cek eksplisit.
+
 ## Design Tokens (CSS Variables)
 ```css
 --cream:#F5F2E9   /* background utama */
@@ -155,7 +167,8 @@ Spawn dedicated agent untuk:
 - v0.9.4 ✓ — PWA (manifest + sw.js + icons), skeleton loading, onboarding modal, VARK visual, isDemo pattern semua halaman, GIF demo poster
 - v0.9.5 ✓ — Mobile support rules CLAUDE.md, logout modal semua halaman, login toast feedback, modal responsive 90vw/90vh
 - v0.9.6 ✓ — Bug sweep 16 fixes, CSS animations (pageIn/fadeUp/toastIn/modalIn/shimmer/progressFill), profil-dos.html baru, prefers-reduced-motion
-- v1.0 → Sprint 8: Supabase live sync, uji lapangan, N-Gain SDL real data, HKI
+- v0.9.7 ✓ — Supabase live sync: data-layer.js full rewrite (semua method aktif Supabase + fallback localStorage), migration_v1_livesync.sql (notifications/feedback/validasi_ahli + kolom tambahan), analitik.html data real (getStudentStats/getModulDistribution/getFeedbackAspectAvg), unit test computeModulDistribution/computeFeedbackAspectAvg
+- v1.0 → Sprint 8: jalankan migration_v1_livesync.sql di Supabase produksi, uji lapangan data real, N-Gain SDL, HKI
 
 ## Fitur v0.9.2 ✓ (dari Mindmap)
 - modul.html — section #sectionJurnal: referensi jurnal + studi kasus per modul (dari modules-data.js)
@@ -175,8 +188,11 @@ Spawn dedicated agent untuk:
 - Artikel Ilmiah template — butuh hasil analisis final
 - Pendaftaran HKI — offline process, bukan fitur digital
 
-## Supabase Tables (8 tabel)
-profiles, modules, module_progress, quiz_attempts, forum_posts, draft_submissions, notifications, learning_sessions
+## Supabase Tables (11 tabel — lihat database/schema.sql + database/migration_v1_livesync.sql)
+profiles, modules, user_progress, quiz_questions, quiz_attempts, drafts, draft_comments, forum_posts, notifications, feedback, validasi_ahli
+
+Data layer (data-layer.js) live sejak v0.9.7 — USE_SUPABASE auto-detect via `typeof sb`, fallback localStorage kalau Supabase gagal. Migration baru WAJIB dijalankan manual di SQL Editor sebelum data-layer aktif penuh (lihat checklist di akhir file migration_v1_livesync.sql).
 
 ## Local Dev
-Jalankan `serve.bat` dari Windows Explorer atau terminal, buka http://localhost:8080
+- **React app (src/, yang aktif)**: `pnpm install` lalu `pnpm dev` — buka http://localhost:5173
+- **Legacy statis (legacy/, arsip)**: `serve.bat` (double-click dari Explorer atau jalankan di terminal) — serve folder `legacy/` doang lewat `python -m http.server 8080`, buka http://localhost:8080. Sengaja dipertahankan di root (bukan didalam `legacy/`) biar gampang di-klik dari Explorer.

@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panduan Workshop — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="supabase.js" onerror="console.warn('supabase.js not found — demo mode')"></script>
+<script src="modules-data.js" onerror="console.warn('modules-data.js not found')"></script>
+<script src="data-layer.js" onerror="console.warn('data-layer.js not found')"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ══════════════════════════════════════
+   DESIGN TOKENS — LIGHT MODE (default)
+══════════════════════════════════════ */
+:root{
+  --cream:#F5F2E9;--ivory:#FFFDF8;--ivory2:#FAF7F2;
+  --sage:#8FA287;--sage-d:#6B7E64;--sage-bg:#EBF0E7;
+  --terra:#D4A373;--terra-d:#B8855A;
+  --brown:#3E362E;--brown2:#6B5D4F;--brown3:#9B8B7A;
+  --border:rgba(62,54,46,.10);
+  --line:#DDD5C4;--line2:#EDE8DF;
+  --topnav-bg:#3E362E;--topnav-bg-2:#6B5D4F;
+  --hh:54px;--r:10px;
+
+  /* semantic aliases (kept in sync with primitives above) */
+  --bg:var(--cream);
+  --surface:var(--ivory);
+  --surface2:var(--ivory2);
+  --text:var(--brown);
+  --text2:var(--brown2);
+  --border-c:var(--border);
+}
+
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream);
+  font-family:'DM Sans',sans-serif;
+  color:var(--brown);
+  min-height:100vh;
+  transition:background .25s,color .25s;
+}
+
+/* ── TOPBAR ── */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:var(--topnav-bg);
+  display:flex;align-items:center;gap:.6rem;
+  padding:0 1rem;height:var(--hh);
+}
+.tb-back{
+  display:flex;align-items:center;gap:.4rem;
+  color:rgba(255,255,255,.65);font-size:.85rem;font-weight:500;
+  text-decoration:none;padding:.3rem .6rem;border-radius:6px;
+  transition:all .18s;flex-shrink:0;
+}
+.tb-back:hover{background:rgba(255,255,255,.1);color:#fff}
+.tb-back svg{width:16px;height:16px;flex-shrink:0}
+.tb-title{
+  font-family:'Playfair Display',serif;
+  font-size:.95rem;color:var(--terra);
+  font-weight:600;letter-spacing:.02em;
+  flex-shrink:0;
+}
+.tb-spacer{flex:1}
+.modul-selector{
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.15);
+  color:#fff;border-radius:8px;
+  padding:.35rem .7rem;font-size:.8rem;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;outline:none;
+  max-width:200px;
+}
+.modul-selector:focus{border-color:rgba(212,163,115,.5)}
+.modul-selector option{background:var(--topnav-bg);color:#fff}
+.btn-print{
+  display:flex;align-items:center;gap:.4rem;
+  background:var(--terra);color:#fff;
+  border:none;border-radius:8px;padding:.4rem .8rem;
+  font-size:.8rem;font-weight:600;font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:all .18s;flex-shrink:0;white-space:nowrap;
+}
+.btn-print:hover{background:var(--terra-d)}
+.btn-print svg{width:15px;height:15px}
+
+/* ── MOBILE HAMBURGER ── */
+.tb-hamburger{
+  display:none;width:44px;height:44px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;flex-direction:column;
+  align-items:center;justify-content:center;gap:4px;
+  color:rgba(255,255,255,.65);transition:background .18s;flex-shrink:0;
+}
+.tb-hamburger:hover{background:rgba(255,255,255,.1)}
+.tb-hamburger span{display:block;width:16px;height:1.5px;background:currentColor;border-radius:2px;transition:all .22s}
+
+/* ── MOBILE NAV DRAWER ── */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:490;display:none}
+.drawer-overlay.open{display:block}
+.drawer{
+  position:fixed;top:0;right:0;bottom:0;width:280px;max-width:85vw;background:var(--topnav-bg);
+  z-index:500;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;overflow-y:auto;padding-top:.5rem;
+}
+.drawer.open{transform:translateX(0)}
+.drawer-hd{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:.5rem;
+}
+.drawer-logo{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--terra)}
+.drawer-close{
+  width:44px;height:44px;border-radius:7px;border:none;background:transparent;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);
+}
+.drawer-close:hover{background:rgba(255,255,255,.08);color:#fff}
+.drawer-close svg{width:14px;height:14px}
+.drawer-navitem{
+  display:flex;align-items:center;gap:.6rem;min-height:44px;
+  padding:.7rem 1rem;margin:.15rem .5rem;border-radius:9px;width:calc(100% - 1rem);
+  font-size:.85rem;font-weight:500;color:rgba(255,255,255,.75);
+  text-decoration:none;border:none;background:transparent;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all .15s;
+}
+.drawer-navitem:hover{background:rgba(255,255,255,.08);color:#fff}
+.drawer-navitem svg{width:16px;height:16px;flex-shrink:0;opacity:.8}
+.drawer-navitem.logout-item{color:rgba(240,80,80,.85)}
+.drawer-div{height:1px;background:rgba(255,255,255,.08);margin:.5rem .75rem}
+
+/* ── MAIN ── */
+.main{
+  max-width:860px;margin:0 auto;
+  padding:2rem 1.2rem 4rem;
+}
+
+/* ── HERO ── */
+.hero{
+  background:var(--topnav-bg);
+  border-radius:var(--r);
+  padding:2rem 2rem 1.6rem;
+  margin-bottom:1.5rem;
+  position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 80% 0%,rgba(212,163,115,.18) 0%,transparent 60%);
+  pointer-events:none;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  background:rgba(143,162,135,.2);border:1px solid rgba(143,162,135,.35);
+  color:var(--sage);font-size:.72rem;font-weight:600;
+  letter-spacing:.08em;border-radius:100px;
+  padding:.25rem .75rem;margin-bottom:1rem;
+}
+.hero-badge span{font-size:1em}
+.hero-modul-num{
+  font-size:.8rem;font-weight:600;
+  color:var(--terra);letter-spacing:.1em;
+  text-transform:uppercase;margin-bottom:.3rem;
+}
+.hero-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.7rem;color:#fff;font-weight:700;
+  line-height:1.25;margin-bottom:.5rem;
+}
+.hero-meta{
+  display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
+  margin-top:.8rem;
+}
+.hero-durasi{
+  display:flex;align-items:center;gap:.4rem;
+  color:rgba(255,255,255,.55);font-size:.83rem;
+}
+.hero-durasi svg{width:15px;height:15px;opacity:.7}
+
+/* ── TAB NAV ── */
+.tab-nav{
+  display:flex;gap:.25rem;
+  background:var(--ivory);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:.35rem;
+  margin-bottom:1.25rem;
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.tab-nav::-webkit-scrollbar{display:none}
+.tab-btn{
+  flex:1 0 auto;
+  display:flex;align-items:center;justify-content:center;
+  gap:.4rem;white-space:nowrap;
+  padding:.55rem 1rem;border-radius:7px;
+  border:none;background:transparent;
+  color:var(--brown3);font-size:.83rem;font-weight:500;
+  font-family:'DM Sans',sans-serif;cursor:pointer;
+  transition:all .18s;
+}
+.tab-btn:hover{background:var(--cream);color:var(--brown2)}
+.tab-btn.active{
+  background:var(--topnav-bg);color:#fff;
+  font-weight:600;
+}
+.tab-btn svg{width:15px;height:15px;flex-shrink:0}
+
+/* ── CARD ── */
+.ws-card{
+  background:var(--ivory);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.75rem;
+  margin-bottom:1rem;
+}
+.ws-card-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.1rem;font-weight:700;
+  color:var(--brown);margin-bottom:1.2rem;
+  padding-bottom:.75rem;
+  border-bottom:1px solid var(--line2);
+}
+
+/* ── TAB TUJUAN ── */
+.tujuan-list{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.tujuan-item{
+  display:flex;align-items:flex-start;gap:.75rem;
+  padding:.75rem 1rem;
+  background:var(--cream);border-radius:8px;
+  border-left:3px solid var(--sage);
+}
+.tujuan-icon{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--sage);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:.7rem;font-weight:700;
+  margin-top:.05rem;
+}
+.tujuan-text{font-size:.9rem;line-height:1.5;color:var(--brown2)}
+
+/* ── TAB AKTIVITAS ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{
+  display:grid;
+  grid-template-columns:120px 1fr;
+  gap:0 1.25rem;
+  position:relative;
+}
+.tl-item:not(:last-child) .tl-right::before{
+  content:'';
+  position:absolute;
+  left:calc(120px + 1.25rem + 9px);
+  top:24px;bottom:0;width:2px;
+  background:var(--line2);
+}
+.tl-left{
+  display:flex;flex-direction:column;
+  align-items:flex-end;
+  padding-bottom:1.5rem;
+  padding-top:.15rem;
+}
+.tl-time{
+  font-size:.72rem;font-weight:600;
+  color:var(--terra-d);letter-spacing:.03em;
+  text-align:right;line-height:1.3;
+  white-space:nowrap;
+}
+.tl-right{
+  position:relative;
+  padding-bottom:1.5rem;
+  padding-left:1.5rem;
+}
+.tl-dot{
+  position:absolute;left:0;top:.15rem;
+  width:20px;height:20px;border-radius:50%;
+  background:var(--ivory);border:2.5px solid var(--terra);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1;
+  transform:translateX(-50%);
+}
+.tl-dot-inner{
+  width:7px;height:7px;border-radius:50%;
+  background:var(--terra);
+}
+.tl-nama{
+  font-weight:600;font-size:.92rem;
+  color:var(--brown);margin-bottom:.35rem;
+}
+.tl-desc{
+  font-size:.85rem;line-height:1.55;
+  color:var(--brown2);margin-bottom:.4rem;
+}
+.tl-peran{
+  display:inline-flex;align-items:center;gap:.3rem;
+  font-size:.72rem;font-weight:600;letter-spacing:.04em;
+  color:var(--terra-d);background:rgba(212,163,115,.12);
+  border:1px solid rgba(212,163,115,.25);
+  border-radius:100px;padding:.2rem .6rem;
+}
+
+/* ── TAB CHECKLIST ── */
+.cl-list{display:flex;flex-direction:column;gap:.5rem}
+.cl-item{
+  display:flex;align-items:center;gap:.85rem;
+  min-height:44px;padding:.65rem 1rem;
+  background:var(--cream);border-radius:8px;
+  cursor:pointer;transition:all .15s;
+  border:1px solid transparent;
+}
+.cl-item:hover{background:var(--ivory2);border-color:var(--line)}
+.cl-item.done{background:var(--sage-bg);border-color:rgba(143,162,135,.25)}
+.cl-checkbox{
+  width:20px;height:20px;border-radius:5px;
+  border:2px solid var(--line);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;background:var(--ivory);
+}
+.cl-item.done .cl-checkbox{
+  background:var(--sage);border-color:var(--sage);
+}
+.cl-checkbox svg{width:11px;height:11px;color:#fff;opacity:0;transition:opacity .15s}
+.cl-item.done .cl-checkbox svg{opacity:1}
+.cl-text{font-size:.88rem;line-height:1.4;color:var(--brown2);user-select:none}
+.cl-item.done .cl-text{text-decoration:line-through;color:var(--brown3)}
+.cl-progress{
+  display:flex;align-items:center;gap:.75rem;
+  margin-bottom:1rem;
+}
+.cl-progress-bar{
+  flex:1;height:6px;background:var(--line2);border-radius:3px;overflow:hidden;
+}
+.cl-progress-fill{height:100%;background:var(--sage);border-radius:3px;transition:width .3s ease}
+.cl-progress-text{font-size:.78rem;font-weight:600;color:var(--sage);white-space:nowrap}
+.cl-reset{
+  margin-top:1rem;
+  background:transparent;border:1px solid var(--line);
+  color:var(--brown3);font-size:.78rem;font-family:'DM Sans',sans-serif;
+  padding:.35rem .75rem;border-radius:6px;cursor:pointer;
+  transition:all .15s;
+}
+.cl-reset:hover{border-color:var(--brown3);color:var(--brown2)}
+
+/* ── TAB LEMBAR KERJA ── */
+.lk-instruksi{
+  font-size:.88rem;line-height:1.6;color:var(--brown2);
+  background:rgba(212,163,115,.08);border:1px solid rgba(212,163,115,.2);
+  border-left:3px solid var(--terra);
+  border-radius:0 8px 8px 0;padding:.85rem 1rem;margin-bottom:1.5rem;
+}
+.lk-q-list{display:flex;flex-direction:column;gap:1.1rem}
+.lk-q-item{display:flex;flex-direction:column;gap:.5rem}
+.lk-q-num{
+  font-size:.78rem;font-weight:700;letter-spacing:.06em;
+  color:var(--terra-d);text-transform:uppercase;
+}
+.lk-q-text{font-size:.88rem;font-weight:500;color:var(--brown);line-height:1.4}
+.lk-textarea{
+  width:100%;min-height:80px;
+  background:var(--cream);border:1px solid var(--line);
+  border-radius:8px;padding:.65rem .85rem;
+  font-size:.85rem;line-height:1.55;
+  color:var(--brown);font-family:'DM Sans',sans-serif;
+  resize:vertical;outline:none;transition:border-color .18s;
+}
+.lk-textarea:focus{border-color:var(--terra);background:var(--ivory)}
+.lk-actions{
+  display:flex;gap:.6rem;margin-top:1.5rem;flex-wrap:wrap;
+}
+.lk-btn{
+  display:flex;align-items:center;gap:.4rem;
+  padding:.55rem 1rem;border-radius:8px;
+  font-size:.83rem;font-weight:600;font-family:'DM Sans',sans-serif;
+  cursor:pointer;border:none;transition:all .18s;
+}
+.lk-btn-primary{background:var(--topnav-bg);color:#fff}
+.lk-btn-primary:hover{background:var(--topnav-bg-2)}
+.lk-btn-secondary{background:var(--cream);border:1px solid var(--line);color:var(--brown2)}
+.lk-btn-secondary:hover{background:var(--ivory2);border-color:var(--brown3)}
+.lk-btn svg{width:14px;height:14px}
+
+/* ── PREV / NEXT NAV ── */
+.modul-nav{
+  display:flex;gap:.75rem;margin-top:2rem;
+}
+.modul-nav-btn{
+  flex:1;display:flex;align-items:center;gap:.5rem;
+  padding:.85rem 1rem;border-radius:var(--r);
+  background:var(--ivory);border:1px solid var(--border);
+  cursor:pointer;text-decoration:none;
+  transition:all .18s;
+}
+.modul-nav-btn:hover{background:var(--cream);border-color:var(--line)}
+.modul-nav-btn.nav-next{justify-content:flex-end;text-align:right}
+.modul-nav-btn.nav-prev{text-align:left}
+.nav-label{font-size:.7rem;color:var(--brown3);font-weight:500;letter-spacing:.04em}
+.nav-name{font-size:.85rem;color:var(--brown);font-weight:600}
+.nav-arr{color:var(--terra);flex-shrink:0;font-size:1.1rem}
+.modul-nav-btn.disabled{opacity:.35;pointer-events:none}
+
+/* ── HIDDEN TAB CONTENT ── */
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ── MOBILE ── */
+@media(max-width:640px){input,select,textarea{font-size:16px!important}
+  .hero{padding:1.5rem 1.25rem 1.25rem}
+  .hero-title{font-size:1.35rem}
+  .ws-card{padding:1.25rem}
+  .tl-item{grid-template-columns:90px 1fr}
+  .tl-item:not(:last-child) .tl-right::before{
+    left:calc(90px + 1.25rem + 9px);
+  }
+  .tb-title{display:none}
+  .modul-selector{max-width:76px;font-size:.75rem}
+  .btn-print{padding:.4rem .6rem;font-size:.75rem}
+  .btn-print span{display:none}
+  .modul-nav{flex-direction:column}
+  .lk-actions{flex-direction:column}
+  .lk-btn{justify-content:center;min-height:44px}
+  .tab-btn{min-height:44px}
+}
+@media(max-width:768px){
+  .tab-btn,.lk-btn{min-height:44px}
+}
+
+/* ── MOBILE: hamburger replaces back/profil links ── */
+@media(max-width:768px){
+  .tb-back{display:none}
+  .tb-hamburger{display:flex}
+}
+
+/* ── PRINT ── */
+@media print{
+  .topbar,.modul-selector,.btn-print,.tab-nav,.modul-nav,.drawer-overlay,.drawer{display:none !important}
+  body{background:white;font-size:11pt}
+  .main{max-width:100%;padding:0}
+  .hero{background:#3E362E;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ws-card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid;margin-bottom:.5cm}
+  .tab-content{display:block !important}
+  .cl-item{min-height:auto}
+  .lk-textarea{border:1pt solid #ccc;min-height:60pt}
+  a{text-decoration:none;color:inherit}
+}
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem;transition:opacity .15s}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem;transition:opacity .15s}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a href="javascript:history.back()" class="tb-back">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+    Kembali
+  </a>
+  <span class="tb-title">PANDUAN WORKSHOP</span>
+  <div class="tb-spacer"></div>
+  <select class="modul-selector" id="modulSelector" aria-label="Pilih modul">
+    <option value="1">Modul 1</option>
+    <option value="2">Modul 2</option>
+    <option value="3">Modul 3</option>
+    <option value="4">Modul 4</option>
+    <option value="5">Modul 5</option>
+    <option value="6">Modul 6</option>
+    <option value="7">Modul 7</option>
+    <option value="8">Modul 8</option>
+    <option value="9">Modul 9</option>
+  </select>
+  <a href="profil.html" class="tb-back" style="flex-shrink:0">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profil
+  </a>
+  <button class="btn-print" onclick="window.print()" aria-label="Cetak halaman">
+    <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a1 1 0 001 1h6a1 1 0 001-1v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zm2 0h6v3H7V4zm-1 9a1 1 0 100 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+    <span>Cetak</span>
+  </button>
+  <button class="tb-hamburger" id="btnHamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</header>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-hd">
+    <span class="drawer-logo">SMART-FLIP 5.0</span>
+    <button class="drawer-close" onclick="closeDrawer()" aria-label="Tutup menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <a class="drawer-navitem" id="drawerDashboard" href="dashboard-mhs.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+    Dashboard
+  </a>
+  <a class="drawer-navitem" href="profil.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    Profil
+  </a>
+  <a class="drawer-navitem" href="changelog.html" onclick="closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
+    Changelog
+  </a>
+  <div class="drawer-div"></div>
+  <button class="drawer-navitem logout-item" onclick="openLogoutModal();closeDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Keluar
+  </button>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <section class="hero" id="heroSection">
+    <div class="hero-badge"><span>📋</span> Sesi Tatap Muka</div>
+    <div class="hero-modul-num" id="heroModulNum">MODUL 1</div>
+    <h1 class="hero-title" id="heroTitle">Dasar & Konsep R&D</h1>
+    <div class="hero-meta">
+      <div class="hero-durasi">
+        <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+        <span id="heroDurasi">2 x 50 menit</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAB NAV -->
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" role="tab" aria-selected="true" data-tab="tujuan">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      Tujuan
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="aktivitas">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+      Aktivitas
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="checklist">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm9.707 5.707a1 1 0 00-1.414-1.414L9 12.586l-1.293-1.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+      Checklist
+    </button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="lembarkerja">
+      <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"/></svg>
+      Lembar Kerja
+    </button>
+  </nav>
+
+  <!-- TAB: TUJUAN -->
+  <div class="tab-content active" id="tab-tujuan">
+    <div class="ws-card">
+      <div class="ws-card-title">Tujuan Pembelajaran Sesi</div>
+      <ul class="tujuan-list" id="tujuanList"></ul>
+    </div>
+  </div>
+
+  <!-- TAB: AKTIVITAS -->
+  <div class="tab-content" id="tab-aktivitas">
+    <div class="ws-card">
+      <div class="ws-card-title">Alur Aktivitas Sesi</div>
+      <div class="timeline" id="timelineList"></div>
+    </div>
+  </div>
+
+  <!-- TAB: CHECKLIST -->
+  <div class="tab-content" id="tab-checklist">
+    <div class="ws-card">
+      <div class="ws-card-title">Checklist Kesiapan Mahasiswa</div>
+      <div class="cl-progress">
+        <div class="cl-progress-bar"><div class="cl-progress-fill" id="clProgressFill" style="width:0%"></div></div>
+        <div class="cl-progress-text" id="clProgressText">0 / 0</div>
+      </div>
+      <ul class="cl-list" id="checklistList"></ul>
+      <button class="cl-reset" onclick="resetChecklist()">Reset Checklist</button>
+    </div>
+  </div>
+
+  <!-- TAB: LEMBAR KERJA -->
+  <div class="tab-content" id="tab-lembarkerja">
+    <div class="ws-card">
+      <div class="ws-card-title" id="lkJudul">Lembar Kerja</div>
+      <div class="lk-instruksi" id="lkInstruksi"></div>
+      <div class="lk-q-list" id="lkQuestions"></div>
+      <div class="lk-actions">
+        <button class="lk-btn lk-btn-primary" onclick="window.print()">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a1 1 0 001 1h6a1 1 0 001-1v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a1 1 0 00-1-1H6a1 1 0 00-1 1zm2 0h6v3H7V4z" clip-rule="evenodd"/></svg>
+          Cetak Lembar Kerja
+        </button>
+        <button class="lk-btn lk-btn-secondary" onclick="clearLembarKerja()">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+          Bersihkan Jawaban
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREV / NEXT -->
+  <nav class="modul-nav" id="modulNav" aria-label="Navigasi antar modul"></nav>
+
+</main>
+
+<script>
+/* ══════════════════════════════════════════════════
+   WORKSHOP DATA — 9 Modul
+   MK Metode Penelitian & Pengembangan, UM 2026
+   ══════════════════════════════════════════════════ */
+const WORKSHOP_DATA = {
+  1: {
+    judul: 'Dasar & Konsep R&D',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu mendiskusikan konsep R&D secara kritis',
+      'Mahasiswa mampu membedakan R&D dengan jenis penelitian lain',
+      'Mahasiswa mampu memberikan contoh produk R&D yang relevan dalam pendidikan'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–15 menit',
+        nama: 'Review & Brainstorm',
+        deskripsi: 'Dosen membuka sesi dengan pertanyaan pemantik: "Apa perbedaan utama antara penelitian murni dan R&D?" Mahasiswa berbagi jawaban secara lisan.',
+        peran: 'Dosen fasilitator, mahasiswa aktif'
+      },
+      {
+        waktu: '15–50 menit',
+        nama: 'Diskusi Kelompok',
+        deskripsi: 'Mahasiswa dibagi 4 kelompok. Setiap kelompok menganalisis 1 contoh penelitian R&D nyata dan mempresentasikan hasil analisisnya.',
+        peran: 'Kelompok kecil (7–8 orang)'
+      },
+      {
+        waktu: '50–80 menit',
+        nama: 'Presentasi & Umpan Balik',
+        deskripsi: 'Setiap kelompok presentasi 5 menit, kelompok lain memberikan tanggapan. Dosen meluruskan miskonsepsi.',
+        peran: 'Presentasi bergantian'
+      },
+      {
+        waktu: '80–100 menit',
+        nama: 'Refleksi & Penutup',
+        deskripsi: 'Mahasiswa mengisi lembar refleksi singkat (3 hal yang dipelajari, 2 pertanyaan, 1 rencana aplikasi). Dosen merangkum poin kunci.',
+        peran: 'Individual + dosen'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 1 sebelum kelas',
+      'Menonton video pengantar R&D',
+      'Mengerjakan kuis formatif modul 1',
+      'Menyiapkan 1 contoh produk R&D untuk didiskusikan',
+      'Mengisi refleksi akhir sesi'
+    ],
+    lembarKerja: {
+      judul: 'Analisis Penelitian R&D',
+      instruksi: 'Temukan 1 artikel jurnal tentang penelitian R&D dalam pendidikan (terbit 2019–2024). Jawab pertanyaan berikut berdasarkan artikel yang Anda pilih:',
+      pertanyaan: [
+        'Apa produk yang dikembangkan dalam penelitian tersebut?',
+        'Model pengembangan apa yang digunakan? Jelaskan alasannya.',
+        'Bagaimana cara peneliti melakukan validasi produk?',
+        'Apa hasil dan kesimpulan penelitian tersebut?',
+        'Apa kelebihan dan kekurangan penelitian ini menurut Anda?'
+      ]
+    }
+  },
+
+  2: {
+    judul: 'Model ADDIE & 4D',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu menjelaskan setiap tahap model ADDIE secara rinci',
+      'Mahasiswa mampu menjelaskan setiap tahap model 4D (Define–Design–Develop–Disseminate)',
+      'Mahasiswa mampu membandingkan kelebihan dan kekurangan kedua model',
+      'Mahasiswa mampu menentukan model yang tepat untuk konteks penelitian mereka'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–10 menit',
+        nama: 'Ice Breaking & Review',
+        deskripsi: 'Dosen mengajukan pertanyaan cepat: "Sebutkan satu kata yang merepresentasikan proses pengembangan." Mahasiswa menjawab lisan, dosen menghubungkan dengan ADDIE/4D.',
+        peran: 'Seluruh kelas'
+      },
+      {
+        waktu: '10–40 menit',
+        nama: 'Simulasi Tahap ADDIE',
+        deskripsi: 'Mahasiswa dibagi 5 kelompok (1 kelompok per tahap ADDIE: Analyze, Design, Develop, Implement, Evaluate). Setiap kelompok menyimulasikan tugasnya dalam konteks pengembangan modul digital dan melaporkan hasilnya.',
+        peran: 'Kelompok per tahap (5–6 orang)'
+      },
+      {
+        waktu: '40–70 menit',
+        nama: 'Perbandingan ADDIE vs 4D',
+        deskripsi: 'Mahasiswa berpasangan membuat tabel perbandingan ADDIE vs 4D. Pasangan berbagi hasil dengan pasangan lain (think-pair-share). Dosen memfasilitasi diskusi perbedaan krusial.',
+        peran: 'Berpasangan lalu berbagi'
+      },
+      {
+        waktu: '70–90 menit',
+        nama: 'Pemilihan Model & Justifikasi',
+        deskripsi: 'Setiap mahasiswa menuliskan model yang akan digunakan untuk skripsi/penelitiannya beserta alasan. Beberapa mahasiswa berbagi pilihan dan dosen memberikan masukan.',
+        peran: 'Individual, lalu diskusi kelas'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Rangkuman & Tindak Lanjut',
+        deskripsi: 'Dosen merangkum poin kunci perbedaan model. Mahasiswa mencatat rencana penggunaan model dalam penelitian masing-masing.',
+        peran: 'Dosen + mahasiswa'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 2 tentang model ADDIE dan 4D',
+      'Membuat diagram alur salah satu model secara mandiri',
+      'Mengerjakan kuis formatif modul 2',
+      'Mencari 1 contoh skripsi yang menggunakan model ADDIE atau 4D',
+      'Menyiapkan justifikasi pemilihan model untuk penelitian sendiri'
+    ],
+    lembarKerja: {
+      judul: 'Perbandingan Model ADDIE dan 4D',
+      instruksi: 'Isi tabel dan jawab pertanyaan berikut untuk membandingkan dua model pengembangan utama dalam R&D pendidikan.',
+      pertanyaan: [
+        'Tuliskan tahapan model ADDIE secara lengkap beserta deskripsi singkat setiap tahap.',
+        'Tuliskan tahapan model 4D secara lengkap beserta deskripsi singkat setiap tahap.',
+        'Apa persamaan utama antara ADDIE dan 4D?',
+        'Apa perbedaan paling signifikan antara ADDIE dan 4D?',
+        'Model mana yang akan Anda gunakan dalam penelitian Anda dan mengapa? Berikan minimal 2 alasan.'
+      ]
+    }
+  },
+
+  3: {
+    judul: 'Needs Assessment',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu merancang pertanyaan needs assessment yang valid',
+      'Mahasiswa mampu melakukan wawancara needs assessment secara sistematis',
+      'Mahasiswa mampu menganalisis dan merumuskan kebutuhan dari data lapangan',
+      'Mahasiswa mampu menghubungkan temuan needs assessment dengan rencana produk R&D'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–15 menit',
+        nama: 'Mini Lecture: Teknik Needs Assessment',
+        deskripsi: 'Dosen menjelaskan 3 metode needs assessment (observasi, wawancara, angket). Mahasiswa mencatat contoh pertanyaan efektif vs tidak efektif.',
+        peran: 'Dosen presentasi, mahasiswa mencatat'
+      },
+      {
+        waktu: '15–45 menit',
+        nama: 'Praktik Wawancara di Kelas',
+        deskripsi: 'Mahasiswa berpasangan: satu berperan sebagai peneliti, satu sebagai guru/siswa yang diwawancarai. Menggunakan panduan wawancara yang telah disusun. Bergantian peran setelah 15 menit.',
+        peran: 'Role-play berpasangan'
+      },
+      {
+        waktu: '45–70 menit',
+        nama: 'Analisis Data Wawancara',
+        deskripsi: 'Mahasiswa mengelompokkan temuan wawancara ke dalam kategori: masalah utama, kebutuhan mendesak, dan harapan solusi. Menggunakan template analisis yang disediakan.',
+        peran: 'Individual, dipandu dosen'
+      },
+      {
+        waktu: '70–90 menit',
+        nama: 'Presentasi Temuan Kebutuhan',
+        deskripsi: 'Beberapa pasangan mempresentasikan temuan needs assessment mereka dalam 3 menit. Kelas memberikan masukan: apakah kebutuhan sudah terdefinisi jelas?',
+        peran: 'Berbagi hasil, umpan balik kelas'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Refleksi & Penutup',
+        deskripsi: 'Mahasiswa menuliskan: 1 kebutuhan paling kritis yang ditemukan dan bagaimana produk R&D dapat menjawabnya. Dosen merangkum.',
+        peran: 'Individual + dosen'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 3 tentang needs assessment',
+      'Menyusun panduan wawancara (minimal 8 pertanyaan)',
+      'Mengerjakan kuis formatif modul 3',
+      'Melakukan observasi awal di sekolah/lembaga terkait',
+      'Meringkas temuan needs assessment dalam 1 paragraf'
+    ],
+    lembarKerja: {
+      judul: 'Panduan & Analisis Needs Assessment',
+      instruksi: 'Gunakan lembar ini untuk merancang wawancara needs assessment dan menganalisis temuan Anda di lapangan.',
+      pertanyaan: [
+        'Tuliskan konteks penelitian Anda: siapa subjek, di mana lokasi, dan apa mata pelajaran/bidang yang diteliti?',
+        'Tulis 5 pertanyaan wawancara needs assessment yang akan Anda gunakan.',
+        'Setelah praktik wawancara di kelas, apa 3 temuan kebutuhan utama yang Anda identifikasi?',
+        'Bagaimana kebutuhan tersebut mendukung urgensi pengembangan produk R&D Anda?',
+        'Apa hambatan yang mungkin Anda hadapi saat melakukan needs assessment di lapangan nyata?'
+      ]
+    }
+  },
+
+  4: {
+    judul: 'Bab 1 Proposal R&D',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu menulis latar belakang masalah yang kuat dan berbasis data',
+      'Mahasiswa mampu memberikan umpan balik konstruktif terhadap tulisan teman sejawat',
+      'Mahasiswa mampu merevisi latar belakang berdasarkan masukan peer-review',
+      'Mahasiswa mampu merumuskan rumusan masalah dan tujuan penelitian yang sesuai'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–10 menit',
+        nama: 'Briefing Peer-Review',
+        deskripsi: 'Dosen menjelaskan kriteria latar belakang yang baik: (1) fakta/data aktual, (2) kesenjangan yang jelas, (3) solusi yang ditawarkan, (4) urgensi. Mahasiswa menerima rubrik penilaian.',
+        peran: 'Dosen + seluruh kelas'
+      },
+      {
+        waktu: '10–40 menit',
+        nama: 'Peer-Review Latar Belakang',
+        deskripsi: 'Mahasiswa bertukar draft latar belakang dengan teman. Menggunakan rubrik untuk memberi komentar tertulis pada 4 aspek: kedalaman masalah, relevansi data, kesenjangan solusi, dan kejelasan urgensi.',
+        peran: 'Berpasangan silang'
+      },
+      {
+        waktu: '40–65 menit',
+        nama: 'Diskusi Hasil Review',
+        deskripsi: 'Mahasiswa berdiskusi dengan pasangan review selama 10 menit untuk klarifikasi komentar. Kemudian 3–4 mahasiswa berbagi pengalaman peer-review yang paling bermakna.',
+        peran: 'Pasangan, lalu pleno kelas'
+      },
+      {
+        waktu: '65–90 menit',
+        nama: 'Revisi & Penguatan',
+        deskripsi: 'Mahasiswa merevisi latar belakang mereka berdasarkan masukan. Dosen berkeliling memberikan bimbingan individual. Beberapa mahasiswa membacakan revisi untuk mendapat umpan balik lanjutan.',
+        peran: 'Individual + dosen berkeliling'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Penutup & Komitmen',
+        deskripsi: 'Mahasiswa menuliskan 1 poin paling krusial yang direvisi. Dosen menginformasikan deadline pengumpulan draft bab 1.',
+        peran: 'Individual + pengumuman dosen'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 4 tentang penulisan proposal R&D',
+      'Membawa draft latar belakang masalah (minimal 500 kata)',
+      'Mengerjakan kuis formatif modul 4',
+      'Menyiapkan data/referensi pendukung latar belakang',
+      'Merumuskan minimal 2 rumusan masalah sementara'
+    ],
+    lembarKerja: {
+      judul: 'Rubrik Peer-Review Latar Belakang',
+      instruksi: 'Gunakan lembar ini untuk memberikan umpan balik terstruktur terhadap latar belakang masalah teman sejawat Anda.',
+      pertanyaan: [
+        'Nama reviewer dan nama mahasiswa yang di-review. Tuliskan topik/judul penelitian yang di-review.',
+        'Nilai aspek kedalaman masalah (1–4): apakah masalah didukung data/fakta yang kuat? Berikan komentar spesifik.',
+        'Nilai aspek kesenjangan (1–4): apakah latar belakang menunjukkan gap antara kondisi ideal dan nyata secara jelas? Jelaskan.',
+        'Nilai aspek urgensi solusi (1–4): apakah kebutuhan pengembangan produk R&D terasa mendesak? Berikan alasan.',
+        'Satu saran paling penting untuk memperkuat latar belakang ini. Tuliskan secara spesifik dan konstruktif.'
+      ]
+    }
+  },
+
+  5: {
+    judul: 'Blueprint & Storyboard Produk',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu menyusun blueprint produk R&D yang komprehensif',
+      'Mahasiswa mampu membuat storyboard untuk produk digital/media',
+      'Mahasiswa mampu berkolaborasi dalam tim untuk merancang produk secara visual',
+      'Mahasiswa mampu mempresentasikan desain produk secara koheren'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–15 menit',
+        nama: 'Inspirasi & Contoh Blueprint',
+        deskripsi: 'Dosen memperlihatkan 3 contoh blueprint produk R&D yang berhasil: modul cetak, media interaktif, dan perangkat pembelajaran. Mahasiswa mengidentifikasi elemen wajib yang ada di setiap blueprint.',
+        peran: 'Dosen + diskusi kelas'
+      },
+      {
+        waktu: '15–55 menit',
+        nama: 'Workshop Storyboard Bersama',
+        deskripsi: 'Mahasiswa dibagi kelompok 4 orang. Setiap kelompok membuat storyboard 6–8 halaman/slide untuk produk yang akan dikembangkan, mencakup: cover, tujuan, isi utama, latihan, evaluasi, dan penutup. Menggunakan kertas A3 atau tools digital.',
+        peran: 'Tim kecil (4 orang)'
+      },
+      {
+        waktu: '55–80 menit',
+        nama: 'Gallery Walk',
+        deskripsi: 'Setiap kelompok menempelkan storyboard di dinding/papan. Mahasiswa berkeliling (gallery walk) selama 15 menit, memberikan stiker komentar: hijau (bagus), kuning (perlu pertimbangan), merah (perlu revisi).',
+        peran: 'Semua kelompok berkeliling'
+      },
+      {
+        waktu: '80–100 menit',
+        nama: 'Respons & Refleksi Desain',
+        deskripsi: 'Setiap kelompok kembali ke storyboardnya, membaca komentar, dan merespons secara tertulis. Dosen merangkum prinsip desain produk yang efektif.',
+        peran: 'Kelompok + dosen'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 5 tentang desain dan blueprint produk',
+      'Membawa sketsa awal produk yang akan dikembangkan',
+      'Mengerjakan kuis formatif modul 5',
+      'Menyiapkan alat tulis atau perangkat digital untuk storyboard',
+      'Menentukan format produk (cetak/digital/campuran)'
+    ],
+    lembarKerja: {
+      judul: 'Template Storyboard Produk R&D',
+      instruksi: 'Isi template storyboard ini untuk merancang produk R&D Anda. Setiap halaman/frame harus memiliki visual, konten, dan interaksi yang jelas.',
+      pertanyaan: [
+        'Nama produk, target pengguna, dan mata pelajaran/bidang studi yang dituju.',
+        'Frame 1 (Cover/Sampul): Gambarkan atau deskripsikan tampilan cover, termasuk judul, identitas modul, dan elemen visual utama.',
+        'Frame 2–4 (Konten Utama): Deskripsikan isi 3 frame konten utama: topik, teks, gambar/media yang digunakan.',
+        'Frame 5–6 (Latihan & Evaluasi): Bagaimana bentuk latihan soal dan evaluasi? Interaksi apa yang disediakan untuk pengguna?',
+        'Apa tantangan terbesar dalam mendesain storyboard ini dan bagaimana Anda akan mengatasinya?'
+      ]
+    }
+  },
+
+  6: {
+    judul: 'Instrumen Validasi',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu merancang instrumen validasi ahli yang valid dan reliabel',
+      'Mahasiswa mampu membedakan validasi ahli materi, media, dan praktisi',
+      'Mahasiswa mampu menghitung rata-rata skor validasi dengan benar',
+      'Mahasiswa mampu merumuskan butir-butir validasi yang operasional'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–15 menit',
+        nama: 'Analisis Instrumen Validasi Nyata',
+        deskripsi: 'Dosen membagikan 2 contoh instrumen validasi dari skripsi/tesis yang sudah selesai. Mahasiswa mengidentifikasi: aspek yang dinilai, skala yang digunakan, dan bagian yang perlu diperbaiki.',
+        peran: 'Individual + diskusi kelas'
+      },
+      {
+        waktu: '15–55 menit',
+        nama: 'Workshop Penyusunan Instrumen Berpasangan',
+        deskripsi: 'Mahasiswa berpasangan menyusun instrumen validasi untuk produk yang sedang dikembangkan. Wajib mencakup: aspek materi/isi (6 butir), aspek tampilan/media (6 butir), aspek kebermanfaatan (4 butir). Skala Likert 1–4.',
+        peran: 'Berpasangan'
+      },
+      {
+        waktu: '55–75 menit',
+        nama: 'Cross-Review Instrumen',
+        deskripsi: 'Pasangan menukarkan instrumennya dengan pasangan lain. Melakukan review: apakah setiap butir operasional, tidak ambigu, dan dapat diukur? Memberikan komentar tertulis.',
+        peran: 'Silang antar pasangan'
+      },
+      {
+        waktu: '75–90 menit',
+        nama: 'Diskusi & Penyempurnaan',
+        deskripsi: 'Diskusi pleno: 3 pasangan berbagi butir instrumen yang paling sulit dirumuskan. Dosen memberikan contoh perbaikan kalimat operasional. Pasangan merevisi instrumen berdasarkan masukan.',
+        peran: 'Pleno kelas + revisi berpasangan'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Penutup',
+        deskripsi: 'Dosen menjelaskan cara menghitung persentase kelayakan dari instrumen validasi. Mahasiswa mencatat formula dasar dan contoh perhitungan.',
+        peran: 'Dosen + catatan mahasiswa'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 6 tentang instrumen validasi',
+      'Membawa contoh instrumen validasi dari 1 skripsi R&D',
+      'Mengerjakan kuis formatif modul 6',
+      'Menentukan aspek-aspek yang akan divalidasi untuk produk Anda',
+      'Memahami perbedaan validasi ahli materi vs ahli media'
+    ],
+    lembarKerja: {
+      judul: 'Rancangan Instrumen Validasi Produk',
+      instruksi: 'Susun instrumen validasi untuk produk R&D Anda. Pastikan setiap butir menggunakan bahasa yang jelas, operasional, dan dapat diukur menggunakan skala Likert 1–4.',
+      pertanyaan: [
+        'Nama produk yang dikembangkan dan jenis validator yang diperlukan (ahli materi, ahli media, praktisi).',
+        'Tuliskan 4 butir instrumen untuk aspek Kelayakan Isi/Materi. Pastikan setiap butir operasional.',
+        'Tuliskan 4 butir instrumen untuk aspek Kelayakan Tampilan/Desain Media.',
+        'Tuliskan 3 butir instrumen untuk aspek Kemudahan Penggunaan dan Kebermanfaatan.',
+        'Hitunglah persentase kelayakan jika validator memberikan skor total 42 dari skor maksimal 44. Masuk kategori apa?'
+      ]
+    }
+  },
+
+  7: {
+    judul: 'Analisis Data Validasi',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu menghitung persentase kelayakan dari data validasi',
+      'Mahasiswa mampu menginterpretasikan hasil validasi menggunakan kategori yang tepat',
+      'Mahasiswa mampu menghitung N-Gain untuk mengukur peningkatan hasil belajar',
+      'Mahasiswa mampu menyajikan data hasil penelitian dalam tabel yang informatif'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–15 menit',
+        nama: 'Pengantar Analisis Data R&D',
+        deskripsi: 'Dosen menjelaskan 3 jenis analisis utama: (1) % kelayakan dari validasi, (2) N-Gain untuk hasil belajar, (3) respon pengguna. Mahasiswa mencatat formula dan kriteria masing-masing.',
+        peran: 'Dosen + catatan mahasiswa'
+      },
+      {
+        waktu: '15–50 menit',
+        nama: 'Latihan Menghitung % Kelayakan',
+        deskripsi: 'Dosen membagikan data dummy hasil validasi (lembar skor dari 3 validator). Mahasiswa menghitung: total skor per aspek, rata-rata, dan persentase kelayakan. Mengisi tabel hasil secara manual atau dengan kalkulator.',
+        peran: 'Individual, dipandu dosen'
+      },
+      {
+        waktu: '50–75 menit',
+        nama: 'Latihan Menghitung N-Gain',
+        deskripsi: 'Mahasiswa menerima data pre-test dan post-test dummy (30 siswa). Menghitung N-Gain individual dan rata-rata kelas. Menginterpretasikan hasil: rendah/sedang/tinggi. Membandingkan hasil dengan pasangan.',
+        peran: 'Individual, lalu cek berpasangan'
+      },
+      {
+        waktu: '75–90 menit',
+        nama: 'Presentasi & Verifikasi',
+        deskripsi: 'Tiga mahasiswa mempresentasikan perhitungan mereka. Kelas memverifikasi apakah hasilnya benar. Dosen membahas kesalahan umum: pembulatan, pemilihan kategori, penulisan tabel.',
+        peran: 'Presentasi + verifikasi kelas'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Penutup & Latihan Mandiri',
+        deskripsi: 'Dosen memberikan soal latihan mandiri: menghitung kelayakan dari data set baru. Dikerjakan di rumah dan dikumpulkan pertemuan berikutnya.',
+        peran: 'Individual, tugas mandiri'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 7 tentang analisis data R&D',
+      'Membawa kalkulator atau laptop/HP untuk perhitungan',
+      'Mengerjakan kuis formatif modul 7',
+      'Memahami formula N-Gain sebelum kelas',
+      'Mereview data instrumen validasi yang sudah disusun di modul 6'
+    ],
+    lembarKerja: {
+      judul: 'Latihan Analisis Data Validasi & N-Gain',
+      instruksi: 'Kerjakan soal-soal analisis data berikut menggunakan data dummy yang tersedia. Tunjukkan langkah-langkah perhitungan secara lengkap.',
+      pertanyaan: [
+        'Data validasi: Validator 1 memberi skor 38/44, Validator 2 memberi 40/44, Validator 3 memberi 42/44. Hitunglah rata-rata persentase kelayakan dan tentukan kategorinya.',
+        'Hitunglah N-Gain untuk siswa berikut: pre-test 50, post-test 75, skor maksimal 100. Masuk kategori apa?',
+        'Dari data 5 siswa (pre: 40,55,60,45,70; post: 65,75,80,70,85; maks 100), hitunglah rata-rata N-Gain kelas.',
+        'Buatlah tabel sederhana yang menyajikan hasil validasi 3 validator per aspek (materi, media, kebermanfaatan).',
+        'Apa kesimpulan yang dapat Anda tulis dalam bab hasil penelitian berdasarkan data yang sudah Anda hitung?'
+      ]
+    }
+  },
+
+  8: {
+    judul: 'Uji Coba Produk',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu merancang prosedur uji coba produk yang sistematis',
+      'Mahasiswa mampu mensimulasikan pengalaman tester/pengguna produk',
+      'Mahasiswa mampu mengidentifikasi kekurangan produk dari perspektif pengguna',
+      'Mahasiswa mampu menyusun instrumen respon pengguna yang efektif'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–15 menit',
+        nama: 'Briefing Peran Tester',
+        deskripsi: 'Dosen menjelaskan 3 jenis uji coba: perseorangan, kelompok kecil, dan lapangan. Mahasiswa memahami prosedur: pre-test → penggunaan produk → post-test → angket respon. Setiap mahasiswa mendapat kartu peran.',
+        peran: 'Dosen + pembagian peran'
+      },
+      {
+        waktu: '15–50 menit',
+        nama: 'Role-Play: Simulasi Uji Coba',
+        deskripsi: 'Mahasiswa dibagi 3 kelompok: Grup A berperan sebagai peneliti, Grup B sebagai siswa SMA, Grup C sebagai observer. Grup A memandu Grup B menggunakan e-modul (modul 1 sebagai contoh). Grup C mencatat hambatan yang dialami pengguna.',
+        peran: 'Tiga peran berbeda (A/B/C)'
+      },
+      {
+        waktu: '50–70 menit',
+        nama: 'Debriefing & Analisis Hambatan',
+        deskripsi: 'Observer mempresentasikan hambatan yang dicatat. Peneliti merespons. Siswa (Grup B) mengisi angket respon singkat 10 pernyataan. Mendiskusikan: apa yang perlu diperbaiki dari produk?',
+        peran: 'Pleno, bergiliran per peran'
+      },
+      {
+        waktu: '70–90 menit',
+        nama: 'Rotasi Peran',
+        deskripsi: 'Kelompok merotasi peran: A→B, B→C, C→A. Simulasi ulang dengan produk yang sedikit berbeda (modul 2 sebagai contoh). Setiap mahasiswa mengalami minimal 2 peran berbeda.',
+        peran: 'Rotasi peran kelompok'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Refleksi Uji Coba',
+        deskripsi: 'Setiap mahasiswa menuliskan: 3 hal yang akan diperbaiki pada produknya berdasarkan pengalaman role-play. Dosen merangkum kriteria produk yang baik dari perspektif pengguna.',
+        peran: 'Individual + dosen'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 8 tentang prosedur uji coba produk',
+      'Membawa draft instrumen angket respon pengguna (10 butir)',
+      'Mengerjakan kuis formatif modul 8',
+      'Memahami perbedaan uji coba perseorangan, kelompok kecil, dan lapangan',
+      'Menyiapkan produk/prototipe untuk disimulasikan'
+    ],
+    lembarKerja: {
+      judul: 'Rancangan Uji Coba & Respon Pengguna',
+      instruksi: 'Gunakan lembar ini untuk merencanakan uji coba produk R&D Anda dan merefleksikan hasil simulasi role-play di kelas.',
+      pertanyaan: [
+        'Rancangan uji coba: berapa subjek untuk masing-masing tahap (perseorangan, kelompok kecil, lapangan)?',
+        'Tuliskan 5 butir angket respon pengguna untuk produk Anda (skala 1–4 atau Ya/Tidak).',
+        'Dari simulasi role-play, apa 3 hambatan utama yang dialami pengguna saat menggunakan produk?',
+        'Bagaimana Anda akan merevisi produk berdasarkan hambatan tersebut? Sebutkan perubahan konkret.',
+        'Apa prosedur pemberian pre-test dan post-test yang akan Anda gunakan? Jelaskan waktu dan caranya.'
+      ]
+    }
+  },
+
+  9: {
+    judul: 'Evaluasi & Diseminasi',
+    durasi: '2 x 50 menit',
+    tujuan: [
+      'Mahasiswa mampu menyusun laporan akhir penelitian R&D secara terstruktur',
+      'Mahasiswa mampu mempresentasikan hasil penelitian dalam format mini-paper',
+      'Mahasiswa mampu merencanakan strategi diseminasi produk yang tepat',
+      'Mahasiswa mampu merefleksikan seluruh proses penelitian dari awal hingga akhir'
+    ],
+    aktivitas: [
+      {
+        waktu: '0–10 menit',
+        nama: 'Pengantar: Dari Penelitian ke Publikasi',
+        deskripsi: 'Dosen menjelaskan jalur diseminasi: seminar, jurnal, paten, dan kebijakan. Mahasiswa memahami bahwa laporan bukan akhir perjalanan R&D — diseminasi adalah kewajiban etis peneliti.',
+        peran: 'Dosen, seluruh kelas'
+      },
+      {
+        waktu: '10–50 menit',
+        nama: 'Presentasi Mini-Paper',
+        deskripsi: 'Setiap mahasiswa mempresentasikan mini-paper hasil penelitiannya selama 5 menit menggunakan format: latar belakang singkat → tujuan → produk → hasil validasi → uji coba → kesimpulan. Diikuti 2 menit tanya jawab.',
+        peran: 'Individual (bergantian)'
+      },
+      {
+        waktu: '50–70 menit',
+        nama: 'Peer Feedback Terstruktur',
+        deskripsi: 'Setelah semua presentasi, mahasiswa mengisi lembar peer feedback untuk 2 presentasi yang paling berkesan. Aspek: kejelasan masalah, kualitas produk, ketepatan analisis, kontribusi untuk pendidikan.',
+        peran: 'Individual feedback'
+      },
+      {
+        waktu: '70–90 menit',
+        nama: 'Workshop Rencana Diseminasi',
+        deskripsi: 'Mahasiswa menyusun rencana diseminasi singkat: jurnal target, seminar yang relevan, atau sekolah mitra untuk implementasi. Berbagi rencana dengan teman sebangku untuk mendapat masukan.',
+        peran: 'Individual + berbagi berpasangan'
+      },
+      {
+        waktu: '90–100 menit',
+        nama: 'Refleksi Perjalanan Belajar',
+        deskripsi: 'Sesi penutup: setiap mahasiswa menuliskan 1 kalimat yang mewakili perjalanan belajar mereka di MK Metode Penelitian & Pengembangan. Dosen membacakan beberapa respons dan menutup dengan pesan motivasi.',
+        peran: 'Individual + dosen'
+      }
+    ],
+    checklist: [
+      'Membaca e-modul 9 tentang evaluasi dan diseminasi',
+      'Menyiapkan mini-paper (1–2 halaman, mencakup semua bab)',
+      'Mengerjakan kuis formatif modul 9',
+      'Membuat slide presentasi 5–6 halaman',
+      'Merumuskan rencana diseminasi produk ke minimal 1 jurnal atau seminar'
+    ],
+    lembarKerja: {
+      judul: 'Laporan Singkat & Rencana Diseminasi',
+      instruksi: 'Susun ringkasan hasil penelitian R&D Anda dan rencanakan strategi diseminasi. Ini adalah refleksi akhir dari seluruh proses yang telah Anda jalani.',
+      pertanyaan: [
+        'Tulis abstrak penelitian Anda (150–200 kata): latar belakang, tujuan, metode, hasil, dan kesimpulan.',
+        'Apa kontribusi terbesar produk R&D Anda untuk pendidikan? Jelaskan secara konkret.',
+        'Sebutkan 2 keterbatasan penelitian Anda dan saran untuk penelitian lanjutan.',
+        'Rencanakan diseminasi: jurnal apa yang akan Anda tuju? Seminar apa? Bagaimana Anda akan mengimplementasikan produk di sekolah mitra?',
+        'Tuliskan refleksi personal: apa yang paling berharga dari proses penelitian R&D ini bagi perkembangan Anda sebagai calon pendidik?'
+      ]
+    }
+  }
+};
+
+/* ══════════════════════════════════════════════════
+   AUTH GUARD
+   ══════════════════════════════════════════════════ */
+(async () => {
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  if (isDemo) return; // demo mode — skip auth
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.replace('index.html'); return; }
+  } catch(e) { console.error('Auth check error:', e); }
+})();
+
+// Role-aware Dashboard link (halaman ini diakses mahasiswa maupun dosen)
+(async function() {
+  const el = document.getElementById('drawerDashboard');
+  if (!el) return;
+  try {
+    if (localStorage.getItem('sfp_demo') === '1') {
+      el.href = localStorage.getItem('sfp_role') === 'dosen' ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+      return;
+    }
+    if (typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data: p } = await sb.from('profiles').select('role').eq('id', session.user.id).single();
+        el.href = (p && p.role === 'dosen') ? 'dashboard-dos.html' : 'dashboard-mhs.html';
+      }
+    }
+  } catch(e) {}
+})();
+
+/* ══════════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════════ */
+let currentId = 1;
+let checklistState = {};
+
+/* ══════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════ */
+function init() {
+  const params = new URLSearchParams(window.location.search);
+  currentId = parseInt(params.get('id')) || 1;
+  if (currentId < 1 || currentId > 9 || isNaN(currentId)) currentId = 1;
+
+  // Set selector
+  const sel = document.getElementById('modulSelector');
+  sel.value = String(currentId);
+  sel.addEventListener('change', e => {
+    window.location.href = 'workshop.html?id=' + e.target.value;
+  });
+
+  // Set page title
+  document.title = `Workshop Modul ${currentId} — SMART-FLIP 5.0`;
+
+  loadChecklist();
+  render();
+  setupTabs();
+  renderNav();
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════════════ */
+function render() {
+  const d = WORKSHOP_DATA[currentId];
+  if (!d) return;
+
+  // Hero
+  document.getElementById('heroModulNum').textContent = `MODUL ${currentId}`;
+  document.getElementById('heroTitle').textContent = d.judul;
+  document.getElementById('heroDurasi').textContent = d.durasi;
+
+  // Tujuan
+  const tujuanList = document.getElementById('tujuanList');
+  tujuanList.innerHTML = d.tujuan.map((t, i) => `
+    <li class="tujuan-item">
+      <div class="tujuan-icon" aria-hidden="true">${i + 1}</div>
+      <span class="tujuan-text">${escHtml(t)}</span>
+    </li>`).join('');
+
+  // Aktivitas
+  const tlList = document.getElementById('timelineList');
+  tlList.innerHTML = d.aktivitas.map((a, i) => `
+    <div class="tl-item">
+      <div class="tl-left">
+        <span class="tl-time">${escHtml(a.waktu)}</span>
+      </div>
+      <div class="tl-right">
+        <div class="tl-dot"><div class="tl-dot-inner"></div></div>
+        <div class="tl-nama">${escHtml(a.nama)}</div>
+        <div class="tl-desc">${escHtml(a.deskripsi)}</div>
+        <span class="tl-peran">👥 ${escHtml(a.peran)}</span>
+      </div>
+    </div>`).join('');
+
+  // Checklist
+  renderChecklist(d);
+
+  // Lembar Kerja
+  document.getElementById('lkJudul').textContent = d.lembarKerja.judul;
+  document.getElementById('lkInstruksi').textContent = d.lembarKerja.instruksi;
+  const lkQ = document.getElementById('lkQuestions');
+  lkQ.innerHTML = d.lembarKerja.pertanyaan.map((q, i) => `
+    <div class="lk-q-item">
+      <div class="lk-q-num">Pertanyaan ${i + 1}</div>
+      <div class="lk-q-text">${escHtml(q)}</div>
+      <textarea class="lk-textarea" rows="3" placeholder="Tulis jawaban Anda di sini…"
+        data-lk-key="sfp_lk_${currentId}_${i}"
+        oninput="saveLkAnswer(this)">${getLkAnswer(currentId, i)}</textarea>
+    </div>`).join('');
+}
+
+/* ══════════════════════════════════════════════════
+   CHECKLIST
+   ══════════════════════════════════════════════════ */
+function loadChecklist() {
+  try {
+    const raw = localStorage.getItem(`sfp_ws_${currentId}`);
+    checklistState = raw ? JSON.parse(raw) : {};
+  } catch(e) {
+    checklistState = {};
+  }
+}
+
+function saveChecklist() {
+  localStorage.setItem(`sfp_ws_${currentId}`, JSON.stringify(checklistState));
+}
+
+function renderChecklist(d) {
+  const total = d.checklist.length;
+  const done = d.checklist.filter((_, i) => checklistState[i]).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('clProgressFill').style.width = pct + '%';
+  document.getElementById('clProgressText').textContent = `${done} / ${total}`;
+
+  const cl = document.getElementById('checklistList');
+  cl.innerHTML = d.checklist.map((item, i) => {
+    const isDone = !!checklistState[i];
+    return `<li class="cl-item${isDone ? ' done' : ''}" onclick="toggleCheck(${i})" role="checkbox" aria-checked="${isDone}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleCheck(${i})">
+      <div class="cl-checkbox" aria-hidden="true">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1.5,6 4.5,9 10.5,3"/>
+        </svg>
+      </div>
+      <span class="cl-text">${escHtml(item)}</span>
+    </li>`;
+  }).join('');
+}
+
+function toggleCheck(idx) {
+  checklistState[idx] = !checklistState[idx];
+  saveChecklist();
+  renderChecklist(WORKSHOP_DATA[currentId]);
+}
+
+function resetChecklist() {
+  if (!confirm('Reset semua checklist kesiapan modul ini?')) return;
+  checklistState = {};
+  saveChecklist();
+  renderChecklist(WORKSHOP_DATA[currentId]);
+}
+
+/* ══════════════════════════════════════════════════
+   LEMBAR KERJA PERSISTENCE
+   ══════════════════════════════════════════════════ */
+function getLkAnswer(modId, qIdx) {
+  return localStorage.getItem(`sfp_lk_${modId}_${qIdx}`) || '';
+}
+
+function saveLkAnswer(el) {
+  localStorage.setItem(el.dataset.lkKey, el.value);
+}
+
+function clearLembarKerja() {
+  if (!confirm('Hapus semua jawaban lembar kerja modul ini?')) return;
+  const d = WORKSHOP_DATA[currentId];
+  if (!d || !d.lembarKerja) return;
+  d.lembarKerja.pertanyaan.forEach((_, i) => {
+    localStorage.removeItem(`sfp_lk_${currentId}_${i}`);
+  });
+  // Clear textareas
+  document.querySelectorAll('[data-lk-key]').forEach(el => { el.value = ''; });
+}
+
+/* ══════════════════════════════════════════════════
+   TABS
+   ══════════════════════════════════════════════════ */
+function setupTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.dataset.tab;
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById('tab-' + tab).classList.add('active');
+    });
+  });
+}
+
+/* ══════════════════════════════════════════════════
+   PREV / NEXT NAV
+   ══════════════════════════════════════════════════ */
+function renderNav() {
+  const nav = document.getElementById('modulNav');
+  const prevId = currentId - 1;
+  const nextId = currentId + 1;
+
+  const prevHtml = prevId >= 1
+    ? `<a href="workshop.html?id=${prevId}" class="modul-nav-btn nav-prev">
+        <span class="nav-arr">←</span>
+        <div>
+          <div class="nav-label">MODUL SEBELUMNYA</div>
+          <div class="nav-name">${escHtml(WORKSHOP_DATA[prevId].judul)}</div>
+        </div>
+       </a>`
+    : `<div class="modul-nav-btn nav-prev disabled">
+        <span class="nav-arr">←</span>
+        <div>
+          <div class="nav-label">MODUL SEBELUMNYA</div>
+          <div class="nav-name">—</div>
+        </div>
+       </div>`;
+
+  const nextHtml = nextId <= 9
+    ? `<a href="workshop.html?id=${nextId}" class="modul-nav-btn nav-next">
+        <div>
+          <div class="nav-label">MODUL BERIKUTNYA</div>
+          <div class="nav-name">${escHtml(WORKSHOP_DATA[nextId].judul)}</div>
+        </div>
+        <span class="nav-arr">→</span>
+       </a>`
+    : `<div class="modul-nav-btn nav-next disabled">
+        <div>
+          <div class="nav-label">MODUL BERIKUTNYA</div>
+          <div class="nav-name">—</div>
+        </div>
+        <span class="nav-arr">→</span>
+       </div>`;
+
+  nav.innerHTML = prevHtml + nextHtml;
+}
+
+/* ══════════════════════════════════════════════════
+   UTILS
+   ══════════════════════════════════════════════════ */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ══════════════════════════════════════════════════
+   BOOT
+   ══════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', init);
+
+// ── DRAWER (mobile) ──────────────────────────────────────────────────────
+function toggleDrawer() {
+  document.getElementById('drawer').classList.toggle('open');
+  document.getElementById('drawerOverlay').classList.toggle('open');
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+
+// ── LOGOUT ──
+async function doLogout() {
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
+  window.location.href = 'index.html';
+}
+
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeLogoutModal(); closeDrawer(); } });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
+</script>
+
+<!-- ── LOGOUT MODAL ── -->
+<div id="logoutModal" class="logout-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+  <div class="logout-modal-box">
+    <h3 id="lmTitle">Keluar dari SMART-FLIP?</h3>
+    <p>Progres belajar kamu tersimpan otomatis.</p>
+    <div class="logout-modal-actions">
+      <button class="logout-btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="logout-btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

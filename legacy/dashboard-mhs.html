@@ -1,0 +1,1911 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Mahasiswa — SMART-FLIP 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ══════════════════════════════════════
+   DESIGN TOKENS — LIGHT MODE (default)
+══════════════════════════════════════ */
+:root{
+  --bg:#F5F2E9;
+  --surface:#FFFDF8;
+  --surface2:#FAF7F2;
+  --topnav-bg:#3E362E;
+  --text:#2C2420;
+  --text2:#4A3D33;
+  --text3:#9B8B7A;
+  --terra:#D4A373;
+  --terra-d:#B8855A;
+  --sage:#8FA287;
+  --sage-d:#6B7E64;
+  --sage-bg:#EBF0E7;
+  --border:rgba(62,54,46,.12);
+  --border2:rgba(62,54,46,.06);
+  --hero-bg:linear-gradient(135deg,#F5EEE6 0%,#F5F2E9 100%);
+  --hero-text:#2C2420;
+  --line:#DDD5C4;
+  --line2:#EDE8DF;
+  --red:#B03020;
+  --green:#2A5010;
+  --amber:#633806;
+  --topnav-h:56px;
+  --r:10px;
+}
+
+html,body{min-height:100%;overflow:auto}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  transition:background .25s,color .25s;
+}
+
+/* ══════════════════════════════════════
+   TOP NAVIGATION BAR
+══════════════════════════════════════ */
+.topnav{
+  position:fixed;top:0;left:0;right:0;
+  height:var(--topnav-h);z-index:400;
+  background:var(--topnav-bg);
+  display:flex;align-items:center;
+  padding:0 1.25rem;gap:.5rem;
+  box-shadow:0 1px 0 rgba(0,0,0,.25);
+  transition:background .25s;
+}
+
+/* Logo */
+.tn-logo{
+  display:flex;align-items:center;gap:.55rem;
+  text-decoration:none;flex-shrink:0;margin-right:.75rem;
+}
+.tn-logo-icon{font-size:1.1rem}
+.tn-logo-name{
+  font-family:'Playfair Display',serif;
+  font-size:1.05rem;color:var(--terra);
+  white-space:nowrap;
+}
+.tn-logo-name span{color:var(--sage)}
+.tn-logo-ver{
+  font-size:.58rem;color:var(--terra);opacity:.65;
+  letter-spacing:.12em;margin-left:.15rem;align-self:flex-end;margin-bottom:2px;
+}
+
+/* Nav items */
+.tn-nav{
+  display:flex;align-items:center;gap:.15rem;flex:1;
+  overflow:hidden;
+}
+.nav-item{
+  display:flex;align-items:center;gap:.35rem;
+  padding:.4rem .7rem;border-radius:6px;
+  font-size:.83rem;font-weight:500;
+  color:rgba(255,255,255,.55);
+  cursor:pointer;text-decoration:none;
+  transition:color .18s,background .18s;
+  white-space:nowrap;border:none;background:transparent;
+  font-family:'DM Sans',sans-serif;
+  position:relative;
+  min-height:44px;
+}
+.nav-item::after{
+  content:'';position:absolute;bottom:-3px;left:.7rem;right:.7rem;
+  height:2px;border-radius:2px;
+  background:var(--terra);opacity:0;
+  transition:opacity .18s;
+}
+.nav-item:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.06)}
+.nav-item.active{color:var(--terra);background:rgba(212,163,115,.1)}
+.nav-item.active::after{opacity:1}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-badge{
+  font-size:.6rem;font-weight:700;
+  background:var(--terra);color:#1A1208;
+  border-radius:100px;padding:.1rem .38rem;min-width:16px;text-align:center;
+  margin-left:.1rem;
+}
+
+/* Right side controls */
+.tn-right{display:flex;align-items:center;gap:.25rem;margin-left:auto;flex-shrink:0}
+
+/* Notif bell */
+.notif-wrapper{position:relative}
+.btn-notif{
+  width:40px;height:40px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  color:rgba(255,255,255,.5);font-size:17px;
+  transition:all .18s;flex-shrink:0;position:relative;
+}
+.btn-notif:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-notif:focus-visible{outline:2px solid rgba(212,163,115,.7);outline-offset:2px}
+.notif-badge{
+  position:absolute;top:4px;right:4px;
+  background:#e74c3c;color:#fff;
+  border-radius:50%;font-size:9px;min-width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--topnav-bg);font-weight:700;line-height:1;
+  pointer-events:none;transition:border-color .25s;
+}
+.notif-dropdown{
+  position:absolute;right:0;top:calc(100% + 8px);width:310px;
+  background:var(--surface);border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);
+  border:1px solid var(--line);z-index:450;display:none;overflow:hidden;
+  transition:background .25s,border-color .25s;
+}
+.notif-dropdown.open{display:block}
+.notif-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.75rem 1rem;border-bottom:1px solid var(--line);
+}
+.notif-header span{font-size:.85rem;font-weight:600;color:var(--text)}
+.btn-mark-all{
+  background:none;border:none;cursor:pointer;
+  font-size:.72rem;color:var(--sage-d);
+  font-family:'DM Sans',sans-serif;font-weight:500;padding:0;
+  transition:color .15s;
+}
+.btn-mark-all:hover{color:var(--text)}
+.notif-list{max-height:340px;overflow-y:auto}
+.notif-item{
+  display:flex;gap:10px;padding:11px 14px;
+  border-bottom:1px solid var(--line2);cursor:pointer;
+  transition:background .15s;
+}
+.notif-item:last-child{border-bottom:none}
+.notif-item:hover{background:var(--bg)}
+.notif-item.unread{background:rgba(212,163,115,.07)}
+.notif-icon{font-size:17px;flex-shrink:0;margin-top:1px}
+.notif-body{flex:1;min-width:0}
+.notif-title{font-size:.79rem;font-weight:600;color:var(--text);line-height:1.3}
+.notif-text{font-size:.74rem;color:var(--text3);margin-top:.2rem;line-height:1.4}
+.notif-time{font-size:.67rem;color:var(--text3);margin-top:.25rem;opacity:.8}
+.notif-empty{text-align:center;padding:1.5rem;font-size:.8rem;color:var(--text3)}
+
+/* Avatar dropdown */
+.avatar-wrap{position:relative;margin:0 .25rem 0 .35rem}
+.avatar{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--sage);display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;cursor:pointer;
+  border:2px solid rgba(143,162,135,.4);transition:border-color .2s;
+  min-width:32px;min-height:32px;
+}
+.avatar:hover{border-color:var(--sage)}
+.avatar-dropdown{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--surface);border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 8px 32px rgba(0,0,0,.22);min-width:190px;
+  z-index:450;display:none;overflow:hidden;
+  transition:background .25s,border-color .25s;
+}
+.avatar-dropdown.open{display:block}
+.dd-header{padding:.8rem 1rem;border-bottom:1px solid var(--line2)}
+.dd-name{font-size:.85rem;font-weight:600;color:var(--text)}
+.dd-nim{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+.dd-item{
+  display:flex;align-items:center;gap:.6rem;
+  padding:.6rem 1rem;font-size:.82rem;color:var(--text2);
+  cursor:pointer;transition:background .15s;
+}
+.dd-item:hover{background:var(--bg)}
+.dd-item svg{width:15px;height:15px;flex-shrink:0;opacity:.6}
+.dd-sep{height:1px;background:var(--line2);margin:.2rem 0}
+.dd-logout{color:var(--red)!important}
+.dd-logout svg{opacity:.7!important}
+
+/* Hamburger button (mobile only) */
+.btn-hamburger{
+  display:none;
+  width:44px;height:44px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;
+  align-items:center;justify-content:center;
+  color:rgba(255,255,255,.65);flex-shrink:0;
+}
+.btn-hamburger:hover{background:rgba(255,255,255,.08);color:#fff}
+.btn-hamburger svg{width:20px;height:20px}
+
+/* Mobile nav drawer */
+.nav-drawer{
+  position:fixed;top:0;left:0;bottom:0;width:260px;
+  background:var(--topnav-bg);z-index:600;
+  transform:translateX(-100%);transition:transform .28s ease;
+  display:flex;flex-direction:column;overflow-y:auto;
+  box-shadow:4px 0 24px rgba(0,0,0,.35);
+}
+.nav-drawer.open{transform:translateX(0)}
+.nav-drawer-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:590;display:none;
+}
+.nav-drawer-overlay.open{display:block}
+.nav-drawer-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.1rem;border-bottom:1px solid rgba(255,255,255,.08);
+  height:var(--topnav-h);
+}
+.nav-drawer-logo{font-family:'Playfair Display',serif;font-size:1rem;color:var(--terra)}
+.nav-drawer-logo span{color:var(--sage)}
+.btn-close-drawer{
+  width:44px;height:44px;border-radius:8px;border:none;
+  background:transparent;cursor:pointer;
+  color:rgba(255,255,255,.5);font-size:18px;
+  display:flex;align-items:center;justify-content:center;
+}
+.btn-close-drawer:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-drawer-items{padding:.75rem 0;flex:1}
+.nav-drawer-section{
+  padding:.45rem 1.1rem .2rem;
+  font-size:.6rem;font-weight:700;letter-spacing:.12em;
+  text-transform:uppercase;color:rgba(255,255,255,.3);
+}
+.nav-drawer-divider{height:1px;background:rgba(255,255,255,.08);margin:.4rem .75rem}
+.nav-drawer .nav-item{
+  margin:.5px .55rem;border-radius:8px;
+  font-size:.84rem;
+}
+.nav-drawer .nav-item::after{display:none}
+.nav-drawer .nav-item.active{background:rgba(212,163,115,.18)}
+
+/* ══════════════════════════════════════
+   HERO SECTION
+══════════════════════════════════════ */
+.hero{
+  background:var(--hero-bg);
+  border-bottom:1px solid var(--border);
+  padding:2rem 2.5rem;
+  display:none; /* show only on page-dashboard via JS */
+  transition:background .25s;
+}
+.hero.visible{display:block}
+.hero-inner{max-width:900px}
+.hero-greeting{
+  font-family:'Playfair Display',serif;
+  font-size:1.65rem;font-weight:600;
+  color:var(--hero-text);line-height:1.25;
+  margin-bottom:.4rem;
+}
+.hero-sub{font-size:.9rem;color:var(--text2);margin-bottom:1rem}
+.hero-actions{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.btn-lanjut-belajar{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.52rem 1.15rem;border-radius:100px;
+  background:var(--terra);color:#1A1208;
+  font-size:.82rem;font-weight:700;text-decoration:none;
+  transition:background .18s,transform .15s;
+  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;
+}
+.btn-lanjut-belajar:hover{background:var(--terra-d);transform:translateY(-1px)}
+.hero-stat-chips{display:flex;gap:.55rem;flex-wrap:wrap;margin-top:.9rem}
+.stat-chip{
+  display:flex;align-items:center;gap:.4rem;
+  padding:.38rem .85rem;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border);
+  font-size:.78rem;color:var(--text2);
+  box-shadow:0 1px 4px rgba(0,0,0,.05);
+  transition:background .25s,border-color .25s;
+}
+.stat-chip .chip-val{font-weight:700;color:var(--text)}
+.stat-chip .chip-icon{font-size:.88rem}
+
+/* ══════════════════════════════════════
+   CONTENT AREA
+══════════════════════════════════════ */
+.content-wrap{
+  margin-top:var(--topnav-h);
+  min-height:calc(100vh - var(--topnav-h));
+}
+.page{display:none;padding:1.5rem 2rem}
+.page.active{display:block}
+
+/* ── PAGE HEADER ── */
+.pg-hd{margin-bottom:1.4rem}
+.pg-hd h1{
+  font-family:'Playfair Display',serif;
+  font-size:1.4rem;font-weight:600;color:var(--text);line-height:1.2;
+}
+.pg-hd p{font-size:.8rem;color:var(--text3);margin-top:.25rem}
+
+/* ── WELCOME BANNER (old, kept for dashboard page) ── */
+/* Replaced by hero — this is now unused but kept for compatibility */
+
+/* ── STAT CARDS ── */
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.3rem}
+.stat-card{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  padding:1rem 1.1rem;position:relative;overflow:hidden;
+  transition:background .25s,border-color .25s;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:12px 12px 0 0;
+}
+.stat-card.c1::before{background:var(--sage)}
+.stat-card.c2::before{background:var(--terra)}
+.stat-card.c3::before{background:#B9A88A}
+.s-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;margin-bottom:.6rem;
+}
+.s-icon svg{width:16px;height:16px}
+.s-icon.gi{background:var(--sage-bg);color:var(--sage-d)}
+.s-icon.ti{background:rgba(212,163,115,.15);color:var(--terra-d)}
+.s-icon.bi{background:rgba(155,139,122,.12);color:var(--text3)}
+.s-val{font-size:1.7rem;font-weight:500;color:var(--text);line-height:1}
+.s-lbl{font-size:.7rem;color:var(--text3);margin-top:.3rem}
+.s-delta{font-size:.7rem;color:var(--sage-d);margin-top:.25rem;font-weight:500}
+
+/* ── SECTION HEADER ── */
+.sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.sec-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.sec-link{
+  font-size:.75rem;color:var(--sage-d);text-decoration:none;
+  cursor:pointer;padding:.2rem .4rem;border-radius:6px;transition:background .15s;
+}
+.sec-link:hover{background:var(--sage-bg)}
+
+/* ── MODULE CARDS ── */
+.module-list{display:flex;flex-direction:column;gap:.6rem}
+.mod-card{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  padding:.85rem 1.1rem;display:flex;align-items:center;gap:.9rem;
+  cursor:pointer;transition:all .18s;
+}
+.mod-card:hover:not(.locked){border-color:var(--text3);box-shadow:0 2px 16px rgba(0,0,0,.08)}
+.mod-card.locked{opacity:.5;cursor:not-allowed}
+.mod-icon-wrap{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+}
+.mod-icon-wrap svg{width:18px;height:18px;color:#fff}
+.mod-body{flex:1;min-width:0}
+.mod-title{font-size:.85rem;font-weight:600;color:var(--text)}
+.mod-sub{font-size:.71rem;color:var(--text3);margin-top:.1rem}
+.mod-prog-wrap{height:4px;background:var(--line);border-radius:2px;margin-top:.5rem}
+.mod-prog-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.btn-buka-modul{
+  display:inline-block;margin-top:.55rem;padding:5px 12px;
+  border-radius:20px;font-size:.75rem;font-weight:600;
+  background:var(--terra);color:#1A1208;text-decoration:none;
+  transition:background .15s;
+}
+.btn-buka-modul:hover{background:var(--terra-d)}
+.mod-card.locked .btn-buka-modul{display:none}
+.mod-right{display:flex;flex-direction:column;align-items:flex-end;gap:.4rem;flex-shrink:0}
+.badge{font-size:.67rem;font-weight:600;padding:.22rem .65rem;border-radius:100px;white-space:nowrap}
+.bd-selesai{background:#C0DD97;color:#27500A}
+.bd-sedang{background:#FAC775;color:#633806}
+.bd-terkunci{background:var(--line);color:var(--text3)}
+.bd-baru{background:#DDEFFD;color:#1A4A7A}
+.mod-pct{font-size:.72rem;color:var(--text3)}
+
+/* ── VIDEO PAGE ── */
+.video-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.9rem}
+.vid-card{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  overflow:hidden;cursor:pointer;transition:all .18s;
+}
+.vid-card:hover{border-color:var(--text3);box-shadow:0 4px 16px rgba(0,0,0,.1);transform:translateY(-2px)}
+.vid-thumb{
+  width:100%;height:110px;background:#2C2420;
+  display:flex;align-items:center;justify-content:center;position:relative;
+}
+.vid-thumb .play-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:rgba(212,163,115,.9);
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;transition:transform .18s;
+}
+.vid-card:hover .play-btn{transform:scale(1.1)}
+.vid-thumb .play-btn svg{width:16px;height:16px;margin-left:2px}
+.vid-dur{position:absolute;bottom:6px;right:8px;font-size:.65rem;color:#fff;background:rgba(0,0,0,.55);padding:.15rem .4rem;border-radius:4px}
+.vid-body{padding:.7rem .8rem}
+.vid-title{font-size:.8rem;font-weight:600;color:var(--text);line-height:1.3}
+.vid-meta{font-size:.7rem;color:var(--text3);margin-top:.25rem}
+
+/* ── QUIZ TABLE ── */
+.data-card{background:var(--surface);border-radius:12px;border:1px solid var(--line);overflow:clip;transition:background .25s,border-color .25s}
+.dt-head{display:flex;align-items:center;justify-content:space-between;padding:.85rem 1.1rem;border-bottom:1px solid var(--line)}
+.dt-head-title{font-size:.88rem;font-weight:600;color:var(--text)}
+table.data-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.data-tbl th{text-align:left;padding:.55rem .9rem;font-size:.7rem;font-weight:600;color:var(--text3);background:var(--surface2);border-bottom:1px solid var(--line)}
+.data-tbl td{padding:.6rem .9rem;color:var(--text2);border-bottom:1px solid var(--line2)}
+.data-tbl tr:last-child td{border-bottom:none}
+.data-tbl tr:hover td{background:var(--bg)}
+.score-pill{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:36px;padding:.18rem .55rem;border-radius:6px;font-weight:600;font-size:.78rem;
+}
+.sp-high{background:#C0DD97;color:#27500A}
+.sp-mid{background:#FAE8A0;color:#705010}
+.sp-low{background:#F7C6C0;color:#B03020}
+
+/* ── FORUM PAGE ── */
+.forum-list{display:flex;flex-direction:column;gap:.6rem}
+.forum-card{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  padding:.9rem 1.1rem;cursor:pointer;transition:all .18s;
+}
+.forum-card:hover{border-color:var(--text3)}
+.fc-top{display:flex;align-items:flex-start;gap:.8rem}
+.fc-avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;color:#fff;
+}
+.fc-body{flex:1;min-width:0}
+.fc-title{font-size:.84rem;font-weight:600;color:var(--text);line-height:1.3}
+.fc-meta{font-size:.71rem;color:var(--text3);margin-top:.15rem}
+.fc-bottom{display:flex;align-items:center;gap:.8rem;margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--line2)}
+.fc-tag{font-size:.67rem;background:var(--sage-bg);color:var(--sage-d);border-radius:100px;padding:.15rem .5rem;font-weight:600}
+.fc-stat{display:flex;align-items:center;gap:.25rem;font-size:.71rem;color:var(--text3)}
+.fc-stat svg{width:13px;height:13px;opacity:.6}
+
+/* ── DRAF PAGE ── */
+.draf-list{display:flex;flex-direction:column;gap:.6rem}
+.draf-card{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  padding:.85rem 1.1rem;display:flex;align-items:center;gap:.9rem;
+}
+.draf-icon{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  background:var(--bg);border:1px solid var(--line);
+  display:flex;align-items:center;justify-content:center;color:var(--text3);
+}
+.draf-icon svg{width:16px;height:16px}
+.draf-body{flex:1;min-width:0}
+.draf-title{font-size:.84rem;font-weight:600;color:var(--text)}
+.draf-meta{font-size:.71rem;color:var(--text3);margin-top:.1rem}
+.draf-status{font-size:.67rem;font-weight:600;padding:.2rem .6rem;border-radius:100px}
+.ds-reviewed{background:#DDEFFD;color:#1A4A7A}
+.ds-pending{background:#FAE8A0;color:#705010}
+.ds-revise{background:#F7C6C0;color:#B03020}
+
+/* ── PROGRESS PAGE ── */
+.prog-overall{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  padding:1.1rem 1.2rem;margin-bottom:1rem;
+  display:flex;align-items:center;gap:1.2rem;
+  transition:background .25s,border-color .25s;
+}
+.prog-circle{width:68px;height:68px;flex-shrink:0;position:relative}
+.prog-circle svg{transform:rotate(-90deg)}
+.prog-circle .pct-text{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.9rem;font-weight:700;color:var(--text);
+}
+.prog-breakdown{flex:1}
+.pb-row{display:flex;align-items:center;gap:.6rem;padding:.35rem 0;border-bottom:1px solid var(--line2)}
+.pb-row:last-child{border-bottom:none}
+.pb-name{font-size:.78rem;color:var(--text2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pb-bar-bg{width:120px;height:6px;background:var(--line);border-radius:3px;flex-shrink:0}
+.pb-bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.pb-pct{font-size:.72rem;color:var(--text3);width:34px;text-align:right;flex-shrink:0}
+
+/* ── SETTINGS PAGE ── */
+.settings-card{
+  background:var(--surface);border-radius:12px;border:1px solid var(--line);
+  overflow:hidden;margin-bottom:1rem;
+  transition:background .25s,border-color .25s;
+}
+.sc-head{padding:.85rem 1.1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.6rem}
+.sc-head-title{font-size:.88rem;font-weight:600;color:var(--text)}
+.sc-head svg{width:16px;height:16px;color:var(--text3)}
+.sc-body{padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.75rem}
+.setting-field{display:flex;flex-direction:column;gap:.3rem}
+.setting-field label{font-size:.75rem;font-weight:600;color:var(--text2)}
+.setting-input{
+  height:40px;border-radius:8px;border:1.5px solid var(--line);
+  background:var(--surface2);padding:0 .8rem;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text);
+  outline:none;transition:border-color .18s,box-shadow .18s;
+}
+.setting-input:focus{border-color:var(--text);box-shadow:0 0 0 3px rgba(44,36,32,.07)}
+.setting-input:disabled{opacity:.5;cursor:not-allowed}
+.btn-save{
+  height:38px;padding:0 1.2rem;border-radius:9px;border:none;
+  background:var(--topnav-bg);color:var(--terra);
+  font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:600;
+  cursor:pointer;transition:all .18s;align-self:flex-start;
+}
+.btn-save:hover{background:var(--terra);color:#1A1208}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:700;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal{
+  background:var(--surface);border-radius:16px;padding:1.6rem 1.8rem;
+  max-width:360px;width:90%;text-align:center;
+  box-shadow:0 16px 48px rgba(0,0,0,.22);
+  border:1px solid var(--border);
+  transition:background .25s;
+}
+.modal h3{font-size:1rem;font-weight:600;color:var(--text);margin-bottom:.4rem}
+.modal p{font-size:.82rem;color:var(--text3);margin-bottom:1.3rem;line-height:1.5}
+.modal-btns{display:flex;gap:.6rem}
+.btn-cancel{flex:1;height:38px;border-radius:9px;border:1.5px solid var(--line);background:transparent;font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--text2);cursor:pointer;transition:all .15s}
+.btn-cancel:hover{border-color:var(--text)}
+.btn-confirm{flex:1;height:38px;border-radius:9px;border:none;background:var(--topnav-bg);font-family:'DM Sans',sans-serif;font-size:.82rem;color:var(--terra);cursor:pointer;transition:all .15s}
+.btn-confirm:hover{background:var(--terra);color:#1A1208}
+
+/* ── LOADING ── */
+.spinner-wrap{display:flex;align-items:center;justify-content:center;padding:2rem;color:var(--text3);font-size:.82rem;gap:.5rem}
+.sk{width:18px;height:18px;border:2px solid var(--line);border-top-color:var(--sage);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:2rem;color:var(--text3);font-size:.83rem}
+
+/* ── SKELETON SHIMMER ── */
+.skeleton{
+  background:linear-gradient(90deg,rgba(62,54,46,.08) 25%,rgba(255,255,255,0.3) 50%,rgba(62,54,46,.08) 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.5s infinite;
+}
+@keyframes shimmer{
+  0%{background-position:200% 0}
+  100%{background-position:-200% 0}
+}
+
+/* ── VARK BANNER ── */
+.vark-banner{
+  display:none;align-items:center;gap:12px;
+  background:var(--surface);border-radius:10px;
+  border-left:4px solid var(--terra);
+  padding:14px 16px;margin-bottom:16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  transition:background .25s;
+}
+.vb-icon{font-size:1.5rem;flex-shrink:0}
+.vb-text{flex:1;min-width:0}
+.vb-text strong{display:block;font-size:.85rem;font-weight:600;color:var(--text)}
+.vb-text span{font-size:.76rem;color:var(--text3);line-height:1.4}
+.vb-btn{
+  flex-shrink:0;height:36px;padding:0 1rem;border-radius:8px;border:none;
+  background:var(--terra);color:#1A1208;
+  font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:600;
+  cursor:pointer;text-decoration:none;display:flex;align-items:center;
+  transition:background .18s;white-space:nowrap;
+}
+.vb-btn:hover{background:var(--terra-d)}
+
+/* ── DONUT CHART PROGRESS ── */
+.progress-chart-card{
+  background:var(--surface);border-radius:14px;border:1px solid var(--line);
+  padding:18px 20px;margin-bottom:1.2rem;
+  display:flex;align-items:center;gap:24px;
+  transition:background .25s,border-color .25s;
+}
+.chart-donut-wrap{flex-shrink:0;position:relative;width:140px;height:140px}
+.chart-donut-wrap svg{display:block}
+.donut-center-text{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  pointer-events:none;
+}
+.donut-pct{font-size:1.5rem;font-weight:700;color:var(--text);line-height:1}
+.donut-sub{font-size:.6rem;color:var(--text3);margin-top:.15rem;letter-spacing:.04em}
+.chart-legend{display:flex;flex-direction:column;gap:10px;flex:1}
+.chart-legend-title{font-size:.82rem;font-weight:600;color:var(--text);margin-bottom:2px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:.8rem;color:var(--text2)}
+.legend-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.legend-count{margin-left:auto;font-weight:600;color:var(--text);font-size:.8rem}
+
+/* ── QUICK LINK CARDS ── */
+.quick-link-row{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.2rem}
+.quick-link-card{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.65rem .9rem;border-radius:10px;
+  background:var(--surface);border:1px solid var(--line);
+  text-decoration:none;color:var(--text2);font-size:.8rem;font-weight:500;
+  transition:all .18s;cursor:pointer;min-height:44px;
+}
+.quick-link-card:hover{border-color:var(--terra);color:var(--terra);background:rgba(212,163,115,.07)}
+.ql-icon{font-size:16px;flex-shrink:0}
+
+/* ══════════════════════════════════════
+   ANIMATIONS (PAGE-SPECIFIC)
+══════════════════════════════════════ */
+
+/* Page entrance */
+@keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page.active{animation:pageIn .35s ease-out both}
+
+/* Hero entrance */
+.hero.visible{animation:pageIn .4s ease-out both}
+
+/* Stat cards stagger */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.stat-card:nth-child(1){animation:fadeUp .3s ease-out .05s both}
+.stat-card:nth-child(2){animation:fadeUp .3s ease-out .10s both}
+.stat-card:nth-child(3){animation:fadeUp .3s ease-out .15s both}
+
+/* Stat card hover lift (override base) */
+.stat-card{transition:transform .2s ease,box-shadow .2s ease,background .25s,border-color .25s}
+.stat-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.1)}
+
+/* Module card stagger */
+.mod-card:nth-child(1){animation:fadeUp .3s ease-out .08s both}
+.mod-card:nth-child(2){animation:fadeUp .3s ease-out .13s both}
+.mod-card:nth-child(3){animation:fadeUp .3s ease-out .18s both}
+.mod-card:nth-child(4){animation:fadeUp .3s ease-out .23s both}
+.mod-card:nth-child(5){animation:fadeUp .3s ease-out .28s both}
+.mod-card:nth-child(6){animation:fadeUp .3s ease-out .33s both}
+.mod-card:nth-child(7){animation:fadeUp .3s ease-out .38s both}
+.mod-card:nth-child(8){animation:fadeUp .3s ease-out .43s both}
+.mod-card:nth-child(9){animation:fadeUp .3s ease-out .48s both}
+
+/* Module card hover lift */
+.mod-card{transition:all .18s ease}
+.mod-card:hover:not(.locked){transform:translateY(-2px);border-color:var(--text3);box-shadow:0 4px 16px rgba(0,0,0,.1)}
+
+/* Quick link cards */
+.quick-link-card{transition:transform .2s ease,border-color .18s,color .18s,background .18s}
+.quick-link-card:hover{transform:translateY(-2px)}
+
+/* Button press */
+.btn-lanjut-belajar:active{transform:scale(.97)!important}
+
+/* Modal entrance */
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-box,.logout-modal-box,.ob-card{animation:modalIn .25s ease-out}
+
+/* Progress bar fill */
+@keyframes progressFill{from{width:0}to{width:var(--pw,100%)}}
+.mod-prog-fill{animation:progressFill .8s ease-out .4s both}
+
+/* ══════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════ */
+@media(max-width:768px){
+  .tn-nav{display:none}
+  .btn-hamburger{display:flex}
+  .hero{padding:1.5rem 1.25rem}
+  .hero-greeting{font-size:1.35rem}
+  .page{padding:1rem}
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .video-grid{grid-template-columns:1fr 1fr}
+  .pb-bar-bg{width:80px}
+  .notif-dropdown{width:calc(100vw - 32px);right:-8px}
+  .quick-link-row{grid-template-columns:1fr 1fr}
+  .progress-chart-card{flex-direction:column;align-items:center;gap:16px}
+  .chart-legend{width:100%}
+  .setting-input{font-size:16px}
+  .avatar{width:40px;height:40px;min-width:40px;min-height:40px}
+}
+@media(max-width:480px){
+  .page{padding:.85rem .75rem}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:.6rem}
+  .video-grid{grid-template-columns:1fr}
+  .s-val{font-size:1.4rem}
+  .s-lbl{font-size:.68rem}
+  .topnav{padding:0 .75rem;gap:.3rem}
+  .modal{width:calc(100vw - 32px);max-width:none}
+  .setting-input{font-size:16px}
+  body{font-size:13px}
+  .vark-banner{flex-wrap:wrap;gap:8px}
+  .vb-btn{width:100%;justify-content:center}
+  .hero-stat-chips{gap:.4rem}
+  .stat-chip{font-size:.72rem;padding:.3rem .7rem}
+  .quick-link-row{grid-template-columns:1fr 1fr}
+}
+@media(max-width:380px){
+  .page{padding:.75rem .6rem}
+  .stat-grid{grid-template-columns:1fr}
+  .s-val{font-size:1.6rem}
+}
+
+/* ══════════════════════════════════════
+   ONBOARDING MODAL
+══════════════════════════════════════ */
+.ob-overlay{
+  position:fixed;inset:0;
+  background:rgba(44,36,32,.55);
+  backdrop-filter:blur(4px);
+  -webkit-backdrop-filter:blur(4px);
+  z-index:800;
+  display:none;align-items:center;justify-content:center;
+  padding:1rem;
+}
+.ob-overlay.show{display:flex}
+.ob-modal{
+  background:var(--surface);
+  border-radius:20px;
+  max-width:420px;width:100%;
+  max-height:calc(100vh - 2rem);overflow-y:auto;
+  box-shadow:0 24px 64px rgba(44,36,32,.28);
+  border:1px solid var(--border);
+  animation:ob-slide-in .38s cubic-bezier(.22,.68,0,1.2) both;
+  position:relative;
+}
+@keyframes ob-slide-in{
+  from{transform:translateY(32px);opacity:0}
+  to{transform:translateY(0);opacity:1}
+}
+.ob-skip{
+  position:absolute;top:.85rem;right:.85rem;
+  width:32px;height:32px;border-radius:50%;border:none;
+  background:var(--surface2);color:var(--text3);
+  cursor:pointer;font-size:14px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .15s,color .15s;z-index:2;
+  font-family:'DM Sans',sans-serif;
+}
+.ob-skip:hover{background:var(--line);color:var(--text)}
+.ob-step{display:none;padding:2rem 1.8rem 1.5rem}
+.ob-step.ob-active{display:block}
+.ob-icon-big{font-size:2.8rem;margin-bottom:.85rem;line-height:1}
+.ob-title{
+  font-family:'Playfair Display',serif;
+  font-size:1.25rem;font-weight:700;
+  color:var(--text);line-height:1.25;margin-bottom:.4rem;
+}
+.ob-sub{font-size:.82rem;color:var(--text3);line-height:1.55;margin-bottom:1.25rem}
+.ob-feat-list{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.4rem}
+.ob-feat{
+  display:flex;align-items:flex-start;gap:.75rem;
+  background:var(--surface2);border-radius:10px;padding:.7rem .9rem;
+  border:1px solid var(--border);
+}
+.ob-feat-icon{font-size:1.2rem;flex-shrink:0;margin-top:.05rem}
+.ob-feat-body strong{display:block;font-size:.83rem;font-weight:600;color:var(--text);margin-bottom:.15rem}
+.ob-feat-body span{font-size:.76rem;color:var(--text3);line-height:1.4}
+.ob-vark-box{
+  background:linear-gradient(135deg,rgba(212,163,115,.15),rgba(143,162,135,.1));
+  border:1px solid rgba(212,163,115,.3);
+  border-radius:12px;padding:.9rem 1rem;margin-bottom:1.3rem;
+}
+.ob-vark-title{font-size:.85rem;font-weight:700;color:var(--terra-d);margin-bottom:.3rem}
+.ob-vark-desc{font-size:.78rem;color:var(--text2);line-height:1.5}
+.ob-vark-types{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.65rem}
+.ob-vark-type{
+  font-size:.68rem;font-weight:700;padding:.22rem .55rem;border-radius:100px;
+  background:var(--surface);border:1px solid var(--border);color:var(--text2);
+}
+.ob-actions{display:flex;align-items:center;gap:.65rem;margin-top:.25rem}
+.ob-btn-next{
+  flex:1;height:42px;border-radius:11px;border:none;
+  background:var(--terra);color:#1A1208;
+  font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:background .18s,transform .15s;
+}
+.ob-btn-next:hover{background:var(--terra-d);transform:translateY(-1px)}
+.ob-btn-back{
+  height:42px;padding:0 1rem;border-radius:11px;
+  border:1.5px solid var(--line);background:transparent;
+  font-family:'DM Sans',sans-serif;font-size:.85rem;color:var(--text2);
+  cursor:pointer;transition:all .15s;
+}
+.ob-btn-back:hover{border-color:var(--text);color:var(--text)}
+.ob-dots{
+  display:flex;align-items:center;justify-content:center;
+  gap:.45rem;padding-bottom:1.4rem;
+}
+.ob-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--line);transition:all .22s;cursor:pointer;border:none;
+}
+.ob-dot.ob-dot-active{background:var(--terra);width:20px;border-radius:4px}
+@media(max-width:480px){
+  .ob-modal{border-radius:16px}
+  .ob-step{padding:1.6rem 1.25rem 1.25rem}
+  .ob-title{font-size:1.1rem}
+}
+
+
+/* ── LOGOUT MODAL ── */
+.logout-modal-overlay{position:fixed;inset:0;background:rgba(62,54,46,.52);backdrop-filter:blur(4px);z-index:9999;display:none;align-items:center;justify-content:center;padding:1rem}
+.logout-modal-overlay.open{display:flex}
+.logout-modal-box{border-radius:16px;padding:2rem;max-width:360px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 8px 40px rgba(62,54,46,.22);text-align:center;animation:lmIn .22s ease-out}
+@keyframes lmIn{from{opacity:0;transform:scale(.95) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.logout-modal-box h3{font-family:'Playfair Display',serif;margin-bottom:.5rem;font-size:1.15rem}
+.logout-modal-box p{font-size:.88rem;margin-bottom:1.5rem;opacity:.75}
+.logout-modal-actions{display:flex;gap:.75rem}
+.logout-btn-cancel{flex:1;padding:.65rem 1rem;border-radius:8px;border:1.5px solid rgba(62,54,46,.18);background:transparent;cursor:pointer;font-weight:500;font-size:.88rem}
+.logout-btn-cancel:hover{opacity:.7}
+.logout-btn-confirm{flex:1;padding:.65rem 1rem;border-radius:8px;border:none;background:var(--terra);color:#fff;cursor:pointer;font-weight:600;font-size:.88rem}
+.logout-btn-confirm:hover{opacity:.85}
+@media(max-width:640px){.logout-modal-box{padding:1.5rem}.logout-modal-actions{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP NAVIGATION BAR ══ -->
+<nav class="topnav" role="navigation" aria-label="Navigasi utama">
+  <!-- Hamburger (mobile) -->
+  <button class="btn-hamburger" id="btnHamburger" aria-label="Buka menu" onclick="openDrawer()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+  </button>
+
+  <!-- Logo -->
+  <a class="tn-logo" href="dashboard-mhs.html" onclick="event.preventDefault();showPage('dashboard')">
+    <span class="tn-logo-icon">📖</span>
+    <span class="tn-logo-name">SMART<span>-FLIP</span></span>
+    <span class="tn-logo-ver">5.0</span>
+  </a>
+
+  <!-- Nav items (desktop) -->
+  <div class="tn-nav" role="list">
+    <a class="nav-item active" data-page="dashboard" onclick="showPage('dashboard')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Beranda
+    </a>
+    <a class="nav-item" data-page="modul" onclick="showPage('modul')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Modul
+    </a>
+    <a class="nav-item" data-page="video" onclick="showPage('video')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Video
+    </a>
+    <a class="nav-item" data-page="kuis" onclick="showPage('kuis')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+      Kuis
+      <span class="nav-badge" id="navBadgeKuis" style="display:none">2</span>
+    </a>
+    <a class="nav-item" data-page="forum" onclick="showPage('forum')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Forum
+      <span class="nav-badge" id="navBadgeForum" style="display:none">3</span>
+    </a>
+    <a class="nav-item" data-page="draf" onclick="showPage('draf')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Draf
+    </a>
+    <a class="nav-item" data-page="progress" onclick="showPage('progress')" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </a>
+    <a class="nav-item" href="profil.html" role="listitem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </a>
+  </div>
+
+  <!-- Right controls -->
+  <div class="tn-right">
+    <!-- Notif bell -->
+    <div class="notif-wrapper" id="notifWrapper">
+      <button class="btn-notif" id="btnNotif" aria-label="Notifikasi" onclick="toggleNotif(event)">
+        🔔
+        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+      </button>
+      <div class="notif-dropdown" id="notifDropdown">
+        <div class="notif-header">
+          <span>Notifikasi</span>
+          <button id="btnMarkAllRead" class="btn-mark-all" onclick="markAllRead()">Tandai semua dibaca</button>
+        </div>
+        <div id="notifList" class="notif-list"></div>
+      </div>
+    </div>
+
+    <!-- Avatar -->
+    <div class="avatar-wrap">
+      <div class="avatar" id="avatarBtn" onclick="toggleDropdown()" role="button" aria-label="Menu akun" tabindex="0">AR</div>
+      <div class="avatar-dropdown" id="avatarDropdown">
+        <div class="dd-header">
+          <div class="dd-name" id="ddName">—</div>
+          <div class="dd-nim" id="ddNim">NIM: —</div>
+        </div>
+        <div class="dd-item" onclick="showPage('pengaturan');closeDropdown()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          Edit Profil
+        </div>
+        <div class="dd-sep"></div>
+        <div class="dd-item dd-logout" onclick="openLogoutModal();closeDropdown()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Keluar
+        </div>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ MOBILE NAV DRAWER ══ -->
+<div class="nav-drawer-overlay" id="navDrawerOverlay" onclick="closeDrawer()"></div>
+<div class="nav-drawer" id="navDrawer" role="dialog" aria-label="Menu navigasi">
+  <div class="nav-drawer-header">
+    <span class="nav-drawer-logo">SMART<span>-FLIP</span> <span style="font-size:.6rem;opacity:.6;font-family:'DM Sans',sans-serif;letter-spacing:.1em">5.0</span></span>
+    <button class="btn-close-drawer" onclick="closeDrawer()" aria-label="Tutup menu">✕</button>
+  </div>
+  <div class="nav-drawer-items">
+    <div class="nav-drawer-section">Utama</div>
+    <a class="nav-item active" data-page="dashboard" onclick="showPage('dashboard');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+      Beranda
+    </a>
+    <a class="nav-item" data-page="modul" onclick="showPage('modul');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Modul
+    </a>
+    <a class="nav-item" data-page="video" onclick="showPage('video');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+      Video
+    </a>
+    <a class="nav-item" data-page="kuis" onclick="showPage('kuis');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+      Kuis
+    </a>
+    <div class="nav-drawer-section">Kolaborasi</div>
+    <a class="nav-item" data-page="forum" onclick="showPage('forum');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Forum
+    </a>
+    <a class="nav-item" data-page="draf" onclick="showPage('draf');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Draf
+    </a>
+    <div class="nav-drawer-section">Analitik</div>
+    <a class="nav-item" data-page="progress" onclick="showPage('progress');closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Progress
+    </a>
+    <a class="nav-item" href="profil.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Profil
+    </a>
+    <div class="nav-drawer-divider"></div>
+    <a class="nav-item" href="ebook.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Perpustakaan
+    </a>
+    <a class="nav-item" href="feedback.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      Kepraktisan
+    </a>
+    <a class="nav-item" href="workshop.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      Workshop
+    </a>
+    <div class="nav-drawer-divider"></div>
+    <a class="nav-item" href="changelog.html" style="font-size:.78rem;opacity:.75">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Changelog
+    </a>
+    <a class="nav-item" data-page="pengaturan" onclick="showPage('pengaturan');closeDrawer()" style="font-size:.78rem">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Pengaturan
+    </a>
+    <a class="nav-item" style="color:var(--red)" onclick="openLogoutModal();closeDrawer()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Keluar
+    </a>
+  </div>
+</div>
+
+<!-- ══ CONTENT WRAP ══ -->
+<div class="content-wrap">
+
+  <!-- ══ HERO SECTION (tampil hanya di page dashboard) ══ -->
+  <section class="hero" id="heroSection" aria-label="Selamat datang">
+    <div class="hero-inner">
+      <div class="hero-greeting">Selamat datang, <span id="greetName">—</span> 👋</div>
+      <div class="hero-sub" id="greetSub">Lanjutkan perjalanan belajar kamu hari ini</div>
+      <div class="hero-actions">
+        <a id="btnLanjutBelajar" href="modul.html?id=1" class="btn-lanjut-belajar" style="display:none">▶ Lanjut Belajar</a>
+      </div>
+      <div class="hero-stat-chips" id="heroStatChips">
+        <div class="stat-chip">
+          <span class="chip-icon">📚</span>
+          <span>Modul selesai:</span>
+          <span class="chip-val" id="chipDone">—</span>
+        </div>
+        <div class="stat-chip">
+          <span class="chip-icon">🎯</span>
+          <span>Skor rata-rata:</span>
+          <span class="chip-val" id="chipScore">—</span>
+        </div>
+        <div class="stat-chip">
+          <span class="chip-icon">⏱</span>
+          <span>Waktu belajar:</span>
+          <span class="chip-val" id="chipTime">—</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PAGE: DASHBOARD ── -->
+  <div class="page active" id="page-dashboard">
+    <!-- QUICK LINKS -->
+    <div class="quick-link-row" id="quickLinkRow">
+      <a href="draf.html" class="quick-link-card">
+        <span class="ql-icon">📄</span> Draf Saya
+      </a>
+      <a href="forum.html" class="quick-link-card">
+        <span class="ql-icon">💬</span> Forum Diskusi
+      </a>
+      <a href="vark.html" class="quick-link-card">
+        <span class="ql-icon">🎯</span> Asesmen VARK
+      </a>
+      <a href="ebook.html" class="quick-link-card">
+        <span class="ql-icon">📚</span> Perpustakaan
+      </a>
+      <a href="feedback.html" class="quick-link-card">
+        <span class="ql-icon">⭐</span> Kepraktisan
+      </a>
+      <a href="workshop.html" class="quick-link-card">
+        <span class="ql-icon">🗂️</span> Workshop
+      </a>
+      <a href="profil.html" class="quick-link-card">
+        <span class="ql-icon">👤</span> Profil
+      </a>
+    </div>
+
+    <!-- VARK Banner -->
+    <div id="varkBanner" class="vark-banner">
+      <div class="vb-icon">🎯</div>
+      <div class="vb-text">
+        <strong>Kenali Gaya Belajarmu!</strong>
+        <span>Isi asesmen VARK singkat (±3 menit) untuk pengalaman belajar yang lebih personal.</span>
+      </div>
+      <a href="vark.html" class="vb-btn">Mulai Asesmen</a>
+    </div>
+
+    <!-- Skeleton stat cards (shown while loading) -->
+    <div id="statSkelGrid" class="stat-grid" style="margin-bottom:1.3rem">
+      <div class="skeleton" style="height:96px;border-radius:12px"></div>
+      <div class="skeleton" style="height:96px;border-radius:12px"></div>
+      <div class="skeleton" style="height:96px;border-radius:12px"></div>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="stat-grid" id="statRealGrid">
+      <div class="stat-card c1">
+        <div class="s-icon gi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+        <div class="s-val" id="statDone">4/9</div>
+        <div class="s-lbl">Modul selesai</div>
+        <div class="s-delta">↑ 1 modul minggu ini</div>
+      </div>
+      <div class="stat-card c2">
+        <div class="s-icon ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="s-val" id="statScore">78%</div>
+        <div class="s-lbl">Rata-rata skor kuis</div>
+        <div class="s-delta" style="color:var(--terra)">↑ +5% dari bulan lalu</div>
+      </div>
+      <div class="stat-card c3">
+        <div class="s-icon bi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+        <div class="s-val" id="statTime">3.2 jam</div>
+        <div class="s-lbl">Total waktu belajar</div>
+        <div class="s-delta">MK Metpen &amp; Pengembangan</div>
+      </div>
+    </div>
+
+    <!-- DONUT CHART PROGRESS BELAJAR -->
+    <div class="progress-chart-card" id="progressChartCard">
+      <div class="chart-donut-wrap">
+        <svg id="donutSvg" viewBox="0 0 140 140" width="140" height="140"></svg>
+        <div class="donut-center-text">
+          <span class="donut-pct" id="donutPct">0%</span>
+          <span class="donut-sub">selesai</span>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="chart-legend-title">Progress Belajar</div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:var(--sage)"></span>
+          <span>Selesai</span>
+          <span class="legend-count" id="legendDone">0</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:var(--terra)"></span>
+          <span>Sedang berjalan</span>
+          <span class="legend-count" id="legendProgress">0</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:rgba(155,139,122,.3)"></span>
+          <span>Belum mulai</span>
+          <span class="legend-count" id="legendNotStarted">0</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec-hd">
+      <div class="sec-title">Modul aktif</div>
+      <span class="sec-link" onclick="showPage('modul')">Lihat semua →</span>
+    </div>
+    <!-- Skeleton modul list (shown while loading) -->
+    <div id="modListSkel" style="display:flex;flex-direction:column;gap:.75rem">
+      <div class="skeleton" style="height:72px;border-radius:10px"></div>
+      <div class="skeleton" style="height:72px;border-radius:10px"></div>
+      <div class="skeleton" style="height:72px;border-radius:10px"></div>
+    </div>
+    <div class="module-list" id="modListDash" style="display:none"></div>
+  </div>
+
+  <!-- ── PAGE: MODUL ── -->
+  <div class="page" id="page-modul">
+    <div class="pg-hd">
+      <h1>Modul Belajar</h1>
+      <p>MK Metode Penelitian &amp; Pengembangan — Kelas A · 9 modul</p>
+    </div>
+    <div class="module-list" id="modListFull"></div>
+  </div>
+
+  <!-- ── PAGE: VIDEO ── -->
+  <div class="page" id="page-video">
+    <div class="pg-hd">
+      <h1>Video Pembelajaran</h1>
+      <p>Tonton video perkuliahan untuk mempersiapkan sesi kelas</p>
+    </div>
+    <div class="video-grid" id="videoGrid"></div>
+  </div>
+
+  <!-- ── PAGE: KUIS ── -->
+  <div class="page" id="page-kuis">
+    <div class="pg-hd">
+      <h1>Riwayat Kuis</h1>
+      <p>Semua percobaan kuis kamu tercatat di sini</p>
+    </div>
+    <div class="data-card">
+      <div class="dt-head">
+        <div class="dt-head-title">Percobaan kuis</div>
+        <span style="font-size:.75rem;color:var(--text3)">6 percobaan</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="data-tbl">
+          <thead><tr><th>Modul</th><th>Skor</th><th>Status</th><th>Tanggal</th></tr></thead>
+          <tbody id="quizBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: FORUM ── -->
+  <div class="page" id="page-forum">
+    <div class="pg-hd">
+      <h1>Forum Diskusi</h1>
+      <p>Diskusikan materi bersama teman dan dosen</p>
+    </div>
+    <div class="sec-hd">
+      <div class="sec-title">Diskusi terbaru</div>
+      <span class="sec-link">+ Buat Topik</span>
+    </div>
+    <div class="forum-list" id="forumList"></div>
+  </div>
+
+  <!-- ── PAGE: DRAF ── -->
+  <div class="page" id="page-draf">
+    <div class="pg-hd">
+      <h1>Draf Saya</h1>
+      <p>Draf yang sudah kamu kumpulkan ke dosen</p>
+    </div>
+    <div class="draf-list" id="drafList"></div>
+  </div>
+
+  <!-- ── PAGE: PROGRESS ── -->
+  <div class="page" id="page-progress">
+    <div class="pg-hd">
+      <h1>Progress Saya</h1>
+      <p>Pantau perkembangan belajar per modul</p>
+    </div>
+    <div class="prog-overall">
+      <div class="prog-circle">
+        <svg width="68" height="68" viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="var(--line)" stroke-width="7"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="var(--sage)" stroke-width="7"
+            stroke-dasharray="176" stroke-dashoffset="88" stroke-linecap="round"/>
+        </svg>
+        <div class="pct-text">50%</div>
+      </div>
+      <div class="prog-breakdown" id="progBreakdown"></div>
+    </div>
+  </div>
+
+  <!-- ── PAGE: PENGATURAN ── -->
+  <div class="page" id="page-pengaturan">
+    <div class="pg-hd">
+      <h1>Pengaturan</h1>
+      <p>Kelola profil dan preferensi akun kamu</p>
+    </div>
+    <div class="settings-card">
+      <div class="sc-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <div class="sc-head-title">Data Profil</div>
+      </div>
+      <div class="sc-body">
+        <div class="setting-field"><label>Nama Lengkap</label><input class="setting-input" id="setName" value=""></div>
+        <div class="setting-field"><label>NIM</label><input class="setting-input" id="setNim" value=""></div>
+        <div class="setting-field"><label>Email</label><input class="setting-input" id="setEmail" value="" readonly></div>
+        <button class="btn-save" onclick="saveProfil()">Simpan Perubahan</button>
+      </div>
+    </div>
+    <div class="settings-card">
+      <div class="sc-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        <div class="sc-head-title">Ganti Kata Sandi</div>
+      </div>
+      <div class="sc-body">
+        <div class="setting-field"><label>Kata Sandi Baru</label><input class="setting-input" type="password" placeholder="Min. 8 karakter"></div>
+        <div class="setting-field"><label>Konfirmasi Kata Sandi</label><input class="setting-input" type="password" placeholder="Ulangi kata sandi baru"></div>
+        <button class="btn-save">Ganti Kata Sandi</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .content-wrap -->
+
+<script src="supabase.js"></script>
+<script src="modules-data.js"></script>
+<script src="data-layer.js"></script>
+<script>
+// ══════════════════════════════════════
+// XSS HELPER
+// ══════════════════════════════════════
+function escHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+let profile = null;
+
+(async () => {
+  // Demo mode — skip auth, langsung ke DataLayer fallback
+  const isDemo = localStorage.getItem('sfp_demo') === '1' || typeof sb === 'undefined';
+  // Try real auth first
+  try {
+    if (!isDemo && typeof sb !== 'undefined') {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        window.location.replace('index.html'); return;
+      } else {
+        const userId = session.user.id;
+        const { data: p } = await sb.from('profiles').select('*').eq('id', userId).single();
+        if (p) {
+          if (p.role === 'dosen') { window.location.replace('dashboard-dos.html'); return; }
+          profile = p;
+          const name = p.full_name || session.user.email.split('@')[0];
+          const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+          document.getElementById('avatarBtn').textContent = initials;
+          document.getElementById('greetName').textContent = name.split(' ')[0];
+          document.getElementById('ddName').textContent = name;
+          document.getElementById('ddNim').textContent = (p.role === 'mahasiswa' ? 'NIM' : 'NIDN') + ': ' + (p.nim_nidn || '—');
+        }
+      }
+    }
+  } catch(e) { /* fall through to dummy */ }
+
+  // Fallback: gunakan DataLayer.getProfile() (localStorage demo)
+  if (!profile && typeof DataLayer !== 'undefined') {
+    const demoProfile = await DataLayer.getProfile();
+    const name = demoProfile.name || demoProfile.full_name || 'Mahasiswa';
+    const nim  = demoProfile.nim || demoProfile.nim_nidn || '';
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() || 'M';
+    document.getElementById('avatarBtn').textContent = initials;
+    document.getElementById('greetName').textContent = name.split(' ')[0];
+    document.getElementById('ddName').textContent = name;
+    document.getElementById('ddNim').textContent = 'NIM: ' + (nim || '—');
+    const setName = document.getElementById('setName');
+    const setNim  = document.getElementById('setNim');
+    const setEmail = document.getElementById('setEmail');
+    if (setName) setName.value = name;
+    if (setNim)  setNim.value = nim;
+    if (setEmail) setEmail.value = demoProfile.email || '';
+  } else {
+    const setName = document.getElementById('setName');
+    const setNim  = document.getElementById('setNim');
+    const setEmail = document.getElementById('setEmail');
+    if (setName) setName.value = profile.full_name || '';
+    if (setNim)  setNim.value = profile.nim_nidn || '';
+    if (setEmail) setEmail.value = profile.email || '';
+  }
+
+  // Tampilkan skeleton saat loading
+  const skelStat = document.getElementById('statSkelGrid');
+  const skelMod  = document.getElementById('modListSkel');
+  const realStat = document.getElementById('statRealGrid');
+  const realMod  = document.getElementById('modListDash');
+  if (skelStat) skelStat.style.display = '';
+  if (realStat) realStat.style.display = 'none';
+  if (skelMod)  skelMod.style.display  = '';
+  if (realMod)  realMod.style.display  = 'none';
+
+  try {
+    await renderAll();
+  } catch(e) {
+    console.error('renderAll gagal:', e);
+  } finally {
+    // Hide skeleton, show real content
+    if (skelStat) skelStat.style.display = 'none';
+    if (realStat) realStat.style.display = '';
+    if (skelMod)  skelMod.style.display  = 'none';
+    if (realMod)  realMod.style.display  = '';
+  }
+
+  // Cek apakah VARK sudah diisi
+  try {
+    if (typeof DataLayer !== 'undefined') {
+      const varkResult = await DataLayer.getVarkResult();
+      if (!varkResult) {
+        const banner = document.getElementById('varkBanner');
+        if (banner) banner.style.display = 'flex';
+      }
+    }
+  } catch(e) { console.error('Cek VARK gagal:', e); }
+})();
+
+async function getLanjutBelajar() {
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+  let lastMod = null, lastDate = '';
+  modules.forEach(m => {
+    if (m.status === 'locked') return;
+    const p = allProgress[m.path];
+    if (!p) return;
+    if (p.pct > 0 && p.pct < 100 && (p.lastOpened || '') > lastDate) {
+      lastDate = p.lastOpened || '';
+      lastMod = m;
+    }
+  });
+  if (!lastMod) lastMod = modules.find(m => m.status !== 'locked');
+  return lastMod;
+}
+
+async function updateStatDone() {
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+  const selesai = modules.filter(m => {
+    const p = allProgress[m.path];
+    return p ? p.pct >= 100 : m.pct >= 100;
+  }).length;
+  const el = document.getElementById('statDone');
+  if (el) el.textContent = `${selesai}/${modules.length}`;
+  // Update hero chips
+  const chipDone = document.getElementById('chipDone');
+  if (chipDone) chipDone.textContent = `${selesai}/${modules.length}`;
+}
+
+async function updateHeroChips() {
+  // Score from statScore (already rendered by updateStatDone + quiz data)
+  const scoreEl = document.getElementById('statScore');
+  const chipScore = document.getElementById('chipScore');
+  if (scoreEl && chipScore) chipScore.textContent = scoreEl.textContent;
+  const timeEl = document.getElementById('statTime');
+  const chipTime = document.getElementById('chipTime');
+  if (timeEl && chipTime) chipTime.textContent = timeEl.textContent;
+}
+
+// ══════════════════════════════════════
+// DONUT CHART
+// ══════════════════════════════════════
+function buildDonutChart(done, inProgress, notStarted) {
+  const total = done + inProgress + notStarted;
+  if (total === 0) return;
+
+  const r = 54;
+  const cx = 70, cy = 70;
+  const strokeW = 14;
+  const circumference = 2 * Math.PI * r;
+
+  const arcDone        = (done / total) * circumference;
+  const arcInProgress  = (inProgress / total) * circumference;
+  const arcNotStarted  = (notStarted / total) * circumference;
+
+  const offsetDone        = 0;
+  const offsetInProgress  = arcDone;
+  const offsetNotStarted  = arcDone + arcInProgress;
+
+  function circle(color, dashArc, offset, opacity) {
+    const gap = (total === done || total === inProgress || total === notStarted) ? 0 : 2;
+    const arc = Math.max(0, dashArc - gap);
+    const dasharray = `${arc} ${circumference - arc}`;
+    const dashoffset = -offset;
+    const style = opacity ? `opacity:${opacity}` : '';
+    return `<circle
+      cx="${cx}" cy="${cy}" r="${r}"
+      fill="none"
+      stroke="${color}"
+      stroke-width="${strokeW}"
+      stroke-dasharray="${dasharray}"
+      stroke-dashoffset="${dashoffset}"
+      stroke-linecap="butt"
+      transform="rotate(-90 ${cx} ${cy})"
+      style="${style}"/>`;
+  }
+
+  const svg = document.getElementById('donutSvg');
+  if (!svg) return;
+
+  const bgCircle = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(155,139,122,.15)" stroke-width="${strokeW}"/>`;
+
+  const segments = [
+    arcNotStarted > 0 ? circle('rgba(155,139,122,.25)', arcNotStarted, offsetNotStarted, null) : '',
+    arcInProgress > 0 ? circle('var(--terra)', arcInProgress, offsetInProgress, null) : '',
+    arcDone > 0       ? circle('var(--sage)', arcDone, offsetDone, null) : '',
+  ];
+
+  svg.innerHTML = bgCircle + segments.join('');
+
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  const el = document.getElementById('donutPct');
+  if (el) el.textContent = pct + '%';
+}
+
+async function renderDonutChart() {
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+
+  let done = 0, inProgress = 0, notStarted = 0;
+  modules.forEach(m => {
+    if (m.status === 'locked') { notStarted++; return; }
+    const p = allProgress[m.path];
+    const pct = p ? (p.pct || 0) : m.pct;
+    if (pct >= 100) done++;
+    else if (pct > 0) inProgress++;
+    else notStarted++;
+  });
+
+  buildDonutChart(done, inProgress, notStarted);
+
+  const elDone         = document.getElementById('legendDone');
+  const elProgress     = document.getElementById('legendProgress');
+  const elNotStarted   = document.getElementById('legendNotStarted');
+  if (elDone) elDone.textContent = done;
+  if (elProgress) elProgress.textContent = inProgress;
+  if (elNotStarted) elNotStarted.textContent = notStarted;
+}
+
+async function renderAll() {
+  await renderModulDash();
+  await renderModulFull();
+  await renderVideos();
+  await renderQuiz();
+  await renderForum();
+  await renderDraf();
+  await renderProgress();
+  await updateStatDone();
+  await renderDonutChart();
+  const lanjut = await getLanjutBelajar();
+  if (lanjut) {
+    const btn = document.getElementById('btnLanjutBelajar');
+    if (btn) { btn.href = `modul.html?id=${lanjut.id}`; btn.style.display = 'inline-flex'; }
+    document.getElementById('greetSub').textContent = `Modul ${lanjut.no ?? lanjut.id}: ${lanjut.title}`;
+  }
+  // Update hero chips after stat data is ready
+  await updateHeroChips();
+}
+
+// ══════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════
+async function renderModulDash() {
+  const modules = await DataLayer.getModules();
+  const allProgress = await DataLayer.getAllProgress();
+  const list = modules.slice(0, 4);
+  document.getElementById('modListDash').innerHTML = list.map(m => modCardHTML(m, allProgress)).join('');
+}
+
+async function renderModulFull() {
+  const modules = await DataLayer.getModules();
+  const allProgress = await DataLayer.getAllProgress();
+  document.getElementById('modListFull').innerHTML = modules.map(m => modCardHTML(m, allProgress)).join('');
+}
+
+function modCardHTML(m, allProgress) {
+  const saved   = allProgress ? allProgress[m.path] : null;
+  const pct     = saved !== null && saved !== undefined ? (saved.pct || 0) : (m.pct || 0);
+  const status  = m.status === 'locked' ? 'locked'
+                : saved !== null && saved !== undefined ? (pct >= 100 ? 'completed' : pct > 0 ? 'in_progress' : m.status)
+                : m.status;
+
+  const locked   = status === 'locked';
+  const badgeCls = status === 'completed' ? 'bd-selesai' : status === 'in_progress' ? 'bd-sedang' : 'bd-terkunci';
+  const badgeTxt = status === 'completed' ? 'Selesai'    : status === 'in_progress' ? 'Sedang'    : 'Terkunci';
+  const progBar  = status !== 'locked'
+    ? `<div class="mod-prog-wrap"><div class="mod-prog-fill" style="width:${pct}%;background:${status==='completed'?'var(--sage)':'var(--terra)'}"></div></div>` : '';
+
+  const btnLabel = pct >= 100 ? '📖 Baca Ulang' : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar';
+  const bukaBtn  = !locked
+    ? `<a class="btn-buka-modul" href="modul.html?id=${m.id}">${btnLabel}</a>` : '';
+
+  const lockIcon = locked
+    ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>`
+    : status === 'completed'
+      ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>`;
+
+  return `<div class="mod-card ${locked ? 'locked' : ''}">
+    <div class="mod-icon-wrap" style="background:${m.color || 'var(--sage)'}">${lockIcon}</div>
+    <div class="mod-body">
+      <div class="mod-title">${m.no ?? m.id}. ${m.title}</div>
+      <div class="mod-sub">${m.sub || (m.description ? m.description.slice(0, 60) + (m.description.length > 60 ? '…' : '') : '')}</div>
+      ${progBar}
+      ${bukaBtn}
+    </div>
+    <div class="mod-right">
+      <span class="badge ${badgeCls}">${badgeTxt}</span>
+      ${status !== 'locked' ? `<span class="mod-pct">${pct}%</span>` : ''}
+    </div>
+  </div>`;
+}
+
+async function renderVideos() {
+  const modules = await DataLayer.getModules();
+  const colors = ['#2C2420','#3D4A35','#4A3828','#2A3D50','#3D3520','#2A3828','#2C3828','#3D2C20','#2A2C50'];
+  document.getElementById('videoGrid').innerHTML = modules.map((m, i) => `
+    <div class="vid-card">
+      <div class="vid-thumb" style="background:${colors[i % colors.length]}">
+        <div class="play-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </div>
+      </div>
+      <div class="vid-body">
+        <div class="vid-title">${m.title}</div>
+        <div class="vid-meta">Modul ${m.no ?? m.id} · Kelas A</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function renderQuiz() {
+  const modules = await DataLayer.getModules();
+  const rows = [];
+  for (const m of modules) {
+    const attempts = await DataLayer.getQuizAttempts(m.id);
+    for (const a of attempts.slice().reverse()) {
+      const score = a.score || a.pct || 0;
+      const cls = score >= 80 ? 'sp-high' : score >= 60 ? 'sp-mid' : 'sp-low';
+      const lulus = score >= 60;
+      const tgl = a.date || (a.completedAt ? new Date(a.completedAt).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}) : '—');
+      rows.push(`<tr>
+        <td>${m.title}</td>
+        <td><span class="score-pill ${cls}">${score}</span></td>
+        <td>${lulus ? '<span style="color:var(--green);font-weight:600">✓ Lulus</span>' : '<span style="color:var(--red)">✗ Belum</span>'}</td>
+        <td style="color:var(--text3)">${tgl}</td>
+      </tr>`);
+    }
+  }
+  document.getElementById('quizBody').innerHTML = rows.length
+    ? rows.join('')
+    : '<tr><td colspan="4" style="text-align:center;color:var(--text3);padding:1rem">Belum ada riwayat kuis</td></tr>';
+}
+
+async function renderForum() {
+  const posts = (await DataLayer.getPosts()).slice(0, 5);
+  const modules = await DataLayer.getModules();
+  const modMap = Object.fromEntries(modules.map(m => [m.id, m.title]));
+  if (!posts.length) {
+    document.getElementById('forumList').innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:.5rem 0">Belum ada diskusi forum.</div>';
+    return;
+  }
+  const COLORS = ['#5A7353','#C8925A','#4A7EA0','#8FA287','#7A6B5E','#4A3828'];
+  document.getElementById('forumList').innerHTML = posts.map((f, i) => {
+    const initials = (f.authorName || 'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const color = COLORS[i % COLORS.length];
+    const modTitle = f.moduleId ? `Modul ${f.moduleId}` : '';
+    const timeAgoStr = timeAgo(f.createdAt);
+    return `<div class="forum-card">
+      <div class="fc-top">
+        <div class="fc-avatar" style="background:${color}">${escHtml(initials)}</div>
+        <div class="fc-body">
+          <div class="fc-title">${f.content ? escHtml(f.content.slice(0, 80)) + (f.content.length > 80 ? '…' : '') : ''}</div>
+          <div class="fc-meta">${escHtml(f.authorName || 'Mahasiswa')} · ${escHtml(timeAgoStr)}</div>
+        </div>
+      </div>
+      <div class="fc-bottom">
+        ${modTitle ? `<span class="fc-tag">${modTitle}</span>` : ''}
+        <span class="fc-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          ${(f.replies || []).length} balasan
+        </span>
+        <span class="fc-stat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          ${f.likes || 0}
+        </span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function renderDraf() {
+  const drafts = (await DataLayer.getDrafts()).slice(0, 5);
+  if (!drafts.length) {
+    document.getElementById('drafList').innerHTML = '<div style="color:var(--text3);font-size:.85rem;padding:.5rem 0">Belum ada draf yang dikumpulkan.</div>';
+    return;
+  }
+  document.getElementById('drafList').innerHTML = drafts.map(d => {
+    const statusMap = { reviewed: { cls:'ds-reviewed', ket:'Reviewed' }, revision: { cls:'ds-revise', ket:'Perlu Revisi' }, submitted: { cls:'ds-pending', ket:'Menunggu' } };
+    const { cls, ket } = statusMap[d.status] || { cls:'ds-pending', ket:'Menunggu' };
+    const tgl = d.submittedAt ? new Date(d.submittedAt).toLocaleDateString('id-ID', {day:'2-digit',month:'short',year:'numeric'}) : '—';
+    return `<div class="draf-card">
+      <div class="draf-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <div class="draf-body">
+        <div class="draf-title">${escHtml(d.title)}</div>
+        <div class="draf-meta">${escHtml(d.moduleName || '')} · Dikumpulkan ${escHtml(tgl)}</div>
+      </div>
+      <span class="draf-status ${cls}">${ket}</span>
+    </div>`;
+  }).join('');
+}
+
+async function renderProgress() {
+  const allProgress = await DataLayer.getAllProgress();
+  const modules = await DataLayer.getModules();
+  const progData = modules.map(m => {
+    const p = allProgress[m.path];
+    const pct = p ? (p.pct || 0) : (m.pct || 0);
+    const status = m.status === 'locked' ? 'locked'
+      : pct >= 100 ? 'completed'
+      : pct > 0 ? 'in_progress'
+      : m.status;
+    return {
+      label: `${m.no ?? m.id}. ${m.title}`,
+      pct,
+      color: status === 'completed' ? 'var(--sage)' : status === 'in_progress' ? 'var(--terra)' : 'var(--line)',
+    };
+  });
+  document.getElementById('progBreakdown').innerHTML = progData.map(p => `
+    <div class="pb-row">
+      <div class="pb-name">${p.label}</div>
+      <div class="pb-bar-bg"><div class="pb-bar-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
+      <div class="pb-pct">${p.pct}%</div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════
+function showPage(name) {
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  // Show target page
+  const pg = document.getElementById('page-' + name);
+  if (pg) pg.classList.add('active');
+  // Update nav active state
+  updateNavActive(name);
+  // Show/hide hero
+  const hero = document.getElementById('heroSection');
+  if (hero) {
+    if (name === 'dashboard') {
+      hero.classList.add('visible');
+    } else {
+      hero.classList.remove('visible');
+    }
+  }
+  // Scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNavActive(page) {
+  document.querySelectorAll('.nav-item[data-page]').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === page);
+  });
+}
+
+// Initialize hero visibility
+(function() {
+  const hero = document.getElementById('heroSection');
+  if (hero) hero.classList.add('visible');
+})();
+
+// ══════════════════════════════════════
+// MOBILE DRAWER
+// ══════════════════════════════════════
+function openDrawer() {
+  document.getElementById('navDrawer').classList.add('open');
+  document.getElementById('navDrawerOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDrawer() {
+  document.getElementById('navDrawer').classList.remove('open');
+  document.getElementById('navDrawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// Keyboard: close drawer on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeDrawer();
+});
+
+// ══════════════════════════════════════
+// AVATAR DROPDOWN
+// ══════════════════════════════════════
+function toggleDropdown() {
+  document.getElementById('avatarDropdown').classList.toggle('open');
+}
+function closeDropdown() {
+  document.getElementById('avatarDropdown').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.avatar-wrap')) closeDropdown();
+});
+
+// ══════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════
+async function doLogout() {
+  try { if (typeof sb !== 'undefined') await sb.auth.signOut(); } catch(e) {}
+  window.location.href = 'index.html';
+}
+
+async function saveProfil() {
+  const name = document.getElementById('setName').value.trim();
+  const nim  = document.getElementById('setNim').value.trim();
+  if (!name) return;
+  try {
+    await DataLayer.updateProfile({ name, full_name: name, nim, nim_nidn: nim });
+    if (typeof sb !== 'undefined' && profile) {
+      try {
+        await sb.from('profiles').upsert({ id: profile.id, full_name: name, nim_nidn: nim });
+      } catch(e) {}
+    }
+    document.getElementById('greetName').textContent = name.split(' ')[0];
+    document.getElementById('ddName').textContent = name;
+    alert('Profil berhasil disimpan!');
+  } catch(e) {
+    console.error('saveProfil gagal:', e);
+    alert('Gagal menyimpan profil. Coba lagi.');
+  }
+}
+
+// ══════════════════════════════════════
+// NOTIFIKASI BELL
+// ══════════════════════════════════════
+function timeAgo(iso) {
+  try {
+    const diff = Date.now() - new Date(iso).getTime();
+    const m = Math.floor(diff/60000), h = Math.floor(m/60), d = Math.floor(h/24);
+    if (diff < 60000) return 'baru saja';
+    if (m < 60) return m + ' menit lalu';
+    if (h < 24) return h + ' jam lalu';
+    return new Date(iso).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+  } catch(e) { return ''; }
+}
+
+async function loadNotifications() {
+  try {
+    const notifs = await DataLayer.getNotifications();
+    const unread = notifs.filter(n => !n.read).length;
+    const badge  = document.getElementById('notifBadge');
+    if (badge) {
+      badge.textContent = unread > 9 ? '9+' : String(unread);
+      badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    const list = document.getElementById('notifList');
+    if (!list) return;
+    const icons = { modul:'📚', kuis:'📝', forum:'💬', draf:'📄', progres:'🏆', sistem:'ℹ️' };
+    list.innerHTML = notifs.length
+      ? notifs.map(n => `
+          <div class="notif-item${n.read?'':' unread'}" data-id="${escHtml(n.id)}">
+            <div class="notif-icon">${icons[n.type]||'🔔'}</div>
+            <div class="notif-body">
+              <div class="notif-title">${escHtml(n.title)}</div>
+              <div class="notif-text">${escHtml(n.body)}</div>
+              <div class="notif-time">${escHtml(timeAgo(n.createdAt))}</div>
+            </div>
+          </div>`).join('')
+      : '<div class="notif-empty">Tidak ada notifikasi</div>';
+
+    list.querySelectorAll('.notif-item').forEach(el => {
+      el.addEventListener('click', async () => {
+        await DataLayer.markNotificationRead(el.dataset.id);
+        el.classList.remove('unread');
+        await loadNotifications();
+      });
+    });
+  } catch(e) {}
+}
+
+function toggleNotif(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('notifDropdown');
+  if (!dd) return;
+  dd.classList.toggle('open');
+  if (dd.classList.contains('open')) loadNotifications();
+}
+
+async function markAllRead() {
+  try {
+    await DataLayer.markAllRead();
+    await loadNotifications();
+  } catch(e) {}
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.notif-wrapper')) {
+    const dd = document.getElementById('notifDropdown');
+    if (dd) dd.classList.remove('open');
+  }
+});
+
+// Load notifikasi saat init
+loadNotifications();
+
+// ══════════════════════════════════════
+// ONBOARDING (MHS) — sfp_onboarded_v1
+// ══════════════════════════════════════
+(function initOnboarding() {
+  const FLAG = 'sfp_onboarded_v1';
+  const overlay = document.getElementById('obOverlay');
+  if (!overlay) return;
+  if (!localStorage.getItem(FLAG)) overlay.classList.add('show');
+  let cur = 1;
+  const TOTAL = 3;
+  function go(n) {
+    if (n < 1 || n > TOTAL) return;
+    document.querySelectorAll('.ob-step').forEach(el => el.classList.remove('ob-active'));
+    const el = document.getElementById('ob-step-' + n);
+    if (el) el.classList.add('ob-active');
+    document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+      d.classList.toggle('ob-dot-active', parseInt(d.dataset.step) === n);
+    });
+    cur = n;
+  }
+  function close(goVark) {
+    localStorage.setItem(FLAG, '1');
+    overlay.classList.remove('show');
+    if (goVark) {
+      if (typeof DataLayer !== 'undefined') {
+        DataLayer.getVarkResult().then(function(r) {
+          if (!r) window.location.href = 'vark.html';
+        }).catch(function(){});
+      } else {
+        window.location.href = 'vark.html';
+      }
+    }
+  }
+  document.getElementById('obSkip')?.addEventListener('click', () => close(false));
+  document.getElementById('ob-next-1')?.addEventListener('click', () => go(2));
+  document.getElementById('ob-back-2')?.addEventListener('click', () => go(1));
+  document.getElementById('ob-next-2')?.addEventListener('click', () => go(3));
+  document.getElementById('ob-back-3')?.addEventListener('click', () => go(2));
+  document.getElementById('ob-finish')?.addEventListener('click', () => close(true));
+  document.querySelectorAll('#obDots .ob-dot').forEach(d => {
+    d.addEventListener('click', () => go(parseInt(d.dataset.step)));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('show')) close(false);
+  });
+})();
+
+function showOnboardingGuide() {
+  const overlay = document.getElementById('obOverlay');
+  if (!overlay) return;
+  document.querySelectorAll('.ob-step').forEach(el => el.classList.remove('ob-active'));
+  const first = document.getElementById('ob-step-1');
+  if (first) first.classList.add('ob-active');
+}
+</script>
+
+<!-- ── LOGOUT MODAL ── -->
+<div id="logoutModal" class="logout-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="lmTitle">
+  <div class="logout-modal-box">
+    <h3 id="lmTitle">Keluar dari SMART-FLIP?</h3>
+    <p>Progres belajar kamu tersimpan otomatis.</p>
+    <div class="logout-modal-actions">
+      <button class="logout-btn-cancel" onclick="closeLogoutModal()">Batal</button>
+      <button class="logout-btn-confirm" onclick="confirmLogout()">Ya, Keluar</button>
+    </div>
+  </div>
+</div>
+<script>
+// ── LOGOUT MODAL HELPERS ──
+function openLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeLogoutModal() {
+  const m = document.getElementById('logoutModal');
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+async function confirmLogout() { closeLogoutModal(); await doLogout(); }
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLogoutModal(); });
+(function() {
+  const m = document.getElementById('logoutModal');
+  if (m) m.addEventListener('click', function(e) { if (e.target === m) closeLogoutModal(); });
+})();
+</script>
+</html>
