@@ -9,14 +9,20 @@
 // WHY THIS HAS TO BE A SERVER-SIDE FUNCTION (not client code):
 // Creating a Supabase Auth user for someone else (bulk mahasiswa import) is
 // only possible via the Admin API (`auth.admin.createUser`), which requires
-// the `service_role` key. That key must NEVER reach the browser — anyone
-// could pull it out of DevTools and get full, RLS-bypassing access to the
-// whole database. So this runs here instead, where the key only ever lives
-// in an env var Deno.env.get() reads at request time.
+// service-role-equivalent privileges. That credential must NEVER reach the
+// browser — anyone could pull it out of DevTools and get full,
+// RLS-bypassing access to the whole database. So this runs here instead.
 //
-// SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY are injected
-// automatically by the Supabase Edge Function runtime — they do NOT need to
-// be set manually via `supabase secrets set`.
+// SUPABASE_URL / SUPABASE_ANON_KEY are injected automatically. The
+// service-role credential is NOT auto-injected as a working one here: this
+// project's auto-injected SUPABASE_SERVICE_ROLE_KEY is the NEW
+// `sb_secret_...` key format, which Auth's Admin API rejects with
+// "invalid JWT ... unrecognized JWT kid" (confirmed live, 2026-07-24) even
+// though it works fine for plain PostgREST table queries. Fix: a manually
+// set secret `LEGACY_SERVICE_ROLE_KEY` holding the classic long-form
+// service_role JWT (Project Settings -> API Keys -> "Legacy anon,
+// service_role API keys" tab) -- set via Dashboard -> Edge Functions ->
+// Secrets, read below via Deno.env.get('LEGACY_SERVICE_ROLE_KEY').
 //
 // Called from the frontend via src/lib/kelas.ts's importMahasiswaCSV(),
 // which does `supabase.functions.invoke('import-mahasiswa', { body: {...} })`
@@ -109,11 +115,16 @@ Deno.serve(async (req: Request) => {
 
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL')
   const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')
-  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
-    // Should never happen on Supabase's own Edge Function runtime (these
-    // three are auto-injected) -- guards against a local `supabase functions
-    // serve` misconfiguration during manual testing.
+  // NOT the auto-injected SUPABASE_SERVICE_ROLE_KEY -- on this project that
+  // env var resolves to the NEW `sb_secret_...` key format, which works fine
+  // for plain PostgREST queries (profiles/classes) but fails Auth's Admin
+  // API specifically: `auth.admin.createUser()` throws "invalid JWT ...
+  // unrecognized JWT kid" against it (confirmed live, 2026-07-24). The
+  // Admin API still expects the classic long-form service_role JWT, so this
+  // reads a manually-set secret holding that legacy key instead (Project
+  // Settings -> API Keys -> "Legacy anon, service_role API keys" tab).
+  const LEGACY_SERVICE_ROLE_KEY = Deno.env.get('LEGACY_SERVICE_ROLE_KEY')
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !LEGACY_SERVICE_ROLE_KEY) {
     return jsonResponse({ error: 'Konfigurasi server tidak lengkap.' }, 500)
   }
 
@@ -141,7 +152,7 @@ Deno.serve(async (req: Request) => {
     // ── 2. ONE admin client, service_role key, used for every privileged
     //    operation from here on (role check, ownership check, createUser,
     //    profiles.class_id update). Never logged, never returned. ──
-    const adminClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    const adminClient = createClient(SUPABASE_URL, LEGACY_SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
     })
 
@@ -224,12 +235,16 @@ Deno.serve(async (req: Request) => {
         },
       })
       if (createErr || !created?.user) {
+        // TEMPORARY DEBUG (2026-07-24) -- createErr.message alone was
+        // showing up empty ("{}") in production; surface every field the
+        // AuthError-like object might carry to find out why.
+        const e = createErr as unknown as { message?: string; status?: number; name?: string; code?: string } | null
         results.push({
           nama,
           nim,
           email,
           status: 'error',
-          error: createErr?.message ?? 'Gagal membuat akun (tidak diketahui sebabnya).',
+          error: `DEBUG name=${e?.name ?? '?'} status=${e?.status ?? '?'} code=${e?.code ?? '?'} message=${e?.message ?? '?'} raw=${JSON.stringify(createErr)}`,
         })
         continue
       }
