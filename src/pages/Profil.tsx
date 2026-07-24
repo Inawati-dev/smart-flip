@@ -339,9 +339,15 @@ export function Profil() {
             {initialsOf(nama)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-display text-xl font-bold text-brown mb-1">{nama}</div>
-            <div className="text-sm text-brown-3 leading-relaxed">{isDosen ? 'NIDN' : 'NIM'}: {nimNidn || '—'}</div>
-            <div className="text-sm text-brown-3 mb-3 leading-relaxed">{email || '—'}</div>
+            <div className="font-display text-xl font-bold text-brown mb-1.5">{nama}</div>
+            {/* Satu baris meta, bukan dua -- field yang belum diisi (mis. NIDN
+                kosong) disembunyikan sepenuhnya, bukan tampil sebagai "—"
+                yang kesannya belum selesai/rusak. */}
+            <div className="text-sm text-brown-3 mb-3 leading-relaxed truncate">
+              {nimNidn && <span>{isDosen ? 'NIDN' : 'NIM'} {nimNidn}</span>}
+              {nimNidn && email && <span className="mx-1.5 opacity-40">·</span>}
+              {email && <span>{email}</span>}
+            </div>
             <div className="flex items-center gap-2.5 flex-wrap">
               <span
                 className="inline-flex items-center gap-1 min-h-11 px-3.5 rounded-full text-xs font-semibold"
