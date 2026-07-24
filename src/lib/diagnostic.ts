@@ -164,6 +164,16 @@ export async function saveJalur(jalur: Jalur): Promise<void> {
   localStorage.setItem(JALUR_KEY, jalur)
 }
 
+// Dosen-only: lets a mahasiswa retake the diagnostic by clearing their jalur.
+// Goes through the reset_mahasiswa_jalur RPC (migration_v8_reset_jalur.sql)
+// instead of a plain client-side UPDATE, because schema.sql's "user update
+// own profile" RLS policy only allows auth.uid() = id — a dosen updating
+// someone else's row would silently match zero rows.
+export async function resetJalur(mahasiswaId: string): Promise<void> {
+  const { error } = await supabase.rpc('reset_mahasiswa_jalur', { target_id: mahasiswaId })
+  if (error) throw error
+}
+
 // Demo-mode-only read, used by the AuthContext-free demo path — real mode
 // reads jalur straight off `profile.jalur` via AuthContext instead.
 export function readDemoJalur(): Jalur | null {

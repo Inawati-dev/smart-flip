@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
-import { IconDownload, IconStar, IconTrendingUp, IconChart, IconWarning, IconBell, IconCheck } from '../components/icons'
+import { IconDownload, IconStar, IconTrendingUp, IconChart, IconWarning, IconBell, IconCheck, IconRefresh } from '../components/icons'
 import { useModules } from '../hooks/useModules'
 import { useStudentStats, useModulDistributionStats, useFeedbackAspectAvg } from '../hooks/useAnalitik'
 import { TOTAL_MODULES } from '../lib/progress'
+import { resetJalur } from '../lib/diagnostic'
 import {
   DUMMY_STUDENTS,
   DUMMY_MODUL_DIST,
@@ -18,6 +20,8 @@ import {
   type SortKey,
   type StudentStatus,
 } from '../lib/analitik'
+
+const JALUR_LABEL: Record<string, string> = { cepat: 'Jalur Cepat', mendalam: 'Jalur Mendalam' }
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -54,6 +58,7 @@ const STATUS_BADGE: Record<StudentStatus, { bg: string; color: string; label: st
 }
 
 export function Analitik() {
+  const queryClient = useQueryClient()
   const { data: modules = [] } = useModules()
   const { data: rawStudents } = useStudentStats()
   const { data: rawModulDist } = useModulDistributionStats()
@@ -61,11 +66,15 @@ export function Analitik() {
 
   const [tab, setTab] = useState<'progress' | 'distribusi' | 'perhatian'>('progress')
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('semua')
+  const [filterKelas, setFilterKelas] = useState<string>('semua')
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
   const [sortAsc, setSortAsc] = useState(true)
   const [remindedIds, setRemindedIds] = useState<Set<string | number>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
   const [exportConfirmOpen, setExportConfirmOpen] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string | number>>(new Set())
+  const [resetTarget, setResetTarget] = useState<{ ids: Array<string | number>; label: string } | null>(null)
+  const [resetting, setResetting] = useState(false)
 
   function showToast(msg: string) {
     setToast(msg)
@@ -85,14 +94,69 @@ export function Analitik() {
   const inactiveStudents = useMemo(() => computeInactiveStudents(students), [students])
   const maxKuisCount = Math.max(...kuisDist.map((k) => k.count), 1)
 
+  const kelasOptions = useMemo(
+    () => Array.from(new Set(students.map((s) => s.kelas).filter((k): k is string => Boolean(k)))).sort(),
+    [students],
+  )
+
   const filtered = useMemo(
-    () => (filterStatus === 'semua' ? students : students.filter((s) => s.status === filterStatus)),
-    [students, filterStatus],
+    () =>
+      students
+        .filter((s) => filterStatus === 'semua' || s.status === filterStatus)
+        .filter((s) => filterKelas === 'semua' || s.kelas === filterKelas),
+    [students, filterStatus, filterKelas],
   )
   const displayed = useMemo(
     () => (sortKey ? sortStudents(filtered, sortKey, sortAsc) : filtered),
     [filtered, sortKey, sortAsc],
   )
+
+  const allDisplayedSelected = displayed.length > 0 && displayed.every((s) => selectedIds.has(s.id))
+
+  function toggleSelectAll() {
+    setSelectedIds((prev) => {
+      if (allDisplayedSelected) return new Set()
+      const next = new Set(prev)
+      displayed.forEach((s) => next.add(s.id))
+      return next
+    })
+  }
+
+  function toggleSelect(id: string | number) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function openResetConfirm(ids: Array<string | number>, label: string) {
+    setResetTarget({ ids, label })
+  }
+
+  async function confirmReset() {
+    if (!resetTarget) return
+    setResetting(true)
+    try {
+      const results = await Promise.allSettled(resetTarget.ids.map((id) => resetJalur(String(id))))
+      const failed = results.filter((r) => r.status === 'rejected').length
+      await queryClient.invalidateQueries({ queryKey: ['analitik', 'studentStats'] })
+      setSelectedIds((prev) => {
+        const next = new Set(prev)
+        resetTarget.ids.forEach((id) => next.delete(id))
+        return next
+      })
+      showToast(
+        failed === 0
+          ? `Jalur ${resetTarget.ids.length > 1 ? `${resetTarget.ids.length} mahasiswa` : 'mahasiswa'} berhasil direset`
+          : `${resetTarget.ids.length - failed} berhasil, ${failed} gagal direset`,
+      )
+    } finally {
+      setResetting(false)
+      setResetTarget(null)
+    }
+  }
 
   function handleSort(key: SortKey) {
     if (sortKey === key) setSortAsc((prev) => !prev)
@@ -171,6 +235,16 @@ export function Analitik() {
               <div className="text-xs text-brown-3">Klik header kolom untuk mengurutkan</div>
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
+              {kelasOptions.length > 0 && (
+                <Select
+                  value={filterKelas}
+                  onChange={(v) => setFilterKelas(v)}
+                  aria-label="Filter kelas"
+                  className="h-9 md:h-9 px-3 rounded-lg border text-sm text-brown outline-none cursor-pointer"
+                  style={{ ...BORDER, background: 'var(--bg3)', minHeight: 44 }}
+                  options={[{ value: 'semua', label: 'Semua Kelas' }, ...kelasOptions.map((k) => ({ value: k, label: k }))]}
+                />
+              )}
               <Select
                 value={filterStatus}
                 onChange={(v) => setFilterStatus(v as FilterStatus)}
@@ -192,10 +266,44 @@ export function Analitik() {
               </button>
             </div>
           </div>
+
+          {selectedIds.size > 0 && (
+            <div
+              className="flex items-center gap-3 px-4 md:px-5 py-2.5 border-b flex-wrap"
+              style={{ ...BORDER, background: 'rgba(212,163,115,.08)' }}
+            >
+              <span className="text-xs font-semibold text-brown-2">{selectedIds.size} mahasiswa dipilih</span>
+              <button
+                onClick={() =>
+                  openResetConfirm(
+                    Array.from(selectedIds),
+                    `${selectedIds.size} mahasiswa terpilih`,
+                  )
+                }
+                className="h-9 px-3 rounded-lg text-xs font-semibold inline-flex items-center gap-1.5"
+                style={{ background: 'var(--terra)', color: '#fff' }}
+              >
+                <IconRefresh size={13} /> Reset Jalur Terpilih
+              </button>
+              <button onClick={() => setSelectedIds(new Set())} className="text-xs text-brown-3 underline">
+                Batal pilih
+              </button>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-bg3">
+                  <th className="px-3.5 py-2.5 w-9">
+                    <input
+                      type="checkbox"
+                      aria-label="Pilih semua"
+                      checked={allDisplayedSelected}
+                      onChange={toggleSelectAll}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                  </th>
                   {COLUMNS.map((col) => {
                     const active = sortKey === col.key
                     return (
@@ -213,12 +321,14 @@ export function Analitik() {
                       </th>
                     )
                   })}
+                  <th className="px-3.5 py-2.5 text-xs font-semibold text-brown-3 whitespace-nowrap text-center">Jalur</th>
+                  <th className="px-3.5 py-2.5 text-xs font-semibold text-brown-3 whitespace-nowrap text-center">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {displayed.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center text-brown-3 py-8 text-sm">
+                    <td colSpan={10} className="text-center text-brown-3 py-8 text-sm">
                       Tidak ada data untuk filter ini.
                     </td>
                   </tr>
@@ -231,6 +341,15 @@ export function Analitik() {
                         className="border-t"
                         style={{ ...BORDER, background: s.status === 'tidak' ? 'rgba(212,163,115,.07)' : undefined }}
                       >
+                        <td className="px-3.5 py-2.5 text-center">
+                          <input
+                            type="checkbox"
+                            aria-label={`Pilih ${s.nama}`}
+                            checked={selectedIds.has(s.id)}
+                            onChange={() => toggleSelect(s.id)}
+                            className="w-4 h-4 cursor-pointer"
+                          />
+                        </td>
                         <td className="px-3.5 py-2.5 text-center text-xs text-brown-3">{i + 1}</td>
                         <td className="px-3.5 py-2.5 font-medium text-brown">{s.nama}</td>
                         <td className="px-3.5 py-2.5 text-center text-brown-2">{s.modul}/{totalModules}</td>
@@ -250,6 +369,24 @@ export function Analitik() {
                           >
                             {badge.label}
                           </span>
+                        </td>
+                        <td className="px-3.5 py-2.5 text-center">
+                          {s.jalur ? (
+                            <span className="text-xs text-brown-2 whitespace-nowrap">{JALUR_LABEL[s.jalur] ?? s.jalur}</span>
+                          ) : (
+                            <span className="text-brown-3 text-xs">—</span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-2.5 text-center">
+                          <button
+                            onClick={() => openResetConfirm([s.id], s.nama)}
+                            disabled={!s.jalur}
+                            title={s.jalur ? 'Reset jalur diagnostik' : 'Belum mengerjakan diagnostik'}
+                            className="h-9 px-2.5 rounded-md border text-[11px] font-semibold whitespace-nowrap disabled:opacity-40 inline-flex items-center gap-1"
+                            style={BORDER}
+                          >
+                            <IconRefresh size={12} /> Reset
+                          </button>
                         </td>
                       </tr>
                     )
@@ -428,6 +565,43 @@ export function Analitik() {
                 className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1.5"
               >
                 <IconDownload size={15} /> Unduh
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {resetTarget && (
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+          style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !resetting) setResetTarget(null)
+          }}
+        >
+          <div
+            className="rounded-2xl p-7 max-w-sm w-full text-center"
+            style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
+          >
+            <h3 className="font-display text-lg font-bold text-brown mb-2">Reset Jalur Diagnostik?</h3>
+            <p className="text-sm text-brown-2 mb-6 opacity-80">
+              {resetTarget.label} akan bisa mengerjakan ulang tes diagnostik dari awal saat login berikutnya.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setResetTarget(null)}
+                disabled={resetting}
+                className="flex-1 min-h-11 rounded-lg font-medium text-sm cursor-pointer disabled:opacity-50"
+                style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => void confirmReset()}
+                disabled={resetting}
+                className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                <IconRefresh size={15} /> {resetting ? 'Mereset…' : 'Ya, Reset'}
               </button>
             </div>
           </div>
