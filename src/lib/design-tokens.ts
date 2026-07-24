@@ -24,6 +24,13 @@ export const designTokens = {
   redBorder: 'rgba(192,64,32,.3)',
 } as const
 
+// Tailwind v4's @theme block (src/index.css) exposes each color a second
+// time under a `--color-*` name (that's what utilities like `bg-cream` /
+// `text-brown` actually resolve through) — plain inline styles elsewhere in
+// the app use the un-prefixed name (`var(--brown)`) directly. Two names,
+// same values; both need to move together for a runtime theme switch
+// (src/lib/theme.ts) to repaint the whole app, not just the half of it
+// written as inline styles.
 const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
   cream: '--cream',
   ivory: '--ivory',
@@ -50,9 +57,35 @@ const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
   redBorder: '--red-border',
 }
 
-export function injectDesignTokens(): void {
+// Only the color-ish keys have a `--color-*` Tailwind counterpart worth
+// mirroring — shadows/radii aren't referenced via Tailwind's @theme utilities.
+const TAILWIND_COLOR_KEYS: ReadonlyArray<keyof typeof designTokens> = [
+  'cream', 'ivory', 'bg3', 'sage', 'sageD', 'terra', 'terraD',
+  'brown', 'brown2', 'brown3', 'border', 'red',
+]
+const TAILWIND_VAR_NAME: Partial<Record<keyof typeof designTokens, string>> = {
+  cream: '--color-cream',
+  ivory: '--color-ivory',
+  bg3: '--color-bg3',
+  sage: '--color-sage',
+  sageD: '--color-sage-d',
+  terra: '--color-terra',
+  terraD: '--color-terra-d',
+  brown: '--color-brown',
+  brown2: '--color-brown-2',
+  brown3: '--color-brown-3',
+  border: '--color-border',
+  red: '--color-red',
+}
+
+export function injectDesignTokens(overrides?: Partial<Record<keyof typeof designTokens, string>>): void {
   const root = document.documentElement
-  for (const key of Object.keys(designTokens) as Array<keyof typeof designTokens>) {
-    root.style.setProperty(CSS_VAR_NAME[key], designTokens[key])
+  const merged = { ...designTokens, ...overrides }
+  for (const key of Object.keys(merged) as Array<keyof typeof designTokens>) {
+    root.style.setProperty(CSS_VAR_NAME[key], merged[key])
+    const tailwindVar = TAILWIND_VAR_NAME[key]
+    if (tailwindVar && TAILWIND_COLOR_KEYS.includes(key)) {
+      root.style.setProperty(tailwindVar, merged[key])
+    }
   }
 }

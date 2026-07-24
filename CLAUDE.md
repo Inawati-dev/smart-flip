@@ -2,8 +2,8 @@
 
 ## Overview
 Perpustakaan Digital / Flipbook Reader untuk penelitian dana internal UM 2026.
-Live (legacy, GitHub Pages): https://inawati-dev.github.io/smart-flip
-Stack aktif (sejak v1.0.0): React 19 + Vite + TypeScript + Tailwind v4 + Supabase (PostgreSQL + Auth), target deploy Vercel (belum live — CLI login butuh aksi user)
+Live: https://smart-filp.vercel.app — Vercel, Production Branch = `main`, auto-deploy tiap push (GitHub Pages/legacy sudah di-retire, lihat backup di branch `legacy/main-vanilla-html`).
+Stack aktif (sejak v1.0.0): React 19 + Vite + TypeScript + Tailwind v4 + Supabase (PostgreSQL + Auth)
 
 **Strangler-fig migration**: aplikasi React (`src/`) adalah sumber kebenaran sekarang — semua 18 route live 100% React Router, nol dead-end ke halaman lama. `legacy/*.html` (daftar Key Files di bawah) dipertahankan sebagai file statis fallback, TIDAK ada navigasi live yang menunjuk ke sana lagi. Struktur React: `src/pages/*.tsx` (1 file per route), `src/components/` (Layout, LogoutModal, AuthShell), `src/lib/*.ts` (data layer dual-mode: Supabase kalau `isSupabaseConfigured`, fallback localStorage `sfp_*`), `src/lib/design-tokens.ts` + `src/index.css` (dua mekanisme token CSS yang harus disinkron manual).
 
