@@ -63,6 +63,7 @@ export function Analitik() {
   const [sortAsc, setSortAsc] = useState(true)
   const [remindedIds, setRemindedIds] = useState<Set<string | number>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
+  const [exportConfirmOpen, setExportConfirmOpen] = useState(false)
 
   function showToast(msg: string) {
     setToast(msg)
@@ -99,10 +100,11 @@ export function Analitik() {
     }
   }
 
-  function handleExport() {
+  function confirmExport() {
     const csv = buildAnalitikCsv(students)
     const filename = 'analitik-kelas-' + new Date().toISOString().slice(0, 10) + '.csv'
     downloadCsv(filename, csv)
+    setExportConfirmOpen(false)
     showToast('File CSV berhasil diunduh')
   }
 
@@ -158,7 +160,7 @@ export function Analitik() {
                 <option value="tidak">Tidak Aktif</option>
               </select>
               <button
-                onClick={handleExport}
+                onClick={() => setExportConfirmOpen(true)}
                 className="h-9 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 flex items-center gap-1.5"
                 style={{ ...BORDER, minHeight: 44 }}
               >
@@ -374,6 +376,41 @@ export function Analitik() {
           style={{ background: 'var(--brown)', color: 'var(--terra)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
         >
           {toast}
+        </div>
+      )}
+
+      {exportConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+          style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setExportConfirmOpen(false)
+          }}
+        >
+          <div
+            className="rounded-2xl p-7 max-w-sm w-full text-center"
+            style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
+          >
+            <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-2">Unduh CSV?</h3>
+            <p className="text-sm text-brown-2 mb-6 opacity-80">
+              File berisi data progress {displayed.length} mahasiswa akan diunduh ke perangkatmu.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setExportConfirmOpen(false)}
+                className="flex-1 min-h-11 rounded-lg font-medium text-sm cursor-pointer"
+                style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmExport}
+                className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1.5"
+              >
+                <IconDownload size={15} /> Unduh
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </Layout>
