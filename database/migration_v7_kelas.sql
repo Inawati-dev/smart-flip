@@ -32,6 +32,17 @@ CREATE TABLE IF NOT EXISTS classes (
 );
 ALTER TABLE classes ENABLE ROW LEVEL SECURITY;
 
+-- RLS policies below only control WHICH ROWS a role may touch -- Postgres
+-- checks table-level GRANTs FIRST, before RLS ever evaluates. schema.sql's
+-- original tables all got this grant implicitly when created through the
+-- Supabase dashboard; a table created via raw SQL (like this one) does NOT
+-- get it automatically. Without this line, every authenticated request
+-- against `classes` fails with "permission denied for table classes"
+-- (Postgres code 42501) regardless of how correct the RLS policies are --
+-- confirmed live in production (2026-07-24): dosen could not create or see
+-- any kelas until this GRANT was run.
+GRANT SELECT, INSERT, UPDATE, DELETE ON classes TO authenticated;
+
 -- ── profiles gains a nullable class_id (a mahasiswa without one just isn't
 --    assigned to a kelas yet — nothing else in the app currently requires it) ──
 -- ON DELETE SET NULL (not CASCADE): deleting a kelas must never delete the
