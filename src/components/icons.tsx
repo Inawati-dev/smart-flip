@@ -28,10 +28,17 @@ export function IconHome({ size = 18, ...p }: IconProps) {
 }
 
 export function IconBook({ size = 18, ...p }: IconProps) {
+  // Two-lobed open-book silhouette read as a butterfly at small sizes with
+  // stroke-only outlines and no spine — filled lobes (uneven opacity, like
+  // a shadowed left page vs. a lit right page) plus an explicit spine/gutter
+  // pair down the middle disambiguates it.
   return (
     <svg {...base(size, p)}>
+      <path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" fill="currentColor" fillOpacity="0.18" />
+      <path d="M20 5.5C20 4.7 19.3 4 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z" fill="currentColor" fillOpacity="0.32" />
       <path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
       <path d="M20 5.5C20 4.7 19.3 4 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z" />
+      <path d="M12 4.6v14.8" />
     </svg>
   )
 }
