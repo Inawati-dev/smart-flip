@@ -394,7 +394,7 @@ export function Ebook() {
                   className="min-h-11 px-3 rounded-full text-xs font-semibold whitespace-nowrap"
                   style={
                     readerStyleState === opt.key
-                      ? { background: 'var(--brown)', color: 'var(--terra)' }
+                      ? { background: 'var(--brown)', color: 'var(--btn-text)' }
                       : { color: 'var(--brown-3)' }
                   }
                 >
