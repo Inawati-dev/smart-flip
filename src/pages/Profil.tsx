@@ -9,6 +9,7 @@ import { useVarkResult } from '../hooks/useVarkResult'
 import { useProfilExtra } from '../hooks/useProfil'
 import { saveProfilExtra } from '../lib/profil'
 import { resetOnboarding } from '../lib/onboarding'
+import { printLaporanPdf } from '../lib/reportPdf'
 import { TOTAL_MODULES } from '../lib/progress'
 import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
@@ -294,6 +295,29 @@ export function Profil() {
   // ── Dosen stats (ported from legacy/profil-dos.html renderStats) ──
   const modulAktif = modules.filter((m) => m.is_active).length || totalModules
 
+  function handleDownloadLaporan() {
+    printLaporanPdf({
+      nama,
+      nimNidn,
+      email,
+      prodi,
+      angkatan,
+      totalModules,
+      modulSelesai,
+      waktuBelajar: formatWaktu(totalSec),
+      totalKuis,
+      avgScore,
+      bestScore,
+      bestModTitle: bestMod ? `Modul ${bestMod}` : '',
+      varkDominant: vark?.dominant ? VARK_LABELS[vark.dominant] || vark.dominant : null,
+      recentQuiz: recentQuiz.map((r) => ({
+        moduleTitle: `Modul ${r.moduleId}`,
+        score: r.score,
+        completedAt: r.completedAt,
+      })),
+    })
+  }
+
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
@@ -535,7 +559,7 @@ export function Profil() {
             </span>
             {!isDosen && (
               <button
-                onClick={() => window.print()}
+                onClick={handleDownloadLaporan}
                 className="ml-auto min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-terra flex items-center gap-1.5"
                 style={{ borderColor: 'var(--terra)' }}
                 title="Unduh laporan sebagai PDF"
