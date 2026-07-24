@@ -120,7 +120,7 @@ export function Analitik() {
 
   return (
     <Layout>
-      <div className="page-fadein p-4 md:p-6 pb-16">
+      <div className="p-4 md:p-6 pb-16">
         <div className="mb-5">
           <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Analitik Kelas</h1>
           <p className="text-sm text-brown-3 mt-1">

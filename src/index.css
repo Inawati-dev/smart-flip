@@ -19,8 +19,48 @@
   --font-display: 'Playfair Display', ui-serif, serif;
 }
 
+html, body {
+  /* .page-fadein's translateX(24px) start state briefly pushes content past
+     the right edge during every page transition — without this, that flashes
+     a horizontal scrollbar in and out, which shrinks/restores the viewport
+     height and makes the fixed sidebar (and its Keluar button) visibly jump
+     ~19px for the animation's duration. */
+  overflow-x: hidden;
+}
+
 body {
   font-family: var(--font-sans);
+}
+
+/* Tactile button feel, app-wide — every native <button> gets a subtle hover
+   lift and a press-down on click, instead of a flat/instant state change.
+   Scoped to `button` (not `a`) so plain hyperlinks styled as text links
+   don't get a "lifted" look; button-styled CTAs (submit, modal actions,
+   table row actions, toggles) all pick this up automatically with zero
+   per-component work. Uses transform/filter — properties none of this
+   codebase's inline styles touch — so it composes cleanly even on buttons
+   that already set an inline box-shadow. */
+button:not(:disabled) {
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+button:not(:disabled):hover {
+  filter: brightness(1.045);
+  transform: translateY(-1px);
+}
+button:not(:disabled):active {
+  filter: brightness(0.97);
+  transform: translateY(0.5px) scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled) {
+    transition: none;
+  }
+  button:not(:disabled):hover,
+  button:not(:disabled):active {
+    filter: none;
+    transform: none;
+  }
 }
 
 /* Modal animation — kemampuan-web-dev.md §128/§129: durasi di atas ~200ms, jangan diulang per komponen modal */

@@ -19,7 +19,6 @@ import {
   IconLogout,
   IconMenu,
   IconX,
-  IconSidebar,
   IconGear,
   IconChevronRight,
 } from './icons'
@@ -171,12 +170,12 @@ export function Layout({ children }: { children: ReactNode }) {
         <Link
           to={item.to}
           className={`cursor-pointer transition-colors ${
-            collapsed ? 'w-11 h-11 rounded-xl flex items-center justify-center' : 'h-11 px-3 rounded-xl flex items-center gap-2.5 text-sm font-semibold'
+            collapsed ? 'w-10 h-10 rounded-xl flex items-center justify-center' : 'h-9 px-3 rounded-lg flex items-center gap-2.5 text-sm font-semibold'
           } ${active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'}`}
           aria-label={item.label}
           aria-current={active ? 'page' : undefined}
         >
-          <Icon size={19} />
+          <Icon size={17} />
           {!collapsed && <span className="truncate">{item.label}</span>}
         </Link>
         {collapsed && flyout === item.to && (
@@ -200,49 +199,51 @@ export function Layout({ children }: { children: ReactNode }) {
         }`}
         onMouseLeave={() => setFlyout(null)}
       >
-        <div className={`flex items-center mb-5 ${collapsed ? 'flex-col gap-2' : 'justify-between px-1'}`}>
-          <Link to="/dashboard" className="w-11 h-11 rounded-xl flex items-center justify-center text-brown flex-shrink-0" aria-label="Beranda">
-            <IconBook size={22} />
-          </Link>
-          {/* Always visible (both states) so there's always an obvious click target
-              to expand back out — not just discoverable from one state. */}
+        <div className={`flex items-center mb-3 ${collapsed ? 'justify-center' : 'px-1'}`}>
+          {/* Logo doubles as the collapse toggle — no separate icon button.
+              Dashboard is still one click away via the "Dashboard" nav item
+              in the Utama section below, so nothing is lost by repurposing
+              this instead of linking it. */}
           <button
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3 hover:text-brown hover:bg-[rgba(62,54,46,.05)] transition-colors"
+            className="cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-brown flex-shrink-0 hover:bg-[rgba(62,54,46,.06)] transition-colors"
           >
-            <IconSidebar size={16} />
+            <IconBook size={20} />
           </button>
         </div>
 
         {collapsed ? (
           // Ciut: flat icon rail, hover flyout carries the label — no room
           // for section headers at 72px, so sections collapse into one list.
-          <nav className="flex-1 flex flex-col gap-1 items-center w-full">
+          <nav className="flex-1 flex flex-col gap-0.5 items-center w-full overflow-y-auto">
             {items.map(renderNavItem)}
           </nav>
         ) : (
           // Expanded: section headers double as accordion triggers, matching
-          // SAKTI IconRailV2's expanded-mode grouping.
-          <nav className="flex-1 flex flex-col gap-1 overflow-y-auto">
+          // SAKTI IconRailV2's expanded-mode grouping. Tight vertical rhythm
+          // (36px rows, minimal gaps) so the full dosen list (5 sections/13
+          // items) fits without an internal scrollbar on a typical laptop
+          // viewport.
+          <nav className="flex-1 flex flex-col gap-0.5 overflow-y-auto">
             {sections.map((section) => {
               const open = openSections[section.key] ?? true
               return (
                 <div key={section.key}>
                   <button
                     onClick={() => toggleSection(section.key)}
-                    className="w-full flex items-center justify-between px-3 py-1 rounded-lg cursor-pointer text-[11px] font-bold uppercase tracking-wide text-brown-3 hover:bg-[rgba(62,54,46,.06)] hover:text-brown transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-0.5 rounded-lg cursor-pointer text-[10px] font-bold uppercase tracking-wide text-brown-3 hover:bg-[rgba(62,54,46,.06)] hover:text-brown transition-colors"
                     aria-expanded={open}
                   >
                     <span>{section.label}</span>
                     <IconChevronRight
-                      size={12}
+                      size={11}
                       style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}
                     />
                   </button>
                   {open && (
-                    <div className="flex flex-col gap-0.5 mt-0.5">
+                    <div className="flex flex-col gap-0.5">
                       {section.items.map(renderNavItem)}
                     </div>
                   )}
@@ -255,13 +256,13 @@ export function Layout({ children }: { children: ReactNode }) {
         <button
           onClick={() => setLogoutOpen(true)}
           onMouseEnter={() => collapsed && setFlyout('logout')}
-          className={
+          className={`cursor-pointer transition-colors hover:bg-[rgba(192,64,32,.08)] ${
             collapsed
-              ? 'relative w-11 h-11 rounded-xl flex items-center justify-center text-red'
-              : 'relative h-11 px-3 rounded-xl flex items-center gap-2.5 text-red text-sm font-semibold'
-          }
+              ? 'relative w-10 h-10 rounded-xl flex items-center justify-center text-red'
+              : 'relative h-9 px-3 rounded-lg flex items-center gap-2.5 text-red text-sm font-semibold'
+          }`}
         >
-          <IconLogout size={19} />
+          <IconLogout size={17} />
           {!collapsed && <span>Keluar</span>}
           {collapsed && flyout === 'logout' && (
             <div

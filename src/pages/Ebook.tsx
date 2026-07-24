@@ -241,7 +241,7 @@ export function Ebook() {
 
   return (
     <Layout>
-      <div className="page-fadein flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
+      <div className="flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
         <div className="w-full max-w-4xl flex items-center justify-between gap-3">
           <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="text-xs md:text-sm text-brown-3 hover:text-brown">
             ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
