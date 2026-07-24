@@ -1,0 +1,17 @@
+# Supabase CLI config for this project. `supabase init` had not been run in
+# this repo before Tahap 2 (import-mahasiswa Edge Function) — this file only
+# needs to exist and declare the function so `supabase functions deploy`
+# works; it intentionally does NOT configure local db/auth/storage emulation
+# since this project has never run `supabase start` locally.
+#
+# project_id must match the linked Supabase project ref (see the "supabase
+# link" step in the deploy instructions handed back to the user).
+project_id = "ldqouujkjfrgtgjnsmqm"
+
+[functions.import-mahasiswa]
+# Default (true): the Supabase platform gateway requires a valid JWT
+# (anon-key or a logged-in user's access token) in the Authorization header
+# before the request even reaches this function's code. That's on top of --
+# not instead of -- the function's own internal check that the JWT resolves
+# to an actual 'dosen' who owns the target kelas.
+verify_jwt = true

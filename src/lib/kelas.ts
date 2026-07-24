@@ -200,8 +200,112 @@ export function summarizeKelas(classes: KelasWithCount[]): KelasSummary {
   return { totalStudents, byAngkatan }
 }
 
-// TODO(tahap-2): bulk CSV import of mahasiswa directly into a kelas, and
-// auto-generated-password admin account creation, both need a Supabase Edge
-// Function + service_role key (creating auth.users rows client-side isn't
-// possible with the anon key). Intentionally not implemented here — see
-// database/migration_v7_kelas.sql's header comment.
+// ════════════════════════════════════════════
+//  Tahap 2 — import CSV mahasiswa + auto-generated password
+// ════════════════════════════════════════════
+// See supabase/functions/import-mahasiswa/index.ts for the server-side half
+// (Deno Edge Function, needs the service_role key -- can't run client-side).
+// This file only ever sends parsed+validated rows to that function and
+// relays its per-row results back; it never talks to auth.admin.* directly.
+
+export interface ImportRow {
+  nama: string
+  nim: string
+  email: string
+}
+
+export interface ImportResult {
+  nama: string
+  nim: string
+  email: string
+  status: 'berhasil' | 'kelas_penuh' | 'error'
+  password?: string
+  error?: string
+}
+
+// A row after client-side CSV parsing + validation, before it's (maybe)
+// sent to the Edge Function. Kept distinct from ImportRow so the UI can
+// render a full preview (including invalid rows, with a reason) without
+// conflating it with the wire format the Edge Function actually expects.
+export interface ParsedImportRow extends ImportRow {
+  line: number
+  valid: boolean
+  reason?: string
+}
+
+const SIMPLE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+// Splits one CSV line respecting double-quoted fields (so e.g. a name like
+// "Budi, S.Kom" with an embedded comma isn't split in half). Doesn't handle
+// escaped quotes-within-quotes or multi-line quoted fields -- this is the
+// "nama,nim,email sederhana" parser the product spec asks for, not a
+// general-purpose CSV library.
+function splitCsvLine(line: string): string[] {
+  const cells: string[] = []
+  let cur = ''
+  let inQuotes = false
+  for (const ch of line) {
+    if (ch === '"') {
+      inQuotes = !inQuotes
+    } else if (ch === ',' && !inQuotes) {
+      cells.push(cur)
+      cur = ''
+    } else {
+      cur += ch
+    }
+  }
+  cells.push(cur)
+  return cells.map((c) => c.trim())
+}
+
+// Parses a `nama,nim,email` CSV (header row required and skipped -- its
+// exact text doesn't matter, only column ORDER does) into rows tagged
+// valid/invalid client-side. Invalid rows are never sent to the Edge
+// Function (importMahasiswaCSV below only receives what the caller filters
+// to `.valid`), matching the product requirement that bad rows are caught
+// before any account-creation attempt, not reported back from the server.
+export function parseImportCsv(csvText: string): ParsedImportRow[] {
+  const lines = csvText
+    .split(/\r\n|\r|\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0)
+
+  const dataLines = lines.slice(1) // first non-empty line = header, skipped
+
+  return dataLines.map((raw, idx) => {
+    const cells = splitCsvLine(raw)
+    const nama = (cells[0] ?? '').trim()
+    const nim = (cells[1] ?? '').trim()
+    const email = (cells[2] ?? '').trim().toLowerCase()
+    const line = idx + 2 // +1 for the skipped header, +1 for 1-based lines
+
+    let reason: string | undefined
+    if (!nama) reason = 'Nama kosong.'
+    else if (!nim) reason = 'NIM kosong.'
+    else if (!email || !SIMPLE_EMAIL_RE.test(email)) reason = 'Email tidak valid.'
+
+    return { nama, nim, email, line, valid: !reason, reason }
+  })
+}
+
+// Bulk-imports mahasiswa into a kelas with auto-generated passwords. No
+// demo/localStorage mode: this creates REAL Supabase Auth accounts, which
+// makes no sense to simulate locally -- same reasoning as Register.tsx
+// blocking supabase.auth.signUp() outright when Supabase isn't configured.
+export async function importMahasiswaCSV(classId: string, students: ImportRow[]): Promise<ImportResult[]> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Import mahasiswa memerlukan konfigurasi Supabase — tidak tersedia dalam mode demo.')
+  }
+  if (students.length === 0) {
+    throw new Error('Tidak ada data mahasiswa yang valid untuk diimpor.')
+  }
+
+  const { data, error } = await supabase.functions.invoke<{
+    results: ImportResult[]
+    summary: { total: number; berhasil: number; kelas_penuh: number; error: number }
+  }>('import-mahasiswa', { body: { classId, students } })
+
+  if (error) throw error
+  if (!data) throw new Error('Tidak ada respons dari server.')
+  return data.results
+}
