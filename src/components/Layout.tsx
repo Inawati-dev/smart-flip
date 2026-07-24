@@ -21,6 +21,7 @@ import {
   IconX,
   IconGear,
   IconChevronRight,
+  IconTarget,
 } from './icons'
 
 interface NavItem {
@@ -28,6 +29,7 @@ interface NavItem {
   icon: ComponentType<{ size?: number }>
   label: string
   dosenOnly?: boolean
+  mahasiswaOnly?: boolean
 }
 
 interface NavSection {
@@ -49,6 +51,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/dashboard', icon: IconHome, label: 'Dashboard' },
       { to: '/ebook', icon: IconBook, label: 'Katalog Modul' },
+      { to: '/diagnostik', icon: IconTarget, label: 'Diagnostik', mahasiswaOnly: true },
     ],
   },
   {
@@ -127,7 +130,9 @@ export function Layout({ children }: { children: ReactNode }) {
   // don't use section grouping.
   const sections = NAV_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => !item.dosenOnly || role === 'dosen'),
+    items: section.items.filter(
+      (item) => (!item.dosenOnly || role === 'dosen') && (!item.mahasiswaOnly || role !== 'dosen'),
+    ),
   })).filter((section) => section.items.length > 0)
   const items = sections.flatMap((section) => section.items)
 

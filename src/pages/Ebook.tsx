@@ -121,6 +121,25 @@ export function Ebook() {
   const pdfRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
   const renderTaskRef = useRef<pdfjsLib.RenderTask | null>(null)
   const renderTaskRef2 = useRef<pdfjsLib.RenderTask | null>(null)
+  const pageAreaRef = useRef<HTMLDivElement>(null)
+
+  // Fit-to-width: the page renders at whatever pixel width the reading pane
+  // actually has (tracked live via ResizeObserver), not a fixed scale — so
+  // 100% zoom always means "fills this page's available width", matching
+  // every other element on the page instead of floating as an undersized
+  // card in a much wider container. Zoom (80%-200%) multiplies on top of
+  // this fit-width baseline.
+  const [fitWidth, setFitWidth] = useState(600)
+  useEffect(() => {
+    const el = pageAreaRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width
+      if (w) setFitWidth(w)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   const [status, setStatus] = useState<Status>('loading')
   const [errorMsg, setErrorMsg] = useState('')
@@ -228,7 +247,13 @@ export function Ebook() {
   // two-canvas ("Buka Buku") layouts, each tracking its own cancel-in-flight
   // render task so switching pages rapidly can't paint a stale page. ──
   const renderPageTo = useCallback(
-    async (num: number, canvas: HTMLCanvasElement | null, taskRef: MutableRefObject<pdfjsLib.RenderTask | null>, scaleMult: number) => {
+    async (
+      num: number,
+      canvas: HTMLCanvasElement | null,
+      taskRef: MutableRefObject<pdfjsLib.RenderTask | null>,
+      scaleMult: number,
+      availWidth: number,
+    ) => {
       const doc = pdfRef.current
       if (!doc || !canvas || num < 1 || num > doc.numPages) return
 
@@ -238,7 +263,9 @@ export function Ebook() {
       }
 
       const page = await doc.getPage(num)
-      const viewport = page.getViewport({ scale: BASE_SCALE * scaleMult })
+      const baseViewport = page.getViewport({ scale: 1 })
+      const fitScale = availWidth > 0 ? availWidth / baseViewport.width : BASE_SCALE
+      const viewport = page.getViewport({ scale: fitScale * scaleMult })
       canvas.width = viewport.width
       canvas.height = viewport.height
       const ctx = canvas.getContext('2d')
@@ -260,11 +287,14 @@ export function Ebook() {
 
   useEffect(() => {
     if (status !== 'ready') return
-    void renderPageTo(currentPage, canvasRef.current, renderTaskRef, zoom)
+    // Spread mode splits the pane between two pages side by side (minus the
+    // 1px divider border) — each canvas fits half the width, not the whole.
+    const availWidth = effectiveStyle === 'spread' ? fitWidth / 2 - 1 : fitWidth
+    void renderPageTo(currentPage, canvasRef.current, renderTaskRef, zoom, availWidth)
     if (effectiveStyle === 'spread') {
-      void renderPageTo(currentPage + 1, canvasRef2.current, renderTaskRef2, zoom)
+      void renderPageTo(currentPage + 1, canvasRef2.current, renderTaskRef2, zoom, availWidth)
     }
-  }, [status, currentPage, effectiveStyle, zoom, renderPageTo])
+  }, [status, currentPage, effectiveStyle, zoom, fitWidth, renderPageTo])
 
   // ── Save progress on every page change (mirrors legacy/script.js's
   // renderView() -> saveProgress() firing on every navigate()). Keyed by the
@@ -451,7 +481,8 @@ export function Ebook() {
         {status === 'ready' && (
           <>
             <div
-              className="w-fit max-w-full flex-1 flex justify-center items-start bg-bg3 rounded-2xl border overflow-auto p-4 md:p-8"
+              ref={pageAreaRef}
+              className="w-full max-w-4xl flex-1 flex justify-center items-start bg-bg3 rounded-2xl border overflow-auto p-4 md:p-8"
               style={{ borderColor: 'var(--border)', minHeight: '60vh', maxHeight: 'calc(100vh - 200px)' }}
             >
               {effectiveStyle === 'spread' ? (
