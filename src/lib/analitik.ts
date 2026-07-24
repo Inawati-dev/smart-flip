@@ -236,7 +236,13 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
   if (!isSupabaseConfigured) return null
   try {
     const [studentsRes, progressRes, quizRes, feedbackRes] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, jalur, classes(name)').eq('role', 'mahasiswa'),
+      // Explicit FK name (not just `classes(name)`) -- profiles<->classes has
+      // TWO relationships (classes.dosen_id -> profiles.id, AND
+      // profiles.class_id -> classes.id), so an unqualified embed is
+      // ambiguous and PostgREST rejects it with PGRST201. Confirmed live in
+      // production (2026-07-24): this silently fell back to DUMMY_STUDENTS
+      // on every real dosen account until this fix.
+      supabase.from('profiles').select('id, full_name, jalur, classes!profiles_class_id_fkey(name)').eq('role', 'mahasiswa'),
       supabase.from('user_progress').select('user_id, module_id, status, time_spent'),
       supabase.from('quiz_attempts').select('user_id, score'),
       supabase.from('feedback').select('user_id, rata_rata'),
