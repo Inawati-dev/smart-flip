@@ -1,7 +1,15 @@
+import { supabase, isSupabaseConfigured } from './supabase'
+
 // Static per-module workshop content, ported verbatim from the WORKSHOP_DATA
 // object embedded in legacy/workshop.html:618-1154. Genuinely varies per
 // module (tujuan/aktivitas/checklist/lembarKerja text is unique for all 9
 // modules) — not a generic template repeated with substitutions.
+//
+// This used to be the ONLY source Workshop.tsx read from — no table backed
+// it, so dosen had no way to edit it. migration_v9_workshop_content.sql adds
+// a `workshop_content` table a dosen can write to; fetchWorkshopContent below
+// prefers that row when one exists, falling back to WORKSHOP_DATA otherwise
+// so the 9 bundled modules keep working unedited.
 
 export interface AktivitasItem {
   waktu: string
@@ -616,6 +624,66 @@ export const WORKSHOP_DATA: Record<number, WorkshopModule> = {
 }
 
 export const WORKSHOP_MODULE_COUNT = Object.keys(WORKSHOP_DATA).length
+
+// ── Dosen-editable override (workshop_content table) ──────────────────────
+
+interface WorkshopContentRow {
+  module_id: number
+  judul: string
+  durasi: string | null
+  tujuan: string[]
+  aktivitas: AktivitasItem[]
+  checklist: string[]
+  lembar_kerja: LembarKerja
+}
+
+function rowToModule(row: WorkshopContentRow): WorkshopModule {
+  return {
+    judul: row.judul,
+    durasi: row.durasi || '',
+    tujuan: row.tujuan,
+    aktivitas: row.aktivitas,
+    checklist: row.checklist,
+    lembarKerja: row.lembar_kerja,
+  }
+}
+
+// Dosen override takes priority; falls back to the bundled WORKSHOP_DATA for
+// any module without a row yet (or when Supabase isn't configured).
+export async function fetchWorkshopContent(moduleId: number): Promise<WorkshopModule | null> {
+  if (isSupabaseConfigured) {
+    try {
+      const { data, error } = await supabase
+        .from('workshop_content')
+        .select('module_id, judul, durasi, tujuan, aktivitas, checklist, lembar_kerja')
+        .eq('module_id', moduleId)
+        .maybeSingle()
+      if (error) throw error
+      if (data) return rowToModule(data as WorkshopContentRow)
+    } catch (e) {
+      console.warn('[workshop] fetchWorkshopContent → Supabase gagal, fallback bundled data:', e)
+    }
+  }
+  return WORKSHOP_DATA[moduleId] ?? null
+}
+
+// Dosen-only write — mirrors lib/diagnostic.ts's CRUD convention (rethrow on
+// Supabase failure so a real error doesn't show a false "success" toast).
+export async function saveWorkshopContent(moduleId: number, content: WorkshopModule): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('Menyimpan konten workshop memerlukan konfigurasi Supabase.')
+  }
+  const { error } = await supabase.from('workshop_content').upsert({
+    module_id: moduleId,
+    judul: content.judul,
+    durasi: content.durasi,
+    tujuan: content.tujuan,
+    aktivitas: content.aktivitas,
+    checklist: content.checklist,
+    lembar_kerja: content.lembarKerja,
+  })
+  if (error) throw error
+}
 
 // ── Checklist persistence ──────────────────────────────────────────────────
 // legacy/workshop.html's checklist (loadChecklist/saveChecklist/toggleCheck,

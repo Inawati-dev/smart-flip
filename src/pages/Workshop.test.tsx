@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import Workshop from './Workshop'
+import { WORKSHOP_DATA } from '../lib/workshop'
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -41,6 +42,7 @@ function renderWorkshop(entry: string, seedModuleId: number | null) {
   const queryClient = new QueryClient()
   if (seedModuleId !== null) {
     queryClient.setQueryData(['modules', seedModuleId], moduleRow(seedModuleId))
+    queryClient.setQueryData(['workshop-content', seedModuleId], WORKSHOP_DATA[seedModuleId] ?? null)
   }
   const html = renderToStaticMarkup(
     <QueryClientProvider client={queryClient}>

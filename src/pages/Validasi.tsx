@@ -13,6 +13,7 @@ import {
   saveValidasi,
   type ValidasiData,
 } from '../lib/validasi'
+import { printValidasiPdf } from '../lib/reportPdf'
 import { Layout } from '../components/Layout'
 import { IconPrinter } from '../components/icons'
 
@@ -629,7 +630,7 @@ export function Validasi() {
               {/* Action buttons */}
               <div className="flex flex-col sm:flex-row gap-3 mt-5 print:hidden">
                 <button
-                  onClick={() => window.print()}
+                  onClick={() => printValidasiPdf(result)}
                   className="flex-1 h-11 rounded-[10px] border-[1.5px] text-sm font-medium text-brown-2 cursor-pointer flex items-center justify-center gap-1.5"
                   style={BORDER}
                 >

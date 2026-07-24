@@ -18,6 +18,12 @@ import {
   deleteKuisSoal,
   type KuisSoal,
 } from '../lib/kuisSoal'
+import {
+  fetchWorkshopContent,
+  saveWorkshopContent,
+  type WorkshopModule,
+  type AktivitasItem,
+} from '../lib/workshop'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { IconDocument, IconEdit, IconTrash } from '../components/icons'
@@ -245,6 +251,84 @@ export function Manajemen() {
       showToast('Gagal menghapus soal kuis')
     } finally {
       setKuisDeleteId(null)
+    }
+  }
+
+  // Konten Workshop (Tujuan/Aktivitas/Checklist/Lembar Kerja) per modul — see
+  // lib/workshop.ts's header comment. Same module-picker pattern as Soal Kuis
+  // above (also per-module), but editing happens in its own modal since the
+  // form is large (dynamic Aktivitas list + 3 more text blocks).
+  const [wsModuleOverride, setWsModuleOverride] = useState<number | null>(null)
+  const wsModuleId = wsModuleOverride ?? modules[0]?.id ?? null
+
+  const { data: wsContent } = useQuery({
+    queryKey: ['workshop-content', wsModuleId],
+    queryFn: () => fetchWorkshopContent(wsModuleId as number),
+    enabled: wsModuleId != null,
+  })
+
+  const [wsEditOpen, setWsEditOpen] = useState(false)
+  const [wsJudul, setWsJudul] = useState('')
+  const [wsDurasi, setWsDurasi] = useState('')
+  const [wsTujuan, setWsTujuan] = useState('')
+  const [wsAktivitas, setWsAktivitas] = useState<AktivitasItem[]>([])
+  const [wsChecklist, setWsChecklist] = useState('')
+  const [wsLkJudul, setWsLkJudul] = useState('')
+  const [wsLkInstruksi, setWsLkInstruksi] = useState('')
+  const [wsLkPertanyaan, setWsLkPertanyaan] = useState('')
+  const [wsSaving, setWsSaving] = useState(false)
+
+  function openWsEditModal() {
+    const c = wsContent
+    setWsJudul(c?.judul || modMap[wsModuleId ?? -1]?.title || '')
+    setWsDurasi(c?.durasi || '')
+    setWsTujuan((c?.tujuan || []).join('\n'))
+    setWsAktivitas(c?.aktivitas?.length ? [...c.aktivitas] : [{ waktu: '', nama: '', deskripsi: '', peran: '' }])
+    setWsChecklist((c?.checklist || []).join('\n'))
+    setWsLkJudul(c?.lembarKerja.judul || '')
+    setWsLkInstruksi(c?.lembarKerja.instruksi || '')
+    setWsLkPertanyaan((c?.lembarKerja.pertanyaan || []).join('\n'))
+    setWsEditOpen(true)
+  }
+
+  function updateWsAktivitas(idx: number, field: keyof AktivitasItem, value: string) {
+    setWsAktivitas((prev) => prev.map((a, i) => (i === idx ? { ...a, [field]: value } : a)))
+  }
+
+  function addWsAktivitas() {
+    setWsAktivitas((prev) => [...prev, { waktu: '', nama: '', deskripsi: '', peran: '' }])
+  }
+
+  function removeWsAktivitas(idx: number) {
+    setWsAktivitas((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  async function saveWsContent() {
+    if (wsModuleId == null || !wsJudul.trim()) return
+    setWsSaving(true)
+    try {
+      const content: WorkshopModule = {
+        judul: wsJudul.trim(),
+        durasi: wsDurasi.trim(),
+        tujuan: wsTujuan.split('\n').map((s) => s.trim()).filter(Boolean),
+        aktivitas: wsAktivitas
+          .map((a) => ({ waktu: a.waktu.trim(), nama: a.nama.trim(), deskripsi: a.deskripsi.trim(), peran: a.peran.trim() }))
+          .filter((a) => a.nama || a.deskripsi),
+        checklist: wsChecklist.split('\n').map((s) => s.trim()).filter(Boolean),
+        lembarKerja: {
+          judul: wsLkJudul.trim(),
+          instruksi: wsLkInstruksi.trim(),
+          pertanyaan: wsLkPertanyaan.split('\n').map((s) => s.trim()).filter(Boolean),
+        },
+      }
+      await saveWorkshopContent(wsModuleId, content)
+      await queryClient.invalidateQueries({ queryKey: ['workshop-content', wsModuleId] })
+      showToast('Konten workshop disimpan')
+      setWsEditOpen(false)
+    } catch {
+      showToast('Gagal menyimpan konten workshop')
+    } finally {
+      setWsSaving(false)
     }
   }
 
@@ -784,6 +868,58 @@ export function Manajemen() {
             </table>
           </div>
         </div>
+
+        {/* Konten Workshop per modul — dosen-only, lihat lib/workshop.ts.
+            Sama pola pilih-modul seperti Soal Kuis di atas; edit lewat modal
+            karena formnya besar (Tujuan/Aktivitas dinamis/Checklist/Lembar
+            Kerja). */}
+        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+          <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-sm font-semibold text-brown">Konten Workshop</span>
+              <Select
+                value={String(wsModuleId ?? '')}
+                onChange={(v) => setWsModuleOverride(parseInt(v, 10))}
+                aria-label="Pilih modul"
+                className="h-8 px-2.5 rounded-lg border text-xs text-brown cursor-pointer"
+                style={BORDER}
+                options={order.map((id, idx) => ({ value: String(id), label: `Modul ${idx + 1} — ${modMap[id]?.title || ''}` }))}
+              />
+            </div>
+            <button
+              onClick={openWsEditModal}
+              disabled={wsModuleId == null}
+              className="h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap disabled:opacity-50"
+              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+            >
+              <span className="inline-flex items-center gap-1.5"><IconEdit size={13} /> Edit Konten</span>
+            </button>
+          </div>
+          <div className="p-4 text-sm text-brown-2">
+            {wsContent ? (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-brown">{wsContent.tujuan.length}</div>
+                  <div className="text-[11px] text-brown-3">Tujuan</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-brown">{wsContent.aktivitas.length}</div>
+                  <div className="text-[11px] text-brown-3">Aktivitas</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-brown">{wsContent.checklist.length}</div>
+                  <div className="text-[11px] text-brown-3">Checklist</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-brown">{wsContent.lembarKerja.pertanyaan.length}</div>
+                  <div className="text-[11px] text-brown-3">Pertanyaan LK</div>
+                </div>
+              </div>
+            ) : (
+              <span className="text-brown-3">Belum ada konten workshop untuk modul ini.</span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Edit/create modal — matches legacy #editModal fields exactly */}
@@ -1193,6 +1329,101 @@ export function Manajemen() {
                 style={{ background: 'var(--red)' }}
               >
                 Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Konten Workshop edit modal — Tujuan/Checklist/Lembar-Kerja-pertanyaan
+          are one-line-per-item textareas (simpler than a dynamic list UI for
+          plain string arrays); Aktivitas needs 4 sub-fields per item so it
+          gets its own repeatable card list with add/remove. */}
+      {wsEditOpen && wsModuleId != null && (
+        <div
+          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
+          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setWsEditOpen(false)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-[640px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-semibold text-brown">Edit Konten Workshop — {modMap[wsModuleId]?.title}</h3>
+              <button onClick={() => setWsEditOpen(false)} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
+                ×
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+                Judul Sesi
+                <input value={wsJudul} onChange={(e) => setWsJudul(e.target.value)} className="h-10 rounded-lg border px-3 text-sm text-brown" style={BORDER} />
+              </label>
+              <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+                Durasi
+                <input value={wsDurasi} onChange={(e) => setWsDurasi(e.target.value)} placeholder="Contoh: 2 x 50 menit" className="h-10 rounded-lg border px-3 text-sm text-brown" style={BORDER} />
+              </label>
+            </div>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
+              Tujuan Pembelajaran <span className="font-normal text-brown-3">satu poin per baris</span>
+              <textarea value={wsTujuan} onChange={(e) => setWsTujuan(e.target.value)} rows={4} className="rounded-lg border px-3 py-2 text-sm text-brown resize-y min-h-[90px]" style={BORDER} />
+            </label>
+
+            <div className="flex flex-col gap-2 mb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-brown-2">Aktivitas Sesi</span>
+                <button type="button" onClick={addWsAktivitas} className="h-7 px-2.5 rounded-md border text-[11px] font-semibold text-brown-2" style={BORDER}>
+                  + Tambah Aktivitas
+                </button>
+              </div>
+              {wsAktivitas.map((a, idx) => (
+                <div key={idx} className="rounded-lg border p-3 flex flex-col gap-2" style={BORDER}>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-brown-3">Aktivitas {idx + 1}</span>
+                    {wsAktivitas.length > 1 && (
+                      <button type="button" onClick={() => removeWsAktivitas(idx)} aria-label={`Hapus aktivitas ${idx + 1}`} className="text-red text-[11px] font-semibold">
+                        Hapus
+                      </button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input value={a.waktu} onChange={(e) => updateWsAktivitas(idx, 'waktu', e.target.value)} placeholder="Waktu, mis. 0–15 menit" className="h-9 rounded-md border px-2.5 text-xs text-brown" style={BORDER} />
+                    <input value={a.nama} onChange={(e) => updateWsAktivitas(idx, 'nama', e.target.value)} placeholder="Nama aktivitas" className="h-9 rounded-md border px-2.5 text-xs text-brown" style={BORDER} />
+                  </div>
+                  <textarea value={a.deskripsi} onChange={(e) => updateWsAktivitas(idx, 'deskripsi', e.target.value)} rows={2} placeholder="Deskripsi aktivitas" className="rounded-md border px-2.5 py-1.5 text-xs text-brown resize-y" style={BORDER} />
+                  <input value={a.peran} onChange={(e) => updateWsAktivitas(idx, 'peran', e.target.value)} placeholder="Peran, mis. Kelompok kecil" className="h-9 rounded-md border px-2.5 text-xs text-brown" style={BORDER} />
+                </div>
+              ))}
+            </div>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
+              Checklist Kesiapan <span className="font-normal text-brown-3">satu item per baris</span>
+              <textarea value={wsChecklist} onChange={(e) => setWsChecklist(e.target.value)} rows={4} className="rounded-lg border px-3 py-2 text-sm text-brown resize-y min-h-[90px]" style={BORDER} />
+            </label>
+
+            <div className="rounded-lg border p-3 flex flex-col gap-2 mb-4" style={BORDER}>
+              <span className="text-xs font-semibold text-brown-2">Lembar Kerja</span>
+              <input value={wsLkJudul} onChange={(e) => setWsLkJudul(e.target.value)} placeholder="Judul lembar kerja" className="h-9 rounded-md border px-2.5 text-sm text-brown" style={BORDER} />
+              <textarea value={wsLkInstruksi} onChange={(e) => setWsLkInstruksi(e.target.value)} rows={2} placeholder="Instruksi pengerjaan" className="rounded-md border px-2.5 py-1.5 text-sm text-brown resize-y" style={BORDER} />
+              <label className="flex flex-col gap-1 text-[11px] font-semibold text-brown-3">
+                Pertanyaan — satu per baris
+                <textarea value={wsLkPertanyaan} onChange={(e) => setWsLkPertanyaan(e.target.value)} rows={4} className="rounded-md border px-2.5 py-1.5 text-sm text-brown resize-y" style={BORDER} />
+              </label>
+            </div>
+
+            <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
+              <button onClick={() => setWsEditOpen(false)} className="h-[38px] px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+                Batal
+              </button>
+              <button
+                onClick={() => void saveWsContent()}
+                disabled={wsSaving || !wsJudul.trim()}
+                className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
+                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              >
+                {wsSaving ? 'Menyimpan…' : 'Simpan'}
               </button>
             </div>
           </div>

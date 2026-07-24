@@ -138,7 +138,6 @@ export function Layout({ children }: { children: ReactNode }) {
       (item) => (!item.dosenOnly || role === 'dosen') && (!item.mahasiswaOnly || role !== 'dosen'),
     ),
   })).filter((section) => section.items.length > 0)
-  const items = sections.flatMap((section) => section.items)
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -249,10 +248,21 @@ export function Layout({ children }: { children: ReactNode }) {
         </div>
 
         {collapsed ? (
-          // Ciut: flat icon rail, hover flyout carries the label — no room
-          // for section headers at 72px, so sections collapse into one list.
-          <nav className="flex-1 flex flex-col gap-0.5 items-center w-full overflow-y-auto">
-            {items.map(renderNavItem)}
+          // Ciut: no room for text section headers at 72px, but grouping is
+          // kept visually via a hairline divider between each section's
+          // icons (mirrors SAKTI's collapsed IconRailV2) instead of flattening
+          // everything into one undifferentiated list.
+          <nav className="flex-1 flex flex-col items-center w-full overflow-y-auto">
+            {sections.map((section, i) => (
+              <div
+                key={section.key}
+                className={`flex flex-col gap-0.5 items-center w-full ${
+                  i > 0 ? 'mt-2 pt-2 border-t border-[color:var(--border)]' : ''
+                }`}
+              >
+                {section.items.map(renderNavItem)}
+              </div>
+            ))}
           </nav>
         ) : (
           // Expanded: section headers double as accordion triggers, matching
