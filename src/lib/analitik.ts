@@ -292,6 +292,54 @@ export async function fetchModulDistribution(): Promise<ModulDistItem[] | null> 
   }
 }
 
+export interface RecentActivityItem {
+  who: string
+  label: string
+  kind: 'draf' | 'kuis' | 'forum' | 'modul'
+  iso: string
+}
+
+// Real "aktivitas kelas terkini" feed for Profil.tsx's dosen view — merges the
+// 4 event sources a mahasiswa can generate (module completion, quiz attempt,
+// forum post, draft submission), each already timestamped by its own table,
+// and returns the most recent `limit` across all of them combined.
+export async function fetchRecentActivity(limit = 5): Promise<RecentActivityItem[] | null> {
+  if (!isSupabaseConfigured) return null
+  try {
+    const [progressRes, quizRes, forumRes, draftsRes, studentsRes] = await Promise.all([
+      supabase.from('user_progress').select('user_id, module_id, completed_at').eq('status', 'completed').order('completed_at', { ascending: false }).limit(limit),
+      supabase.from('quiz_attempts').select('user_id, module_id, score, attempted_at').order('attempted_at', { ascending: false }).limit(limit),
+      supabase.from('forum_posts').select('user_id, module_id, created_at').order('created_at', { ascending: false }).limit(limit),
+      supabase.from('drafts').select('user_id, module_id, submitted_at').order('submitted_at', { ascending: false }).limit(limit),
+      supabase.from('profiles').select('id, full_name'),
+    ])
+    const students = (studentsRes.data || []) as Array<{ id: string; full_name: string }>
+    if (!students.length) return null
+    const nameOf = (id: string) => students.find((s) => s.id === id)?.full_name ?? 'Mahasiswa'
+
+    const items: Array<RecentActivityItem & { ts: number }> = []
+    for (const p of (progressRes.data || []) as Array<{ user_id: string; module_id: number; completed_at: string | null }>) {
+      if (!p.completed_at) continue
+      items.push({ who: nameOf(p.user_id), label: `Menyelesaikan Modul ${p.module_id}`, kind: 'modul', iso: p.completed_at, ts: new Date(p.completed_at).getTime() })
+    }
+    for (const q of (quizRes.data || []) as Array<{ user_id: string; module_id: number; score: number; attempted_at: string }>) {
+      items.push({ who: nameOf(q.user_id), label: `Selesai Kuis Modul ${q.module_id} — Skor ${q.score}`, kind: 'kuis', iso: q.attempted_at, ts: new Date(q.attempted_at).getTime() })
+    }
+    for (const f of (forumRes.data || []) as Array<{ user_id: string; module_id: number; created_at: string }>) {
+      items.push({ who: nameOf(f.user_id), label: `Posting baru di Forum Modul ${f.module_id}`, kind: 'forum', iso: f.created_at, ts: new Date(f.created_at).getTime() })
+    }
+    for (const d of (draftsRes.data || []) as Array<{ user_id: string; module_id: number; submitted_at: string }>) {
+      items.push({ who: nameOf(d.user_id), label: `Submit Draf Modul ${d.module_id}`, kind: 'draf', iso: d.submitted_at, ts: new Date(d.submitted_at).getTime() })
+    }
+    if (!items.length) return []
+    items.sort((a, b) => b.ts - a.ts)
+    return items.slice(0, limit).map((it) => ({ who: it.who, label: it.label, kind: it.kind, iso: it.iso }))
+  } catch (e) {
+    console.warn('[analitik] fetchRecentActivity gagal:', e)
+    return null
+  }
+}
+
 export async function fetchFeedbackAspectAvg(): Promise<KepraktisanAspekItem[] | null> {
   if (!isSupabaseConfigured) return null
   try {
