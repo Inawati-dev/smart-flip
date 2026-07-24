@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Layout } from '../components/Layout'
 import { IconClipboard, IconCompass } from '../components/icons'
 
@@ -45,9 +45,38 @@ const c = (children: ReactNode) => <code className="bg-[#00000008] rounded px-1 
 
 const versions: VersionEntry[] = [
   {
+    version: 'v1.1.0',
+    date: '2026-07-24',
+    current: true,
+    sections: {
+      Added: [
+        <>Kelas/rombongan belajar: dosen buat kelas (nama, angkatan, kapasitas) dengan kode gabung acak, mahasiswa self-register pakai kode di {c('/register')}, import CSV mahasiswa massal dengan password auto-generate</>,
+        <>Reset Jalur Diagnostik (dosen) di {c('/analitik')}: reset individu maupun bulk per kelas (checkbox pilih + filter kelas), lewat RPC {c('reset_mahasiswa_jalur')} — sebelumnya cuma bisa lewat SQL manual</>,
+        <>CRUD Soal Kuis per modul di {c('/manajemen')} — dropdown pilih modul, tambah/edit/hapus soal + penjelasan opsional</>,
+        <>Konten Workshop (Tujuan/Aktivitas/Checklist/Lembar Kerja) jadi dosen-editable di {c('/manajemen')} — sebelumnya statis hardcode, sekarang override per modul lewat tabel {c('workshop_content')}</>,
+        <>Edit Profil: upload foto avatar ({c('profiles.avatar_url')}, disimpan sebagai data URL)</>,
+        <>Dashboard dosen: ringkasan kelas (jumlah kelas/mahasiswa/modul) + shortcut ke Kelola Modul/Analitik/Kelas/Validasi — bukan lagi list &quot;Lanjut Belajar&quot; ala mahasiswa</>,
+      ],
+      Changed: [
+        <>Profil dosen: &quot;Aktivitas Kelas Terkini&quot; dan stat card statistik mengajar sekarang data asli Supabase, bukan angka contoh (28 mahasiswa/64%/76%)</>,
+        <>Edit Profil jadi modal (sebelumnya section inline yang bikin halaman panjang)</>,
+        <>Kelola Kelas: &quot;Buat Kelas Baru&quot; jadi modal, &quot;Daftar Kelas&quot; dikelompokkan per angkatan/tahun</>,
+        <>Analitik Kelas dipecah jadi 3 tab (Progress Mahasiswa / Distribusi &amp; Grafik / Perhatian Khusus) — sebelumnya satu halaman panjang tanpa navigasi</>,
+        <>WelcomeModal: pakai {c('sessionStorage')} bukan {c('localStorage')} — tampil lagi tiap sesi login baru, bukan cuma sekali selamanya per browser; step indicator dots sekarang bisa diklik langsung, durasi per step 3 detik</>,
+        <>Sidebar ciut (icon rail): ikon dikelompokkan per section dengan garis pemisah tipis (ala SAKTI), bukan satu list ikon rata tanpa pengelompokan</>,
+        <>Tombol &quot;Cetak Lembar Kerja&quot; (Workshop) dan &quot;Cetak Hasil&quot; (Validasi Ahli) pakai template PDF khusus (hidden iframe), bukan {c('window.print()')} halaman mentah</>,
+      ],
+      Fixed: [
+        <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
+        <><strong>Bug produksi</strong>: soal kuis per modul ({c('/modul/:id/kuis')}) membaca dari {c('modules.kuis')}, kolom JSON yang tidak pernah ada di skema — akibatnya semua modul selalu tampil &quot;Soal kuis belum tersedia&quot; untuk SEMUA akun, bukan cuma dummy. Diperbaiki: baca dari tabel {c('quiz_questions')} yang benar</>,
+        <>Kelas: {c('classes')} table sempat kena {c('permission denied')} (belum ada GRANT eksplisit) dan {c('handle_new_user()')} gagal untuk SEMUA signup (bukan cuma yang pakai kode kelas) karena referensi tabel tak terkualifikasi di dalam fungsi {c('SECURITY DEFINER')}</>,
+      ],
+    },
+    desc: 'Kelas/rombongan belajar (kode gabung + import CSV), dua bug produksi ditemukan &amp; diperbaiki (kuis kosong total, signup gagal), dan sweep dosen-editable content (kuis, workshop) + PDF template.',
+  },
+  {
     version: 'v1.0.0',
     date: '2026-07-23',
-    current: true,
     sections: {
       Added: [
         <>Rewrite penuh 18 halaman dari vanilla HTML/JS ke React 19 + Vite + TypeScript + Tailwind v4 ({c('@theme')} CSS-first, tanpa {c('tailwind.config.ts')}), mengikuti stack SAKTI</>,
@@ -612,7 +641,26 @@ function RoadmapCard({ item }: { item: RoadmapItem }) {
   )
 }
 
+const PAGE_SIZE_OPTIONS = [5, 10, 'Semua'] as const
+type PageSizeOption = (typeof PAGE_SIZE_OPTIONS)[number]
+
 export default function Changelog() {
+  const [pageSize, setPageSize] = useState<PageSizeOption>('Semua')
+  const [page, setPage] = useState(1)
+
+  const total = versions.length
+  const effectiveSize = pageSize === 'Semua' ? total : pageSize
+  const totalPages = Math.max(1, Math.ceil(total / effectiveSize))
+  const currentPage = Math.min(page, totalPages)
+  const start = (currentPage - 1) * effectiveSize
+  const end = Math.min(start + effectiveSize, total)
+  const pageVersions = versions.slice(start, end)
+
+  function changePageSize(v: PageSizeOption) {
+    setPageSize(v)
+    setPage(1)
+  }
+
   return (
     <Layout>
       <div className="p-6 pb-20">
@@ -633,8 +681,52 @@ export default function Changelog() {
           </p>
         </div>
 
+        {/* Pagination — page-size toggle + position indicator, ala SAKTI */}
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
+          <div className="flex items-center gap-1.5 text-xs">
+            <span className="text-brown-3 mr-1">Tampilkan:</span>
+            {PAGE_SIZE_OPTIONS.map((opt) => (
+              <button
+                key={opt}
+                onClick={() => changePageSize(opt)}
+                className={`min-h-9 px-3 rounded-full font-semibold ${
+                  pageSize === opt ? 'bg-brown text-btn-text' : 'text-brown-2 border border-[color:var(--border)]'
+                }`}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2.5 text-xs text-brown-3">
+            <span>
+              {total === 0 ? 0 : start + 1}–{end} dari {total}
+            </span>
+            {pageSize !== 'Semua' && totalPages > 1 && (
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                  aria-label="Halaman sebelumnya"
+                  className="min-w-9 min-h-9 rounded-lg border border-[color:var(--border)] flex items-center justify-center disabled:opacity-30"
+                >
+                  ←
+                </button>
+                <span className="px-1.5">{currentPage}/{totalPages}</span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                  aria-label="Halaman berikutnya"
+                  className="min-w-9 min-h-9 rounded-lg border border-[color:var(--border)] flex items-center justify-center disabled:opacity-30"
+                >
+                  →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         <div className="flex flex-col gap-8">
-          {groupByDate(versions).map((group) => (
+          {groupByDate(pageVersions).map((group) => (
             <div key={group.date}>
               <h2 className="text-[11px] font-bold tracking-widest uppercase text-brown-3 mb-3">
                 {formatDateHeader(group.date)}

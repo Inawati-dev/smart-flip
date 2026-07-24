@@ -1,8 +1,10 @@
 import { useEffect, useState, type ReactElement } from 'react'
 import { Link, useParams } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { useModule } from '../hooks/useModules'
 import { TOTAL_MODULES } from '../lib/progress'
+import { printWorkshopPdf } from '../lib/reportPdf'
 import {
   IconTarget,
   IconClipboard,
@@ -14,7 +16,7 @@ import {
   IconTrash,
 } from '../components/icons'
 import {
-  WORKSHOP_DATA,
+  fetchWorkshopContent,
   readChecklistState,
   writeChecklistState,
   readLkAnswer,
@@ -36,39 +38,37 @@ const TABS: { id: TabId; label: string; icon: TabIcon }[] = [
 export default function Workshop() {
   const { id } = useParams()
   const moduleId = parseInt(id ?? '1', 10) || 1
-  const { data: modul, isLoading } = useModule(moduleId)
-  const workshop = WORKSHOP_DATA[moduleId]
+  const { data: modul, isLoading: modulLoading } = useModule(moduleId)
+  const { data: workshop, isLoading: workshopLoading } = useQuery({
+    queryKey: ['workshop-content', moduleId],
+    queryFn: () => fetchWorkshopContent(moduleId),
+  })
+  const { data: prevModul } = useModule(moduleId - 1)
+  const { data: nextModul } = useModule(moduleId + 1)
 
   const [activeTab, setActiveTab] = useState<TabId>('tujuan')
-  // Lazy initializers so the first render (including SSR/renderToStaticMarkup)
-  // already reflects persisted state, not just after an effect runs.
-  const [checklist, setChecklist] = useState<ChecklistState>(() => readChecklistState(moduleId))
-  const [lkAnswers, setLkAnswers] = useState<Record<number, string>>(() => {
-    const w = WORKSHOP_DATA[moduleId]
-    if (!w) return {}
-    const answers: Record<number, string> = {}
-    w.lembarKerja.pertanyaan.forEach((_, i) => { answers[i] = readLkAnswer(moduleId, i) })
-    return answers
-  })
+  const [checklist, setChecklist] = useState<ChecklistState>({})
+  const [lkAnswers, setLkAnswers] = useState<Record<number, string>>({})
   const [confirmModal, setConfirmModal] = useState<'checklist' | 'lembarkerja' | null>(null)
 
-  // Re-sync per-module state whenever the route's :id changes without an
-  // unmount (prev/next links reuse this component) — mirrors legacy
-  // workshop.html's init() re-running loadChecklist()/render() on navigation.
+  // Re-sync per-module state whenever the route's :id changes (prev/next
+  // links reuse this component) or once the module's content finishes
+  // loading — mirrors legacy workshop.html's init() re-running
+  // loadChecklist()/render() on navigation.
   useEffect(() => {
     setActiveTab('tujuan')
     setChecklist(readChecklistState(moduleId))
-    const w = WORKSHOP_DATA[moduleId]
-    if (w) {
+    if (workshop) {
       const answers: Record<number, string> = {}
-      w.lembarKerja.pertanyaan.forEach((_, i) => {
+      workshop.lembarKerja.pertanyaan.forEach((_, i) => {
         answers[i] = readLkAnswer(moduleId, i)
       })
       setLkAnswers(answers)
     }
-  }, [moduleId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [moduleId, workshop])
 
-  if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
+  if (modulLoading || workshopLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
   if (!modul || !workshop) return <Layout><div className="p-8 text-brown">Panduan workshop tidak ditemukan</div></Layout>
 
   const total = workshop.checklist.length
@@ -90,6 +90,7 @@ export default function Workshop() {
   }
 
   function performClearLembarKerja() {
+    if (!workshop) return
     clearLkAnswers(moduleId, workshop.lembarKerja.pertanyaan.length)
     const cleared: Record<number, string> = {}
     workshop.lembarKerja.pertanyaan.forEach((_, i) => { cleared[i] = '' })
@@ -104,8 +105,6 @@ export default function Workshop() {
 
   const prevId = moduleId - 1
   const nextId = moduleId + 1
-  const prevWorkshop = WORKSHOP_DATA[prevId]
-  const nextWorkshop = WORKSHOP_DATA[nextId]
 
   return (
     <Layout>
@@ -288,7 +287,15 @@ export default function Workshop() {
             </div>
             <div className="flex gap-2.5 mt-6 flex-wrap">
               <button
-                onClick={() => window.print()}
+                onClick={() =>
+                  printWorkshopPdf({
+                    moduleTitle: `Modul ${moduleId} — ${modul.title}`,
+                    judul: workshop.lembarKerja.judul,
+                    instruksi: workshop.lembarKerja.instruksi,
+                    pertanyaan: workshop.lembarKerja.pertanyaan,
+                    jawaban: lkAnswers,
+                  })
+                }
                 className="flex items-center justify-center gap-1.5 min-h-11 px-4 py-2 rounded-lg bg-brown text-white text-sm font-semibold"
               >
                 <IconPrinter size={16} /> Cetak Lembar Kerja
@@ -305,7 +312,7 @@ export default function Workshop() {
 
         {/* PREV / NEXT NAV */}
         <nav aria-label="Navigasi antar modul" className="flex flex-col sm:flex-row gap-3 mt-8">
-          {prevWorkshop ? (
+          {prevModul ? (
             <Link
               to={`/modul/${prevId}/workshop`}
               className="flex-1 flex items-center gap-2 px-4 py-3.5 rounded-xl bg-ivory border border-[color:var(--border)]"
@@ -313,7 +320,7 @@ export default function Workshop() {
               <span className="text-terra text-lg flex-shrink-0">←</span>
               <div>
                 <div className="text-[11px] text-brown-3 font-medium tracking-wide">MODUL SEBELUMNYA</div>
-                <div className="text-sm text-brown font-semibold">{prevWorkshop.judul}</div>
+                <div className="text-sm text-brown font-semibold">{prevModul.title}</div>
               </div>
             </Link>
           ) : (
@@ -326,14 +333,14 @@ export default function Workshop() {
             </div>
           )}
 
-          {nextWorkshop ? (
+          {nextModul ? (
             <Link
               to={`/modul/${nextId}/workshop`}
               className="flex-1 flex items-center justify-end gap-2 px-4 py-3.5 rounded-xl bg-ivory border border-[color:var(--border)] text-right"
             >
               <div>
                 <div className="text-[11px] text-brown-3 font-medium tracking-wide">MODUL BERIKUTNYA</div>
-                <div className="text-sm text-brown font-semibold">{nextWorkshop.judul}</div>
+                <div className="text-sm text-brown font-semibold">{nextModul.title}</div>
               </div>
               <span className="text-terra text-lg flex-shrink-0">→</span>
             </Link>

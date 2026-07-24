@@ -42,7 +42,7 @@ const STEPS_DOSEN: Step[] = [
 // Per-step minimum dwell time before "Lanjut" activates — replaces a manual
 // skip button. Progress bar fill is a CSS animation keyed by `step`, not a
 // JS interval, so it restarts cleanly every step change for free.
-const STEP_DELAY_MS = 2000
+const STEP_DELAY_MS = 3000
 
 export function WelcomeModal({
   role,
@@ -102,16 +102,23 @@ export function WelcomeModal({
         <h3 className="font-display text-xl font-bold text-brown mb-2">{title}</h3>
         <p className="text-sm text-brown-2 leading-relaxed mb-6">{current.desc}</p>
 
-        <div className="flex items-center justify-center gap-1.5 mb-6">
+        <div className="flex items-center justify-center mb-6">
           {steps.map((_, i) => (
-            <span
+            <button
               key={i}
-              className="h-1.5 rounded-full transition-all"
-              style={{
-                width: i === step ? '20px' : '6px',
-                background: i === step ? 'var(--terra)' : 'var(--border2, rgba(62,54,46,.15))',
-              }}
-            />
+              type="button"
+              onClick={() => setStep(i)}
+              aria-label={`Ke langkah ${i + 1}`}
+              className="min-w-11 min-h-11 flex items-center justify-center cursor-pointer bg-transparent border-0"
+            >
+              <span
+                className="h-1.5 rounded-full transition-all"
+                style={{
+                  width: i === step ? '20px' : '6px',
+                  background: i === step ? 'var(--terra)' : 'var(--border2, rgba(62,54,46,.15))',
+                }}
+              />
+            </button>
           ))}
         </div>
 
