@@ -88,15 +88,18 @@ function demoWriteAll(questions: DiagnosticQuestion[]): void {
 // else localStorage) fallback as the rest of this file/src/lib/manajemen.ts;
 // demo mode has no real table backing it, so it manages a local array under
 // DEMO_QUESTIONS_KEY instead.
+// Note: unlike fetchDiagnosticQuestions (read-only, safe to fall back
+// silently), the CRUD writes below rethrow Supabase errors instead of
+// falling through to localStorage when configured — a fallback write would
+// only ever land in the dosen's own browser, so a real failure would show a
+// false "success" toast while Supabase (and every other dosen/mahasiswa)
+// never sees the change. localStorage is only the source of truth in demo
+// mode (Supabase not configured at all).
 export async function createDiagnosticQuestion(data: Omit<DiagnosticQuestion, 'id'>): Promise<void> {
   if (isSupabaseConfigured) {
-    try {
-      const { error } = await supabase.from('diagnostic_questions').insert(data)
-      if (error) throw error
-      return
-    } catch (e) {
-      console.warn('[diagnostic] createDiagnosticQuestion → Supabase gagal, fallback localStorage:', e)
-    }
+    const { error } = await supabase.from('diagnostic_questions').insert(data)
+    if (error) throw error
+    return
   }
   const all = demoReadAll()
   const nextId = all.reduce((max, q) => Math.max(max, q.id), 0) + 1
@@ -108,13 +111,9 @@ export async function updateDiagnosticQuestion(
   data: Partial<Omit<DiagnosticQuestion, 'id'>>,
 ): Promise<void> {
   if (isSupabaseConfigured) {
-    try {
-      const { error } = await supabase.from('diagnostic_questions').update(data).eq('id', id)
-      if (error) throw error
-      return
-    } catch (e) {
-      console.warn('[diagnostic] updateDiagnosticQuestion → Supabase gagal, fallback localStorage:', e)
-    }
+    const { error } = await supabase.from('diagnostic_questions').update(data).eq('id', id)
+    if (error) throw error
+    return
   }
   const all = demoReadAll()
   demoWriteAll(all.map((q) => (q.id === id ? { ...q, ...data } : q)))
@@ -122,13 +121,9 @@ export async function updateDiagnosticQuestion(
 
 export async function deleteDiagnosticQuestion(id: number): Promise<void> {
   if (isSupabaseConfigured) {
-    try {
-      const { error } = await supabase.from('diagnostic_questions').delete().eq('id', id)
-      if (error) throw error
-      return
-    } catch (e) {
-      console.warn('[diagnostic] deleteDiagnosticQuestion → Supabase gagal, fallback localStorage:', e)
-    }
+    const { error } = await supabase.from('diagnostic_questions').delete().eq('id', id)
+    if (error) throw error
+    return
   }
   const all = demoReadAll()
   demoWriteAll(all.filter((q) => q.id !== id))

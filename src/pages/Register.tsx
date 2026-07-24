@@ -3,12 +3,26 @@ import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
 
+// UX deterrent only — this is NOT real security. The check runs entirely in
+// the browser, so it is trivially bypassable via devtools or by calling the
+// Supabase signUp API directly with role: 'dosen'. It exists only to stop
+// casual self-selection of the Dosen role on the public form. Real
+// enforcement of who may hold the "dosen" role must happen server-side
+// (Supabase RLS policy / trigger on `profiles` that validates or strips the
+// role on insert/update) — that work is tracked separately and is NOT done
+// by this check.
+export function isDosenInviteCodeValid(inputCode: string, expectedCode: string | undefined): boolean {
+  if (!expectedCode) return false
+  return inputCode.trim().length > 0 && inputCode.trim() === expectedCode
+}
+
 export function Register() {
   const [role, setRole] = useState<'mahasiswa' | 'dosen'>('mahasiswa')
   const [fullName, setFullName] = useState('')
   const [nimNidn, setNimNidn] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -20,6 +34,11 @@ export function Register() {
 
     if (!isSupabaseConfigured) {
       setError('Pendaftaran belum bisa diproses — konfigurasi server belum lengkap. Hubungi admin.')
+      return
+    }
+
+    if (role === 'dosen' && !isDosenInviteCodeValid(inviteCode, import.meta.env.VITE_DOSEN_INVITE_CODE)) {
+      setError('Kode undangan dosen tidak valid. Hubungi admin untuk mendapatkan kode undangan.')
       return
     }
 
@@ -49,6 +68,7 @@ export function Register() {
       setNimNidn('')
       setEmail('')
       setPassword('')
+      setInviteCode('')
     } catch (err) {
       let msg = err instanceof Error ? err.message : 'Terjadi kesalahan.'
       if (msg.includes('already registered')) msg = 'Email ini sudah terdaftar. Silakan masuk.'
@@ -137,6 +157,27 @@ export function Register() {
             style={authInputStyle}
           />
         </div>
+
+        {role === 'dosen' && (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="inviteCode" className="text-[0.78rem] font-semibold text-brown-2">
+              Kode Undangan Dosen
+            </label>
+            <input
+              id="inviteCode"
+              type="text"
+              required
+              placeholder="Diberikan oleh admin"
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              className={authInputClass}
+              style={authInputStyle}
+            />
+            <p className="text-[13px] text-brown-3">
+              Pendaftaran sebagai Dosen memerlukan kode undangan dari admin.
+            </p>
+          </div>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className="text-[0.78rem] font-semibold text-brown-2">

@@ -56,11 +56,21 @@ export function Login() {
       })
       if (signInError) throw signInError
 
-      let { data: profile } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role, full_name')
         .eq('id', data.user!.id)
         .single()
+
+      // PGRST116 = no row found — genuinely a first login, safe to bootstrap
+      // below. Any other error (RLS, network) must NOT fall through to the
+      // same bootstrap path: that would upsert role from the client-side
+      // toggle and silently overwrite/create a role the user doesn't
+      // actually have.
+      if (profileError && profileError.code !== 'PGRST116') {
+        await supabase.auth.signOut()
+        throw new Error('Gagal memuat profil akun. Coba lagi atau hubungi admin.')
+      }
 
       if (!profile) {
         const meta = data.user!.user_metadata || {}
@@ -235,7 +245,7 @@ export function Login() {
           <button
             type="button"
             onClick={() => setForgotMode(true)}
-            className="text-xs font-medium text-sage-d hover:underline"
+            className="text-[13px] font-medium text-sage-d hover:underline"
           >
             Lupa kata sandi?
           </button>
@@ -253,7 +263,7 @@ export function Login() {
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
-        <div className="text-xs font-medium text-brown-3">atau</div>
+        <div className="text-[13px] font-medium text-brown-3">atau</div>
         <div className="flex-1 h-px" style={{ background: 'var(--border)' }} />
       </div>
 
