@@ -61,10 +61,19 @@ export function WelcomeModal({
   const Icon = current.icon
   const title = step === 0 && userName ? `Selamat Datang, ${userName}!` : current.title
 
+  // Countdown doubles as auto-advance — once the bar fills, move on by
+  // itself (auto-close on the last step) instead of just sitting there
+  // waiting for a click. "Lanjut"/"Kembali" still work immediately for
+  // anyone who doesn't want to wait.
   useEffect(() => {
     setReady(false)
-    const t = setTimeout(() => setReady(true), STEP_DELAY_MS)
+    const t = setTimeout(() => {
+      setReady(true)
+      if (isLast) onClose()
+      else setStep((s) => s + 1)
+    }, STEP_DELAY_MS)
     return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
   return (

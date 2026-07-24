@@ -15,6 +15,16 @@ export function safeDoi(doi: string | undefined): string {
   return '#'
 }
 
+// progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
+// -- was rendering as-is ("2026-07-24T04:04:55.479+00:00") instead of a
+// readable date.
+export function formatLastOpened(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return '—'
+  return d.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+}
+
 // modul.jurnal/modul.studiKasus are typed `unknown[]` on ModuleRow (untyped JSON
 // column) — narrow to the shape this page actually consumes.
 interface JurnalItem {
@@ -230,7 +240,7 @@ export default function Modul() {
             <div className="text-xs text-brown-3 mt-0.5">Skor kuis terbaik</div>
           </div>
           <div className="bg-bg3 rounded-lg p-3.5">
-            <div className="text-xl font-bold text-brown">{prog?.lastOpened ?? '—'}</div>
+            <div className="text-xl font-bold text-brown">{formatLastOpened(prog?.lastOpened)}</div>
             <div className="text-xs text-brown-3 mt-0.5">Terakhir dibuka</div>
           </div>
           <div className="bg-bg3 rounded-lg p-3.5">
