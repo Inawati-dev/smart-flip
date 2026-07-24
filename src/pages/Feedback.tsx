@@ -133,12 +133,6 @@ export function Feedback() {
                 klik bintang untuk memberi nilai 1–5
               </span>
             </label>
-            {errRating && (
-              <div className="text-xs text-red mb-2 px-2.5 py-1.5 rounded-md bg-red/10">
-                Semua aspek harus diberi nilai.
-              </div>
-            )}
-
             {ASPECTS.map((a, i) => {
               const value = ratings[a.key]
               const previewVal = hovered && hovered.aspect === a.key ? hovered.val : value
@@ -310,6 +304,38 @@ export function Feedback() {
           style={{ background: 'var(--brown)', color: '#fff', boxShadow: '0 4px 16px rgba(62,54,46,.25)' }}
         >
           {toast}
+        </div>
+      )}
+
+      {errRating && (
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+          style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setErrRating(false)
+          }}
+        >
+          <div
+            className="rounded-2xl p-7 max-w-sm w-full text-center"
+            style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
+          >
+            <div
+              className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+              style={{ background: 'rgba(192,64,32,.12)' }}
+            >
+              <IconStar size={22} className="text-red" />
+            </div>
+            <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-2">Belum Lengkap</h3>
+            <p className="text-sm text-brown-2 mb-6 opacity-80">
+              Semua aspek harus diberi nilai bintang sebelum penilaian bisa dikirim.
+            </p>
+            <button
+              onClick={() => setErrRating(false)}
+              className="w-full min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer"
+            >
+              Mengerti
+            </button>
+          </div>
         </div>
       )}
     </Layout>
