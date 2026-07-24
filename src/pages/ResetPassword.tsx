@@ -210,7 +210,7 @@ export function ResetPassword() {
                 />
               ))}
             </div>
-            {pw1Error && <div className="text-red text-xs mb-2">{pw1Error}</div>}
+            {pw1Error && <div className="text-red text-[13px] mb-2">{pw1Error}</div>}
 
             <label htmlFor="pw2" className="mt-2 block">
               Konfirmasi Password
@@ -235,7 +235,7 @@ export function ResetPassword() {
                 {showConfirm ? 'Sembunyikan' : 'Lihat'}
               </button>
             </div>
-            {pw2Error && <div className="text-red text-xs mb-2">{pw2Error}</div>}
+            {pw2Error && <div className="text-red text-[13px] mb-2">{pw2Error}</div>}
 
             <button
               type="submit"

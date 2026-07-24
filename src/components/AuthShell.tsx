@@ -25,7 +25,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
         </div>
         <Link
           to="/changelog"
-          className="inline-flex items-center gap-1.5 mt-5 text-xs font-medium text-brown-3 hover:text-terra-d"
+          className="inline-flex items-center gap-1.5 mt-5 text-[13px] font-medium text-brown-3 hover:text-terra-d"
         >
           <IconClipboard size={14} /> Changelog
         </Link>
@@ -41,8 +41,10 @@ export function AuthShell({ children }: { children: ReactNode }) {
   )
 }
 
+// text-base (16px) — anything smaller triggers iOS Safari's auto-zoom-on-focus
+// on form inputs (CLAUDE.md mobile rules: 16px minimum for inputs).
 export const authInputClass =
-  'w-full h-[46px] rounded-[10px] border px-3.5 bg-transparent text-[0.9rem] outline-none transition-colors'
+  'w-full h-[46px] rounded-[10px] border px-3.5 bg-transparent text-base outline-none transition-colors'
 
 export const authInputStyle = {
   borderColor: 'var(--border)',

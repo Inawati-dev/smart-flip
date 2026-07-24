@@ -128,7 +128,11 @@ export function Layout({ children }: { children: ReactNode }) {
   function toggleCollapsed() {
     setCollapsed((prev) => {
       const next = !prev
-      localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0')
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0')
+      } catch {
+        // ignore — storage unavailable, collapsed state just won't persist
+      }
       return next
     })
     setFlyout(null)
@@ -191,7 +195,7 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className={`page-fadein min-h-screen bg-cream ${collapsed ? 'lg:pl-[72px]' : 'lg:pl-[220px]'}`}>
+    <div className={`min-h-screen bg-cream ${collapsed ? 'lg:pl-[72px]' : 'lg:pl-[220px]'}`}>
       {/* ── Desktop sidebar: full-expanded labels by default, collapsible to icon-rail+flyout ── */}
       <aside
         className={`hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col bg-ivory border-r border-[color:var(--border)] py-4 transition-[width] duration-200 ${
@@ -344,7 +348,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </nav>
       </aside>
 
-      <main>{children}</main>
+      <main className="page-fadein">{children}</main>
 
       <LogoutModal
         open={logoutOpen}

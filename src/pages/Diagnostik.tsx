@@ -39,7 +39,7 @@ const JALUR_COPY: Record<Jalur, { title: string; desc: string }> = {
 export function Diagnostik() {
   const { refreshProfile } = useAuth()
   const { data: questions = [], isLoading } = useQuery({
-    queryKey: ['diagnostic', 'questions'],
+    queryKey: ['diagnostic-questions'],
     queryFn: fetchDiagnosticQuestions,
   })
 

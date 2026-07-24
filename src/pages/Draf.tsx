@@ -132,7 +132,7 @@ export function Draf() {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`min-h-9 md:h-8 px-3.5 rounded-full text-xs border whitespace-nowrap ${
+              className={`min-h-11 md:h-8 px-3.5 rounded-full text-xs border whitespace-nowrap ${
                 filter === f.key ? 'bg-terra text-white border-terra' : 'text-brown-3'
               }`}
               style={filter === f.key ? undefined : BORDER}
@@ -143,7 +143,7 @@ export function Draf() {
           {!isDosen && (
             <button
               onClick={openDraftModal}
-              className="ml-auto min-h-9 px-4 rounded-full text-sm font-semibold whitespace-nowrap"
+              className="ml-auto min-h-11 px-4 rounded-full text-sm font-semibold whitespace-nowrap"
               style={{ background: 'var(--brown)', color: 'var(--terra)' }}
             >
               + Draf Baru
@@ -196,7 +196,7 @@ export function Draf() {
                   <div className="flex items-center gap-2.5 flex-wrap p-3">
                     <button
                       onClick={() => setOpenComments((o) => ({ ...o, [d.id]: !o[d.id] }))}
-                      className="inline-flex items-center gap-1.5 text-xs text-brown-3 px-2 py-1 rounded-md"
+                      className="inline-flex items-center gap-1.5 min-h-11 text-xs text-brown-3 px-2 py-1 rounded-md"
                     >
                       <IconChat size={14} /> {d.comments.length} Komentar
                     </button>
@@ -257,7 +257,7 @@ export function Draf() {
                         <button
                           onClick={() => handleSendComment(d.id)}
                           disabled={!!sendingComment[d.id]}
-                          className="h-9 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50"
+                          className="min-h-11 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50"
                           style={{ background: 'var(--brown)', color: 'var(--terra)' }}
                         >
                           Kirim
