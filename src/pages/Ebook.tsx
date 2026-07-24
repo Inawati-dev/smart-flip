@@ -426,14 +426,18 @@ export function Ebook() {
         )}
 
         {moduleId == null && (
-          <div className="w-full max-w-4xl">
+          // Full width here on purpose, unlike the reader below -- browsing
+          // a grid of cover cards benefits from more columns on a wide
+          // screen; reading one document does not (that's why the reader
+          // view further down keeps its own max-w-4xl).
+          <div className="w-full">
             {catalog.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <IconBook size={36} className="text-brown-3" />
                 <p className="text-sm text-brown-3">Belum ada PDF modul yang terpasang.</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                 {catalog.map((m) => (
                   <button
                     key={m.id}
