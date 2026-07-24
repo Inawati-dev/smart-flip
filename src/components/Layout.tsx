@@ -21,6 +21,7 @@ import {
   IconX,
   IconSidebar,
   IconGear,
+  IconChevronRight,
 } from './icons'
 
 interface NavItem {
@@ -31,26 +32,68 @@ interface NavItem {
   dosenOnly?: boolean
 }
 
+interface NavSection {
+  key: string
+  label: string
+  items: NavItem[]
+}
+
 // Each item gets its own accent (reuses hues already established elsewhere in
 // the app, e.g. Profil.tsx's VARK_COLORS) so the rail reads as a set of
-// distinct destinations, not one flat monochrome column.
-const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', icon: IconHome, label: 'Dashboard', color: '#B8855A' },
-  { to: '/ebook', icon: IconBook, label: 'Katalog Modul', color: '#6B7EAF' },
-  { to: '/forum', icon: IconChat, label: 'Forum', color: '#8FA287' },
-  { to: '/draf', icon: IconEdit, label: 'Draf', color: '#B07A3E' },
-  { to: '/feedback', icon: IconStar, label: 'Feedback', color: '#D4A373' },
-  { to: '/vark', icon: IconCompass, label: 'Gaya Belajar', color: '#8B6BA0' },
-  { to: '/ngain', icon: IconChart, label: 'N-Gain', color: '#6B7EAF', dosenOnly: true },
-  { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', color: '#6B9B7E', dosenOnly: true },
-  { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', color: '#C0704A', dosenOnly: true },
-  { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', color: '#8B6BA0', dosenOnly: true },
-  { to: '/profil', icon: IconUser, label: 'Profil', color: '#6B5D4F' },
-  { to: '/changelog', icon: IconClipboard, label: 'Changelog', color: '#9B8B7A', dosenOnly: true },
-  { to: '/pengaturan', icon: IconGear, label: 'Pengaturan', color: '#6B5D4F' },
+// distinct destinations, not one flat monochrome column. Grouped into
+// sections so the expanded sidebar can render as a collapsible accordion
+// (same rail/accordion/flyout split as SAKTI's IconRailV2).
+const NAV_SECTIONS: NavSection[] = [
+  {
+    key: 'utama',
+    label: 'Utama',
+    items: [
+      { to: '/dashboard', icon: IconHome, label: 'Dashboard', color: '#B8855A' },
+      { to: '/ebook', icon: IconBook, label: 'Katalog Modul', color: '#6B7EAF' },
+    ],
+  },
+  {
+    key: 'kolaborasi',
+    label: 'Kolaborasi',
+    items: [
+      { to: '/forum', icon: IconChat, label: 'Forum', color: '#8FA287' },
+      { to: '/draf', icon: IconEdit, label: 'Draf', color: '#B07A3E' },
+    ],
+  },
+  {
+    key: 'belajar',
+    label: 'Belajar',
+    items: [
+      { to: '/feedback', icon: IconStar, label: 'Feedback', color: '#D4A373' },
+      { to: '/vark', icon: IconCompass, label: 'Gaya Belajar', color: '#8B6BA0' },
+    ],
+  },
+  {
+    key: 'kelola-kelas',
+    label: 'Kelola Kelas',
+    items: [
+      { to: '/ngain', icon: IconChart, label: 'N-Gain', color: '#6B7EAF', dosenOnly: true },
+      { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', color: '#6B9B7E', dosenOnly: true },
+      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', color: '#C0704A', dosenOnly: true },
+      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', color: '#8B6BA0', dosenOnly: true },
+      { to: '/changelog', icon: IconClipboard, label: 'Changelog', color: '#9B8B7A', dosenOnly: true },
+    ],
+  },
+  {
+    key: 'akun',
+    label: 'Akun',
+    items: [
+      { to: '/profil', icon: IconUser, label: 'Profil', color: '#6B5D4F' },
+      { to: '/pengaturan', icon: IconGear, label: 'Pengaturan', color: '#6B5D4F' },
+    ],
+  },
 ]
 
 const COLLAPSE_KEY = 'sfp_sidebar_collapsed'
+const SECTIONS_KEY = 'sfp_sidebar_sections_open'
+const DEFAULT_OPEN_SECTIONS: Record<string, boolean> = Object.fromEntries(
+  NAV_SECTIONS.map((s) => [s.key, true]),
+)
 
 export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
@@ -62,8 +105,25 @@ export function Layout({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && window.localStorage.getItem(COLLAPSE_KEY) === '1',
   )
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>(() => {
+    if (typeof window === 'undefined') return DEFAULT_OPEN_SECTIONS
+    try {
+      const raw = window.localStorage.getItem(SECTIONS_KEY)
+      return raw ? { ...DEFAULT_OPEN_SECTIONS, ...JSON.parse(raw) } : DEFAULT_OPEN_SECTIONS
+    } catch {
+      return DEFAULT_OPEN_SECTIONS
+    }
+  })
 
-  const items = NAV_ITEMS.filter((item) => !item.dosenOnly || role === 'dosen')
+  // Sections filtered by role first (so an all-dosenOnly section disappears
+  // entirely for mahasiswa instead of rendering an empty accordion header),
+  // then flattened for the collapsed icon-rail and mobile drawer, which
+  // don't use section grouping.
+  const sections = NAV_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => !item.dosenOnly || role === 'dosen'),
+  })).filter((section) => section.items.length > 0)
+  const items = sections.flatMap((section) => section.items)
 
   function toggleCollapsed() {
     setCollapsed((prev) => {
@@ -74,6 +134,18 @@ export function Layout({ children }: { children: ReactNode }) {
     setFlyout(null)
   }
 
+  function toggleSection(key: string) {
+    setOpenSections((prev) => {
+      const next = { ...prev, [key]: !prev[key] }
+      try {
+        localStorage.setItem(SECTIONS_KEY, JSON.stringify(next))
+      } catch {
+        // ignore — storage unavailable, accordion state just won't persist
+      }
+      return next
+    })
+  }
+
   async function doLogout() {
     try {
       await supabase.auth.signOut()
@@ -81,6 +153,41 @@ export function Layout({ children }: { children: ReactNode }) {
       // ignore — navigate away regardless, matches legacy/modul.html:940 behavior
     }
     navigate('/')
+  }
+
+  function renderNavItem(item: NavItem) {
+    const active = location.pathname === item.to
+    const Icon = item.icon
+    return (
+      <div
+        key={item.to}
+        className={collapsed ? 'relative w-full flex justify-center' : 'relative'}
+        onMouseEnter={() => collapsed && setFlyout(item.to)}
+      >
+        <Link
+          to={item.to}
+          className={
+            collapsed
+              ? 'w-11 h-11 rounded-xl flex items-center justify-center transition-colors'
+              : 'h-11 px-3 rounded-xl flex items-center gap-2.5 transition-colors text-sm font-semibold'
+          }
+          style={active ? { background: 'var(--brown)', color: item.color } : { color: item.color }}
+          aria-label={item.label}
+          aria-current={active ? 'page' : undefined}
+        >
+          <Icon size={19} />
+          {!collapsed && <span className="truncate" style={{ color: active ? item.color : 'var(--brown-2)' }}>{item.label}</span>}
+        </Link>
+        {collapsed && flyout === item.to && (
+          <div
+            className="absolute left-[64px] top-1/2 -translate-y-1/2 z-50 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
+            style={{ background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
+          >
+            {item.label}
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -108,46 +215,41 @@ export function Layout({ children }: { children: ReactNode }) {
           </button>
         </div>
 
-        <nav className={`flex-1 flex flex-col gap-1 ${collapsed ? 'items-center w-full' : ''}`}>
-          {items.map((item) => {
-            const active = location.pathname === item.to
-            const Icon = item.icon
-            return (
-              <div
-                key={item.to}
-                className={collapsed ? 'relative w-full flex justify-center' : 'relative'}
-                onMouseEnter={() => collapsed && setFlyout(item.to)}
-              >
-                <Link
-                  to={item.to}
-                  className={
-                    collapsed
-                      ? 'w-11 h-11 rounded-xl flex items-center justify-center transition-colors'
-                      : 'h-11 px-3 rounded-xl flex items-center gap-2.5 transition-colors text-sm font-semibold'
-                  }
-                  style={
-                    active
-                      ? { background: 'var(--brown)', color: item.color }
-                      : { color: item.color }
-                  }
-                  aria-label={item.label}
-                  aria-current={active ? 'page' : undefined}
-                >
-                  <Icon size={19} />
-                  {!collapsed && <span className="truncate" style={{ color: active ? item.color : 'var(--brown-2)' }}>{item.label}</span>}
-                </Link>
-                {collapsed && flyout === item.to && (
-                  <div
-                    className="absolute left-[64px] top-1/2 -translate-y-1/2 z-50 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
-                    style={{ background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
+        {collapsed ? (
+          // Ciut: flat icon rail, hover flyout carries the label — no room
+          // for section headers at 72px, so sections collapse into one list.
+          <nav className="flex-1 flex flex-col gap-1 items-center w-full">
+            {items.map(renderNavItem)}
+          </nav>
+        ) : (
+          // Expanded: section headers double as accordion triggers, matching
+          // SAKTI IconRailV2's expanded-mode grouping.
+          <nav className="flex-1 flex flex-col gap-2.5 overflow-y-auto">
+            {sections.map((section) => {
+              const open = openSections[section.key] ?? true
+              return (
+                <div key={section.key}>
+                  <button
+                    onClick={() => toggleSection(section.key)}
+                    className="w-full flex items-center justify-between px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brown-3 hover:text-brown-2 transition-colors"
+                    aria-expanded={open}
                   >
-                    {item.label}
-                  </div>
-                )}
-              </div>
-            )
-          })}
-        </nav>
+                    <span>{section.label}</span>
+                    <IconChevronRight
+                      size={12}
+                      style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}
+                    />
+                  </button>
+                  {open && (
+                    <div className="flex flex-col gap-1 mt-1">
+                      {section.items.map(renderNavItem)}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </nav>
+        )}
 
         <button
           onClick={() => setLogoutOpen(true)}
@@ -214,20 +316,25 @@ export function Layout({ children }: { children: ReactNode }) {
             <IconX size={17} />
           </button>
         </div>
-        <nav className="flex flex-col p-2 gap-0.5">
-          {items.map((item) => {
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={() => setDrawerOpen(false)}
-                className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2"
-              >
-                <span style={{ color: item.color }} className="inline-flex"><Icon size={17} /></span> {item.label}
-              </Link>
-            )
-          })}
+        <nav className="flex flex-col p-2 gap-2.5">
+          {sections.map((section) => (
+            <div key={section.key} className="flex flex-col gap-0.5">
+              <span className="px-3.5 pt-1 text-[11px] font-bold uppercase tracking-wide text-brown-3">{section.label}</span>
+              {section.items.map((item) => {
+                const Icon = item.icon
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setDrawerOpen(false)}
+                    className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-brown-2"
+                  >
+                    <span style={{ color: item.color }} className="inline-flex"><Icon size={17} /></span> {item.label}
+                  </Link>
+                )
+              })}
+            </div>
+          ))}
           <button
             onClick={() => { setDrawerOpen(false); setLogoutOpen(true) }}
             className="min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm text-red text-left"
