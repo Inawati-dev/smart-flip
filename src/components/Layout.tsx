@@ -75,13 +75,13 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'kelola-kelas',
     label: 'Kelola Kelas',
+    // Alfabetis by label -- gampang di-scan sekarang isinya 5 item.
     items: [
+      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
       { to: '/kelas', icon: IconUsers, label: 'Kelas', dosenOnly: true },
+      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
       { to: '/ngain', icon: IconChart, label: 'N-Gain', dosenOnly: true },
       { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },
-      { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
-      { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
-      { to: '/changelog', icon: IconClipboard, label: 'Changelog', dosenOnly: true },
     ],
   },
   {
@@ -90,6 +90,7 @@ const NAV_SECTIONS: NavSection[] = [
     items: [
       { to: '/profil', icon: IconUser, label: 'Profil' },
       { to: '/pengaturan', icon: IconGear, label: 'Pengaturan' },
+      { to: '/changelog', icon: IconClipboard, label: 'Changelog', dosenOnly: true },
     ],
   },
 ]
