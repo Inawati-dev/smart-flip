@@ -109,8 +109,8 @@ export default function Workshop() {
 
   return (
     <Layout>
-      <div className="page-fadein p-6 pb-16">
-       <div className="max-w-4xl mx-auto">
+      <div className="p-6 pb-16">
+       <div>
         <Link to={`/modul/${moduleId}`} className="text-brown-3 text-sm mb-6 inline-block">
           ← Kembali ke Modul
         </Link>

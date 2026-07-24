@@ -168,7 +168,7 @@ export default function Ngain() {
 
   return (
     <Layout>
-      <div className="page-fadein p-4 md:p-6 pb-16">
+      <div className="p-4 md:p-6 pb-16">
         {/* PAGE HEADER */}
         <div className="mb-6 pb-4 border-b" style={BORDER}>
           <h1 className="font-['Playfair_Display',serif] text-xl sm:text-2xl font-bold text-brown mb-1">

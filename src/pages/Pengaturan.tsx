@@ -10,13 +10,13 @@ const BORDER = { borderColor: 'var(--border)' } as const
 export function Pengaturan() {
   return (
     <Layout>
-      <div className="page-fadein p-6">
+      <div className="p-6">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-brown mb-1">Pengaturan</h1>
           <p className="text-brown-3 text-sm">Preferensi tampilan &amp; notifikasi akun kamu</p>
         </div>
 
-        <div className="flex flex-col gap-4 max-w-2xl">
+        <div className="flex flex-col gap-4">
           <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
             <div className="flex items-center gap-2.5 mb-1">
               <IconCompass size={18} className="text-brown-3" />
