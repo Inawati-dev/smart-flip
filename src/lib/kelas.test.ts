@@ -1,6 +1,15 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest'
-import { generateClassCode, createKelas, getKelasByDosen, deleteKelas, summarizeKelas, type KelasWithCount } from './kelas'
+import {
+  generateClassCode,
+  createKelas,
+  getKelasByDosen,
+  deleteKelas,
+  summarizeKelas,
+  parseImportCsv,
+  importMahasiswaCSV,
+  type KelasWithCount,
+} from './kelas'
 
 // isSupabaseConfigured is false in the test env (no VITE_SUPABASE_* vars
 // set), so every call below exercises the localStorage fallback path —
@@ -140,5 +149,73 @@ describe('summarizeKelas', () => {
 
   it('returns zeroed summary for an empty list', () => {
     expect(summarizeKelas([])).toEqual({ totalStudents: 0, byAngkatan: [] })
+  })
+})
+
+describe('parseImportCsv', () => {
+  it('skips the header row and parses nama,nim,email', () => {
+    const csv = 'nama,nim,email\nBudi Santoso,220101,budi@kampus.ac.id\nSiti Aminah,220102,siti@kampus.ac.id'
+    const rows = parseImportCsv(csv)
+    expect(rows).toHaveLength(2)
+    expect(rows[0]).toMatchObject({ nama: 'Budi Santoso', nim: '220101', email: 'budi@kampus.ac.id', valid: true })
+    expect(rows[1]).toMatchObject({ nama: 'Siti Aminah', nim: '220102', email: 'siti@kampus.ac.id', valid: true })
+  })
+
+  it('lowercases email and trims whitespace around cells', () => {
+    const csv = 'nama,nim,email\n  Budi  ,  220101 ,  BUDI@KAMPUS.AC.ID  '
+    const rows = parseImportCsv(csv)
+    expect(rows[0]).toMatchObject({ nama: 'Budi', nim: '220101', email: 'budi@kampus.ac.id' })
+  })
+
+  it('flags a row with empty nama as invalid', () => {
+    const csv = 'nama,nim,email\n,220101,budi@kampus.ac.id'
+    const rows = parseImportCsv(csv)
+    expect(rows[0].valid).toBe(false)
+    expect(rows[0].reason).toMatch(/nama/i)
+  })
+
+  it('flags a row with empty nim as invalid', () => {
+    const csv = 'nama,nim,email\nBudi,,budi@kampus.ac.id'
+    const rows = parseImportCsv(csv)
+    expect(rows[0].valid).toBe(false)
+    expect(rows[0].reason).toMatch(/nim/i)
+  })
+
+  it('flags a row with a malformed email as invalid', () => {
+    const csv = 'nama,nim,email\nBudi,220101,not-an-email'
+    const rows = parseImportCsv(csv)
+    expect(rows[0].valid).toBe(false)
+    expect(rows[0].reason).toMatch(/email/i)
+  })
+
+  it('respects double-quoted fields containing a comma', () => {
+    const csv = 'nama,nim,email\n"Budi, S.Kom",220101,budi@kampus.ac.id'
+    const rows = parseImportCsv(csv)
+    expect(rows[0].nama).toBe('Budi, S.Kom')
+    expect(rows[0].valid).toBe(true)
+  })
+
+  it('ignores blank lines and assigns 1-based line numbers accounting for the header', () => {
+    const csv = 'nama,nim,email\n\nBudi,220101,budi@kampus.ac.id\n\nSiti,220102,siti@kampus.ac.id'
+    const rows = parseImportCsv(csv)
+    expect(rows).toHaveLength(2)
+    expect(rows[0].line).toBe(2)
+    expect(rows[1].line).toBe(3)
+  })
+
+  it('returns an empty array for a CSV with only a header', () => {
+    expect(parseImportCsv('nama,nim,email')).toEqual([])
+  })
+})
+
+describe('importMahasiswaCSV (no Supabase configured)', () => {
+  it('rejects outright -- no demo/localStorage mode for real account creation', async () => {
+    await expect(importMahasiswaCSV('class-1', [{ nama: 'Budi', nim: '220101', email: 'budi@kampus.ac.id' }])).rejects.toThrow(
+      /Supabase/,
+    )
+  })
+
+  it('rejects an empty student list too', async () => {
+    await expect(importMahasiswaCSV('class-1', [])).rejects.toThrow()
   })
 })

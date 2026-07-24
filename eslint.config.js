@@ -5,7 +5,11 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 
 export default tseslint.config(
-  { ignores: ['dist', 'legacy'] },
+  // supabase/functions/** is Deno runtime code (npm: specifiers, global
+  // `Deno`), not part of this Vite/React app -- same reasoning as
+  // tsconfig.app.json's "src"-only include. Linting it with browser globals
+  // would misfire on things that are correct Deno code.
+  { ignores: ['dist', 'legacy', 'supabase/functions'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],
