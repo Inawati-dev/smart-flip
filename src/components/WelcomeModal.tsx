@@ -1,4 +1,4 @@
-import { useState, type ComponentType } from 'react'
+import { useEffect, useState, type ComponentType } from 'react'
 import type { OnboardingRole } from '../lib/onboarding'
 import { IconBook, IconTarget, IconCompass, IconUsers, IconLightbulb, IconChevronRight } from './icons'
 
@@ -29,7 +29,7 @@ const STEPS_MAHASISWA: Step[] = [
 const STEPS_DOSEN: Step[] = [
   {
     icon: IconUsers,
-    title: 'Selamat Datang, Dosen!',
+    title: 'Selamat Datang!',
     desc: 'Panel pengelolaan kelas untuk mata kuliah Metode Penelitian & Pengembangan — pantau progres mahasiswa, kelola modul, dan validasi materi dari satu dashboard.',
   },
   {
@@ -39,12 +39,33 @@ const STEPS_DOSEN: Step[] = [
   },
 ]
 
-export function WelcomeModal({ role, onClose }: { role: OnboardingRole; onClose: () => void }) {
+// Per-step minimum dwell time before "Lanjut" activates — replaces a manual
+// skip button. Progress bar fill is a CSS animation keyed by `step`, not a
+// JS interval, so it restarts cleanly every step change for free.
+const STEP_DELAY_MS = 2000
+
+export function WelcomeModal({
+  role,
+  userName,
+  onClose,
+}: {
+  role: OnboardingRole
+  userName?: string
+  onClose: () => void
+}) {
   const [step, setStep] = useState(0)
+  const [ready, setReady] = useState(false)
   const steps = role === 'dosen' ? STEPS_DOSEN : STEPS_MAHASISWA
   const isLast = step === steps.length - 1
   const current = steps[step]
   const Icon = current.icon
+  const title = step === 0 && userName ? `Selamat Datang, ${userName}!` : current.title
+
+  useEffect(() => {
+    setReady(false)
+    const t = setTimeout(() => setReady(true), STEP_DELAY_MS)
+    return () => clearTimeout(t)
+  }, [step])
 
   return (
     <div
@@ -62,13 +83,6 @@ export function WelcomeModal({ role, onClose }: { role: OnboardingRole; onClose:
           animation: 'slideUpModal 0.22s ease',
         }}
       >
-        <button
-          onClick={onClose}
-          className="absolute top-3.5 right-3.5 text-xs font-semibold text-brown-3 hover:text-brown transition-colors cursor-pointer"
-        >
-          Lewati
-        </button>
-
         <div
           className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-terra"
           style={{ background: 'var(--brown)' }}
@@ -76,9 +90,7 @@ export function WelcomeModal({ role, onClose }: { role: OnboardingRole; onClose:
           <Icon size={30} />
         </div>
 
-        <h3 className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-2">
-          {current.title}
-        </h3>
+        <h3 className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-2">{title}</h3>
         <p className="text-sm text-brown-2 leading-relaxed mb-6">{current.desc}</p>
 
         <div className="flex items-center justify-center gap-1.5 mb-6">
@@ -105,12 +117,21 @@ export function WelcomeModal({ role, onClose }: { role: OnboardingRole; onClose:
             </button>
           )}
           <button
-            onClick={() => (isLast ? onClose() : setStep((s) => s + 1))}
-            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1"
+            onClick={() => ready && (isLast ? onClose() : setStep((s) => s + 1))}
+            disabled={!ready}
+            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1 disabled:cursor-not-allowed"
           >
             {isLast ? (role === 'dosen' ? 'Mulai Mengajar' : 'Mulai Belajar') : 'Lanjut'}
             {!isLast && <IconChevronRight size={15} />}
           </button>
+        </div>
+
+        <div className="h-1 rounded-full overflow-hidden mt-2.5" style={{ background: 'var(--border2, rgba(62,54,46,.12))' }}>
+          <div
+            key={step}
+            className="h-full rounded-full"
+            style={{ background: 'var(--terra)', animation: `welcomeCountdown ${STEP_DELAY_MS}ms linear forwards` }}
+          />
         </div>
       </div>
     </div>
