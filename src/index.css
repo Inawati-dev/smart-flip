@@ -12,6 +12,9 @@
   --color-brown-2: #6B5D4F;
   --color-brown-3: #9B8B7A;
   --color-red: #C04020;
+  --color-btn-bg: #D4A373;
+  --color-btn-text: #FFFFFF;
+  --color-accent-soft: rgba(212,163,115,.12);
 
   /* Matches legacy/*.html's Google Fonts pair (loaded via <link> in index.html) —
      --font-sans/--font-display back Tailwind's font-sans/font-display utilities. */
