@@ -8,6 +8,7 @@ import {
   type Jalur,
 } from '../lib/diagnostic'
 import { Layout } from '../components/Layout'
+import { useAuth } from '../contexts/AuthContext'
 import { IconCompass, IconClipboard, IconClock, IconLock, IconCheck } from '../components/icons'
 
 // Diagnostic placement test — see
@@ -36,8 +37,9 @@ const JALUR_COPY: Record<Jalur, { title: string; desc: string }> = {
 }
 
 export function Diagnostik() {
+  const { refreshProfile } = useAuth()
   const { data: questions = [], isLoading } = useQuery({
-    queryKey: ['diagnostic', 'questions'],
+    queryKey: ['diagnostic-questions'],
     queryFn: fetchDiagnosticQuestions,
   })
 
@@ -82,6 +84,11 @@ export function Diagnostik() {
     const computed = computeJalur(questions, answers)
     try {
       await saveJalur(computed.jalur)
+      // AuthContext only re-syncs profile on login/logout/token-refresh —
+      // saveJalur is a direct Supabase UPDATE, so without this refetch the
+      // context keeps serving jalur: null and Dashboard's redirect guard
+      // bounces the student straight back here in an infinite loop.
+      await refreshProfile()
     } catch (e) {
       // save failures shouldn't trap the student on a placement test they
       // already finished — mirrors src/pages/Vark.tsx's finishQuiz() pattern

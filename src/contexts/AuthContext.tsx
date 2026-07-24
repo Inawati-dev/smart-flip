@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, useCallback, type ReactNode } from 'react'
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
@@ -15,6 +15,11 @@ interface AuthContextValue {
   profile: Profile | null
   role: 'mahasiswa' | 'dosen' | null
   loading: boolean
+  // Re-fetches profile for the current user. Needed after any direct
+  // Supabase UPDATE to the profiles row (e.g. diagnostic.ts's saveJalur) —
+  // those don't go through onAuthStateChange, so without this the context
+  // silently keeps serving the stale profile until next login/logout.
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue>({
@@ -22,25 +27,33 @@ const AuthContext = createContext<AuthContextValue>({
   profile: null,
   role: null,
   loading: true,
+  refreshProfile: async () => {},
 })
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const mountedRef = useRef(true)
 
-  useEffect(() => {
-    let active = true
-
-    async function loadProfile(uid: string) {
+  const loadProfile = useCallback(async (uid: string) => {
+    try {
       const { data, error } = await supabase
         .from('profiles')
         .select('full_name, role, nim_nidn, learning_style, jalur')
         .eq('id', uid)
         .single()
       if (error) console.error('[AuthContext] failed to load profile:', error.message)
-      if (active) setProfile(data as Profile | null)
+      if (mountedRef.current) setProfile(data as Profile | null)
+    } catch (e) {
+      console.error('[AuthContext] failed to load profile:', e)
+      if (mountedRef.current) setProfile(null)
     }
+  }, [])
+
+  useEffect(() => {
+    mountedRef.current = true
+    let active = true
 
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return
@@ -58,12 +71,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       active = false
+      mountedRef.current = false
       sub.subscription.unsubscribe()
     }
-  }, [])
+  }, [loadProfile])
+
+  const refreshProfile = useCallback(async () => {
+    if (user) await loadProfile(user.id)
+  }, [user, loadProfile])
 
   return (
-    <AuthContext.Provider value={{ user, profile, role: profile?.role ?? null, loading }}>
+    <AuthContext.Provider value={{ user, profile, role: profile?.role ?? null, loading, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   )

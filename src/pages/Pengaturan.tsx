@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import { Layout } from '../components/Layout'
 import { IconGear, IconCompass, IconBell } from '../components/icons'
 
@@ -39,9 +40,9 @@ export function Pengaturan() {
             </div>
             <p className="text-xs text-brown-3">
               Kelola data diri di halaman{' '}
-              <a href="/profil" className="text-terra-d font-semibold">
+              <Link to="/profil" className="text-terra-d font-semibold">
                 Profil
-              </a>
+              </Link>
               .
             </p>
           </div>

@@ -156,7 +156,7 @@ export function Forum() {
             <button
               onClick={handleSubmitPost}
               disabled={posting}
-              className="h-9 px-5 rounded-lg bg-terra text-white text-sm font-semibold disabled:opacity-50"
+              className="min-h-11 px-5 rounded-lg bg-terra text-white text-sm font-semibold disabled:opacity-50"
             >
               {posting ? '...' : 'Kirim'}
             </button>
@@ -223,7 +223,7 @@ export function Forum() {
                   <div className="flex items-center gap-2 pt-2.5 border-t" style={BORDER}>
                     <button
                       onClick={() => handleLike(p.id)}
-                      className={`inline-flex items-center gap-1 rounded-full border px-3 h-[30px] text-sm ${
+                      className={`inline-flex items-center gap-1 rounded-full border px-3 min-h-11 text-sm ${
                         liked ? 'font-semibold' : 'text-brown-3'
                       }`}
                       style={
@@ -236,7 +236,7 @@ export function Forum() {
                     </button>
                     <button
                       onClick={() => setOpenReplies((o) => ({ ...o, [p.id]: !o[p.id] }))}
-                      className={`inline-flex items-center gap-1 rounded-full border px-3 h-[30px] text-sm ${
+                      className={`inline-flex items-center gap-1 rounded-full border px-3 min-h-11 text-sm ${
                         isOpen ? '' : 'text-brown-3'
                       }`}
                       style={
@@ -293,7 +293,7 @@ export function Forum() {
                         <button
                           onClick={() => handleSendReply(p.id)}
                           disabled={!!sendingReply[p.id]}
-                          className="h-[38px] px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50"
+                          className="min-h-11 px-3.5 rounded-lg text-sm font-semibold whitespace-nowrap disabled:opacity-50"
                           style={{ background: 'var(--brown)', color: 'var(--terra)' }}
                         >
                           Kirim

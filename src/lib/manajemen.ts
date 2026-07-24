@@ -70,15 +70,47 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
 // to append to (fetchModules() always returns [] when Supabase isn't
 // configured — see src/lib/modules.ts) so there's nowhere for a new module
 // to persist there; callers should check isSupabaseConfigured and show a
-// "butuh koneksi Supabase" message instead of calling this in demo mode.
-export async function createModul(data: { judul: string; deskripsi: string; orderNum: number }): Promise<void> {
-  const { error } = await supabase.from('modules').insert({
-    title: data.judul,
-    description: data.deskripsi,
-    order_num: data.orderNum,
-    is_active: true,
-  })
+// "butuh koneksi Supabase" message instead of calling this in demo mode —
+// and this function self-guards with the same throw in case a future caller
+// forgets to, rather than trusting the caller (unlike uploadModulPdf, which
+// *can* fall back to a local-only object URL, there's genuinely nowhere for a
+// brand-new module to live in demo mode, so a clear throw is the honest match).
+export async function createModul(data: {
+  judul: string
+  deskripsi: string
+  orderNum: number
+  status?: ModulStatus
+  durasi?: string
+  catatan?: string
+}): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('createModul membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
+  }
+  const { data: inserted, error } = await supabase
+    .from('modules')
+    .insert({
+      title: data.judul,
+      description: data.deskripsi,
+      order_num: data.orderNum,
+      // Mirrors saveModulCustom's is_active mapping below so a freshly created
+      // module respects the Status the dosen picked, instead of always
+      // landing is_active:true regardless of what the form said.
+      is_active: data.status !== 'nonaktif',
+    })
+    .select('id')
+    .single()
   if (error) throw error
+
+  // durasi/catatan have no backing column on `modules` (see saveModulCustom's
+  // comment above — they only ever round-trip through localStorage). Stash
+  // them locally keyed to the new row's id using the exact same mechanism, so
+  // create and edit are at least consistent in *what* gets captured, even
+  // though (like the edit path) they won't be read back while Supabase reads
+  // for this module keep succeeding — that's a pre-existing limitation of the
+  // schema, not something a create/edit-path fix alone can close.
+  if ((data.durasi || data.catatan) && inserted) {
+    lsSet(customKey(inserted.id as number), { durasi: data.durasi, catatan: data.catatan })
+  }
 }
 
 // Upload a dosen-provided PDF to the public `modul-pdf` Storage bucket (see
@@ -98,7 +130,18 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
       .from('modules')
       .update({ pdf_path: data.publicUrl })
       .eq('id', moduleId)
-    if (updateError) throw updateError
+    if (updateError) {
+      // Storage upload succeeded but the DB link failed — the file would
+      // otherwise sit orphaned in Storage with nothing pointing at it. Best
+      // effort cleanup: a failure here must not mask the real (updateError)
+      // failure the caller needs to see.
+      try {
+        await supabase.storage.from('modul-pdf').remove([path])
+      } catch (cleanupError) {
+        console.warn('[manajemen] uploadModulPdf → gagal membersihkan file orphan setelah update DB gagal:', cleanupError)
+      }
+      throw updateError
+    }
     return data.publicUrl
   }
   // Demo mode: no Storage backend — keep the override local only.
@@ -139,15 +182,24 @@ export async function getModulCustomMap(moduleIds: number[]): Promise<Record<num
   return Object.fromEntries(entries)
 }
 
-// Mirrors legacy/data-layer.js saveModulOrder().
+// Mirrors legacy/data-layer.js saveModulOrder(), with one deliberate
+// deviation: Promise.all would let one rejected update reject the whole call
+// while any updates that *did* succeed silently stick in the DB — the caller
+// would have no way to know the resulting order is only partially applied.
+// Promise.allSettled lets every update run to completion and we report back
+// exactly which module ids failed, so the caller can roll back its optimistic
+// UI instead of displaying an order that doesn't match what's actually saved.
 export async function saveModulOrder(order: number[]): Promise<void> {
   if (isSupabaseConfigured) {
-    try {
-      await Promise.all(order.map((moduleId, i) => supabase.from('modules').update({ order_num: i + 1 }).eq('id', moduleId)))
-      return
-    } catch (e) {
-      console.warn('[manajemen] saveModulOrder → Supabase gagal, fallback localStorage:', e)
-    }
+    const results = await Promise.allSettled(
+      order.map((moduleId, i) => supabase.from('modules').update({ order_num: i + 1 }).eq('id', moduleId)),
+    )
+    const failedIds: number[] = []
+    results.forEach((r, i) => {
+      if (r.status === 'rejected' || (r.status === 'fulfilled' && r.value.error)) failedIds.push(order[i])
+    })
+    if (failedIds.length === 0) return
+    throw new Error(`saveModulOrder: gagal menyimpan order_num untuk modul id ${failedIds.join(', ')}`)
   }
   lsSet(ORDER_KEY, order)
 }

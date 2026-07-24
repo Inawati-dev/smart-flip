@@ -170,12 +170,17 @@ export function Manajemen() {
   const totalTerkunci = order.filter((id) => statusFor(id) === 'terkunci').length
 
   async function persistOrder(next: number[]) {
+    const previous = order // last known-good order, captured before the optimistic update below
     setOrderOverride(next)
     try {
       await saveModulOrder(next)
       await queryClient.invalidateQueries({ queryKey: ['manajemen', 'order'] })
       showToast('Urutan disimpan')
     } catch {
+      // saveModulOrder can now partial-fail (Promise.allSettled) — don't leave
+      // the optimistic full-success order on screen when it isn't what's
+      // actually saved. Roll back to the last known-good order instead.
+      setOrderOverride(previous)
       showToast('Gagal menyimpan urutan')
     }
   }
@@ -215,19 +220,33 @@ export function Manajemen() {
   async function runBulkSetStatus(newStatus: 'aktif' | 'terkunci') {
     const ids = Array.from(selectedIds)
     const n = ids.length
+    const failedIds: number[] = []
     for (const id of ids) {
-      const custom = { ...customFor(id), status: newStatus }
+      const previousCustom = customFor(id)
+      const custom = { ...previousCustom, status: newStatus }
       setCustomsOverride((prev) => ({ ...prev, [id]: custom }))
       try {
         await saveModulCustom(id, custom)
       } catch {
-        // ported from legacy/manajemen.html: per-module bulk failures only console.warn
+        // Unlike the legacy console.warn-only behavior, actually roll back the
+        // optimistic override for this module — saveModulCustom really failed,
+        // so the UI shouldn't keep claiming the new status stuck.
+        failedIds.push(id)
+        setCustomsOverride((prev) => ({ ...prev, [id]: previousCustom }))
       }
     }
     await queryClient.invalidateQueries({ queryKey: ['manajemen', 'customs'] })
     setBulkConfirm(null)
     setSelectedIds(new Set())
-    showToast(`Status diperbarui: ${n} modul ${newStatus === 'aktif' ? 'diaktifkan' : 'dikunci'}`)
+    const verb = newStatus === 'aktif' ? 'diaktifkan' : 'dikunci'
+    const succeeded = n - failedIds.length
+    if (failedIds.length === 0) {
+      showToast(`Status diperbarui: ${n} modul ${verb}`)
+    } else if (succeeded === 0) {
+      showToast(`Gagal memperbarui status untuk semua ${n} modul`)
+    } else {
+      showToast(`Berhasil untuk ${succeeded} dari ${n} modul — gagal: modul ${failedIds.join(', ')}`)
+    }
   }
 
   function openEditModal(id: number) {
@@ -293,7 +312,14 @@ export function Manajemen() {
       setSaving(true)
       try {
         const nextOrderNum = Math.max(0, ...modules.map((m) => m.order_num)) + 1
-        await createModul({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum })
+        await createModul({
+          judul,
+          deskripsi: formDeskripsi.trim(),
+          orderNum: nextOrderNum,
+          status: formStatus,
+          durasi: formDurasi.trim(),
+          catatan: formCatatan.trim(),
+        })
         await queryClient.invalidateQueries({ queryKey: ['modules'] })
         setEditId(null)
         setCreatingNew(false)
@@ -463,7 +489,7 @@ export function Manajemen() {
                               disabled={isFirst}
                               title="Geser ke atas"
                               aria-label={`Geser ${judul} ke atas`}
-                              className="w-8 h-8 rounded-md border text-brown-3 flex items-center justify-center disabled:opacity-30"
+                              className="w-11 h-11 rounded-md border text-brown-3 flex items-center justify-center disabled:opacity-30"
                               style={BORDER}
                             >
                               ↑
@@ -473,7 +499,7 @@ export function Manajemen() {
                               disabled={isLast}
                               title="Geser ke bawah"
                               aria-label={`Geser ${judul} ke bawah`}
-                              className="w-8 h-8 rounded-md border text-brown-3 flex items-center justify-center disabled:opacity-30"
+                              className="w-11 h-11 rounded-md border text-brown-3 flex items-center justify-center disabled:opacity-30"
                               style={BORDER}
                             >
                               ↓
@@ -484,14 +510,14 @@ export function Manajemen() {
                           <div className="flex flex-col sm:flex-row gap-1.5">
                             <button
                               onClick={() => openEditModal(id)}
-                              className="h-8 px-3 rounded-md text-xs font-semibold whitespace-nowrap"
+                              className="h-11 px-3 rounded-md text-xs font-semibold whitespace-nowrap"
                               style={{ background: 'var(--brown)', color: 'var(--terra)' }}
                             >
                               Edit
                             </button>
                             <button
                               onClick={() => previewModule(id)}
-                              className="h-8 px-3 rounded-md border text-xs font-medium text-brown-2 whitespace-nowrap"
+                              className="h-11 px-3 rounded-md border text-xs font-medium text-brown-2 whitespace-nowrap"
                               style={BORDER}
                             >
                               Preview
@@ -553,7 +579,7 @@ export function Manajemen() {
                             <button
                               onClick={() => openDiagEditModal(q)}
                               aria-label={`Edit soal urutan ${q.order_num}`}
-                              className="w-8 h-8 rounded-md border text-brown-2 flex items-center justify-center flex-shrink-0"
+                              className="w-11 h-11 rounded-md border text-brown-2 flex items-center justify-center flex-shrink-0"
                               style={BORDER}
                             >
                               <IconEdit size={15} />
@@ -561,7 +587,7 @@ export function Manajemen() {
                             <button
                               onClick={() => setDiagDeleteId(q.id)}
                               aria-label={`Hapus soal urutan ${q.order_num}`}
-                              className="w-8 h-8 rounded-md border border-red/20 bg-red/10 text-red flex items-center justify-center flex-shrink-0"
+                              className="w-11 h-11 rounded-md border border-red/20 bg-red/10 text-red flex items-center justify-center flex-shrink-0"
                             >
                               <IconTrash size={15} />
                             </button>
@@ -675,19 +701,23 @@ export function Manajemen() {
                 <input
                   type="file"
                   accept="application/pdf"
+                  disabled={creatingNew}
                   onChange={(e) => { setPdfFile(e.target.files?.[0] ?? null); setPdfError('') }}
-                  className="text-xs text-brown-2 flex-1 min-w-[160px]"
+                  className="text-xs text-brown-2 flex-1 min-w-[160px] disabled:opacity-50"
                 />
                 <button
                   type="button"
                   onClick={handleUploadPdf}
-                  disabled={!pdfFile || uploadingPdf}
+                  disabled={creatingNew || !pdfFile || uploadingPdf}
                   className="h-9 px-3.5 rounded-lg text-xs font-semibold disabled:opacity-50 flex-shrink-0"
                   style={{ background: 'var(--terra)', color: 'white' }}
                 >
                   {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
                 </button>
               </div>
+              {creatingNew && (
+                <span className="text-[11px] text-brown-3">Simpan modul dulu sebelum unggah PDF.</span>
+              )}
               {pdfError && <span className="text-[11px] text-red">{pdfError}</span>}
             </div>
 

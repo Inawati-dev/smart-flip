@@ -81,6 +81,7 @@ function makeFakeDoc(pageCount: number) {
   return {
     numPages: pageCount,
     getPage: async () => page,
+    destroy: async () => {},
   }
 }
 
@@ -162,6 +163,20 @@ describe('Ebook', () => {
   it('shows the catalog picker (not an error) when no ?book= param is present', async () => {
     renderEbook(null)
     await waitFor(() => expect(screen.getByText(/Modul 1/)).toBeTruthy())
+  })
+
+  it('shows the catalog picker (not a stuck spinner) when ?book= is non-numeric', async () => {
+    const queryClient = new QueryClient()
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/ebook?book=abc']}>
+          <Ebook />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    await waitFor(() => expect(screen.getByText(/Modul 1/)).toBeTruthy())
+    expect(screen.queryByRole('status')).toBeNull()
+    expect(screen.queryByText('Membuka PDF…')).toBeNull()
   })
 
   it('shows a friendly "not available yet" message when the PDF fails to load (404)', async () => {

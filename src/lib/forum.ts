@@ -166,7 +166,7 @@ export async function addPost({
 
   const all = readLocalPosts()
   const post: ForumPost = {
-    id: 'post_' + Date.now(),
+    id: 'post_' + crypto.randomUUID(),
     moduleId,
     authorName,
     authorRole,
@@ -214,7 +214,7 @@ export async function addReply(
   if (!post) return
   post.replies = post.replies || []
   post.replies.push({
-    id: 'rep_' + Date.now(),
+    id: 'rep_' + crypto.randomUUID(),
     authorName,
     authorRole,
     content: content.trim(),
