@@ -204,7 +204,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 // stray floating rectangle with no label to anchor it. Just
                 // shift the icon color instead.
                 ? 'text-brown-2 hover:text-brown'
-                : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'
+                : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
           }`}
           aria-label={item.label}
           aria-current={active ? 'page' : undefined}
@@ -242,7 +242,7 @@ export function Layout({ children }: { children: ReactNode }) {
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-            className="cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-brown flex-shrink-0 hover:bg-[rgba(62,54,46,.06)] transition-colors"
+            className="cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-brown flex-shrink-0 hover:bg-brown/[0.06] transition-colors"
           >
             <IconBook size={20} />
           </button>
@@ -267,7 +267,7 @@ export function Layout({ children }: { children: ReactNode }) {
                 <div key={section.key}>
                   <button
                     onClick={() => toggleSection(section.key)}
-                    className="w-full flex items-center justify-between px-3 py-1 rounded-lg cursor-pointer text-[12px] font-bold uppercase tracking-wide text-brown-3 hover:bg-[rgba(62,54,46,.06)] hover:text-brown transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-1 rounded-lg cursor-pointer text-[12px] font-bold uppercase tracking-wide text-brown-3 hover:bg-brown/[0.06] hover:text-brown transition-colors"
                     aria-expanded={open}
                   >
                     <span>{section.label}</span>
@@ -369,7 +369,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     to={item.to}
                     onClick={() => setDrawerOpen(false)}
                     className={`min-h-11 flex items-center gap-2.5 px-3.5 rounded-lg font-semibold text-sm cursor-pointer transition-colors ${
-                      active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'
+                      active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
                     }`}
                   >
                     <Icon size={17} /> {item.label}
