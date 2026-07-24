@@ -101,6 +101,13 @@ export function Layout({ children }: { children: ReactNode }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
   const [flyout, setFlyout] = useState<string | null>(null)
+  // Screen-space Y for the currently-hovered collapsed-rail item's flyout
+  // label. Computed from the hovered element's own getBoundingClientRect()
+  // and rendered via position:fixed (viewport-relative) instead of
+  // position:absolute (ancestor-relative) — absolute positioning let the
+  // label get clipped by any ancestor's overflow/stacking quirks; fixed
+  // positioning against the real viewport can't be "submerged" by anything.
+  const [flyoutTop, setFlyoutTop] = useState(0)
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && window.localStorage.getItem(COLLAPSE_KEY) === '1',
   )
@@ -165,13 +172,27 @@ export function Layout({ children }: { children: ReactNode }) {
       <div
         key={item.to}
         className={collapsed ? 'relative w-full flex justify-center' : 'relative'}
-        onMouseEnter={() => collapsed && setFlyout(item.to)}
+        onMouseEnter={(e) => {
+          if (!collapsed) return
+          setFlyout(item.to)
+          setFlyoutTop(e.currentTarget.getBoundingClientRect().top + e.currentTarget.getBoundingClientRect().height / 2)
+        }}
       >
         <Link
           to={item.to}
           className={`cursor-pointer transition-colors ${
             collapsed ? 'w-10 h-10 rounded-xl flex items-center justify-center' : 'h-9 px-3 rounded-lg flex items-center gap-2.5 text-sm font-semibold'
-          } ${active ? 'bg-brown text-terra' : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'}`}
+          } ${
+            active
+              ? 'bg-brown text-terra'
+              : collapsed
+                // Collapsed rail already shows a flyout label on hover (below) —
+                // a second background-box highlight on the bare icon reads as a
+                // stray floating rectangle with no label to anchor it. Just
+                // shift the icon color instead.
+                ? 'text-brown-2 hover:text-brown'
+                : 'text-brown-2 hover:bg-[rgba(62,54,46,.06)] hover:text-brown'
+          }`}
           aria-label={item.label}
           aria-current={active ? 'page' : undefined}
         >
@@ -180,8 +201,8 @@ export function Layout({ children }: { children: ReactNode }) {
         </Link>
         {collapsed && flyout === item.to && (
           <div
-            className="absolute left-[64px] top-1/2 -translate-y-1/2 z-50 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
-            style={{ background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
+            className="fixed left-[80px] z-[999] whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
+            style={{ top: flyoutTop, transform: 'translateY(-50%)', background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
           >
             {item.label}
           </div>
@@ -233,12 +254,12 @@ export function Layout({ children }: { children: ReactNode }) {
                 <div key={section.key}>
                   <button
                     onClick={() => toggleSection(section.key)}
-                    className="w-full flex items-center justify-between px-3 py-0.5 rounded-lg cursor-pointer text-[10px] font-bold uppercase tracking-wide text-brown-3 hover:bg-[rgba(62,54,46,.06)] hover:text-brown transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-1 rounded-lg cursor-pointer text-[12px] font-bold uppercase tracking-wide text-brown-3 hover:bg-[rgba(62,54,46,.06)] hover:text-brown transition-colors"
                     aria-expanded={open}
                   >
                     <span>{section.label}</span>
                     <IconChevronRight
-                      size={11}
+                      size={13}
                       style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.15s ease' }}
                     />
                   </button>
@@ -255,7 +276,11 @@ export function Layout({ children }: { children: ReactNode }) {
 
         <button
           onClick={() => setLogoutOpen(true)}
-          onMouseEnter={() => collapsed && setFlyout('logout')}
+          onMouseEnter={(e) => {
+            if (!collapsed) return
+            setFlyout('logout')
+            setFlyoutTop(e.currentTarget.getBoundingClientRect().top + e.currentTarget.getBoundingClientRect().height / 2)
+          }}
           className={`cursor-pointer transition-colors hover:bg-[rgba(192,64,32,.08)] ${
             collapsed
               ? 'relative w-10 h-10 rounded-xl flex items-center justify-center text-red'
@@ -266,8 +291,8 @@ export function Layout({ children }: { children: ReactNode }) {
           {!collapsed && <span>Keluar</span>}
           {collapsed && flyout === 'logout' && (
             <div
-              className="absolute left-[64px] top-1/2 -translate-y-1/2 z-50 whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
-              style={{ background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
+              className="fixed left-[80px] z-[999] whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
+              style={{ top: flyoutTop, transform: 'translateY(-50%)', background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
             >
               Keluar
             </div>

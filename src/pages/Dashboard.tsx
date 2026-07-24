@@ -40,6 +40,7 @@ export function Dashboard() {
       {showWelcome && role && (
         <WelcomeModal
           role={role}
+          userName={profile?.full_name}
           onClose={() => {
             markOnboardingSeen(role)
             setShowWelcome(false)

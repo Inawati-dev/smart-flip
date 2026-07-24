@@ -32,6 +32,46 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Consistent native <select> styling, app-wide — several pages (Manajemen's
+   status filter, Forum's module picker, etc.) were rendering raw unstyled
+   browser selects (system font, blue highlight) that didn't match the
+   rounded/warm rest of the design. One rule fixes the closed control on
+   every page at once; the OPEN dropdown list itself is OS/browser-native
+   chrome that CSS can't restyle without swapping to a fully custom listbox
+   component (out of scope here). */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: var(--ivory);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239B8B7A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 15px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 34px 0 12px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brown);
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+select:hover:not(:disabled) {
+  border-color: var(--terra);
+}
+select:focus {
+  outline: none;
+  border-color: var(--terra);
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.18);
+}
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Tactile button feel, app-wide — every native <button> gets a subtle hover
    lift and a press-down on click, instead of a flat/instant state change.
    Scoped to `button` (not `a`) so plain hyperlinks styled as text links
@@ -64,6 +104,53 @@ button:not(:disabled):active {
   button:not(:disabled):active {
     filter: none;
     transform: none;
+  }
+}
+
+/* Ebook reader page-turn overlay (src/pages/Ebook.tsx) — the live canvas
+   underneath always repaints to the DESTINATION page immediately on
+   navigate; this overlay is just a snapshot of the OUTGOING page animating
+   away on top of it, revealing the already-updated canvas as it goes.
+   Three interchangeable styles (readerStyle preference); experimental —
+   this block + the picker UI + the overlay logic in Ebook.tsx is the whole
+   surface area if it needs to come back out. */
+.reader-flip-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.reader-flip-overlay.style-flip3d.dir-next,
+.reader-flip-overlay.style-spread.side-right.dir-next {
+  transform-origin: left center;
+  animation: readerFlipNext 0.6s cubic-bezier(.4,.1,.2,1) forwards;
+}
+.reader-flip-overlay.style-flip3d.dir-prev {
+  transform-origin: left center;
+  animation: readerFlipPrev 0.6s cubic-bezier(.4,.1,.2,1) forwards;
+}
+.reader-flip-overlay.style-spread.side-left.dir-prev {
+  transform-origin: right center;
+  animation: readerFlipPrev 0.6s cubic-bezier(.4,.1,.2,1) forwards;
+}
+@keyframes readerFlipNext { from { transform: rotateY(0deg); } to { transform: rotateY(-180deg); } }
+@keyframes readerFlipPrev { from { transform: rotateY(0deg); } to { transform: rotateY(180deg); } }
+
+.reader-flip-overlay.style-slide.dir-next {
+  animation: readerSlideOutNext 0.38s cubic-bezier(.32,.72,0,1) forwards;
+}
+.reader-flip-overlay.style-slide.dir-prev {
+  animation: readerSlideOutPrev 0.38s cubic-bezier(.32,.72,0,1) forwards;
+}
+@keyframes readerSlideOutNext { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-24px); } }
+@keyframes readerSlideOutPrev { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(24px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .reader-flip-overlay {
+    animation: none !important;
+    opacity: 0 !important;
   }
 }
 

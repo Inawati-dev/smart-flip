@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import * as pdfjsLib from 'pdfjs-dist'
 // Vite-bundled worker asset (mirrors legacy/ebook.html's CDN <script> worker
@@ -6,12 +6,19 @@ import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
 import { saveProgress, moduleIdToPath } from '../lib/progress'
 import { useModules } from '../hooks/useModules'
+import { getReaderStyle, setReaderStyle, type ReaderStyle } from '../lib/readerStyle'
 import { Layout } from '../components/Layout'
 import { IconWarning, IconSkipBack, IconSkipForward, IconBook } from '../components/icons'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
 
 type Status = 'loading' | 'ready' | 'error'
+
+const BASE_SCALE = 1.5
+const ZOOM_MIN = 0.8
+const ZOOM_MAX = 2
+const ZOOM_STEP = 0.1
+const SPREAD_MIN_WIDTH = 900 // below this, "Buka Buku" silently falls back to single-page
 
 // A small first-page-only render used as the catalog card's cover — mirrors
 // legacy/script.js's per-card async cover render, just against pdf.js
@@ -85,16 +92,15 @@ function CoverThumb({ src }: { src: string }) {
 // the PDF is fetched, same as any client-rendered file, but it's no longer
 // a bookmarkable/shareable link that exposes the storage bucket layout).
 //
-// Deferred vs. legacy/script.js (see PR description for rationale):
-//   - Desktop two-page spread + 3D CSS flip animation (buildBook/navigate's
-//     flipper rotateY) — this MVP renders one page at a time on all
-//     viewports, like legacy's mobile mode.
-//   - Full-book background pre-render + in-memory Map page cache
-//     (preRenderAll/pageCache) — this renders only the page(s) actually
-//     viewed, on demand.
-//   - Thumbnail strip sidebar (buildThumbs/toggleThumbs), pinch-zoom/pan/
-//     wheel-zoom, swipe navigation, keyboard shortcuts, and the "expand"
-//     fullscreen toggle.
+// Reader style ("Flip 3D" / "Buka Buku" / "Geser", src/lib/readerStyle.ts):
+// the live canvas always repaints to the DESTINATION page immediately on
+// navigate (unchanged from before) — a snapshot of the OUTGOING page
+// animates away on top of it via .reader-flip-overlay (src/index.css),
+// revealing the already-updated canvas underneath. "Buka Buku" additionally
+// renders two pages side by side and only overlays the page that visually
+// turns. This is intentionally simple (no pre-rendered page cache, no
+// pinch-zoom/pan, no thumbnail strip) — see legacy/script.js for the fuller
+// feature set this doesn't attempt to match.
 export function Ebook() {
   const [searchParams, setSearchParams] = useSearchParams()
   const bookId = searchParams.get('book')
@@ -111,13 +117,48 @@ export function Ebook() {
   const src = currentModule?.path || currentModule?.pdf_path || ''
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef2 = useRef<HTMLCanvasElement>(null) // right-hand page, "Buka Buku" only
   const pdfRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
   const renderTaskRef = useRef<pdfjsLib.RenderTask | null>(null)
+  const renderTaskRef2 = useRef<pdfjsLib.RenderTask | null>(null)
 
   const [status, setStatus] = useState<Status>('loading')
   const [errorMsg, setErrorMsg] = useState('')
   const [totalPages, setTotalPages] = useState(0)
   const [currentPage, setCurrentPage] = useState(1) // 1-based, matches PDF.js page numbering
+  const [zoom, setZoom] = useState(1)
+  const [readerStyleState, setReaderStyleState] = useState<ReaderStyle>(() => getReaderStyle())
+  const [isWide, setIsWide] = useState(() => typeof window !== 'undefined' && window.innerWidth >= SPREAD_MIN_WIDTH)
+  const [flipOverlay, setFlipOverlay] = useState<{
+    direction: 'next' | 'prev'
+    snapshot: string
+    side: 'single' | 'left' | 'right'
+  } | null>(null)
+
+  const effectiveStyle: ReaderStyle = readerStyleState === 'spread' && !isWide ? 'flip3d' : readerStyleState
+
+  useEffect(() => {
+    function onResize() {
+      setIsWide(window.innerWidth >= SPREAD_MIN_WIDTH)
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  // Spread mode pairs pages (1,2) (3,4) ... — currentPage is always the LEFT
+  // page of the pair, so it must stay odd. Only matters right after switching
+  // INTO spread mode from a style that was sitting on an even page.
+  useEffect(() => {
+    if (effectiveStyle === 'spread' && currentPage % 2 === 0) {
+      setCurrentPage((p) => Math.max(1, p - 1))
+    }
+  }, [effectiveStyle, currentPage])
+
+  function chooseStyle(style: ReaderStyle) {
+    setReaderStyleState(style)
+    setReaderStyle(style)
+    setFlipOverlay(null)
+  }
 
   // ── Load the PDF whenever the resolved source changes ──
   // The PDFDocumentProxy loaded here must be .destroy()'d — otherwise it
@@ -134,6 +175,8 @@ export function Ebook() {
     setErrorMsg('')
     setTotalPages(0)
     setCurrentPage(1)
+    setZoom(1)
+    setFlipOverlay(null)
 
     if (moduleId == null) return // no book selected — the catalog grid renders instead, see JSX below
     if (!src) {
@@ -181,39 +224,47 @@ export function Ebook() {
     }
   }, [moduleId, src, modules.length])
 
-  // ── Render the current page into the canvas ──
-  const renderPage = useCallback(async (num: number) => {
-    const doc = pdfRef.current
-    const canvas = canvasRef.current
-    if (!doc || !canvas || num < 1 || num > doc.numPages) return
+  // ── Render a page into a given canvas — shared by the single-canvas and
+  // two-canvas ("Buka Buku") layouts, each tracking its own cancel-in-flight
+  // render task so switching pages rapidly can't paint a stale page. ──
+  const renderPageTo = useCallback(
+    async (num: number, canvas: HTMLCanvasElement | null, taskRef: MutableRefObject<pdfjsLib.RenderTask | null>, scaleMult: number) => {
+      const doc = pdfRef.current
+      if (!doc || !canvas || num < 1 || num > doc.numPages) return
 
-    if (renderTaskRef.current) {
-      renderTaskRef.current.cancel()
-      renderTaskRef.current = null
-    }
+      if (taskRef.current) {
+        taskRef.current.cancel()
+        taskRef.current = null
+      }
 
-    const page = await doc.getPage(num)
-    const viewport = page.getViewport({ scale: 1.5 })
-    canvas.width = viewport.width
-    canvas.height = viewport.height
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+      const page = await doc.getPage(num)
+      const viewport = page.getViewport({ scale: BASE_SCALE * scaleMult })
+      canvas.width = viewport.width
+      canvas.height = viewport.height
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return
 
-    const task = page.render({ canvasContext: ctx, viewport })
-    renderTaskRef.current = task
-    try {
-      await task.promise
-    } catch {
-      // Render cancelled by a newer page request — ignore, matches
-      // legacy/script.js's doRenderPage() swallowing render errors.
-    } finally {
-      if (renderTaskRef.current === task) renderTaskRef.current = null
-    }
-  }, [])
+      const task = page.render({ canvasContext: ctx, viewport })
+      taskRef.current = task
+      try {
+        await task.promise
+      } catch {
+        // Render cancelled by a newer page request — ignore, matches
+        // legacy/script.js's doRenderPage() swallowing render errors.
+      } finally {
+        if (taskRef.current === task) taskRef.current = null
+      }
+    },
+    [],
+  )
 
   useEffect(() => {
-    if (status === 'ready') void renderPage(currentPage)
-  }, [status, currentPage, renderPage])
+    if (status !== 'ready') return
+    void renderPageTo(currentPage, canvasRef.current, renderTaskRef, zoom)
+    if (effectiveStyle === 'spread') {
+      void renderPageTo(currentPage + 1, canvasRef2.current, renderTaskRef2, zoom)
+    }
+  }, [status, currentPage, effectiveStyle, zoom, renderPageTo])
 
   // ── Save progress on every page change (mirrors legacy/script.js's
   // renderView() -> saveProgress() firing on every navigate()). Keyed by the
@@ -226,23 +277,69 @@ export function Ebook() {
     saveProgress(moduleIdToPath(moduleId), { pct, currentPage, lastOpened: new Date().toISOString() }).catch(() => {})
   }, [status, currentPage, totalPages, moduleId])
 
+  const stepSize = effectiveStyle === 'spread' ? 2 : 1
+  const nextTarget = Math.min(totalPages || 1, currentPage + stepSize)
+  const prevTarget = Math.max(1, currentPage - stepSize)
+  const nextDisabled = nextTarget === currentPage
+  const prevDisabled = prevTarget === currentPage
+
+  // Captures the page(s) about to be replaced as a snapshot, then lets the
+  // real navigation proceed (the live canvas repaints underneath); the
+  // snapshot animates away on top via .reader-flip-overlay. toDataURL() can
+  // throw in some test/embedding contexts — a failure there just means no
+  // overlay for that one turn, not a broken navigation.
+  function beginFlip(direction: 'next' | 'prev') {
+    if (effectiveStyle === 'spread') {
+      const canvas = direction === 'next' ? canvasRef2.current : canvasRef.current
+      try {
+        const snapshot = canvas?.toDataURL()
+        if (snapshot) setFlipOverlay({ direction, snapshot, side: direction === 'next' ? 'right' : 'left' })
+      } catch {
+        // ignore — page still turns, just without the overlay animation
+      }
+    } else {
+      try {
+        const snapshot = canvasRef.current?.toDataURL()
+        if (snapshot) setFlipOverlay({ direction, snapshot, side: 'single' })
+      } catch {
+        // ignore
+      }
+    }
+  }
+
   function goFirst() {
+    setFlipOverlay(null)
     setCurrentPage(1)
   }
   function goPrev() {
-    setCurrentPage((p) => Math.max(1, p - 1))
+    if (prevDisabled) return
+    beginFlip('prev')
+    setCurrentPage(prevTarget)
   }
   function goNext() {
-    setCurrentPage((p) => Math.min(totalPages || 1, p + 1))
+    if (nextDisabled) return
+    beginFlip('next')
+    setCurrentPage(nextTarget)
   }
   function goLast() {
-    setCurrentPage(totalPages || 1)
+    setFlipOverlay(null)
+    if (effectiveStyle === 'spread') {
+      setCurrentPage(totalPages % 2 === 0 ? Math.max(1, totalPages - 1) : totalPages || 1)
+    } else {
+      setCurrentPage(totalPages || 1)
+    }
+  }
+  function zoomIn() {
+    setZoom((z) => Math.min(ZOOM_MAX, +(z + ZOOM_STEP).toFixed(2)))
+  }
+  function zoomOut() {
+    setZoom((z) => Math.max(ZOOM_MIN, +(z - ZOOM_STEP).toFixed(2)))
   }
 
   return (
     <Layout>
       <div className="flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
-        <div className="w-full max-w-4xl flex items-center justify-between gap-3">
+        <div className="w-full max-w-4xl flex items-center justify-between gap-3 flex-wrap">
           <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="text-xs md:text-sm text-brown-3 hover:text-brown">
             ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
           </Link>
@@ -250,6 +347,53 @@ export function Ebook() {
             {currentModule?.title ?? (moduleId != null ? '' : 'Perpustakaan Digital')}
           </span>
         </div>
+
+        {moduleId != null && status === 'ready' && (
+          <div className="w-full max-w-4xl flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex gap-1 p-1 rounded-full" style={{ background: 'var(--bg3)' }}>
+              {(
+                [
+                  { key: 'flip3d', label: 'Flip 3D' },
+                  { key: 'spread', label: 'Buka Buku' },
+                  { key: 'slide', label: 'Geser' },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => chooseStyle(opt.key)}
+                  className="min-h-9 px-3 rounded-full text-xs font-semibold whitespace-nowrap"
+                  style={
+                    readerStyleState === opt.key
+                      ? { background: 'var(--brown)', color: 'var(--terra)' }
+                      : { color: 'var(--brown-3)' }
+                  }
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-1 p-1 rounded-full" style={{ background: 'var(--bg3)' }}>
+              <button
+                onClick={zoomOut}
+                disabled={zoom <= ZOOM_MIN}
+                title="Perkecil"
+                className="w-8 h-8 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
+              >
+                −
+              </button>
+              <span className="text-xs font-semibold text-brown-2 min-w-[42px] text-center">{Math.round(zoom * 100)}%</span>
+              <button
+                onClick={zoomIn}
+                disabled={zoom >= ZOOM_MAX}
+                title="Perbesar"
+                className="w-8 h-8 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
 
         {moduleId == null && (
           <div className="w-full max-w-4xl">
@@ -310,7 +454,33 @@ export function Ebook() {
               className="w-full max-w-4xl flex-1 flex justify-center items-start bg-bg3 rounded-2xl border overflow-auto p-4 md:p-8"
               style={{ borderColor: 'var(--border)', minHeight: '60vh', maxHeight: 'calc(100vh - 200px)' }}
             >
-              <canvas ref={canvasRef} className="max-w-full h-auto shadow-lg rounded-sm" />
+              {effectiveStyle === 'spread' ? (
+                <div className="relative flex" style={{ boxShadow: '0 4px 24px rgba(62,54,46,.16)' }}>
+                  <canvas ref={canvasRef} className="max-w-full h-auto rounded-l-sm" style={{ borderRight: '1px solid var(--border)' }} />
+                  <canvas ref={canvasRef2} className="max-w-full h-auto rounded-r-sm" />
+                  {flipOverlay && (
+                    <img
+                      src={flipOverlay.snapshot}
+                      alt=""
+                      className={`reader-flip-overlay style-spread side-${flipOverlay.side} dir-${flipOverlay.direction}`}
+                      style={flipOverlay.side === 'right' ? { left: '50%', right: 0 } : { left: 0, right: '50%' }}
+                      onAnimationEnd={() => setFlipOverlay(null)}
+                    />
+                  )}
+                </div>
+              ) : (
+                <div className="relative">
+                  <canvas ref={canvasRef} className="max-w-full h-auto shadow-lg rounded-sm" />
+                  {flipOverlay && (
+                    <img
+                      src={flipOverlay.snapshot}
+                      alt=""
+                      className={`reader-flip-overlay style-${effectiveStyle} side-single dir-${flipOverlay.direction}`}
+                      onAnimationEnd={() => setFlipOverlay(null)}
+                    />
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-2.5 flex-wrap justify-center">
@@ -325,7 +495,7 @@ export function Ebook() {
               </button>
               <button
                 onClick={goPrev}
-                disabled={currentPage <= 1}
+                disabled={prevDisabled}
                 title="Sebelumnya"
                 className="min-h-11 px-4 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
                 style={{ borderColor: 'var(--border)' }}
@@ -333,11 +503,13 @@ export function Ebook() {
                 ‹ Sebelumnya
               </button>
               <span className="text-sm font-semibold text-brown min-w-[80px] text-center">
-                {currentPage} / {totalPages}
+                {effectiveStyle === 'spread' && currentPage + 1 <= totalPages
+                  ? `${currentPage}–${currentPage + 1} / ${totalPages}`
+                  : `${currentPage} / ${totalPages}`}
               </span>
               <button
                 onClick={goNext}
-                disabled={currentPage >= totalPages}
+                disabled={nextDisabled}
                 title="Berikutnya"
                 className="min-h-11 px-4 rounded-full border-none bg-terra text-white text-sm font-semibold disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
               >

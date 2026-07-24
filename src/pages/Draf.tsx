@@ -158,7 +158,11 @@ export function Draf() {
           <div className="text-center py-10 px-4 text-brown-3">
             <span className="flex justify-center mb-2.5"><IconDocument size={40} /></span>
             <p className="text-sm leading-relaxed">
-              {filter === 'all' ? 'Belum ada draf. Klik "+ Draf Baru" untuk mulai.' : 'Tidak ada draf dengan status ini.'}
+              {filter !== 'all'
+                ? 'Tidak ada draf dengan status ini.'
+                : isDosen
+                  ? 'Belum ada draf mahasiswa yang masuk.'
+                  : 'Belum ada draf. Klik "+ Draf Baru" untuk mulai.'}
             </p>
           </div>
         ) : (

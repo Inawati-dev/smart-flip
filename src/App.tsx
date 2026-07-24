@@ -65,7 +65,9 @@ export default function App() {
               <Route path="/validasi" element={<ProtectedRoute roles={['dosen']}><Validasi /></ProtectedRoute>} />
               <Route path="/analitik" element={<ProtectedRoute roles={['dosen']}><Analitik /></ProtectedRoute>} />
               <Route path="/manajemen" element={<ProtectedRoute roles={['dosen']}><Manajemen /></ProtectedRoute>} />
-              <Route path="/changelog" element={<ProtectedRoute roles={['dosen']}><Changelog /></ProtectedRoute>} />
+              {/* Public — linked from the logged-out AuthShell footer too, so
+                  it must render standalone without bouncing through auth. */}
+              <Route path="/changelog" element={<Changelog />} />
               <Route path="/pengaturan" element={<ProtectedRoute><Pengaturan /></ProtectedRoute>} />
             </Routes>
           </ErrorBoundary>
