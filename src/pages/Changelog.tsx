@@ -539,9 +539,30 @@ const ROADMAP_STATUS_CLASSES: Record<RoadmapItem['status'], string> = {
   planned: 'bg-bg3 text-brown-3 border border-[color:var(--border)]',
 }
 
+// Groups consecutive same-date entries under one date header instead of
+// repeating the date on every version card — several versions in `versions`
+// already share a release date (v0.9.4/v0.9.5/v0.9.6 all 2026-06-18), which
+// is exactly the shape SAKTI's own changelog (sakti-ku.vercel.app/#changelog)
+// groups by, per the user's explicit reference request.
+function groupByDate(entries: VersionEntry[]): Array<{ date: string; entries: VersionEntry[] }> {
+  const groups: Array<{ date: string; entries: VersionEntry[] }> = []
+  for (const entry of entries) {
+    const last = groups[groups.length - 1]
+    if (last && last.date === entry.date) last.entries.push(entry)
+    else groups.push({ date: entry.date, entries: [entry] })
+  }
+  return groups
+}
+
+function formatDateHeader(iso: string): string {
+  const d = new Date(iso + 'T00:00:00')
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase()
+}
+
 function VersionBlock({ entry }: { entry: VersionEntry }) {
   return (
-    <div className="mb-9 border border-[color:var(--border)] rounded-xl bg-ivory overflow-hidden shadow-sm">
+    <div className="border border-[color:var(--border)] rounded-xl bg-ivory overflow-hidden shadow-sm">
       <div className="flex items-center gap-3.5 px-5 py-4 bg-bg3 border-b border-[color:var(--border)] flex-wrap">
         <span
           className={`text-[13px] font-bold tracking-wide px-3 py-1 rounded-full font-mono flex-shrink-0 ${
@@ -551,7 +572,6 @@ function VersionBlock({ entry }: { entry: VersionEntry }) {
           {entry.version}
           {entry.current ? ' ✦' : ''}
         </span>
-        <span className="text-xs text-brown-3 whitespace-nowrap">{entry.date}</span>
       </div>
       <div className="px-[22px] py-[18px] flex flex-col gap-4">
         {CATEGORY_ORDER.filter((cat) => entry.sections[cat]?.length).map((cat) => (
@@ -613,9 +633,18 @@ export default function Changelog() {
           </p>
         </div>
 
-        <div>
-          {versions.map((entry) => (
-            <VersionBlock key={entry.version} entry={entry} />
+        <div className="flex flex-col gap-8">
+          {groupByDate(versions).map((group) => (
+            <div key={group.date}>
+              <h2 className="text-[11px] font-bold tracking-widest uppercase text-brown-3 mb-3">
+                {formatDateHeader(group.date)}
+              </h2>
+              <div className="flex flex-col gap-4">
+                {group.entries.map((entry) => (
+                  <VersionBlock key={entry.version} entry={entry} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
 
