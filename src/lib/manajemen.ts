@@ -182,20 +182,43 @@ export async function getModulCustomMap(moduleIds: number[]): Promise<Record<num
   return Object.fromEntries(entries)
 }
 
-// Mirrors legacy/data-layer.js saveModulOrder(), with one deliberate
-// deviation: Promise.all would let one rejected update reject the whole call
-// while any updates that *did* succeed silently stick in the DB — the caller
-// would have no way to know the resulting order is only partially applied.
-// Promise.allSettled lets every update run to completion and we report back
-// exactly which module ids failed, so the caller can roll back its optimistic
-// UI instead of displaying an order that doesn't match what's actually saved.
+// Mirrors legacy/data-layer.js saveModulOrder(), with two deliberate
+// deviations from a naive "fire N parallel UPDATEs" implementation:
+//
+// 1. `modules.order_num` has a hard UNIQUE constraint (database/schema.sql).
+//    Firing all target order_num updates in parallel is a real, reliably
+//    reproducible race: e.g. swapping modules A (3->1) and B (1->3), A's
+//    UPDATE can try to commit order_num=1 while B's row still holds it (each
+//    Supabase .update() call is its own independent transaction, so there's
+//    no shared transaction to defer the UNIQUE check within) -> Postgres
+//    rejects it with a unique-violation. This is the actual, confirmed cause
+//    of the "Gagal menyimpan urutan" failures seen in production, not a
+//    transient/flaky backend issue. Fixed with a two-phase move: first push
+//    every affected row to a temporary NEGATIVE order_num (guaranteed to
+//    never collide with the 1..N positive range or with each other, since
+//    they're keyed by index), then set every row to its real final
+//    order_num — by the time phase 2 runs, none of the target positive
+//    values are still occupied by anything in this reorder set (the array
+//    always contains every module, see Manajemen.tsx's `order` derivation).
+// 2. Still uses Promise.allSettled (not Promise.all) within each phase and
+//    reports back exactly which module ids failed, so the caller can roll
+//    back its optimistic UI instead of displaying an order that doesn't
+//    match what's actually saved.
 export async function saveModulOrder(order: number[]): Promise<void> {
   if (isSupabaseConfigured) {
-    const results = await Promise.allSettled(
+    const phase1 = await Promise.allSettled(
+      order.map((moduleId, i) => supabase.from('modules').update({ order_num: -(i + 1) }).eq('id', moduleId)),
+    )
+    const phase1Failed = phase1.some((r) => r.status === 'rejected' || (r.status === 'fulfilled' && r.value.error))
+    if (phase1Failed) {
+      throw new Error('saveModulOrder: gagal pada tahap penempatan sementara')
+    }
+
+    const phase2 = await Promise.allSettled(
       order.map((moduleId, i) => supabase.from('modules').update({ order_num: i + 1 }).eq('id', moduleId)),
     )
     const failedIds: number[] = []
-    results.forEach((r, i) => {
+    phase2.forEach((r, i) => {
       if (r.status === 'rejected' || (r.status === 'fulfilled' && r.value.error)) failedIds.push(order[i])
     })
     if (failedIds.length === 0) return
