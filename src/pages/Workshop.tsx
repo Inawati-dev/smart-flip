@@ -123,7 +123,7 @@ export default function Workshop() {
           <div className="text-xs font-semibold text-terra tracking-widest uppercase mb-1">
             MODUL {moduleId}
           </div>
-          <h1 className="font-['Playfair_Display',serif] text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-white leading-tight mb-2">
             {workshop.judul}
           </h1>
           <div className="flex items-center gap-1.5 mt-3 text-white/55 text-sm">
@@ -156,7 +156,7 @@ export default function Workshop() {
         {/* TAB: TUJUAN */}
         {activeTab === 'tujuan' && (
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-7 mb-4">
-            <h2 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
+            <h2 className="font-display text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
               Tujuan Pembelajaran Sesi
             </h2>
             <ul className="flex flex-col gap-2.5">
@@ -175,7 +175,7 @@ export default function Workshop() {
         {/* TAB: AKTIVITAS */}
         {activeTab === 'aktivitas' && (
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-7 mb-4">
-            <h2 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
+            <h2 className="font-display text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
               Alur Aktivitas Sesi
             </h2>
             <div className="flex flex-col">
@@ -208,7 +208,7 @@ export default function Workshop() {
         {/* TAB: CHECKLIST */}
         {activeTab === 'checklist' && (
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-7 mb-4">
-            <h2 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
+            <h2 className="font-display text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
               Checklist Kesiapan Mahasiswa
             </h2>
             <div className="flex items-center gap-3 mb-4">
@@ -263,7 +263,7 @@ export default function Workshop() {
         {/* TAB: LEMBAR KERJA */}
         {activeTab === 'lembarkerja' && (
           <div className="bg-ivory border border-[color:var(--border)] rounded-xl p-7 mb-4">
-            <h2 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
+            <h2 className="font-display text-lg font-bold text-brown mb-5 pb-3 border-b border-[color:var(--border)]">
               {workshop.lembarKerja.judul}
             </h2>
             <div className="text-sm leading-relaxed text-brown-2 bg-terra/10 border border-terra/20 border-l-[3px] border-l-terra rounded-r-lg px-4 py-3.5 mb-6">

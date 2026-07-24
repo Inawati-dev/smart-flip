@@ -234,7 +234,7 @@ export function Validasi() {
       <div className="p-4 md:p-8 pb-16 print:p-0 print:max-w-full">
         {/* PAGE HEADING */}
         <div className="mb-7 print:hidden">
-          <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown leading-tight">
+          <h1 className="font-display text-xl md:text-2xl font-bold text-brown leading-tight">
             Instrumen Validasi Ahli
           </h1>
           <p className="text-sm text-brown-3 mt-1.5">
@@ -244,7 +244,7 @@ export function Validasi() {
 
         {/* INFO PANEL */}
         <div className="bg-ivory rounded-2xl border p-5 md:p-7 mb-5 print:hidden" style={BORDER}>
-          <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4">
+          <div className="font-display text-base font-semibold text-brown mb-4">
             Informasi Instrumen
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-x-6 sm:gap-y-3 mb-4">
@@ -280,7 +280,7 @@ export function Validasi() {
           <div>
             {/* IDENTITAS VALIDATOR */}
             <div className="bg-ivory rounded-2xl border p-5 md:p-7 mb-5" style={BORDER}>
-              <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4">
+              <div className="font-display text-base font-semibold text-brown mb-4">
                 Identitas Validator
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -500,7 +500,7 @@ export function Validasi() {
         {viewMode === 'result' && result && (
           <div>
             <div className="bg-ivory rounded-2xl border p-5 md:p-7 mb-5 print:border-black" style={BORDER}>
-              <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4">Hasil Validasi</div>
+              <div className="font-display text-base font-semibold text-brown mb-4">Hasil Validasi</div>
 
               {(() => {
                 const ki = kelayakanInfo(result.totalAvg)

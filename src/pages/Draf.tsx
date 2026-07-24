@@ -121,7 +121,7 @@ export function Draf() {
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown mb-1">
+        <h1 className="font-display text-2xl font-bold text-brown mb-1">
           {isDosen ? 'Asistensi Draf Mahasiswa' : 'Draf Saya'}
         </h1>
         <p className="text-brown-3 mb-4">{drafts.length} draf</p>
@@ -289,7 +289,7 @@ export function Draf() {
             className="bg-ivory rounded-2xl p-6 w-full max-w-[480px] max-h-[90vh] overflow-y-auto"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.2)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-['Playfair_Display',serif] text-lg font-semibold text-brown mb-4">Kirim Draf Baru</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">Kirim Draf Baru</h3>
 
             <label className="block text-xs font-semibold text-brown-2 mb-3">
               Modul

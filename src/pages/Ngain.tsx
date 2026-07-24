@@ -173,7 +173,7 @@ export default function Ngain() {
       <div className="p-4 md:p-6 pb-16">
         {/* PAGE HEADER */}
         <div className="mb-6 pb-4 border-b" style={BORDER}>
-          <h1 className="font-['Playfair_Display',serif] text-xl sm:text-2xl font-bold text-brown mb-1">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-brown mb-1">
             N-Gain Calculator SDL
           </h1>
           <p className="text-sm text-brown-3 leading-relaxed">
@@ -184,7 +184,7 @@ export default function Ngain() {
 
         {/* CONFIG PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
-          <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
+          <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
             <IconGear size={18} /> Konfigurasi
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -227,7 +227,7 @@ export default function Ngain() {
 
         {/* INPUT TABLE PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
-          <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
+          <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
             <IconChart size={18} /> Data Pre-Test &amp; Post-Test
           </div>
 
@@ -355,7 +355,7 @@ export default function Ngain() {
         {/* HASIL PANEL */}
         {distribution && (
           <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
-            <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
+            <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
               <IconTrendingUp size={18} /> Hasil Analisis N-Gain
             </div>
 
@@ -364,7 +364,7 @@ export default function Ngain() {
               className="rounded-xl border p-5 flex items-center gap-5 flex-wrap mb-5"
               style={{ ...BORDER, background: 'linear-gradient(135deg,rgba(212,163,115,.12),rgba(143,162,135,.12))' }}
             >
-              <div className="font-['Playfair_Display',serif] text-3xl sm:text-4xl font-bold text-terra-d leading-none">
+              <div className="font-display text-3xl sm:text-4xl font-bold text-terra-d leading-none">
                 {distribution.average.toFixed(3)}
               </div>
               <div className="flex-1 min-w-[160px]">
@@ -383,19 +383,19 @@ export default function Ngain() {
               <div className="relative overflow-hidden bg-[var(--bg3)] border rounded-lg p-4 text-center" style={BORDER}>
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-sage" />
                 <div className="text-xs font-semibold tracking-wide uppercase text-brown-3 mb-1.5">Tinggi</div>
-                <div className="font-['Playfair_Display',serif] text-3xl font-bold text-sage-d">{distribution.tinggi}</div>
+                <div className="font-display text-3xl font-bold text-sage-d">{distribution.tinggi}</div>
                 <div className="text-xs text-brown-3 mt-1">N-Gain &gt; 0.7</div>
               </div>
               <div className="relative overflow-hidden bg-[var(--bg3)] border rounded-lg p-4 text-center" style={BORDER}>
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-terra" />
                 <div className="text-xs font-semibold tracking-wide uppercase text-brown-3 mb-1.5">Sedang</div>
-                <div className="font-['Playfair_Display',serif] text-3xl font-bold text-terra-d">{distribution.sedang}</div>
+                <div className="font-display text-3xl font-bold text-terra-d">{distribution.sedang}</div>
                 <div className="text-xs text-brown-3 mt-1">0.3 ≤ N-Gain ≤ 0.7</div>
               </div>
               <div className="relative overflow-hidden bg-[var(--bg3)] border rounded-lg p-4 text-center" style={BORDER}>
                 <div className="absolute top-0 left-0 right-0 h-[3px] bg-red" />
                 <div className="text-xs font-semibold tracking-wide uppercase text-brown-3 mb-1.5">Rendah</div>
-                <div className="font-['Playfair_Display',serif] text-3xl font-bold text-red">{distribution.rendah}</div>
+                <div className="font-display text-3xl font-bold text-red">{distribution.rendah}</div>
                 <div className="text-xs text-brown-3 mt-1">N-Gain &lt; 0.3</div>
               </div>
             </div>
@@ -441,7 +441,7 @@ export default function Ngain() {
 
         {/* INTERPRETASI PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
-          <div className="font-['Playfair_Display',serif] text-base font-semibold text-brown mb-4 flex items-center gap-2">
+          <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
             <IconLightbulb size={18} /> Interpretasi N-Gain
           </div>
           <div className="bg-sage/[.08] border-l-[3px] border-sage rounded-r-lg p-4">
