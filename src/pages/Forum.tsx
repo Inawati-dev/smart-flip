@@ -5,6 +5,7 @@ import { useModules } from '../hooks/useModules'
 import { useForumPosts } from '../hooks/useForum'
 import { addPost, addReply, likePost, timeAgo, initials, avatarColor } from '../lib/forum'
 import { Layout } from '../components/Layout'
+import { Select } from '../components/Select'
 import { IconChat, IconThumbsUp } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -128,18 +129,16 @@ export function Forum() {
             >
               {initials(authorName)}
             </div>
-            <select
-              value={activeModuleId ?? ''}
-              onChange={(e) => setNewPostModuleId(Number(e.target.value))}
+            <Select
+              value={String(activeModuleId ?? '')}
+              onChange={(v) => setNewPostModuleId(Number(v))}
               className="flex-1 min-w-0 h-9 px-2.5 rounded-lg text-sm text-brown border outline-none cursor-pointer"
               style={{ ...BORDER, background: 'var(--bg3)' }}
-            >
-              {modules.map((m) => (
-                <option key={m.id} value={m.id}>
-                  Modul {m.id}: {m.title.slice(0, 46)}
-                </option>
-              ))}
-            </select>
+              options={modules.map((m) => ({
+                value: String(m.id),
+                label: `Modul ${m.id}: ${m.title.slice(0, 46)}`,
+              }))}
+            />
           </div>
           <textarea
             value={newPostContent}

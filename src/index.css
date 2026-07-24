@@ -35,13 +35,15 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Consistent native <select> styling, app-wide — several pages (Manajemen's
-   status filter, Forum's module picker, etc.) were rendering raw unstyled
-   browser selects (system font, blue highlight) that didn't match the
-   rounded/warm rest of the design. One rule fixes the closed control on
-   every page at once; the OPEN dropdown list itself is OS/browser-native
-   chrome that CSS can't restyle without swapping to a fully custom listbox
-   component (out of scope here). */
+/* Consistent native <select> styling, app-wide — kept as a safe fallback for
+   any genuinely-native <select> still left in the app (there shouldn't be
+   any left in src/pages after the src/components/Select.tsx swap, but this
+   isn't deleted in case one crops up later). The OPEN dropdown list itself
+   is OS/browser-native chrome that CSS can't restyle at all — that's exactly
+   why src/components/Select.tsx exists: a fully custom listbox instead of
+   trying to style <select> further. Its trigger button mirrors this rule
+   property-for-property via `.select-trigger` below, so swapping to it
+   doesn't change the closed-state look anywhere. */
 select {
   appearance: none;
   -webkit-appearance: none;
@@ -73,6 +75,65 @@ select:focus {
 select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* src/components/Select.tsx trigger button — deliberately mirrors the
+   `select{}` rule above property-for-property (same colors/border/radius/
+   padding/font/min-height, same hover+focus+disabled states) instead of
+   leaning on each page's own className for the closed-state look. That
+   rule is plain unlayered CSS (everything in this file is, since it sits
+   outside any @layer), which under Tailwind v4's cascade-layer rules
+   ALWAYS wins over Tailwind's own utility classes (`@layer utilities`) —
+   unlayered styles beat every layered style regardless of specificity or
+   source order. That's already true of every page's <select> today (their
+   own h-9/px-3/rounded-lg/etc. classes are effectively inert for the
+   properties this rule also sets); mirroring it here as `.select-trigger`
+   keeps that exact rendered result once the element becomes a <button>
+   instead of a real <select>. Positioned so the chevron can be absolutely
+   placed inside the same 34px right-padding gutter the native rule already
+   reserves for its own background-image chevron. */
+.select-trigger {
+  position: relative;
+  display: inline-block;
+  appearance: none;
+  background-color: var(--ivory);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 0 34px 0 12px;
+  min-height: 44px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--brown);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.select-trigger:hover:not(:disabled) {
+  border-color: var(--terra);
+}
+.select-trigger:focus {
+  outline: none;
+  border-color: var(--terra);
+  box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.18);
+}
+.select-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.select-trigger-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.select-trigger-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  pointer-events: none;
+  color: var(--brown3);
+  transition: transform 0.15s ease;
 }
 
 /* Tactile button feel, app-wide — every native <button> gets a subtle hover
@@ -177,6 +238,15 @@ button:not(:disabled):active {
 }
 @keyframes slideUpModal {
   from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* src/components/Select.tsx popup listbox — lighter/faster than the modal
+   pair above (a dropdown opening is a much smaller, more frequent motion
+   than a modal), same easing family. `[style*="animation"]` under
+   prefers-reduced-motion below already disables this automatically since
+   it's set via inline style, not a class. */
+@keyframes selectPopIn {
+  from { opacity: 0; transform: translateY(-4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

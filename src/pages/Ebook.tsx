@@ -391,7 +391,7 @@ export function Ebook() {
                 <button
                   key={opt.key}
                   onClick={() => chooseStyle(opt.key)}
-                  className="min-h-9 px-3 rounded-full text-xs font-semibold whitespace-nowrap"
+                  className="min-h-11 px-3 rounded-full text-xs font-semibold whitespace-nowrap"
                   style={
                     readerStyleState === opt.key
                       ? { background: 'var(--brown)', color: 'var(--terra)' }
@@ -408,7 +408,7 @@ export function Ebook() {
                 onClick={zoomOut}
                 disabled={zoom <= ZOOM_MIN}
                 title="Perkecil"
-                className="w-8 h-8 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
+                className="w-11 h-11 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
               >
                 −
               </button>
@@ -417,7 +417,7 @@ export function Ebook() {
                 onClick={zoomIn}
                 disabled={zoom >= ZOOM_MAX}
                 title="Perbesar"
-                className="w-8 h-8 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
+                className="w-11 h-11 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
               >
                 +
               </button>

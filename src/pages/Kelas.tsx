@@ -376,7 +376,7 @@ export function Kelas() {
             <div className="flex gap-2.5">
               <button
                 onClick={() => setDeleteTarget(null)}
-                className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2"
+                className="flex-1 h-11 rounded-lg border text-sm text-brown-2"
                 style={BORDER}
               >
                 Batal
@@ -384,7 +384,7 @@ export function Kelas() {
               <button
                 onClick={() => void confirmDelete()}
                 disabled={deleting}
-                className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold disabled:opacity-50"
+                className="flex-1 h-11 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
                 style={{ background: 'var(--red)' }}
               >
                 {deleting ? 'Menghapus…' : 'Ya, Hapus'}
@@ -416,7 +416,7 @@ export function Kelas() {
                 <button
                   onClick={closeImport}
                   aria-label="Tutup"
-                  className="w-9 h-9 -mr-1.5 rounded-md flex items-center justify-center text-brown-3 flex-shrink-0"
+                  className="w-11 h-11 -mr-2 rounded-md flex items-center justify-center text-brown-3 flex-shrink-0"
                 >
                   <IconX size={16} />
                 </button>
