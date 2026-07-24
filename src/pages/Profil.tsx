@@ -485,7 +485,7 @@ export function Profil() {
                   <p className="text-sm text-brown-3">Kamu belum mengisi asesmen gaya belajar VARK.</p>
                   <Link
                     to="/vark"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-terra text-white text-sm font-semibold"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 min-h-11 rounded-lg bg-terra text-white text-sm font-semibold"
                   >
                     Isi Sekarang →
                   </Link>
