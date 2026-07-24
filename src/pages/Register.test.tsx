@@ -78,3 +78,35 @@ describe('Register — Dosen invite code field (interactive)', () => {
     expect(screen.queryByLabelText('Kode Undangan Dosen')).toBeNull()
   })
 })
+
+// Kode Kelas is the mahasiswa-side counterpart of the Dosen invite code
+// field above, but OPTIONAL (see migration_v7_kelas.sql) — it should show
+// for the default "mahasiswa" role and disappear for "dosen", the exact
+// opposite visibility of the invite code field.
+describe('Register — Kode Kelas field (interactive)', () => {
+  it('is visible by default (role starts as "mahasiswa") and disappears for "Dosen"', () => {
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>,
+    )
+
+    expect(screen.getByLabelText(/Kode Kelas/)).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Dosen' }))
+    expect(screen.queryByLabelText(/Kode Kelas/)).toBeNull()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mahasiswa' }))
+    expect(screen.getByLabelText(/Kode Kelas/)).toBeTruthy()
+  })
+
+  it('is not marked required, unlike the Dosen invite code field', () => {
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>,
+    )
+    const input = screen.getByLabelText(/Kode Kelas/) as HTMLInputElement
+    expect(input.required).toBe(false)
+  })
+})

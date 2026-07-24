@@ -21,6 +21,7 @@ import Ngain from './pages/Ngain'
 import { Validasi } from './pages/Validasi'
 import { Analitik } from './pages/Analitik'
 import { Manajemen } from './pages/Manajemen'
+import { Kelas } from './pages/Kelas'
 import Changelog from './pages/Changelog'
 import { Pengaturan } from './pages/Pengaturan'
 
@@ -65,6 +66,7 @@ export default function App() {
               <Route path="/validasi" element={<ProtectedRoute roles={['dosen']}><Validasi /></ProtectedRoute>} />
               <Route path="/analitik" element={<ProtectedRoute roles={['dosen']}><Analitik /></ProtectedRoute>} />
               <Route path="/manajemen" element={<ProtectedRoute roles={['dosen']}><Manajemen /></ProtectedRoute>} />
+              <Route path="/kelas" element={<ProtectedRoute roles={['dosen']}><Kelas /></ProtectedRoute>} />
               {/* Public — linked from the logged-out AuthShell footer too, so
                   it must render standalone without bouncing through auth. */}
               <Route path="/changelog" element={<Changelog />} />
