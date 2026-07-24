@@ -4,7 +4,7 @@
 // live during development, adapted to this project's token set (colors +
 // button fill/text + soft-accent tint, not just the accent hue).
 
-export type ThemeId = 'bawaan' | 'seline' | 'claude'
+export type ThemeId = 'bawaan' | 'seline' | 'claude' | 'soft-pill' | 'executive'
 
 export interface ThemeColors {
   cream: string
@@ -105,6 +105,57 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter Tight', 'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',
+    },
+  },
+  'soft-pill': {
+    label: 'Soft Pill',
+    desc: 'Radius besar, aksen oranye hangat, kesan ramah.',
+    colors: {
+      cream: '#F4F4F5',
+      ivory: '#FFFFFF',
+      bg3: '#FAFAFA',
+      terra: '#EA580C',
+      terraD: '#C2410C',
+      brown: '#1C1917',
+      brown2: '#57534E',
+      brown3: '#A8A29E',
+      brown4: '#D6D3D1',
+      border: '#EBEBEC',
+      border2: '#F4F3F2',
+      btnBg: '#EA580C',
+      btnText: '#FFFFFF',
+      accentSoft: '#FFF1E6',
+      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      r: '18px',
+    },
+  },
+  executive: {
+    label: 'Executive',
+    desc: 'Navy & emas, radius tajam, judul serif -- kesan formal.',
+    colors: {
+      cream: '#F7F5EE',
+      ivory: '#FFFFFF',
+      bg3: '#F3F2EA',
+      terra: '#B8860B',
+      terraD: '#8A6508',
+      // Navy (not black) doubles as text + hero/CTA/active-nav fill, same
+      // dual-purpose pattern as every other theme's `brown` token.
+      brown: '#0F1B33',
+      brown2: '#3D4A63',
+      brown3: '#8B93A3',
+      brown4: '#C7CCD6',
+      border: '#E3DDC9',
+      border2: '#EFEBDD',
+      btnBg: '#0F1B33',
+      btnText: '#F3E7C0',
+      accentSoft: '#FBF3DC',
+      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      // Serif headings for a formal/executive register -- Georgia is a
+      // system font (no webfont load needed), unlike the Google Fonts pairs
+      // the other themes use.
+      fontDisplay: "Georgia, 'Times New Roman', serif",
+      r: '6px',
     },
   },
 }
