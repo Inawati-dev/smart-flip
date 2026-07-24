@@ -41,6 +41,10 @@ body {
    codebase's inline styles touch — so it composes cleanly even on buttons
    that already set an inline box-shadow. */
 button:not(:disabled) {
+  /* Browsers default <button> to cursor:default (arrow), not pointer —
+     unlike <a>, which gets pointer for free. Every button in the app was
+     missing the hand cursor until this. */
+  cursor: pointer;
   transition: transform 0.12s ease, filter 0.12s ease;
 }
 button:not(:disabled):hover {

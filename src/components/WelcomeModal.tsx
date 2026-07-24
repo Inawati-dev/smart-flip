@@ -1,0 +1,118 @@
+import { useState, type ComponentType } from 'react'
+import type { OnboardingRole } from '../lib/onboarding'
+import { IconBook, IconTarget, IconCompass, IconUsers, IconLightbulb, IconChevronRight } from './icons'
+
+interface Step {
+  icon: ComponentType<{ size?: number }>
+  title: string
+  desc: string
+}
+
+const STEPS_MAHASISWA: Step[] = [
+  {
+    icon: IconBook,
+    title: 'Selamat Datang di Smart Flip!',
+    desc: 'E-modul adaptif untuk mata kuliah Metode Penelitian & Pengembangan. Sembilan modul, dari konsep dasar R&D sampai diseminasi hasil — semuanya di satu tempat.',
+  },
+  {
+    icon: IconTarget,
+    title: 'Cara Belajar',
+    desc: 'Tiap modul punya materi, kuis formatif, jurnal & studi kasus. Diskusi di Forum, kumpulkan draf di halaman Draf — progresmu tersimpan otomatis di setiap langkah.',
+  },
+  {
+    icon: IconCompass,
+    title: 'Jalur Belajar Adaptif',
+    desc: 'Kerjakan Tes Diagnostik sekali di awal — hasilnya menentukan Jalur Cepat atau Jalur Mendalam, menyesuaikan urutan materi tiap modul dengan gaya belajarmu.',
+  },
+]
+
+const STEPS_DOSEN: Step[] = [
+  {
+    icon: IconUsers,
+    title: 'Selamat Datang, Dosen!',
+    desc: 'Panel pengelolaan kelas untuk mata kuliah Metode Penelitian & Pengembangan — pantau progres mahasiswa, kelola modul, dan validasi materi dari satu dashboard.',
+  },
+  {
+    icon: IconLightbulb,
+    title: 'Panduan Mulai',
+    desc: 'Kelola Modul untuk atur materi & soal diagnostik, Analitik Kelas untuk pantau progres mahasiswa, Validasi Ahli untuk menilai kelayakan modul. Semua ada di sidebar.',
+  },
+]
+
+export function WelcomeModal({ role, onClose }: { role: OnboardingRole; onClose: () => void }) {
+  const [step, setStep] = useState(0)
+  const steps = role === 'dosen' ? STEPS_DOSEN : STEPS_MAHASISWA
+  const isLast = step === steps.length - 1
+  const current = steps[step]
+  const Icon = current.icon
+
+  return (
+    <div
+      className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+      style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div
+        className="rounded-2xl p-7 md:p-8 max-w-md w-full text-center relative"
+        style={{
+          background: 'var(--ivory)',
+          boxShadow: '0 8px 40px rgba(62,54,46,.22)',
+          animation: 'slideUpModal 0.22s ease',
+        }}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3.5 right-3.5 text-xs font-semibold text-brown-3 hover:text-brown transition-colors cursor-pointer"
+        >
+          Lewati
+        </button>
+
+        <div
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-terra"
+          style={{ background: 'var(--brown)' }}
+        >
+          <Icon size={30} />
+        </div>
+
+        <h3 className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-2">
+          {current.title}
+        </h3>
+        <p className="text-sm text-brown-2 leading-relaxed mb-6">{current.desc}</p>
+
+        <div className="flex items-center justify-center gap-1.5 mb-6">
+          {steps.map((_, i) => (
+            <span
+              key={i}
+              className="h-1.5 rounded-full transition-all"
+              style={{
+                width: i === step ? '20px' : '6px',
+                background: i === step ? 'var(--terra)' : 'var(--border2, rgba(62,54,46,.15))',
+              }}
+            />
+          ))}
+        </div>
+
+        <div className="flex gap-3">
+          {step > 0 && (
+            <button
+              onClick={() => setStep((s) => s - 1)}
+              className="flex-1 min-h-11 rounded-lg font-medium text-sm cursor-pointer"
+              style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
+            >
+              Kembali
+            </button>
+          )}
+          <button
+            onClick={() => (isLast ? onClose() : setStep((s) => s + 1))}
+            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1"
+          >
+            {isLast ? (role === 'dosen' ? 'Mulai Mengajar' : 'Mulai Belajar') : 'Lanjut'}
+            {!isLast && <IconChevronRight size={15} />}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

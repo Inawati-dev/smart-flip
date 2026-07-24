@@ -8,6 +8,7 @@ import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useVarkResult } from '../hooks/useVarkResult'
 import { useProfilExtra } from '../hooks/useProfil'
 import { saveProfilExtra } from '../lib/profil'
+import { resetOnboarding } from '../lib/onboarding'
 import { TOTAL_MODULES } from '../lib/progress'
 import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
@@ -679,6 +680,18 @@ export function Profil() {
               />
             )}
             <div className="flex gap-2.5 flex-wrap mt-4 pt-4 border-t" style={BORDER}>
+              {role && (
+                <button
+                  onClick={() => {
+                    resetOnboarding(role)
+                    navigate('/dashboard')
+                  }}
+                  className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border text-xs font-semibold text-brown-2"
+                  style={BORDER}
+                >
+                  <IconTarget size={14} /> Lihat Panduan Lagi
+                </button>
+              )}
               {!isDosen && (
                 <button
                   onClick={() => setResetOpen(true)}
