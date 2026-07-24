@@ -13,6 +13,7 @@ import {
   type DraftStatus,
 } from '../lib/draf'
 import { Layout } from '../components/Layout'
+import { Select } from '../components/Select'
 import { IconDocument, IconChat } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -205,16 +206,17 @@ export function Draf() {
                       <IconChat size={14} /> {d.comments.length} Komentar
                     </button>
                     {isDosen && (
-                      <select
+                      <Select
                         value={d.status}
-                        onChange={(e) => handleStatusChange(d.id, e.target.value as DraftStatus)}
+                        onChange={(v) => handleStatusChange(d.id, v as DraftStatus)}
                         className="ml-auto h-9 md:h-[30px] px-2.5 rounded-lg border text-sm md:text-xs text-brown-2 outline-none cursor-pointer"
                         style={{ ...BORDER, background: 'var(--bg3)' }}
-                      >
-                        <option value="submitted">Menunggu Review</option>
-                        <option value="reviewed">Sudah Direview</option>
-                        <option value="revision">Perlu Revisi</option>
-                      </select>
+                        options={[
+                          { value: 'submitted', label: 'Menunggu Review' },
+                          { value: 'reviewed', label: 'Sudah Direview' },
+                          { value: 'revision', label: 'Perlu Revisi' },
+                        ]}
+                      />
                     )}
                   </div>
 
@@ -293,18 +295,13 @@ export function Draf() {
 
             <label className="block text-xs font-semibold text-brown-2 mb-3">
               Modul
-              <select
-                value={newModuleId ?? ''}
-                onChange={(e) => setNewModuleId(Number(e.target.value))}
+              <Select
+                value={String(newModuleId ?? '')}
+                onChange={(v) => setNewModuleId(Number(v))}
                 className="block w-full mt-1 h-11 md:h-10 rounded-lg border px-3 text-sm text-brown"
                 style={{ ...BORDER, background: 'var(--bg3)' }}
-              >
-                {modules.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.id}. {m.title}
-                  </option>
-                ))}
-              </select>
+                options={modules.map((m) => ({ value: String(m.id), label: `${m.id}. ${m.title}` }))}
+              />
             </label>
 
             <label className="block text-xs font-semibold text-brown-2 mb-3">

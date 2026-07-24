@@ -5,6 +5,7 @@ import { useModules } from '../hooks/useModules'
 import { useFeedback } from '../hooks/useFeedback'
 import { saveFeedback, computeRataRata, type FeedbackRatings } from '../lib/feedback'
 import { Layout } from '../components/Layout'
+import { Select } from '../components/Select'
 import { IconClipboard, IconStar } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -99,25 +100,22 @@ export function Feedback() {
             <label className="block text-xs font-semibold uppercase tracking-wide text-brown-2 mb-2">
               Pilih Modul <span className="normal-case tracking-normal font-normal text-brown-3 ml-1">wajib</span>
             </label>
-            <select
-              value={selectedModuleId ?? ''}
-              onChange={(e) => {
-                const v = e.target.value ? Number(e.target.value) : null
-                setSelectedModuleId(v)
-                if (v) setErrModul(false)
+            <Select
+              value={String(selectedModuleId ?? '')}
+              onChange={(v) => {
+                const n = v ? Number(v) : null
+                setSelectedModuleId(n)
+                if (n) setErrModul(false)
               }}
               className={`w-full h-11 px-3.5 rounded-[10px] border-[1.5px] bg-[var(--bg3)] text-sm text-brown cursor-pointer outline-none ${
                 errModul ? 'outline outline-2 outline-red/30 outline-offset-2' : ''
               }`}
               style={{ borderColor: errModul ? 'var(--red)' : 'var(--border)' }}
-            >
-              <option value="">— Pilih modul yang ingin dinilai —</option>
-              {modules.map((m) => (
-                <option key={m.id} value={m.id}>
-                  Modul {m.id} — {m.title}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: '', label: '— Pilih modul yang ingin dinilai —' },
+                ...modules.map((m) => ({ value: String(m.id), label: `Modul ${m.id} — ${m.title}` })),
+              ]}
+            />
             {errModul && (
               <div className="text-xs text-red mt-1.5 px-2.5 py-1.5 rounded-md bg-red/10">
                 Silakan pilih modul terlebih dahulu.

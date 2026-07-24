@@ -1,10 +1,13 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { AuthProvider } from '../contexts/AuthContext'
 import { Feedback } from './Feedback'
+
+afterEach(cleanup)
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -51,7 +54,23 @@ describe('Feedback', () => {
     expect(html).toContain('Kemudahan Penggunaan')
     expect(html).toContain('Keterbacaan')
     expect(html).toContain('Kebermanfaatan')
-    expect(html).toContain('Modul 1 — Dasar R&amp;D')
+
+    // Module list feeds the custom <Select> (src/components/Select.tsx) —
+    // unlike a native <select>, its option list only mounts once opened, so
+    // it won't show up in static markup the way a native <select>'s always-
+    // present <option>s would. Open it interactively instead to confirm the
+    // module made it into the dropdown.
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter>
+          <AuthProvider>
+            <Feedback />
+          </AuthProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    fireEvent.click(screen.getByRole('combobox'))
+    expect(screen.getByText('Modul 1 — Dasar R&D')).toBeTruthy()
   })
 
   it('renders without throwing when there are no modules or feedback yet', () => {
