@@ -3,14 +3,13 @@ import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
 
-// UX deterrent only — this is NOT real security. The check runs entirely in
-// the browser, so it is trivially bypassable via devtools or by calling the
-// Supabase signUp API directly with role: 'dosen'. It exists only to stop
-// casual self-selection of the Dosen role on the public form. Real
-// enforcement of who may hold the "dosen" role must happen server-side
-// (Supabase RLS policy / trigger on `profiles` that validates or strips the
-// role on insert/update) — that work is tracked separately and is NOT done
-// by this check.
+// Client-side pre-check only, for instant form feedback — the REAL
+// enforcement is server-side now (database/migration_v6_dosen_invite_gate.sql):
+// handle_new_user() validates raw_user_meta_data->>'dosen_invite_code'
+// against the dosen_invite_codes table before ever assigning role='dosen',
+// and a BEFORE UPDATE trigger locks profiles.role against client-side
+// changes after signup too. This function alone would still be bypassable
+// via devtools; it's the migration that actually closes the hole.
 export function isDosenInviteCodeValid(inputCode: string, expectedCode: string | undefined): boolean {
   if (!expectedCode) return false
   return inputCode.trim().length > 0 && inputCode.trim() === expectedCode
@@ -48,17 +47,24 @@ export function Register() {
         email: email.trim(),
         password,
         options: {
-          data: { full_name: fullName.trim(), role, nim_nidn: nimNidn.trim() },
+          data: {
+            full_name: fullName.trim(),
+            role,
+            nim_nidn: nimNidn.trim(),
+            dosen_invite_code: role === 'dosen' ? inviteCode.trim() : undefined,
+          },
         },
       })
       if (signUpError) throw signUpError
 
       if (data.user) {
+        // role sengaja tidak dikirim -- handle_new_user() (server) yang nentuin
+        // final role berdasar dosen_invite_code, profiles_lock_role trigger akan
+        // tolak diam-diam kalau tetap dikirim dari client.
         const { error: profileError } = await supabase.from('profiles').upsert({
           id: data.user.id,
           full_name: fullName.trim(),
           nim_nidn: nimNidn.trim(),
-          role,
         })
         if (profileError) console.warn('Profile upsert:', profileError.message)
       }

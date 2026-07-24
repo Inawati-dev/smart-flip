@@ -13,6 +13,9 @@ export const designTokens = {
   brown4: '#C5B8AD',
   border: 'rgba(62,54,46,.10)',
   border2: 'rgba(62,54,46,.06)',
+  btnBg: '#D4A373',
+  btnText: '#FFFFFF',
+  accentSoft: 'rgba(212,163,115,.12)',
   shadowXs: '0 1px 4px rgba(62,54,46,.07)',
   shadowSm: '0 2px 10px rgba(62,54,46,.09)',
   shadowMd: '0 8px 28px rgba(62,54,46,.13)',
@@ -46,6 +49,9 @@ const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
   brown4: '--brown4',
   border: '--border',
   border2: '--border2',
+  btnBg: '--btn-bg',
+  btnText: '--btn-text',
+  accentSoft: '--accent-soft',
   shadowXs: '--shadow-xs',
   shadowSm: '--shadow-sm',
   shadowMd: '--shadow-md',
@@ -61,7 +67,7 @@ const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
 // mirroring — shadows/radii aren't referenced via Tailwind's @theme utilities.
 const TAILWIND_COLOR_KEYS: ReadonlyArray<keyof typeof designTokens> = [
   'cream', 'ivory', 'bg3', 'sage', 'sageD', 'terra', 'terraD',
-  'brown', 'brown2', 'brown3', 'border', 'red',
+  'brown', 'brown2', 'brown3', 'border', 'red', 'btnBg', 'btnText', 'accentSoft',
 ]
 const TAILWIND_VAR_NAME: Partial<Record<keyof typeof designTokens, string>> = {
   cream: '--color-cream',
@@ -76,6 +82,9 @@ const TAILWIND_VAR_NAME: Partial<Record<keyof typeof designTokens, string>> = {
   brown3: '--color-brown-3',
   border: '--color-border',
   red: '--color-red',
+  btnBg: '--color-btn-bg',
+  btnText: '--color-btn-text',
+  accentSoft: '--color-accent-soft',
 }
 
 export function injectDesignTokens(overrides?: Partial<Record<keyof typeof designTokens, string>>): void {
