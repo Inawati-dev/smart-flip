@@ -130,11 +130,11 @@ export function Diagnostik() {
               <div className="flex justify-center mb-3 text-terra">
                 <IconCheck size={40} />
               </div>
-              <div className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown mb-2">
+              <div className="font-display text-xl md:text-2xl font-bold text-brown mb-2">
                 Tes Diagnostik Sudah Selesai
               </div>
               <div
-                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-['Playfair_Display',serif] text-base md:text-lg font-semibold"
+                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-display text-base md:text-lg font-semibold"
                 style={{ background: 'var(--brown)', color: 'var(--terra)' }}
               >
                 Kamu di {JALUR_COPY[profile.jalur].title}
@@ -170,7 +170,7 @@ export function Diagnostik() {
               <div className="flex justify-center mb-3 text-terra">
                 <IconCompass size={40} />
               </div>
-              <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-white mb-2">
+              <h1 className="font-display text-xl md:text-2xl font-bold text-white mb-2">
                 Tes Diagnostik Awal
               </h1>
               <p className="text-sm text-white/55 leading-relaxed max-w-[400px] mx-auto mb-3">
@@ -228,7 +228,7 @@ export function Diagnostik() {
               <div className="text-xs font-bold uppercase tracking-wider text-brown-3 mb-3">
                 {currentQ + 1} / {total}
               </div>
-              <div className="font-['Playfair_Display',serif] text-base md:text-lg font-semibold text-brown leading-relaxed mb-4">
+              <div className="font-display text-base md:text-lg font-semibold text-brown leading-relaxed mb-4">
                 {q.pertanyaan}
               </div>
               <div className="flex flex-col gap-2">
@@ -297,11 +297,11 @@ export function Diagnostik() {
               <div className="flex justify-center mb-3 text-terra">
                 <IconCheck size={40} />
               </div>
-              <div className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown mb-2">
+              <div className="font-display text-xl md:text-2xl font-bold text-brown mb-2">
                 Tes Diagnostik Selesai
               </div>
               <div
-                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-['Playfair_Display',serif] text-base md:text-lg font-semibold"
+                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-display text-base md:text-lg font-semibold"
                 style={{ background: 'var(--brown)', color: 'var(--terra)' }}
               >
                 Kamu masuk {JALUR_COPY[result.jalur].title}

@@ -25,6 +25,8 @@ export const designTokens = {
   rPill: '100px',
   red: '#C04020',
   redBorder: 'rgba(192,64,32,.3)',
+  fontSans: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+  fontDisplay: "'Playfair Display', ui-serif, serif",
 } as const
 
 // Tailwind v4's @theme block (src/index.css) exposes each color a second
@@ -61,6 +63,12 @@ const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
   rPill: '--r-pill',
   red: '--red',
   redBorder: '--red-border',
+  // Fonts have only ONE canonical CSS var name (Tailwind's @theme already
+  // calls it --font-sans/--font-display, and plain CSS -- body{font-family}
+  // in index.css -- references that SAME name directly) -- no separate
+  // unprefixed alias to also mirror, unlike the color tokens above.
+  fontSans: '--font-sans',
+  fontDisplay: '--font-display',
 }
 
 // Only the color-ish keys have a `--color-*` Tailwind counterpart worth

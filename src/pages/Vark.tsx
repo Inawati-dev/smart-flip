@@ -243,7 +243,7 @@ export function Vark() {
               <div className="flex justify-center mb-3 text-terra">
                 <IconTarget size={40} />
               </div>
-              <h1 className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-white mb-2">
+              <h1 className="font-display text-xl md:text-2xl font-bold text-white mb-2">
                 Asesmen Gaya Belajar VARK
               </h1>
               <p className="text-sm text-white/55 leading-relaxed max-w-[400px] mx-auto mb-3">
@@ -314,7 +314,7 @@ export function Vark() {
               <div className="text-xs font-bold uppercase tracking-wider text-brown-3 mb-3">
                 {currentQ + 1} / {total}
               </div>
-              <div className="font-['Playfair_Display',serif] text-base md:text-lg font-semibold text-brown leading-relaxed mb-4">
+              <div className="font-display text-base md:text-lg font-semibold text-brown leading-relaxed mb-4">
                 {q.text}
               </div>
               <div className="flex flex-col gap-2">
@@ -380,11 +380,11 @@ export function Vark() {
         {phase === 'result' && result && (
           <div>
             <div className="text-center mb-6">
-              <div className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown mb-2">
+              <div className="font-display text-xl md:text-2xl font-bold text-brown mb-2">
                 Hasil Asesmen VARK
               </div>
               <div
-                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-['Playfair_Display',serif] text-base md:text-lg font-semibold"
+                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-display text-base md:text-lg font-semibold"
                 style={{ background: 'var(--brown)', color: 'var(--terra)' }}
               >
                 <VarkIcon k={result.dominant} size={18} /> Gaya Belajar Kamu: {VARK_LABELS[result.dominant]}
