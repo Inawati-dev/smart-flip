@@ -22,6 +22,7 @@ export function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [inviteCode, setInviteCode] = useState('')
+  const [classCode, setClassCode] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -52,6 +53,11 @@ export function Register() {
             role,
             nim_nidn: nimNidn.trim(),
             dosen_invite_code: role === 'dosen' ? inviteCode.trim() : undefined,
+            // Optional -- unlike dosen_invite_code, an absent/wrong/full-class
+            // code never blocks signup (see migration_v7_kelas.sql's
+            // handle_new_user()): the mahasiswa just ends up with class_id
+            // NULL, assignable manually later.
+            class_code: role === 'mahasiswa' ? classCode.trim() || undefined : undefined,
           },
         },
       })
@@ -75,6 +81,7 @@ export function Register() {
       setEmail('')
       setPassword('')
       setInviteCode('')
+      setClassCode('')
     } catch (err) {
       let msg = err instanceof Error ? err.message : 'Terjadi kesalahan.'
       if (msg.includes('already registered')) msg = 'Email ini sudah terdaftar. Silakan masuk.'
@@ -181,6 +188,27 @@ export function Register() {
             />
             <p className="text-[13px] text-brown-3">
               Pendaftaran sebagai Dosen memerlukan kode undangan dari admin.
+            </p>
+          </div>
+        )}
+
+        {role === 'mahasiswa' && (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="classCode" className="text-[0.78rem] font-semibold text-brown-2">
+              Kode Kelas <span className="font-normal text-brown-3">(opsional)</span>
+            </label>
+            <input
+              id="classCode"
+              type="text"
+              placeholder="Contoh: 7XQK2M — dari dosen Anda"
+              value={classCode}
+              onChange={(e) => setClassCode(e.target.value)}
+              className={authInputClass}
+              style={authInputStyle}
+            />
+            <p className="text-[13px] text-brown-3">
+              Punya kode kelas dari dosen? Masukkan di sini agar langsung tergabung. Belum punya
+              kode? Lewati saja — Anda tetap bisa daftar dan bergabung ke kelas belakangan.
             </p>
           </div>
         )}

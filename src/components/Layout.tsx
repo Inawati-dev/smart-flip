@@ -14,6 +14,7 @@ import {
   IconCheck,
   IconTrendingUp,
   IconFolder,
+  IconUsers,
   IconUser,
   IconClipboard,
   IconLogout,
@@ -71,6 +72,7 @@ const NAV_SECTIONS: NavSection[] = [
     key: 'kelola-kelas',
     label: 'Kelola Kelas',
     items: [
+      { to: '/kelas', icon: IconUsers, label: 'Kelas', dosenOnly: true },
       { to: '/ngain', icon: IconChart, label: 'N-Gain', dosenOnly: true },
       { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },
       { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
