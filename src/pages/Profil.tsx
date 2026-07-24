@@ -14,6 +14,7 @@ import { TOTAL_MODULES } from '../lib/progress'
 import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { LogoutModal } from '../components/LogoutModal'
+import { Select } from '../components/Select'
 import {
   IconChart,
   IconHeadphones,
@@ -403,18 +404,13 @@ export function Profil() {
               {isDosen && (
                 <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
                   Jabatan Fungsional
-                  <select
+                  <Select
                     value={formJabatan}
-                    onChange={(e) => setFormJabatan(e.target.value)}
+                    onChange={setFormJabatan}
                     className="h-10 rounded-lg border px-3 text-sm text-brown"
                     style={BORDER}
-                  >
-                    {JABATAN_OPTIONS.map((j) => (
-                      <option key={j} value={j}>
-                        {j}
-                      </option>
-                    ))}
-                  </select>
+                    options={JABATAN_OPTIONS.map((j) => ({ value: j, label: j }))}
+                  />
                 </label>
               )}
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
@@ -485,7 +481,7 @@ export function Profil() {
                   <p className="text-sm text-brown-3">Kamu belum mengisi asesmen gaya belajar VARK.</p>
                   <Link
                     to="/vark"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-terra text-white text-sm font-semibold"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 min-h-11 rounded-lg bg-terra text-white text-sm font-semibold"
                   >
                     Isi Sekarang →
                   </Link>

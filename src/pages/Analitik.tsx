@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { Select } from '../components/Select'
 import { IconDownload, IconStar, IconTrendingUp, IconChart, IconWarning, IconBell, IconCheck } from '../components/icons'
 import { useModules } from '../hooks/useModules'
 import { useStudentStats, useModulDistributionStats, useFeedbackAspectAvg } from '../hooks/useAnalitik'
@@ -148,17 +149,18 @@ export function Analitik() {
               <div className="text-xs text-brown-3">Klik header kolom untuk mengurutkan</div>
             </div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <select
+              <Select
                 value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value as FilterStatus)}
+                onChange={(v) => setFilterStatus(v as FilterStatus)}
                 aria-label="Filter status"
                 className="h-9 md:h-9 px-3 rounded-lg border text-sm text-brown outline-none cursor-pointer"
                 style={{ ...BORDER, background: 'var(--bg3)', minHeight: 44 }}
-              >
-                <option value="semua">Semua</option>
-                <option value="aktif">Aktif</option>
-                <option value="tidak">Tidak Aktif</option>
-              </select>
+                options={[
+                  { value: 'semua', label: 'Semua' },
+                  { value: 'aktif', label: 'Aktif' },
+                  { value: 'tidak', label: 'Tidak Aktif' },
+                ]}
+              />
               <button
                 onClick={() => setExportConfirmOpen(true)}
                 className="h-9 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 flex items-center gap-1.5"
