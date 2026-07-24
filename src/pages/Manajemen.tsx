@@ -11,6 +11,13 @@ import {
   deleteDiagnosticQuestion,
   type DiagnosticQuestion,
 } from '../lib/diagnostic'
+import {
+  fetchKuisSoal,
+  createKuisSoal,
+  updateKuisSoal,
+  deleteKuisSoal,
+  type KuisSoal,
+} from '../lib/kuisSoal'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { IconDocument, IconEdit, IconTrash } from '../components/icons'
@@ -142,6 +149,102 @@ export function Manajemen() {
       showToast('Gagal menghapus soal diagnostik')
     } finally {
       setDiagDeleteId(null)
+    }
+  }
+
+  // Soal kuis formatif per modul — see lib/kuisSoal.ts's header comment for
+  // why this exists (quiz_questions was completely unused in production).
+  // Scoped per module (unlike the diagnostic bank above, which is global),
+  // so a module picker gates which module's questions are shown/edited.
+  const [kuisModuleOverride, setKuisModuleOverride] = useState<number | null>(null)
+  const kuisModuleId = kuisModuleOverride ?? modules[0]?.id ?? null
+
+  const { data: kuisSoalList = [] } = useQuery({
+    queryKey: ['kuis-soal', kuisModuleId],
+    queryFn: () => fetchKuisSoal(kuisModuleId as number),
+    enabled: kuisModuleId != null,
+  })
+  const sortedKuisSoal = useMemo(
+    () => [...kuisSoalList].sort((a, b) => a.order_num - b.order_num),
+    [kuisSoalList],
+  )
+
+  const [kuisEditId, setKuisEditId] = useState<number | 'new' | null>(null)
+  const [kuisPertanyaan, setKuisPertanyaan] = useState('')
+  const [kuisOpsi, setKuisOpsi] = useState<string[]>(['', '', '', ''])
+  const [kuisJawaban, setKuisJawaban] = useState(0)
+  const [kuisPenjelasan, setKuisPenjelasan] = useState('')
+  const [kuisOrderNum, setKuisOrderNum] = useState(1)
+  const [kuisSaving, setKuisSaving] = useState(false)
+  const [kuisDeleteId, setKuisDeleteId] = useState<number | null>(null)
+
+  function openKuisAddModal() {
+    const maxOrder = kuisSoalList.reduce((m, q) => Math.max(m, q.order_num), 0)
+    setKuisEditId('new')
+    setKuisPertanyaan('')
+    setKuisOpsi(['', '', '', ''])
+    setKuisJawaban(0)
+    setKuisPenjelasan('')
+    setKuisOrderNum(maxOrder + 1)
+  }
+
+  function openKuisEditModal(q: KuisSoal) {
+    setKuisEditId(q.id)
+    setKuisPertanyaan(q.question)
+    setKuisOpsi(q.options.length === 4 ? [...q.options] : [...q.options, '', '', '', ''].slice(0, 4))
+    setKuisJawaban(q.answer_idx)
+    setKuisPenjelasan(q.explanation || '')
+    setKuisOrderNum(q.order_num)
+  }
+
+  function closeKuisModal() {
+    setKuisEditId(null)
+  }
+
+  function updateKuisOpsi(idx: number, value: string) {
+    setKuisOpsi((prev) => prev.map((o, i) => (i === idx ? value : o)))
+  }
+
+  async function saveKuisQuestion() {
+    if (kuisModuleId == null) return
+    const question = kuisPertanyaan.trim()
+    const options = kuisOpsi.map((o) => o.trim())
+    if (!question || options.some((o) => !o)) return
+    setKuisSaving(true)
+    try {
+      const payload = {
+        module_id: kuisModuleId,
+        question,
+        options,
+        answer_idx: kuisJawaban,
+        explanation: kuisPenjelasan.trim() || null,
+        order_num: kuisOrderNum,
+      }
+      if (kuisEditId === 'new') {
+        await createKuisSoal(payload)
+      } else if (kuisEditId != null) {
+        await updateKuisSoal(kuisEditId, payload)
+      }
+      await queryClient.invalidateQueries({ queryKey: ['kuis-soal', kuisModuleId] })
+      showToast(kuisEditId === 'new' ? 'Soal kuis ditambahkan' : 'Soal kuis disimpan')
+      setKuisEditId(null)
+    } catch {
+      showToast('Gagal menyimpan soal kuis')
+    } finally {
+      setKuisSaving(false)
+    }
+  }
+
+  async function confirmDeleteKuis() {
+    if (kuisDeleteId == null || kuisModuleId == null) return
+    try {
+      await deleteKuisSoal(kuisDeleteId, kuisModuleId)
+      await queryClient.invalidateQueries({ queryKey: ['kuis-soal', kuisModuleId] })
+      showToast('Soal kuis dihapus')
+    } catch {
+      showToast('Gagal menghapus soal kuis')
+    } finally {
+      setKuisDeleteId(null)
     }
   }
 
@@ -602,6 +705,85 @@ export function Manajemen() {
             </table>
           </div>
         </div>
+
+        {/* Soal kuis formatif per modul — dosen-only CRUD atas quiz_questions.
+            Scoped per modul (beda dari Soal Diagnostik di atas yang global),
+            jadi ada dropdown pilih modul dulu. */}
+        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+          <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-sm font-semibold text-brown">Soal Kuis</span>
+              <Select
+                value={String(kuisModuleId ?? '')}
+                onChange={(v) => setKuisModuleOverride(parseInt(v, 10))}
+                aria-label="Pilih modul"
+                className="h-8 px-2.5 rounded-lg border text-xs text-brown cursor-pointer"
+                style={BORDER}
+                options={order.map((id, idx) => ({ value: String(id), label: `Modul ${idx + 1} — ${modMap[id]?.title || ''}` }))}
+              />
+            </div>
+            <button
+              onClick={openKuisAddModal}
+              disabled={kuisModuleId == null}
+              className="h-8 px-3 rounded-lg text-xs font-semibold whitespace-nowrap disabled:opacity-50"
+              style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+            >
+              + Tambah Soal
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-bg3">
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-14">Urutan</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Jawaban Benar</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sortedKuisSoal.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="text-center py-8 text-brown-3 text-sm">
+                      Belum ada soal kuis untuk modul ini.
+                    </td>
+                  </tr>
+                ) : (
+                  sortedKuisSoal.map((q) => {
+                    const pertanyaanTrunc = q.question.length > 70 ? q.question.slice(0, 70) + '…' : q.question
+                    return (
+                      <tr key={q.id} className="border-t" style={BORDER}>
+                        <td className="px-3 py-2.5 font-semibold text-brown">{q.order_num}</td>
+                        <td className="px-3 py-2.5 text-brown min-w-[200px]">{pertanyaanTrunc}</td>
+                        <td className="px-3 py-2.5 text-brown-2">Opsi {q.answer_idx + 1}</td>
+                        <td className="px-3 py-2.5">
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={() => openKuisEditModal(q)}
+                              aria-label={`Edit soal urutan ${q.order_num}`}
+                              className="w-11 h-11 rounded-md border text-brown-2 flex items-center justify-center flex-shrink-0"
+                              style={BORDER}
+                            >
+                              <IconEdit size={15} />
+                            </button>
+                            <button
+                              onClick={() => setKuisDeleteId(q.id)}
+                              aria-label={`Hapus soal urutan ${q.order_num}`}
+                              className="w-11 h-11 rounded-md border border-red/20 bg-red/10 text-red flex items-center justify-center flex-shrink-0"
+                            >
+                              <IconTrash size={15} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       {/* Edit/create modal — matches legacy #editModal fields exactly */}
@@ -881,6 +1063,132 @@ export function Manajemen() {
               </button>
               <button
                 onClick={() => void confirmDeleteDiag()}
+                className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold"
+                style={{ background: 'var(--red)' }}
+              >
+                Ya, Hapus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Soal kuis add/edit modal — same layout as the diagnostic modal above,
+          plus an optional Penjelasan (explanation) field. */}
+      {kuisEditId != null && (
+        <div
+          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
+          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeKuisModal()
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-lg font-semibold text-brown">
+                {kuisEditId === 'new' ? 'Tambah Soal Kuis' : `Edit Soal — Urutan ${kuisOrderNum}`}
+              </h3>
+              <button onClick={closeKuisModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
+                ×
+              </button>
+            </div>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
+              Pertanyaan
+              <textarea
+                value={kuisPertanyaan}
+                onChange={(e) => setKuisPertanyaan(e.target.value)}
+                rows={3}
+                className="rounded-lg border px-3 py-2 text-sm text-brown resize-y min-h-[70px]"
+                style={BORDER}
+              />
+            </label>
+
+            <div className="flex flex-col gap-2 mb-3">
+              <span className="text-xs font-semibold text-brown-2">
+                4 Opsi Jawaban <span className="font-normal text-brown-3">— pilih radio di sebelah opsi yang benar</span>
+              </span>
+              {kuisOpsi.map((opsi, idx) => (
+                <label key={idx} className="flex items-center gap-2.5">
+                  <input
+                    type="radio"
+                    name="kuisJawaban"
+                    checked={kuisJawaban === idx}
+                    onChange={() => setKuisJawaban(idx)}
+                    aria-label={`Tandai opsi ${idx + 1} sebagai jawaban benar`}
+                    className="w-4 h-4 accent-terra cursor-pointer flex-shrink-0"
+                  />
+                  <input
+                    value={opsi}
+                    onChange={(e) => updateKuisOpsi(idx, e.target.value)}
+                    placeholder={`Opsi ${idx + 1}`}
+                    className="h-10 flex-1 min-w-0 rounded-lg border px-3 text-sm text-brown"
+                    style={BORDER}
+                  />
+                </label>
+              ))}
+            </div>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
+              Penjelasan <span className="font-normal text-brown-3">opsional — ditampilkan setelah mahasiswa menjawab</span>
+              <textarea
+                value={kuisPenjelasan}
+                onChange={(e) => setKuisPenjelasan(e.target.value)}
+                rows={2}
+                className="rounded-lg border px-3 py-2 text-sm text-brown resize-y min-h-[50px]"
+                style={BORDER}
+              />
+            </label>
+
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4 max-w-[140px]">
+              Urutan (order_num)
+              <input
+                type="number"
+                min={1}
+                value={kuisOrderNum}
+                onChange={(e) => setKuisOrderNum(parseInt(e.target.value, 10) || 1)}
+                className="h-10 rounded-lg border px-3 text-sm text-brown"
+                style={BORDER}
+              />
+            </label>
+
+            <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
+              <button onClick={closeKuisModal} className="h-[38px] px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+                Batal
+              </button>
+              <button
+                onClick={() => void saveKuisQuestion()}
+                disabled={kuisSaving || !kuisPertanyaan.trim() || kuisOpsi.some((o) => !o.trim())}
+                className="h-[38px] px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
+                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              >
+                {kuisSaving ? 'Menyimpan…' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Soal kuis delete confirmation modal */}
+      {kuisDeleteId != null && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setKuisDeleteId(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus soal ini?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Soal kuis ini akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.
+            </p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setKuisDeleteId(null)} className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2" style={BORDER}>
+                Batal
+              </button>
+              <button
+                onClick={() => void confirmDeleteKuis()}
                 className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold"
                 style={{ background: 'var(--red)' }}
               >
