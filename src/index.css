@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #F5F2E9;
+  --color-ivory: #FFFDF8;
+  --color-bg3: #FAF7F0;
+  --color-sage: #8FA287;
+  --color-sage-d: #6B7E64;
+  --color-terra: #D4A373;
+  --color-terra-d: #B8855A;
+  --color-brown: #3E362E;
+  --color-brown-2: #6B5D4F;
+  --color-brown-3: #9B8B7A;
+  --color-red: #C04020;
+
+  /* Matches legacy/*.html's Google Fonts pair (loaded via <link> in index.html) —
+     --font-sans/--font-display back Tailwind's font-sans/font-display utilities. */
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Playfair Display', ui-serif, serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* Modal animation — kemampuan-web-dev.md §128/§129: durasi di atas ~200ms, jangan diulang per komponen modal */
+@keyframes fadeInBg {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideUpModal {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Page-transition — kemampuan-web-dev.md §128 point 3 / §129: every page root gets
+   this, not just favorites. iOS-style push: incoming page slides in from the
+   right with a fade, using UINavigationController's actual easing curve
+   (cubic-bezier(0.32, 0.72, 0, 1) — fast start, gentle settle). Motion stays
+   horizontal within the content area (right of the fixed sidebar), so it
+   doesn't cross/interact with the rail the way vertical translate did. */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.page-fadein {
+  animation: fadeInUp 0.38s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-fadein,
+  [style*="animation"] {
+    animation: none !important;
+  }
+}

@@ -13,3 +13,14 @@ node_modules/
 
 # Referensi internal — tidak perlu di-push
 kemampuan.md
+
+# Claude Code local config — tooling internal, bukan bagian aplikasi
+.claude/
+
+node_modules/
+dist/
+.env.local
+.env*.local
+*.tsbuildinfo
+.vercel
+.env*

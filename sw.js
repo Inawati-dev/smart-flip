@@ -16,6 +16,7 @@ self.addEventListener('install', e => {
     caches.open(CACHE)
       .then(c => c.addAll(PRECACHE))
       .then(() => self.skipWaiting())
+      .catch(err => console.error('[sw] precache gagal:', err))
   );
 });
 
@@ -24,6 +25,7 @@ self.addEventListener('activate', e => {
     caches.keys().then(keys =>
       Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
+      .catch(err => console.error('[sw] activate gagal:', err))
   );
 });
 
@@ -39,7 +41,9 @@ self.addEventListener('fetch', e => {
         const clone = res.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return res;
-      }).catch(() => cached);
+      }).catch(() => cached || new Response('Offline — konten tidak tersedia', {
+        status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' }
+      }));
     })
   );
 });
