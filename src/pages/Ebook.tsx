@@ -486,7 +486,7 @@ export function Ebook() {
               style={{ borderColor: 'var(--border)', minHeight: '60vh', maxHeight: 'calc(100vh - 200px)' }}
             >
               {effectiveStyle === 'spread' ? (
-                <div className="relative flex" style={{ boxShadow: '0 4px 24px rgba(62,54,46,.16)' }}>
+                <div className="relative flex" style={{ boxShadow: '0 4px 24px rgba(62,54,46,.16)', perspective: '2000px' }}>
                   <canvas ref={canvasRef} className="max-w-full h-auto rounded-l-sm" style={{ borderRight: '1px solid var(--border)' }} />
                   <canvas ref={canvasRef2} className="max-w-full h-auto rounded-r-sm" />
                   {flipOverlay && (
@@ -500,7 +500,7 @@ export function Ebook() {
                   )}
                 </div>
               ) : (
-                <div className="relative">
+                <div className="relative" style={{ perspective: '2000px' }}>
                   <canvas ref={canvasRef} className="max-w-full h-auto shadow-lg rounded-sm" />
                   {flipOverlay && (
                     <img

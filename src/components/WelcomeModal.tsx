@@ -99,7 +99,7 @@ export function WelcomeModal({
           <Icon size={30} />
         </div>
 
-        <h3 className="font-['Playfair_Display',serif] text-xl font-bold text-brown mb-2">{title}</h3>
+        <h3 className="font-display text-xl font-bold text-brown mb-2">{title}</h3>
         <p className="text-sm text-brown-2 leading-relaxed mb-6">{current.desc}</p>
 
         <div className="flex items-center justify-center gap-1.5 mb-6">

@@ -124,7 +124,7 @@ export function Analitik() {
     <Layout>
       <div className="p-4 md:p-6 pb-16">
         <div className="mb-5">
-          <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Analitik Kelas</h1>
+          <h1 className="font-display text-2xl font-bold text-brown">Analitik Kelas</h1>
           <p className="text-sm text-brown-3 mt-1">
             Dasbor progress, nilai, dan kepraktisan seluruh mahasiswa — MK Metpen &amp; Pengembangan, Kelas A
           </p>
@@ -391,7 +391,7 @@ export function Analitik() {
             className="rounded-2xl p-7 max-w-sm w-full text-center"
             style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-2">Unduh CSV?</h3>
+            <h3 className="font-display text-lg font-bold text-brown mb-2">Unduh CSV?</h3>
             <p className="text-sm text-brown-2 mb-6 opacity-80">
               File berisi data progress {displayed.length} mahasiswa akan diunduh ke perangkatmu.
             </p>

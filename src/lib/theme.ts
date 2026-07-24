@@ -21,6 +21,9 @@ export interface ThemeColors {
   btnBg: string
   btnText: string
   accentSoft: string
+  fontSans: string
+  fontDisplay: string
+  r: string
 }
 
 export const THEMES: Record<ThemeId, { label: string; desc: string; colors: ThemeColors }> = {
@@ -42,6 +45,9 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       btnBg: '#D4A373',
       btnText: '#FFFFFF',
       accentSoft: 'rgba(212,163,115,.12)',
+      fontSans: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
+      fontDisplay: "'Playfair Display', ui-serif, serif",
+      r: '12px',
     },
   },
   seline: {
@@ -53,7 +59,13 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       bg3: '#F4F4F3',
       terra: '#3BA6F1',
       terraD: '#2B87CC',
-      brown: '#0C0A09',
+      // NOT SAKTI's own #0C0A09 -- that value is calibrated for thin text
+      // strokes (its --text-primary), not the ~40 places in this app that
+      // reuse `brown` as a big hero/CTA/active-nav FILL color too (Vark.tsx,
+      // Diagnostik.tsx, etc.) -- filling a whole banner with near-pure-black
+      // reads as harsh/"legam" in a way the same value never does as text.
+      // Cool dark slate keeps Seline's neutral-blue identity without that.
+      brown: '#22262C',
       brown2: '#78716C',
       brown3: '#A39C95',
       brown4: '#C9C3BD',
@@ -62,6 +74,9 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       btnBg: '#3BA6F1',
       btnText: '#FFFFFF',
       accentSoft: '#EEF7FE',
+      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      r: '12px',
     },
   },
   claude: {
@@ -82,6 +97,9 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       btnBg: '#121212',
       btnText: '#FFFFFF',
       accentSoft: 'rgba(217,119,87,.12)',
+      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      fontDisplay: "'Inter Tight', 'Inter', ui-sans-serif, system-ui, sans-serif",
+      r: '12px',
     },
   },
 }
