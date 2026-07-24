@@ -21,7 +21,7 @@ import { IconCompass, IconClipboard, IconClock, IconLock, IconCheck } from '../c
 const BORDER = { borderColor: 'var(--border)' } as const
 const LETTERS = ['A', 'B', 'C', 'D'] as const
 
-type Phase = 'intro' | 'quiz' | 'loading' | 'result'
+type Phase = 'intro' | 'quiz' | 'loading' | 'result' | 'already-done'
 
 const JALUR_COPY: Record<Jalur, { title: string; desc: string }> = {
   cepat: {
@@ -37,13 +37,25 @@ const JALUR_COPY: Record<Jalur, { title: string; desc: string }> = {
 }
 
 export function Diagnostik() {
-  const { refreshProfile } = useAuth()
+  const { profile, refreshProfile } = useAuth()
   const { data: questions = [], isLoading } = useQuery({
     queryKey: ['diagnostic-questions'],
     queryFn: fetchDiagnosticQuestions,
   })
 
   const [phase, setPhase] = useState<Phase>('intro')
+
+  // Reachable from the sidebar now (not just the one-time roadmap node), so a
+  // student who already has a jalur must land on a read-only result view —
+  // this is a placement test, not a formative quiz; there's no retake path
+  // (matches RoadmapWidget's "informational only" node once jalur is set).
+  // profile loads async, so this can't be a useState initializer — it has to
+  // react once profile.jalur actually arrives, but only while still sitting
+  // on the untouched 'intro' phase (never interrupt an in-progress attempt).
+  useEffect(() => {
+    if (profile?.jalur && phase === 'intro') setPhase('already-done')
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile?.jalur])
   const [currentQ, setCurrentQ] = useState(0)
   const [answers, setAnswers] = useState<Array<number | null>>([])
   const [result, setResult] = useState<{ score: number; jalur: Jalur } | null>(null)
@@ -112,6 +124,43 @@ export function Diagnostik() {
     <Layout>
       <div className="p-4 md:p-6">
        <div>
+        {phase === 'already-done' && profile?.jalur && (
+          <div>
+            <div className="text-center mb-6">
+              <div className="flex justify-center mb-3 text-terra">
+                <IconCheck size={40} />
+              </div>
+              <div className="font-['Playfair_Display',serif] text-xl md:text-2xl font-bold text-brown mb-2">
+                Tes Diagnostik Sudah Selesai
+              </div>
+              <div
+                className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-['Playfair_Display',serif] text-base md:text-lg font-semibold"
+                style={{ background: 'var(--brown)', color: 'var(--terra)' }}
+              >
+                Kamu di {JALUR_COPY[profile.jalur].title}
+              </div>
+            </div>
+
+            <div className="bg-ivory rounded-2xl border p-5 md:p-6 mb-5" style={BORDER}>
+              <div className="text-sm font-semibold text-brown mb-2">{JALUR_COPY[profile.jalur].title}</div>
+              <p className="text-[13px] text-brown-3 leading-relaxed">{JALUR_COPY[profile.jalur].desc}</p>
+            </div>
+
+            <p className="text-center text-xs text-brown-3 opacity-70 mb-5">
+              Tes diagnostik cuma dikerjakan sekali di awal dan hasilnya permanen untuk mata kuliah ini — jalurmu
+              tidak berubah lagi dari sini.
+            </p>
+
+            <Link
+              to="/dashboard"
+              className="flex items-center justify-center gap-1.5 w-full h-[50px] rounded-xl text-white text-[15px] font-semibold no-underline"
+              style={{ background: 'var(--brown)', boxShadow: '0 4px 16px rgba(44,36,32,.18)' }}
+            >
+              Lanjut ke Dashboard →
+            </Link>
+          </div>
+        )}
+
         {phase === 'intro' && (
           <div>
             <div
