@@ -65,7 +65,8 @@ const versions: VersionEntry[] = [
         <>WelcomeModal: pakai {c('sessionStorage')} bukan {c('localStorage')} — tampil lagi tiap sesi login baru, bukan cuma sekali selamanya per browser; step indicator dots sekarang bisa diklik langsung, durasi per step 3 detik</>,
         <>Sidebar ciut (icon rail): hover sembarang ikon di satu section munculin flyout menu berisi semua item section itu dengan label (ala SAKTI IconRailV2), bukan cuma satu list ikon rata dengan tooltip per-item</>,
         <>Tombol &quot;Cetak Lembar Kerja&quot; (Workshop) dan &quot;Cetak Hasil&quot; (Validasi Ahli) pakai template PDF khusus (hidden iframe), bukan {c('window.print()')} halaman mentah</>,
-        <>Halaman Login/Register: layout satu kartu tersentral (bukan dua kolom terpisah jauh) — versi desktop wordmark &quot;Smart Flip 5.0&quot; jadi kolom kiri kartu dengan pembatas garis, versi mobile header ringkas di atas lalu form lalu keterangan di bawah</>,
+        <>Halaman Register: layout satu kartu tersentral (bukan dua kolom terpisah jauh) — versi desktop wordmark &quot;Smart Flip 5.0&quot; jadi kolom kiri kartu dengan pembatas garis, versi mobile header ringkas di atas lalu form lalu keterangan di bawah</>,
+        <>Halaman Login: diganti jadi kartu flip 3D ({c('LoginFlipCard')}) — sisi depan branding + tombol &quot;Masuk →&quot;, sisi belakang toggle peran + form, klik &quot;Masuk →&quot; membalik kartu alih-alih langsung menampilkan form</>,
       ],
       Fixed: [
         <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
@@ -76,6 +77,8 @@ const versions: VersionEntry[] = [
         <>Pola kontras {c('bg-brown')}/{c('text-terra')} yang sama disapu di 24 titik/11 halaman lain (Login, Diagnostik, Draf, Ebook, Forum, Kelas, Manajemen, Profil, Validasi, Vark, Analitik) — toggle peran Mahasiswa/Dosen di {c('/login')} jadi contoh pertama yang ketauan lewat screenshot</>,
         <>Toggle peran Mahasiswa/Dosen di {c('/register')} masih pakai {c('text-terra')} lama, luput dari sweep kontras di atas karena halaman ini baru ada dari fan-out belakangan — disamakan ke {c('btn-text')} seperti {c('/login')}</>,
         <><strong>Keamanan</strong>: {c('/changelog')} (halaman publik, tanpa {c('ProtectedRoute')}) sempat merender {c('<Layout>')} versi lengkap apa adanya — pengunjung anonim di production melihat seluruh struktur menu sidebar (Dashboard, Forum, Draf, Profil, dst). {c('Layout')} sekarang cek sesi asli ({c('isSupabaseConfigured && !user')}) dan merender header minimal standalone untuk pengunjung anonim, tanpa mengganggu mode demo lokal (tanpa Supabase) yang memang sengaja tanpa login</>,
+        <>{c('/register')}: teks bantuan &quot;Kode Kelas&quot; (mahasiswa, 4 baris) jauh lebih panjang dari &quot;Kode Undangan Dosen&quot; (dosen, 2 baris) — toggle peran jadi mengubah tinggi kartu dan bikin posisi kartu di layar berpindah tiap ganti tab. Dipendekkan jadi satu kalimat, tinggi kartu sekarang identik di kedua peran</>,
+        <>Login: tombol &quot;Lupa kata sandi?&quot; sebelumnya keluar total dari kartu login ke layout {c('AuthShell')} dua-kolom yang berbeda — terasa melompat, bukan bagian animasi flip. Sekarang jadi sub-tampilan di dalam sisi belakang kartu flip yang sama (tukar konten, bukan pindah halaman)</>,
       ],
     },
     desc: 'Kelas/rombongan belajar (kode gabung + import CSV), empat bug produksi ditemukan &amp; diperbaiki lewat verifikasi login browser langsung (kuis kosong total, signup gagal, Analitik fallback ke data contoh, simpan soal kuis 403), dan sweep dosen-editable content (kuis, workshop) + PDF template + kontras.',
