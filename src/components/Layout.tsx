@@ -303,9 +303,14 @@ export function Layout({ children }: { children: ReactNode }) {
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-            className="cursor-pointer flex-shrink-0 transition-opacity hover:opacity-80"
+            className="cursor-pointer flex items-center gap-2.5 min-w-0 transition-opacity hover:opacity-80"
           >
             <BrandMark size={32} />
+            {!collapsed && (
+              <span className="font-display font-semibold text-brown truncate">
+                Smart Flip <span className="text-terra-d text-sm">5.0</span>
+              </span>
+            )}
           </button>
         </div>
 

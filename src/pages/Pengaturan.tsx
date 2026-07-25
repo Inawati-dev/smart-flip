@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
 import { Layout } from '../components/Layout'
-import { IconGear, IconCompass, IconBell, IconCheck } from '../components/icons'
+import { IconCompass, IconBell, IconCheck } from '../components/icons'
 import { injectDesignTokens } from '../lib/design-tokens'
 import { THEMES, getTheme, setTheme, type ThemeId } from '../lib/theme'
 
@@ -73,20 +72,6 @@ export function Pengaturan() {
               <span className="text-sm font-semibold text-brown">Notifikasi</span>
             </div>
             <p className="text-xs text-brown-3">Segera hadir — atur notifikasi email &amp; in-app di sini.</p>
-          </div>
-
-          <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
-            <div className="flex items-center gap-2.5 mb-1">
-              <IconGear size={18} className="text-brown-3" />
-              <span className="text-sm font-semibold text-brown">Akun</span>
-            </div>
-            <p className="text-xs text-brown-3">
-              Kelola data diri di halaman{' '}
-              <Link to="/profil" className="text-terra-d font-semibold">
-                Profil
-              </Link>
-              .
-            </p>
           </div>
         </div>
       </div>

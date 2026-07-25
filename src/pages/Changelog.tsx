@@ -43,6 +43,25 @@ interface RoadmapItem {
 
 const c = (children: ReactNode) => <code className="bg-[#00000008] rounded px-1 text-[0.9em]">{children}</code>
 
+// Entries below are appended over time wherever felt natural during editing,
+// not necessarily in descending-version order (a `v0.5.2` bugfix entry has
+// been inserted after `v0.7` more than once) -- sorting programmatically
+// here guarantees display order always matches semver regardless of literal
+// array position, instead of relying on every future edit to insert in the
+// exact right spot by hand.
+function parseVersion(v: string): [number, number, number] {
+  const parts = v.replace(/^v/, '').split('.').map((n) => parseInt(n, 10) || 0)
+  return [parts[0] ?? 0, parts[1] ?? 0, parts[2] ?? 0]
+}
+
+function compareVersionsDesc(a: VersionEntry, b: VersionEntry): number {
+  const [a1, a2, a3] = parseVersion(a.version)
+  const [b1, b2, b3] = parseVersion(b.version)
+  if (a1 !== b1) return b1 - a1
+  if (a2 !== b2) return b2 - a2
+  return b3 - a3
+}
+
 const versions: VersionEntry[] = [
   {
     version: 'v1.1.0',
@@ -74,6 +93,7 @@ const versions: VersionEntry[] = [
         <>Hero {c('/vark')}: kartu dibatasi ~560px dan ditengah, sebelumnya selebar area konten penuh sehingga teks jadi satu baris sangat panjang di layar lebar</>,
         <>&quot;Aktivitas Kelas Terkini&quot; ({c('RecentActivityCard')}) sekarang juga tampil di Dashboard dosen, bukan cuma di Profil — plus tombol &quot;Lihat Semua&quot; (naikkan limit dari 5 ke 200 baris), sebelumnya gak ada cara lihat lebih dari 5 aktivitas terakhir</>,
         <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
+        <>Pengaturan: kartu &quot;Akun&quot; (cuma berisi link ke Profil) dihapus — sudah redundan dengan menu Profil di sidebar</>,
       ],
       Fixed: [
         <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
@@ -290,6 +310,19 @@ const versions: VersionEntry[] = [
     desc: 'Sprint 3 — auth, mobile, dan bug sweep menyeluruh.',
   },
   {
+    version: 'v0.6',
+    date: '2026-06-05',
+    sections: {
+      Added: [
+        <>modul.html detail lengkap</>,
+        <>localStorage progress baca</>,
+        <>URL param {c('?book=')} auto-open</>,
+        <>Tombol Lanjut Belajar</>,
+      ],
+    },
+    desc: 'Modul + Progress Tracking — versi ini gak sempat ditulis sebagai entry changelog detail waktu itu, cuma tercatat sebagai kartu roadmap. Dituliskan ulang belakangan dari judul & poin roadmap-nya, bukan dari commit asli.',
+  },
+  {
     version: 'v0.7',
     date: '2026-06-09',
     sections: {
@@ -421,7 +454,7 @@ const versions: VersionEntry[] = [
     },
     desc: 'Versi pertama — fungsionalitas dasar membaca PDF sebagai flipbook dengan katalog sederhana.',
   },
-]
+].sort(compareVersionsDesc)
 
 const roadmap: RoadmapItem[] = [
   {
