@@ -146,6 +146,56 @@ export function Manajemen() {
     }
   }
 
+  // Drag-and-drop reorder for Soal Diagnostik -- same technique as Daftar
+  // Modul's persistOrder/handleDrag* above, but operating on full question
+  // objects (order_num is a real column here, not a separate order array)
+  // and persisting via updateDiagnosticQuestion per changed row instead of
+  // one bulk saveModulOrder call.
+  const [dragDiagId, setDragDiagId] = useState<number | null>(null)
+  const [dragOverDiagId, setDragOverDiagId] = useState<number | null>(null)
+
+  async function persistDiagOrder(next: DiagnosticQuestion[]) {
+    const changed = next
+      .map((q, i) => ({ q, orderNum: i + 1 }))
+      .filter(({ q, orderNum }) => q.order_num !== orderNum)
+    if (!changed.length) return
+    try {
+      await Promise.all(changed.map(({ q, orderNum }) => updateDiagnosticQuestion(q.id, { order_num: orderNum })))
+      showToast('Urutan soal disimpan')
+    } catch {
+      showToast('Gagal menyimpan urutan soal')
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: ['diagnostic-questions'] })
+    }
+  }
+
+  function handleDiagDragStart(id: number) {
+    setDragDiagId(id)
+  }
+
+  function handleDiagDragOver(e: DragEvent, id: number) {
+    e.preventDefault()
+    if (id !== dragOverDiagId) setDragOverDiagId(id)
+  }
+
+  function handleDiagDrop(targetId: number) {
+    if (dragDiagId != null && dragDiagId !== targetId) {
+      const next = sortedDiagQuestions.slice()
+      const from = next.findIndex((q) => q.id === dragDiagId)
+      const to = next.findIndex((q) => q.id === targetId)
+      const [moved] = next.splice(from, 1)
+      next.splice(to, 0, moved)
+      void persistDiagOrder(next)
+    }
+    setDragDiagId(null)
+    setDragOverDiagId(null)
+  }
+
+  function handleDiagDragEnd() {
+    setDragDiagId(null)
+    setDragOverDiagId(null)
+  }
+
   async function confirmDeleteDiag() {
     if (diagDeleteId == null) return
     try {
@@ -783,7 +833,8 @@ export function Manajemen() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-bg3">
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-14">Urutan</th>
+                  <th className="w-11" aria-label="Urutan (seret)" />
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">Urutan</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Jawaban Benar</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
@@ -792,15 +843,39 @@ export function Manajemen() {
               <tbody>
                 {sortedDiagQuestions.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="text-center py-8 text-brown-3 text-sm">
+                    <td colSpan={5} className="text-center py-8 text-brown-3 text-sm">
                       Belum ada soal tes diagnostik.
                     </td>
                   </tr>
                 ) : (
                   sortedDiagQuestions.map((q) => {
                     const pertanyaanTrunc = q.pertanyaan.length > 70 ? q.pertanyaan.slice(0, 70) + '…' : q.pertanyaan
+                    const isDiagDragging = dragDiagId === q.id
+                    const isDiagDropTarget = dragOverDiagId === q.id && dragDiagId !== q.id
                     return (
-                      <tr key={q.id} className="border-t" style={BORDER}>
+                      <tr
+                        key={q.id}
+                        draggable
+                        onDragStart={() => handleDiagDragStart(q.id)}
+                        onDragOver={(e) => handleDiagDragOver(e, q.id)}
+                        onDrop={() => handleDiagDrop(q.id)}
+                        onDragEnd={handleDiagDragEnd}
+                        className="border-t transition-colors"
+                        style={{
+                          ...BORDER,
+                          opacity: isDiagDragging ? 0.4 : 1,
+                          background: isDiagDropTarget ? 'var(--accent-soft)' : undefined,
+                        }}
+                      >
+                        <td className="px-3 py-2.5">
+                          <div
+                            className="w-11 h-11 flex items-center justify-center text-brown-3 cursor-grab active:cursor-grabbing"
+                            title="Seret untuk mengurutkan"
+                            aria-label={`Seret untuk mengurutkan soal urutan ${q.order_num}`}
+                          >
+                            <IconGrip size={16} />
+                          </div>
+                        </td>
                         <td className="px-3 py-2.5 font-semibold text-brown">{q.order_num}</td>
                         <td className="px-3 py-2.5 text-brown min-w-[200px]">{pertanyaanTrunc}</td>
                         <td className="px-3 py-2.5 text-brown-2">Opsi {q.jawaban + 1}</td>

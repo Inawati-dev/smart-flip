@@ -469,7 +469,7 @@ export function Analitik() {
                 </div>
               ))}
             </div>
-            <div className="flex items-end gap-2 md:gap-2.5 h-[90px] px-1 mt-1.5">
+            <div className="flex items-end gap-2 md:gap-2.5 h-[220px] px-1 mt-1.5">
               {kuisDist.map((k) => (
                 <div key={k.label} className="flex-1 h-full flex items-end">
                   <div
