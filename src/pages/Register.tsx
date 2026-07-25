@@ -207,8 +207,7 @@ export function Register() {
               style={authInputStyle}
             />
             <p className="text-[13px] text-brown-3">
-              Punya kode kelas dari dosen? Masukkan di sini agar langsung tergabung. Belum punya
-              kode? Lewati saja — Anda tetap bisa daftar dan bergabung ke kelas belakangan.
+              Isi jika dosen sudah memberi kode kelas — bisa juga dilewati dan diisi belakangan.
             </p>
           </div>
         )}
