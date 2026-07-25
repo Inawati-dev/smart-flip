@@ -57,6 +57,7 @@ export function Manajemen() {
   const [customsOverride, setCustomsOverride] = useState<Record<number, ModulCustom>>({})
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set())
   const [toast, setToast] = useState<string | null>(null)
+  const [tab, setTab] = useState<'modul' | 'diagnostik' | 'kuis' | 'workshop'>('modul')
 
   const [editId, setEditId] = useState<number | null>(null)
   const [creatingNew, setCreatingNew] = useState(false)
@@ -564,7 +565,31 @@ export function Manajemen() {
           <StatCard bar="#E8A030" val={String(totalTerkunci)} label="Modul terkunci" />
         </div>
 
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+        {/* ── TAB NAV ── */}
+        <div className="flex gap-1.5 mb-5 border-b overflow-x-auto" style={BORDER}>
+          {(
+            [
+              { key: 'modul', label: 'Daftar Modul' },
+              { key: 'diagnostik', label: 'Soal Diagnostik' },
+              { key: 'kuis', label: 'Soal Kuis' },
+              { key: 'workshop', label: 'Konten Workshop' },
+            ] as const
+          ).map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="px-3.5 min-h-11 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px"
+              style={{
+                borderColor: tab === t.key ? 'var(--terra)' : 'transparent',
+                color: tab === t.key ? 'var(--terra-d)' : 'var(--brown-3)',
+              }}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={`bg-ivory rounded-2xl border overflow-hidden mb-4 ${tab === 'modul' ? '' : 'hidden'}`} style={BORDER}>
           <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
             <span className="text-sm font-semibold text-brown">Daftar Modul</span>
             <button
@@ -725,7 +750,7 @@ export function Manajemen() {
             docs/superpowers/specs/2026-07-23-diagnostic-adaptive-roadmap-design.md's
             "Admin edit (dosen)" section. Same table/modal/confirm-modal pattern
             as the module-management block above — no new UI pattern invented. */}
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+        <div className={`bg-ivory rounded-2xl border overflow-hidden mb-4 ${tab === 'diagnostik' ? '' : 'hidden'}`} style={BORDER}>
           <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
             <span className="text-sm font-semibold text-brown">Soal Tes Diagnostik</span>
             <button
@@ -793,7 +818,7 @@ export function Manajemen() {
         {/* Soal kuis formatif per modul — dosen-only CRUD atas quiz_questions.
             Scoped per modul (beda dari Soal Diagnostik di atas yang global),
             jadi ada dropdown pilih modul dulu. */}
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+        <div className={`bg-ivory rounded-2xl border overflow-hidden mb-4 ${tab === 'kuis' ? '' : 'hidden'}`} style={BORDER}>
           <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-sm font-semibold text-brown">Soal Kuis</span>
@@ -873,7 +898,7 @@ export function Manajemen() {
             Sama pola pilih-modul seperti Soal Kuis di atas; edit lewat modal
             karena formnya besar (Tujuan/Aktivitas dinamis/Checklist/Lembar
             Kerja). */}
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+        <div className={`bg-ivory rounded-2xl border overflow-hidden mb-4 ${tab === 'workshop' ? '' : 'hidden'}`} style={BORDER}>
           <div className="flex items-center justify-between px-4 py-3.5 border-b flex-wrap gap-2" style={BORDER}>
             <div className="flex items-center gap-2.5 flex-wrap">
               <span className="text-sm font-semibold text-brown">Konten Workshop</span>

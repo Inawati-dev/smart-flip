@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
@@ -65,6 +65,27 @@ export function Analitik() {
   const { data: rawKprakAspek } = useFeedbackAspectAvg()
 
   const [tab, setTab] = useState<'progress' | 'distribusi' | 'perhatian'>('progress')
+  // Bars start at 0 and grow in on every visit to the "Distribusi" tab
+  // (not just first mount, since the grid stays mounted -- just `hidden` --
+  // across tab switches to keep renderToStaticMarkup-based tests passing).
+  // Double rAF so the 0% width/height actually paints one frame before
+  // flipping to the real value, or the CSS transition has nothing to
+  // animate from.
+  const [barsIn, setBarsIn] = useState(false)
+  useEffect(() => {
+    if (tab !== 'distribusi') {
+      setBarsIn(false)
+      return
+    }
+    let raf2 = 0
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => setBarsIn(true))
+    })
+    return () => {
+      cancelAnimationFrame(raf1)
+      cancelAnimationFrame(raf2)
+    }
+  }, [tab])
   const [filterStatus, setFilterStatus] = useState<FilterStatus>('semua')
   const [filterKelas, setFilterKelas] = useState<string>('semua')
   const [sortKey, setSortKey] = useState<SortKey | null>(null)
@@ -411,8 +432,12 @@ export function Analitik() {
                     style={{ background: 'rgba(62,54,46,.06)' }}
                   >
                     <div
-                      className="h-full rounded-full transition-[width] duration-500"
-                      style={{ width: `${m.pct}%`, minWidth: m.pct > 0 ? 2 : 0, background: modulBarColor(m.pct) }}
+                      className="h-full rounded-full transition-[width] duration-700 ease-out"
+                      style={{
+                        width: barsIn ? `${m.pct}%` : '0%',
+                        minWidth: barsIn && m.pct > 0 ? 2 : 0,
+                        background: modulBarColor(m.pct),
+                      }}
                     />
                   </div>
                   <div className="w-9 text-xs text-brown-3 tabular-nums flex-shrink-0">{m.pct}%</div>
@@ -429,24 +454,42 @@ export function Analitik() {
           {/* Distribusi skor kuis (vertical bar) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5" style={BORDER}>
             <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4"><IconChart size={16} /> Distribusi Skor Kuis</div>
-            <div className="flex items-end gap-2 md:gap-2.5 h-[130px] px-1">
+            {/* Three stacked rows (numbers / bars / labels) instead of one
+                column per bucket with the number+bar+label group bottom-
+                anchored as a unit -- that made the number's row position
+                drift with each bar's height and made zero-count buckets
+                (a bare 4px sliver) look like a stray mark floating up near
+                the numbers instead of "no bar". Numbers and labels now sit
+                on their own fixed-height rows; only the middle row's bars
+                vary in height, all growing from the SAME baseline. */}
+            <div className="flex items-end gap-2 md:gap-2.5 px-1">
               {kuisDist.map((k) => (
-                <div key={k.label} className="flex flex-col items-center flex-1 gap-1.5 justify-end h-full">
-                  <div className="text-xs font-bold text-brown-2">{k.count}</div>
+                <div key={k.label} className="flex-1 text-center text-xs font-bold text-brown-2">
+                  {k.count}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-end gap-2 md:gap-2.5 h-[90px] px-1 mt-1.5">
+              {kuisDist.map((k) => (
+                <div key={k.label} className="flex-1 h-full flex items-end">
                   <div
-                    className="w-full rounded-t"
+                    className="w-full rounded-t transition-[height] duration-700 ease-out"
                     style={{
-                      height: `${(k.count / maxKuisCount) * 100}%`,
-                      minHeight: 4,
+                      height: barsIn ? `${(k.count / maxKuisCount) * 100}%` : '0%',
+                      minHeight: barsIn && k.count > 0 ? 4 : 0,
                       background: k.color,
                     }}
                     title={`${k.sublabel}: ${k.count} mahasiswa`}
                   />
-                  <div className="text-[10px] text-brown-3 text-center leading-tight">
-                    {k.label}
-                    <br />
-                    <span className="opacity-80">{k.sublabel}</span>
-                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2 md:gap-2.5 px-1 mt-1.5">
+              {kuisDist.map((k) => (
+                <div key={k.label} className="flex-1 text-[10px] text-brown-3 text-center leading-tight">
+                  {k.label}
+                  <br />
+                  <span className="opacity-80">{k.sublabel}</span>
                 </div>
               ))}
             </div>
@@ -463,8 +506,8 @@ export function Analitik() {
                   <div className="flex-1 min-w-0 text-sm text-brown-2">{a.label}</div>
                   <div className="w-24 md:w-32 h-2.5 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'rgba(62,54,46,.06)' }}>
                     <div
-                      className="h-full rounded-full"
-                      style={{ width: `${(a.nilai / 5) * 100}%`, background: 'var(--terra)' }}
+                      className="h-full rounded-full transition-[width] duration-700 ease-out"
+                      style={{ width: barsIn ? `${(a.nilai / 5) * 100}%` : '0%', background: 'var(--terra)' }}
                     />
                   </div>
                   <div className="w-8 text-sm font-semibold text-terra-d text-right flex-shrink-0">{a.nilai.toFixed(1)}</div>
