@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Layout } from '../components/Layout'
+import { useAuth } from '../contexts/AuthContext'
 import { IconGear, IconChart, IconTrendingUp, IconDownload, IconLightbulb } from '../components/icons'
 import {
   computeNGain,
@@ -7,6 +8,7 @@ import {
   type NGainCategory,
   type NGainResult,
 } from '../lib/ngain'
+import { fetchNgainEntries, fetchNgainConfig, saveNgainEntries, saveNgainConfig } from '../lib/ngainEntries'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -59,12 +61,39 @@ function csvEscape(value: string): string {
 }
 
 export default function Ngain() {
+  const { user } = useAuth()
+  // Demo mode (no real session) still gets a stable per-browser worksheet
+  // instead of losing everything on refresh -- see lib/ngainEntries.ts.
+  const dosenId = user?.id ?? 'demo'
   const nextId = useRef(DUMMY_STUDENTS.length)
   const [skorMax, setSkorMax] = useState('100')
   const [jmlMhs, setJmlMhs] = useState('30')
   const [rows, setRows] = useState<StudentRow[]>(() =>
     DUMMY_STUDENTS.map((d, i) => makeRow(String(i), d)),
   )
+  // Only the DUMMY_STUDENTS seed (first-ever visit, nothing saved yet) is
+  // left unpersisted -- once a real worksheet loads, or the dosen edits
+  // anything, every row/config write flushes to storage immediately.
+  const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    let active = true
+    Promise.all([fetchNgainEntries(dosenId), fetchNgainConfig(dosenId)]).then(([entries, config]) => {
+      if (!active) return
+      if (entries.length) {
+        setRows(entries)
+        nextId.current = entries.length
+      }
+      if (config) {
+        setSkorMax(config.skorMax)
+        setJmlMhs(config.jmlMhs)
+      }
+      setLoaded(true)
+    })
+    return () => {
+      active = false
+    }
+  }, [dosenId])
   // Snapshot of the last "Hitung N-Gain" click — mirrors legacy's behavior of
   // leaving stale values in the N-Gain/Kategori columns until recalculated,
   // rather than recomputing live on every keystroke.
@@ -84,11 +113,19 @@ export default function Ngain() {
 
   function addRow() {
     const id = String(nextId.current++)
-    setRows((r) => [...r, makeRow(id)])
+    setRows((r) => {
+      const next = [...r, makeRow(id)]
+      saveNgainEntries(dosenId, next).catch((e) => console.warn('[Ngain] gagal simpan baris:', e))
+      return next
+    })
   }
 
   function deleteRow(id: string) {
-    setRows((r) => r.filter((row) => row.id !== id))
+    setRows((r) => {
+      const next = r.filter((row) => row.id !== id)
+      saveNgainEntries(dosenId, next).catch((e) => console.warn('[Ngain] gagal simpan baris:', e))
+      return next
+    })
     setResults((prev) => {
       if (!prev) return prev
       const next = { ...prev }
@@ -99,6 +136,16 @@ export default function Ngain() {
 
   function updateRow(id: string, field: 'nama' | 'pre' | 'post', value: string) {
     setRows((r) => r.map((row) => (row.id === id ? { ...row, [field]: value } : row)))
+  }
+
+  // Persist on blur rather than every keystroke -- onChange above already
+  // keeps the input responsive locally; this just flushes the settled value.
+  function persistRows() {
+    saveNgainEntries(dosenId, rows).catch((e) => console.warn('[Ngain] gagal simpan baris:', e))
+  }
+
+  function persistConfig(next: { skorMax: string; jmlMhs: string }) {
+    saveNgainConfig(dosenId, next).catch((e) => console.warn('[Ngain] gagal simpan konfigurasi:', e))
   }
 
   function hitungSemua() {
@@ -129,10 +176,12 @@ export default function Ngain() {
 
   function performReset() {
     nextId.current = DUMMY_STUDENTS.length
-    setRows(DUMMY_STUDENTS.map((d, i) => makeRow(String(i), d)))
+    const next = DUMMY_STUDENTS.map((d, i) => makeRow(String(i), d))
+    setRows(next)
     setResults(null)
     setOverMaxIds(new Set())
     setResetModalOpen(false)
+    saveNgainEntries(dosenId, next).catch((e) => console.warn('[Ngain] gagal simpan baris:', e))
   }
 
   function confirmExportCSV() {
@@ -200,6 +249,7 @@ export default function Ngain() {
                 step={1}
                 value={skorMax}
                 onChange={(e) => setSkorMax(e.target.value)}
+                onBlur={() => persistConfig({ skorMax, jmlMhs })}
                 className="h-11 px-3 rounded-lg border-[1.5px] bg-[var(--bg3)] text-base text-brown outline-none focus:border-terra"
                 style={BORDER}
               />
@@ -217,6 +267,7 @@ export default function Ngain() {
                 step={1}
                 value={jmlMhs}
                 onChange={(e) => setJmlMhs(e.target.value)}
+                onBlur={() => persistConfig({ skorMax, jmlMhs })}
                 className="h-11 px-3 rounded-lg border-[1.5px] bg-[var(--bg3)] text-base text-brown outline-none focus:border-terra"
                 style={BORDER}
               />
@@ -229,6 +280,7 @@ export default function Ngain() {
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
           <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
             <IconChart size={18} /> Data Pre-Test &amp; Post-Test
+            {!loaded && <span className="text-xs font-normal text-brown-3">Memuat data tersimpan…</span>}
           </div>
 
           <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
@@ -283,6 +335,7 @@ export default function Ngain() {
                           placeholder="Nama mahasiswa"
                           autoComplete="off"
                           onChange={(e) => updateRow(row.id, 'nama', e.target.value)}
+                          onBlur={persistRows}
                           className="w-full min-w-[140px] h-11 px-2.5 rounded-md border-[1.5px] bg-[var(--bg3)] text-base text-brown outline-none focus:border-terra"
                           style={BORDER}
                         />
@@ -296,6 +349,7 @@ export default function Ngain() {
                           max={1000}
                           step={0.5}
                           onChange={(e) => updateRow(row.id, 'pre', e.target.value)}
+                          onBlur={persistRows}
                           className="w-full min-w-[70px] h-11 px-2 rounded-md border-[1.5px] bg-[var(--bg3)] text-base text-brown text-center outline-none focus:border-terra"
                           style={{ borderColor: isOverMax ? 'var(--red)' : 'var(--border)' }}
                         />
@@ -309,6 +363,7 @@ export default function Ngain() {
                           max={1000}
                           step={0.5}
                           onChange={(e) => updateRow(row.id, 'post', e.target.value)}
+                          onBlur={persistRows}
                           className="w-full min-w-[70px] h-11 px-2 rounded-md border-[1.5px] bg-[var(--bg3)] text-base text-brown text-center outline-none focus:border-terra"
                           style={{ borderColor: isOverMax ? 'var(--red)' : 'var(--border)' }}
                         />

@@ -24,7 +24,7 @@ interface SelectProps {
 // internal scroll, and leaves the gap used to flip the popup above the
 // trigger when there isn't 260px of room below it.
 const POPUP_MAX_HEIGHT = 260
-const POPUP_GAP = 6
+const POPUP_GAP = 10
 
 interface Pos {
   left: number
