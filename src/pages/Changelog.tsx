@@ -77,6 +77,7 @@ const versions: VersionEntry[] = [
         <>Dashboard dosen: ringkasan kelas (jumlah kelas/mahasiswa/modul) + shortcut ke Kelola Modul/Analitik/Kelas/Validasi — bukan lagi list &quot;Lanjut Belajar&quot; ala mahasiswa</>,
         <>Logo Smart Flip: badge kotak rounded (echo pola SAKTI) berisi ikon buku terbuka, dipakai konsisten di sidebar (dobel jadi tombol ciut/expand), topbar mobile, header pengunjung anonim, dan favicon tab browser</>,
         <>N-Gain Calculator ({c('/ngain')}) sekarang tersimpan permanen ({c('ngain_entries')}/{c('ngain_config')}) — sebelumnya murni state React, refresh halaman selalu balik ke 5 baris contoh (Ahmad Rizki dkk) dan menghapus semua yang sudah diketik dosen</>,
+        <>Notifikasi dasar (dosen) di {c('/pengaturan')}: daftar mahasiswa yang belum mulai modul apa pun atau belum mengerjakan tes diagnostik — versi pertama, belum ada email/push, cuma daftar di halaman</>,
       ],
       Changed: [
         <>Profil dosen: &quot;Aktivitas Kelas Terkini&quot; dan stat card statistik mengajar sekarang data asli Supabase, bukan angka contoh (28 mahasiswa/64%/76%)</>,
