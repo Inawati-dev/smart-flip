@@ -237,7 +237,7 @@ export function Vark() {
         {phase === 'intro' && (
           <div>
             <div
-              className="rounded-2xl md:rounded-[18px] p-6 md:p-8 pb-6 text-center mb-4 relative overflow-hidden"
+              className="rounded-2xl md:rounded-[18px] p-6 md:p-8 pb-6 text-center mb-4 relative overflow-hidden max-w-[560px] mx-auto"
               style={{ background: 'var(--brown)' }}
             >
               <div className="flex justify-center mb-3 text-terra">
@@ -284,7 +284,7 @@ export function Vark() {
                 </div>
               )}
             </div>
-            <p className="text-center text-xs text-brown-3 opacity-70">
+            <p className="text-center text-xs text-brown-3 opacity-70 max-w-[560px] mx-auto">
               Hasil asesmen hanya digunakan untuk menyesuaikan urutan konten belajar. Tidak ada jawaban benar atau
               salah.
             </p>
