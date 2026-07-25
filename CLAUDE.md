@@ -1,17 +1,10 @@
 # SMART-FLIP 5.0 — Project Guide for Claude
 
-## ⚠️ BELUM DI-PUSH (2026-07-25) — cek sebelum lanjut kerja
+## ⚠️ Remote note (2026-07-25)
 
-Branch `main` lokal **210 commit ahead, 26 commit behind** `origin/main` — diverge, BUKAN reconciliation trivial.
+`inawati/main` (remote yang benar-benar dipakai Vercel untuk deploy — lihat Overview di bawah) **sudah up to date**, termasuk `bacaa09` (fix WelcomeModal) dan seluruh fix sesi lain (Layout.tsx sidebar/flyout, LoginFlipCard.tsx/Login.tsx flip card). Push terakhir: `bdba771`.
 
-**SUDAH DICOBA & DIBATALKAN (aman, jangan diulang tanpa investigasi dulu):** `git pull --rebase origin main` — awalnya kelihatan aman (`git diff --stat main...origin/main` cuma nunjuk `config.json` 1 baris, 26 commit remote semua "chore: auto-update book catalog [skip ci]"), TAPI rebase asli coba replay **184 commit lokal** dan LANGSUNG conflict `add/add` di puluhan file legacy `*.html` mulai commit ke-2 (`6f58207... init: SMART-FLIP 5.0 v0.9.7`). Kemungkinan besar histori lokal vs remote punya common ancestor jauh lebih lama dari perkiraan (bukan cuma "26 commit ketinggalan" yang sederhana) — butuh investigasi kenapa (force-push? branch rewrite? merge-base aneh?) sebelum coba rebase/merge lagi. **Di-`git rebase --abort`, state balik bersih** — commit lokal `bacaa09` (fix WelcomeModal) aman, 2 stash punya sesi lain (`Select.tsx`/`Analitik.tsx`/`Manajemen.tsx`/`Ngain.tsx`) sudah di-pop balik ke working tree utuh, nol yang hilang.
-
-Beberapa fix dari sesi lain (proyek "AI Skill", commit terakhir relevan `bacaa09`) sudah **committed lokal** tapi ikut ke-block push ini — semua sudah `tsc -b --noEmit`+`eslint` clean:
-- `src/components/Layout.tsx` — sidebar ciut 1 icon/section (bukan per-item, match SAKTI `IconRailV2`), flyout close-delay 250ms, radius flyout `rounded-[4px]`
-- `src/components/WelcomeModal.tsx` — fix bug nyata: `@keyframes welcomeCountdown` gak pernah didefinisikan (progress bar gak pernah animasi dari dulu), durasi 5s, tombol gak lagi `disabled`, judul "Selamat Datang,"+baris baru
-- `src/components/LoginFlipCard.tsx` + `src/pages/Login.tsx` — flip card login (front=hero, back=form asli), sudah direfactor lanjut oleh sesi lain jadi primitif `FlipPanel` reusable + grid-based dynamic height
-
-Detail lengkap tiap fix ada di `04 - Referensi/Referensi UI Standar/index.html` (Registri.148) proyek AI Skill, dossier 04/08/13/20.
+`origin` (remote `JIAkbar/smart-flipbook.git`, GitHub Pages lama — **sudah pensiun**, bukan jalur deploy) masih diverge jauh dari `main` lokal (waktu dicek: 210 ahead/26 behind, dan `git pull --rebase origin main` langsung conflict `add/add` di puluhan file legacy mulai commit ke-2). Ini **sengaja tidak direkonsiliasi** — origin bukan jalur live, dan histori kedua branch kemungkinan diverge dari titik yang jauh lebih lama dari sekadar "26 commit ketinggalan". Jangan coba rebase/merge dengan `origin` tanpa investigasi eksplisit dulu (kenapa divergensinya sedalam itu), dan jangan panik kalau lihat angka ahead/behind itu — itu bukan indikasi ada yang belum live.
 
 ## Overview
 Perpustakaan Digital / Flipbook Reader untuk penelitian dana internal UM 2026.
