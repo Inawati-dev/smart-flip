@@ -1,9 +1,10 @@
-import { useState, type ComponentType, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ComponentType, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
+import { BrandMark } from './AuthShell'
 import {
   IconHome,
   IconBook,
@@ -37,6 +38,10 @@ interface NavItem {
 interface NavSection {
   key: string
   label: string
+  // Shown as the SINGLE icon representing this whole section in the
+  // collapsed rail (matches SAKTI IconRailV2: one icon per section, not one
+  // per item — items only surface in the hover flyout).
+  icon: ComponentType<{ size?: number }>
   items: NavItem[]
 }
 
@@ -50,6 +55,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'utama',
     label: 'Utama',
+    icon: IconHome,
     items: [
       { to: '/dashboard', icon: IconHome, label: 'Dashboard' },
       { to: '/ebook', icon: IconBook, label: 'Katalog Modul' },
@@ -59,6 +65,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'kolaborasi',
     label: 'Kolaborasi',
+    icon: IconChat,
     items: [
       { to: '/forum', icon: IconChat, label: 'Forum' },
       { to: '/draf', icon: IconEdit, label: 'Draf' },
@@ -67,6 +74,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'belajar',
     label: 'Belajar',
+    icon: IconCompass,
     items: [
       { to: '/feedback', icon: IconStar, label: 'Feedback' },
       { to: '/vark', icon: IconCompass, label: 'Gaya Belajar' },
@@ -75,6 +83,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'kelola-kelas',
     label: 'Kelola Kelas',
+    icon: IconUsers,
     // Alfabetis by label -- gampang di-scan sekarang isinya 5 item.
     items: [
       { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
@@ -87,6 +96,7 @@ const NAV_SECTIONS: NavSection[] = [
   {
     key: 'akun',
     label: 'Akun',
+    icon: IconUser,
     items: [
       { to: '/profil', icon: IconUser, label: 'Profil' },
       { to: '/pengaturan', icon: IconGear, label: 'Pengaturan' },
@@ -114,6 +124,13 @@ export function Layout({ children }: { children: ReactNode }) {
   // position:absolute (ancestor-relative) — absolute positioning let the
   // label get clipped by any ancestor's overflow/stacking quirks; fixed
   // positioning against the real viewport can't be "submerged" by anything.
+  // NOT switched to SAKTI's plain absolute+overflow:visible even after
+  // matching its close-delay below and its 1-icon-per-section rail (which
+  // shrank collapsed height from ~15 stacked item-icons down to 5
+  // section-icons, matching SAKTI): fixed positioning's anti-clipping
+  // guarantee is still strictly safer than absolute+overflow:visible with
+  // no real cost now that height isn't the concern it used to be, so it's
+  // kept rather than re-introducing a clipping risk for no benefit.
   const [flyoutTop, setFlyoutTop] = useState(0)
   // Collapsed-rail group flyout (ala SAKTI's IconRailV2): hovering any icon
   // in a section pops a small card listing that WHOLE section's items with
@@ -121,6 +138,38 @@ export function Layout({ children }: { children: ReactNode }) {
   // navigable by section without needing to expand.
   const [groupFlyout, setGroupFlyout] = useState<string | null>(null)
   const [groupFlyoutTop, setGroupFlyoutTop] = useState(0)
+  // 250ms close-grace-period — matches SAKTI IconRailV2's
+  // scheduleCloseFlyout/cancelCloseFlyout exactly, so moving the mouse
+  // across the small gap to the flyout card (or briefly off it) doesn't
+  // slam it shut. Two independent timers since groupFlyout (section
+  // submenu, closes on <nav> leave) and flyout (logout tooltip, closes on
+  // <aside> leave) have different closing triggers and can't share one.
+  const groupFlyoutCloseTimer = useRef<number | null>(null)
+  const cancelCloseGroupFlyout = () => {
+    if (groupFlyoutCloseTimer.current != null) {
+      window.clearTimeout(groupFlyoutCloseTimer.current)
+      groupFlyoutCloseTimer.current = null
+    }
+  }
+  const scheduleCloseGroupFlyout = () => {
+    cancelCloseGroupFlyout()
+    groupFlyoutCloseTimer.current = window.setTimeout(() => setGroupFlyout(null), 250)
+  }
+  const flyoutCloseTimer = useRef<number | null>(null)
+  const cancelCloseFlyout = () => {
+    if (flyoutCloseTimer.current != null) {
+      window.clearTimeout(flyoutCloseTimer.current)
+      flyoutCloseTimer.current = null
+    }
+  }
+  const scheduleCloseFlyout = () => {
+    cancelCloseFlyout()
+    flyoutCloseTimer.current = window.setTimeout(() => setFlyout(null), 250)
+  }
+  useEffect(() => () => {
+    cancelCloseGroupFlyout()
+    cancelCloseFlyout()
+  }, [])
   const [collapsed, setCollapsed] = useState(
     () => typeof window !== 'undefined' && window.localStorage.getItem(COLLAPSE_KEY) === '1',
   )
@@ -220,7 +269,7 @@ export function Layout({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-40 h-[58px] bg-cream/90 backdrop-blur-lg border-b border-[color:var(--border)]">
           <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4 max-w-[900px] mx-auto">
             <Link to="/" className="flex items-center gap-2 no-underline text-brown">
-              <IconBook size={20} />
+              <BrandMark size={26} />
               <span className="font-display font-bold text-brown">Smart Flip</span>
             </Link>
             <Link
@@ -243,7 +292,7 @@ export function Layout({ children }: { children: ReactNode }) {
         className={`hidden lg:flex fixed inset-y-0 left-0 z-40 flex-col bg-ivory border-r border-[color:var(--border)] py-4 transition-[width] duration-200 ${
           collapsed ? 'w-[72px] items-center' : 'w-[220px] items-stretch px-3'
         }`}
-        onMouseLeave={() => setFlyout(null)}
+        onMouseLeave={scheduleCloseFlyout}
       >
         <div className={`flex items-center mb-3 ${collapsed ? 'justify-center' : 'px-1'}`}>
           {/* Logo doubles as the collapse toggle — no separate icon button.
@@ -254,53 +303,50 @@ export function Layout({ children }: { children: ReactNode }) {
             onClick={toggleCollapsed}
             aria-label={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
             title={collapsed ? 'Perluas sidebar' : 'Ciutkan sidebar'}
-            className="cursor-pointer w-10 h-10 rounded-xl flex items-center justify-center text-brown flex-shrink-0 hover:bg-brown/[0.06] transition-colors"
+            className="cursor-pointer flex-shrink-0 transition-opacity hover:opacity-80"
           >
-            <IconBook size={20} />
+            <BrandMark size={32} />
           </button>
         </div>
 
         {collapsed ? (
-          // Ciut: no room for text section headers at 72px, but grouping is
-          // kept visually via a hairline divider between each section's
-          // icons (mirrors SAKTI's collapsed IconRailV2) instead of flattening
-          // everything into one undifferentiated list.
+          // Ciut: ONE icon per SECTION (not per item) — matches SAKTI
+          // IconRailV2 exactly. Clicking navigates to that section's first
+          // item; hovering opens the flyout with all of the section's items.
+          // A hairline divider separates each section's single icon.
           <nav
             className="flex-1 flex flex-col items-center w-full overflow-y-auto"
-            onMouseLeave={() => setGroupFlyout(null)}
+            onMouseLeave={scheduleCloseGroupFlyout}
           >
-            {sections.map((section, i) => (
+            {sections.map((section, i) => {
+              const SectionIcon = section.icon
+              const sectionActive = section.items.some((item) => location.pathname === item.to)
+              return (
               <div
                 key={section.key}
-                className={`relative flex flex-col gap-0.5 items-center w-full ${
+                className={`relative flex items-center justify-center w-full ${
                   i > 0 ? 'mt-2 pt-2 border-t border-[color:var(--border)]' : ''
                 }`}
                 onMouseEnter={(e) => {
+                  cancelCloseGroupFlyout()
                   setGroupFlyout(section.key)
                   setGroupFlyoutTop(e.currentTarget.getBoundingClientRect().top)
                 }}
               >
-                {section.items.map((item) => {
-                  const active = location.pathname === item.to
-                  const Icon = item.icon
-                  return (
-                    <Link
-                      key={item.to}
-                      to={item.to}
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-colors ${
-                        active ? 'bg-brown text-btn-text' : 'text-brown-2 hover:text-brown'
-                      }`}
-                      aria-label={item.label}
-                      aria-current={active ? 'page' : undefined}
-                    >
-                      <Icon size={17} />
-                    </Link>
-                  )
-                })}
+                <Link
+                  to={section.items[0].to}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-colors ${
+                    sectionActive ? 'bg-brown text-btn-text' : 'text-brown-2 hover:text-brown'
+                  }`}
+                  aria-label={section.label}
+                  aria-current={sectionActive ? 'page' : undefined}
+                >
+                  <SectionIcon size={17} />
+                </Link>
 
                 {groupFlyout === section.key && (
                   <div
-                    className="fixed left-[80px] z-[999] rounded-2xl overflow-hidden bg-ivory border border-[color:var(--border)] shadow-[0_8px_24px_rgba(62,54,46,.18)] min-w-[180px]"
+                    className="fixed left-[80px] z-[999] rounded-[4px] overflow-hidden bg-ivory border border-[color:var(--border)] shadow-[0_8px_24px_rgba(62,54,46,.18)] min-w-[180px]"
                     style={{ top: groupFlyoutTop, animation: 'fadeInBg 0.12s ease' }}
                   >
                     <div className="px-3.5 pt-2.5 pb-1.5 text-[11px] font-bold uppercase tracking-wide text-brown-3">
@@ -328,7 +374,8 @@ export function Layout({ children }: { children: ReactNode }) {
                   </div>
                 )}
               </div>
-            ))}
+              )
+            })}
           </nav>
         ) : (
           // Expanded: section headers double as accordion triggers, matching
@@ -367,6 +414,7 @@ export function Layout({ children }: { children: ReactNode }) {
           onClick={() => setLogoutOpen(true)}
           onMouseEnter={(e) => {
             if (!collapsed) return
+            cancelCloseFlyout()
             setFlyout('logout')
             setFlyoutTop(e.currentTarget.getBoundingClientRect().top + e.currentTarget.getBoundingClientRect().height / 2)
           }}
@@ -393,7 +441,7 @@ export function Layout({ children }: { children: ReactNode }) {
       <header className="lg:hidden sticky top-0 z-40 h-[58px] bg-cream/90 backdrop-blur-lg border-b border-[color:var(--border)]">
         <div className="h-full px-4 flex items-center justify-between gap-4">
           <Link to="/dashboard" className="flex items-center gap-2 no-underline text-brown">
-            <IconBook size={20} />
+            <BrandMark size={26} />
             <span className="font-display font-bold text-brown">E-Modul Adaptif</span>
           </Link>
           <button
