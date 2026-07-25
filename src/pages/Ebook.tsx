@@ -369,13 +369,17 @@ export function Ebook() {
   return (
     <Layout>
       <div className="flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
-        <div className="w-full max-w-4xl flex items-center justify-between gap-3 flex-wrap">
-          <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="text-xs md:text-sm text-brown-3 hover:text-brown">
+        <div className="w-full max-w-4xl flex items-center gap-3 flex-wrap">
+          <Link
+            to={moduleId != null ? '/ebook' : '/dashboard'}
+            className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg text-sm font-semibold text-brown-2 border hover:bg-[rgba(62,54,46,.04)] hover:text-brown transition-colors"
+            style={{ borderColor: 'var(--border)' }}
+          >
             ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
           </Link>
-          <span className="text-sm font-semibold text-brown truncate text-right">
-            {currentModule?.title ?? (moduleId != null ? '' : 'Perpustakaan Digital')}
-          </span>
+          {currentModule?.title && (
+            <span className="text-sm font-semibold text-brown truncate ml-auto text-right">{currentModule.title}</span>
+          )}
         </div>
 
         {moduleId != null && status === 'ready' && (
@@ -431,6 +435,20 @@ export function Ebook() {
           // screen; reading one document does not (that's why the reader
           // view further down keeps its own max-w-4xl).
           <div className="w-full">
+            <div
+              className="w-full max-w-[220px] bg-ivory rounded-2xl border p-4 mb-4 flex items-center gap-3"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-terra" style={{ background: 'var(--accent-soft)' }}>
+                <IconBook size={19} />
+              </div>
+              <div>
+                <div className="text-lg font-bold text-brown leading-tight">
+                  {catalog.length}/{modules.length}
+                </div>
+                <div className="text-xs text-brown-3">Modul sudah diunggah</div>
+              </div>
+            </div>
             {catalog.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <IconBook size={36} className="text-brown-3" />

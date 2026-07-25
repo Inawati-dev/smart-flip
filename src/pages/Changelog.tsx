@@ -96,6 +96,8 @@ const versions: VersionEntry[] = [
         <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
         <>Pengaturan: kartu &quot;Akun&quot; (cuma berisi link ke Profil) dihapus — sudah redundan dengan menu Profil di sidebar</>,
         <>Manajemen Modul: reorder Daftar Modul jadi drag-and-drop (seret baris), menggantikan tombol naik/turun per baris</>,
+        <>Manajemen Modul: Soal Tes Diagnostik juga bisa di-drag-and-drop sekarang — sebelumnya urutan cuma bisa diubah lewat isi ulang angka {c('order_num')} manual di modal edit</>,
+        <>{c('/ebook')}: tombol &quot;Kembali&quot; dirapikan jadi tombol beneran (border+padding), teks &quot;Perpustakaan Digital&quot; yang redundan dihapus, ditambah kartu ringkas jumlah modul yang sudah diunggah</>,
       ],
       Fixed: [
         <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
@@ -112,6 +114,7 @@ const versions: VersionEntry[] = [
         <>Register/AuthShell: padding &amp; jarak vertikal dipadatkan (~20%) — di layar laptop biasa (zoom 100%) halaman sempat butuh scroll penuh; sekarang muat satu layar tanpa scroll</>,
         <>Analitik: popup dropdown filter Kelas/Status nyaris nempel tabel di bawahnya (jarak cuma 6px), kelihatan seperti overlap — jarak popup dinaikkan ke 10px di semua dropdown ({c('Select.tsx')}) app-wide</>,
         <>Distribusi Skor Kuis: bucket berisi 0 mahasiswa render sebagai garis tipis mengambang dekat angka &quot;0&quot; alih-alih terlihat kosong — angka, bar, dan label sekarang 3 baris terpisah dengan baseline seragam, bukan satu grup per-bucket yang posisinya ikut naik-turun mengikuti tinggi bar</>,
+        <>Kartu &quot;Distribusi Skor Kuis&quot; sempat ikut stretch ke tinggi kartu sebelah (&quot;Penyelesaian per Modul&quot;) lewat default grid, nyisain area kosong gede di bawah chart — grid diganti {c('items-start')} biar tiap kartu ikut tinggi kontennya sendiri, lalu bar chart-nya sendiri diperbesar ({c('h-[220px]')}) biar lebih substansial, bukan chart mini di kartu kosong</>,
       ],
     },
     desc: 'Kelas/rombongan belajar (kode gabung + import CSV), empat bug produksi ditemukan &amp; diperbaiki lewat verifikasi login browser langsung (kuis kosong total, signup gagal, Analitik fallback ke data contoh, simpan soal kuis 403), dan sweep dosen-editable content (kuis, workshop) + PDF template + kontras.',
