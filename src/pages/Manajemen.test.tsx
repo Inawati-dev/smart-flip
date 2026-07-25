@@ -104,7 +104,7 @@ describe('Manajemen', () => {
     expect(html).toContain('Modul aktif/published')
   })
 
-  it('moves a module up and persists the new order to the legacy localStorage key', () => {
+  it('drags a module onto another row and persists the new order to the legacy localStorage key', () => {
     const queryClient = newQueryClient()
     seedQueryClient(queryClient)
     renderManajemen(queryClient)
@@ -113,8 +113,10 @@ describe('Manajemen', () => {
     expect(within(rows[0]).getByText('Modul Satu')).toBeTruthy()
     expect(within(rows[1]).getByText('Modul Dua')).toBeTruthy()
 
-    // Move "Modul Dua" (row 2) up
-    fireEvent.click(within(rows[1]).getByLabelText('Geser Modul Dua ke atas'))
+    // Drag "Modul Dua" (row 2) onto "Modul Satu" (row 1)
+    fireEvent.dragStart(rows[1])
+    fireEvent.dragOver(rows[0])
+    fireEvent.drop(rows[0])
 
     const rowsAfter = screen.getAllByRole('row').slice(1)
     expect(within(rowsAfter[0]).getByText('Modul Dua')).toBeTruthy()
@@ -124,14 +126,20 @@ describe('Manajemen', () => {
     expect(savedOrder).toEqual([2, 1, 3])
   })
 
-  it('the first row cannot move up and the last row cannot move down', () => {
+  it('dropping a row onto itself does not change the order', () => {
     const queryClient = newQueryClient()
     seedQueryClient(queryClient)
     renderManajemen(queryClient)
 
     const rows = screen.getAllByRole('row').slice(1)
-    expect((within(rows[0]).getByLabelText('Geser Modul Satu ke atas') as HTMLButtonElement).disabled).toBe(true)
-    expect((within(rows[2]).getByLabelText('Geser Modul Tiga ke bawah') as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.dragStart(rows[0])
+    fireEvent.dragOver(rows[0])
+    fireEvent.drop(rows[0])
+
+    const rowsAfter = screen.getAllByRole('row').slice(1)
+    expect(within(rowsAfter[0]).getByText('Modul Satu')).toBeTruthy()
+    expect(within(rowsAfter[1]).getByText('Modul Dua')).toBeTruthy()
+    expect(within(rowsAfter[2]).getByText('Modul Tiga')).toBeTruthy()
   })
 
   it('opens the edit modal pre-filled, saves a new title, and persists it under the legacy localStorage key', async () => {
