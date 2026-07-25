@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { authInputClass, authInputStyle } from '../components/AuthShell'
-import { LoginFlipCard } from '../components/LoginFlipCard'
+import { LoginFlipCard, FlipPanel } from '../components/LoginFlipCard'
 
 export function Login() {
   const navigate = useNavigate()
@@ -324,7 +324,9 @@ export function Login() {
               </button>
             </div>
           }
-          back={forgotMode ? forgotView : loginView}
+          back={
+            <FlipPanel flipped={forgotMode} front={loginView} back={forgotView} faceClassName="flex flex-col gap-5" />
+          }
         />
       </div>
     </div>
