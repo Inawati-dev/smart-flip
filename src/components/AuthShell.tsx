@@ -2,15 +2,31 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { IconClipboard } from './icons'
 
-// Brand mark — two overlapping "page-flip" shapes (brown base page + terra
-// page mid-flip), same design approved separately as the app's logo. Only
-// used here (mobile-only compact header) so it stays inline rather than in
-// the shared icons.tsx set.
-function BrandMark({ size = 30 }: { size?: number }) {
+// Brand badge — rounded square (echoes SAKTI's IconRailV2 sidebar badge)
+// with an open-book glyph, white on terra-d. Exported for reuse in
+// Layout.tsx's sidebar toggle badge so the mark reads as one consistent
+// logo everywhere, not just here (mobile-only compact header).
+export function BrandMark({ size = 30 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true">
-      <path d="M32 52 L14 47.5 Q10 46.4 10 42.2 L10 20.6 Q10 16.6 14 17.9 L32 24 Z" fill="var(--brown)" />
-      <path d="M32 52 L50 47.5 Q54 46.4 54 42.2 L54 25.5 Q54 15.5 45 19.3 Q37.5 22.4 32 24 Z" fill="var(--terra)" />
+    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="rounded-[8px] flex-shrink-0">
+      <rect width="32" height="32" rx="8" fill="var(--terra-d)" />
+      <path
+        d="M16 11C13.5 9.3 10.5 9 8 9.6V22.4C10.5 21.8 13.5 22.1 16 23.8"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16 11C18.5 9.3 21.5 9 24 9.6V22.4C21.5 21.8 18.5 22.1 16 23.8"
+        fill="none"
+        stroke="#fff"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path d="M16 11V23.8" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
     </svg>
   )
 }
