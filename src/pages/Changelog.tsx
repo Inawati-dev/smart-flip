@@ -97,6 +97,7 @@ const versions: VersionEntry[] = [
         <>Pengaturan: kartu &quot;Akun&quot; (cuma berisi link ke Profil) dihapus — sudah redundan dengan menu Profil di sidebar</>,
         <>Manajemen Modul: reorder Daftar Modul jadi drag-and-drop (seret baris), menggantikan tombol naik/turun per baris</>,
         <>Manajemen Modul: Soal Tes Diagnostik juga bisa di-drag-and-drop sekarang — sebelumnya urutan cuma bisa diubah lewat isi ulang angka {c('order_num')} manual di modal edit</>,
+        <>Edit Modul: sekarang bisa pilih PDF dari file yang sudah pernah diunggah ({c('listModulPdfFiles')}, list bucket Storage {c('modul-pdf')}) alih-alih harus upload ulang file yang sama untuk modul lain</>,
         <>{c('/ebook')}: tombol &quot;Kembali&quot; dirapikan jadi tombol beneran (border+padding), teks &quot;Perpustakaan Digital&quot; yang redundan dihapus, ditambah kartu ringkas jumlah modul yang sudah diunggah</>,
       ],
       Fixed: [

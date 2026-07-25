@@ -2,7 +2,16 @@ import { useMemo, useState, type DragEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useModulOrder, useModulCustoms } from '../hooks/useManajemen'
-import { saveModulCustom, saveModulOrder, uploadModulPdf, createModul, type ModulCustom, type ModulStatus } from '../lib/manajemen'
+import {
+  saveModulCustom,
+  saveModulOrder,
+  uploadModulPdf,
+  createModul,
+  listModulPdfFiles,
+  assignModulPdf,
+  type ModulCustom,
+  type ModulStatus,
+} from '../lib/manajemen'
 import { isSupabaseConfigured } from '../lib/supabase'
 import {
   fetchDiagnosticQuestions,
@@ -70,6 +79,13 @@ export function Manajemen() {
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [pdfError, setPdfError] = useState('')
+  const [pickedPdfUrl, setPickedPdfUrl] = useState('')
+  const [assigningPdf, setAssigningPdf] = useState(false)
+  const { data: pdfFiles = [] } = useQuery({
+    queryKey: ['manajemen', 'modul-pdf-files'],
+    queryFn: listModulPdfFiles,
+    enabled: isSupabaseConfigured,
+  })
 
   const [bulkConfirm, setBulkConfirm] = useState<'aktif' | 'terkunci' | null>(null)
 
@@ -549,12 +565,31 @@ export function Manajemen() {
     try {
       await uploadModulPdf(editId, pdfFile)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
+      await queryClient.invalidateQueries({ queryKey: ['manajemen', 'modul-pdf-files'] })
       setPdfFile(null)
       showToast('PDF modul berhasil diunggah')
     } catch {
       setPdfError('Gagal mengunggah PDF. Coba lagi.')
     } finally {
       setUploadingPdf(false)
+    }
+  }
+
+  // Reuse a file already sitting in Storage instead of uploading the same
+  // PDF again for a second/third module.
+  async function handleAssignPdf() {
+    if (editId == null || !pickedPdfUrl) return
+    setPdfError('')
+    setAssigningPdf(true)
+    try {
+      await assignModulPdf(editId, pickedPdfUrl)
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+      setPickedPdfUrl('')
+      showToast('PDF modul dipasang dari file yang sudah ada')
+    } catch {
+      setPdfError('Gagal memasang PDF. Coba lagi.')
+    } finally {
+      setAssigningPdf(false)
     }
   }
 
@@ -1154,6 +1189,28 @@ export function Manajemen() {
               </div>
               {creatingNew && (
                 <span className="text-[11px] text-brown-3">Simpan modul dulu sebelum unggah PDF.</span>
+              )}
+              {!creatingNew && isSupabaseConfigured && pdfFiles.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap pt-2 mt-1 border-t" style={BORDER}>
+                  <span className="text-[11px] font-normal text-brown-3 whitespace-nowrap">atau pakai file yang sudah ada:</span>
+                  <Select
+                    value={pickedPdfUrl}
+                    onChange={setPickedPdfUrl}
+                    placeholder="Pilih file…"
+                    className="h-9 px-2.5 rounded-lg border text-xs text-brown flex-1 min-w-[160px] cursor-pointer"
+                    style={BORDER}
+                    options={pdfFiles.map((f) => ({ value: f.url, label: f.name }))}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAssignPdf}
+                    disabled={!pickedPdfUrl || assigningPdf}
+                    className="h-9 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 disabled:opacity-50 flex-shrink-0"
+                    style={BORDER}
+                  >
+                    {assigningPdf ? 'Memasang…' : 'Gunakan'}
+                  </button>
+                </div>
               )}
               {pdfError && <span className="text-[11px] text-red">{pdfError}</span>}
             </div>
