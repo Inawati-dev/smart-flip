@@ -120,6 +120,25 @@ export function computeInactiveStudents(students: StudentStat[]): StudentStat[] 
   return students.filter((s) => s.status === 'tidak')
 }
 
+export interface NeedsAttentionStudent {
+  id: string | number
+  nama: string
+  belumModul: boolean
+  belumDiagnostik: boolean
+}
+
+// Simplest first cut of a "who needs a nudge" notification, per user request
+// (2026-07-25) -- explicitly scoped to just these two conditions for now,
+// more advanced notification rules (per-module deadlines, email digest,
+// etc.) deferred. Separate from computeInactiveStudents (status === 'tidak',
+// based on recent activity) -- a student can be "aktif" but still never
+// have completed a single module or taken the diagnostic.
+export function computeNeedsAttentionStudents(students: StudentStat[]): NeedsAttentionStudent[] {
+  return students
+    .filter((s) => s.modul === 0 || s.jalur == null)
+    .map((s) => ({ id: s.id, nama: s.nama, belumModul: s.modul === 0, belumDiagnostik: s.jalur == null }))
+}
+
 // Bucket skor kuis mahasiswa jadi 5 kategori (0-59/60-69/70-79/80-89/90-100),
 // ported verbatim from legacy/analitik.html bucketKuisDist().
 export function bucketKuisDist(students: StudentStat[]): KuisDistBucket[] {

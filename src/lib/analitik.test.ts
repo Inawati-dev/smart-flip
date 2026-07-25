@@ -5,6 +5,7 @@ import {
   computeFeedbackAspectAvg,
   computeStudentStatus,
   computeInactiveStudents,
+  computeNeedsAttentionStudents,
   bucketKuisDist,
   computeStatSummary,
   sortStudents,
@@ -78,6 +79,22 @@ describe('computeInactiveStudents', () => {
   it('filters only students flagged tidak aktif', () => {
     const flagged = computeInactiveStudents(DUMMY_STUDENTS)
     expect(flagged.map((s) => s.nama)).toEqual(['Dian Pratama', 'Gita Rahayu', 'Joko Susanto'])
+  })
+})
+
+describe('computeNeedsAttentionStudents', () => {
+  it('flags students with no modules completed and/or no diagnostic jalur', () => {
+    const students: StudentStat[] = [
+      { id: 1, nama: 'Sudah Lengkap', modul: 2, kuis: 80, jam: 3, kepraktisan: 4, status: 'aktif', jalur: 'cepat' },
+      { id: 2, nama: 'Belum Modul Saja', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'aktif', jalur: 'mendalam' },
+      { id: 3, nama: 'Belum Diagnostik Saja', modul: 1, kuis: 70, jam: 1, kepraktisan: 3, status: 'aktif', jalur: null },
+      { id: 4, nama: 'Belum Dua-duanya', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', jalur: null },
+    ]
+    const flagged = computeNeedsAttentionStudents(students)
+    expect(flagged.map((s) => s.nama)).toEqual(['Belum Modul Saja', 'Belum Diagnostik Saja', 'Belum Dua-duanya'])
+    expect(flagged.find((s) => s.nama === 'Belum Modul Saja')).toMatchObject({ belumModul: true, belumDiagnostik: false })
+    expect(flagged.find((s) => s.nama === 'Belum Diagnostik Saja')).toMatchObject({ belumModul: false, belumDiagnostik: true })
+    expect(flagged.find((s) => s.nama === 'Belum Dua-duanya')).toMatchObject({ belumModul: true, belumDiagnostik: true })
   })
 })
 
