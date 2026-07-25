@@ -72,6 +72,7 @@ const versions: VersionEntry[] = [
         <>Login: transisi ke &quot;Lupa kata sandi?&quot; sekarang ikut membalik ({c('FlipPanel')} bersarang di sisi belakang kartu), bukan tukar konten statis seperti sebelumnya</>,
         <>Manajemen Modul: Daftar Modul/Soal Diagnostik/Soal Kuis/Konten Workshop jadi tab, sebelumnya 4 kartu ditumpuk yang bikin halaman scroll panjang</>,
         <>Hero {c('/vark')}: kartu dibatasi ~560px dan ditengah, sebelumnya selebar area konten penuh sehingga teks jadi satu baris sangat panjang di layar lebar</>,
+        <>&quot;Aktivitas Kelas Terkini&quot; ({c('RecentActivityCard')}) sekarang juga tampil di Dashboard dosen, bukan cuma di Profil — plus tombol &quot;Lihat Semua&quot; (naikkan limit dari 5 ke 200 baris), sebelumnya gak ada cara lihat lebih dari 5 aktivitas terakhir</>,
         <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
       ],
       Fixed: [

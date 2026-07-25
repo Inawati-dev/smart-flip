@@ -11,6 +11,7 @@ import { WelcomeModal } from '../components/WelcomeModal'
 import { moduleIdToPath } from '../lib/progress'
 import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding'
 import { Layout } from '../components/Layout'
+import { RecentActivityCard } from '../components/RecentActivityCard'
 import { IconTrendingUp, IconUsers, IconFolder, IconCheck, IconBook } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -65,6 +66,8 @@ function DosenHome({ dosenId, totalModules }: { dosenId?: string; totalModules: 
           <ShortcutCard to="/validasi" icon={IconCheck} label="Validasi Ahli" desc="Nilai kelayakan media & materi modul" />
         </div>
       </div>
+
+      <RecentActivityCard />
     </div>
   )
 }

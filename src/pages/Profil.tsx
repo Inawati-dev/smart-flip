@@ -7,9 +7,8 @@ import { useAllProgress, useTotalTimeSpent } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useVarkResult } from '../hooks/useVarkResult'
 import { useProfilExtra } from '../hooks/useProfil'
-import { useStudentStats, useRecentActivity } from '../hooks/useAnalitik'
+import { useStudentStats } from '../hooks/useAnalitik'
 import { computeStatSummary } from '../lib/analitik'
-import { timeAgo } from '../lib/forum'
 import { saveProfilExtra } from '../lib/profil'
 import { resetOnboarding } from '../lib/onboarding'
 import { printLaporanPdf } from '../lib/reportPdf'
@@ -18,13 +17,13 @@ import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { LogoutModal } from '../components/LogoutModal'
 import { Select } from '../components/Select'
+import { RecentActivityCard } from '../components/RecentActivityCard'
 import {
   IconChart,
   IconHeadphones,
   IconEdit,
   IconGear,
   IconTarget,
-  IconDocument,
   IconChat,
   IconUser,
   IconGraduationCap,
@@ -70,20 +69,6 @@ const VARK_DESCS: Record<string, string> = {
 
 const JABATAN_OPTIONS = ['Asisten Ahli', 'Lektor', 'Lektor Kepala', 'Profesor']
 
-const ACTIVITY_BADGE: Record<string, { bg: string; color: string }> = {
-  draf: { bg: '#FAE8A0', color: '#705010' },
-  kuis: { bg: '#C0DD97', color: '#27500A' },
-  forum: { bg: 'rgba(143,162,135,.2)', color: 'var(--sage-d)' },
-  modul: { bg: 'rgba(74,126,160,.15)', color: '#2E5A78' },
-}
-
-const ACTIVITY_ICON: Record<string, IconComp> = {
-  draf: IconDocument,
-  kuis: IconTarget,
-  forum: IconChat,
-  modul: IconBook,
-}
-
 function initialsOf(name: string): string {
   return (name || 'U')
     .split(' ')
@@ -118,7 +103,6 @@ export function Profil() {
   const { data: vark } = useVarkResult()
   const { data: extra } = useProfilExtra()
   const { data: dosenStudents } = useStudentStats()
-  const { data: recentActivity } = useRecentActivity(5)
 
   // Local overrides so the hero card reflects a save immediately, without
   // waiting on AuthContext's own session-driven refresh — mirrors legacy's
@@ -652,97 +636,60 @@ export function Profil() {
         </div>
 
         {/* ── TABLE: riwayat kuis (mahasiswa) / aktivitas kelas (dosen) ── */}
-        <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
-          <div className="flex items-center justify-between px-5 py-3.5 border-b" style={BORDER}>
-            <span className="text-sm font-semibold text-brown">
-              {isDosen ? 'Aktivitas Kelas Terkini' : 'Riwayat Kuis (5 Terakhir)'}
-            </span>
-            <span className="text-xs text-brown-3">
-              {isDosen ? (recentActivity?.length ? `${recentActivity.length} aktivitas terakhir` : '') : allAttempts.length ? `${allAttempts.length} percobaan total` : ''}
-            </span>
+        {isDosen ? (
+          <div className="mb-4">
+            <RecentActivityCard />
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-bg3">
-                  {isDosen ? (
-                    <>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Aktivitas</th>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Detail</th>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Waktu</th>
-                    </>
+        ) : (
+          <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
+            <div className="flex items-center justify-between px-5 py-3.5 border-b" style={BORDER}>
+              <span className="text-sm font-semibold text-brown">Riwayat Kuis (5 Terakhir)</span>
+              <span className="text-xs text-brown-3">
+                {allAttempts.length ? `${allAttempts.length} percobaan total` : ''}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-bg3">
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Modul</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Percobaan</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Skor</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recentQuiz.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="text-center text-brown-3 py-6 text-sm">
+                        Belum ada riwayat kuis
+                      </td>
+                    </tr>
                   ) : (
-                    <>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Modul</th>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Percobaan</th>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Skor</th>
-                      <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal</th>
-                    </>
-                  )}
-                </tr>
-              </thead>
-              <tbody>
-                {isDosen
-                  ? !recentActivity?.length
-                    ? (
-                      <tr>
-                        <td colSpan={3} className="text-center text-brown-3 py-6 text-sm">
-                          Belum ada aktivitas mahasiswa
-                        </td>
-                      </tr>
-                    )
-                    : recentActivity.map((a, i) => {
-                      const ActivityIconComp = ACTIVITY_ICON[a.kind] || IconDocument
-                      const badge = ACTIVITY_BADGE[a.kind] || { bg: 'var(--bg3)', color: 'var(--brown-2)' }
+                    recentQuiz.map((r, i) => {
+                      const pill = scorePillStyle(r.score || 0)
                       return (
-                      <tr key={i} className="border-t" style={BORDER}>
-                        <td className="px-4 py-2.5 text-brown-2">
-                          <span className="inline-flex items-center gap-1.5">
-                            <ActivityIconComp size={14} /> {a.who}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <span
-                            className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold"
-                            style={{ background: badge.bg, color: badge.color }}
-                          >
-                            {a.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2.5 text-brown-3">{timeAgo(a.iso)}</td>
-                      </tr>
+                        <tr key={i} className="border-t" style={BORDER}>
+                          <td className="px-4 py-2.5 text-brown-2">Modul {r.moduleId}</td>
+                          <td className="px-4 py-2.5 text-brown-2">{i + 1}</td>
+                          <td className="px-4 py-2.5">
+                            <span
+                              className="inline-flex items-center justify-center min-w-[38px] px-2 py-0.5 rounded-md font-semibold text-xs"
+                              style={{ background: pill.bg, color: pill.color }}
+                            >
+                              {r.score || 0}%
+                            </span>
+                          </td>
+                          <td className="px-4 py-2.5 text-brown-2">{r.date}</td>
+                        </tr>
                       )
                     })
-                  : recentQuiz.length === 0
-                    ? (
-                      <tr>
-                        <td colSpan={4} className="text-center text-brown-3 py-6 text-sm">
-                          Belum ada riwayat kuis
-                        </td>
-                      </tr>
-                    )
-                    : recentQuiz.map((r, i) => {
-                        const pill = scorePillStyle(r.score || 0)
-                        return (
-                          <tr key={i} className="border-t" style={BORDER}>
-                            <td className="px-4 py-2.5 text-brown-2">Modul {r.moduleId}</td>
-                            <td className="px-4 py-2.5 text-brown-2">{i + 1}</td>
-                            <td className="px-4 py-2.5">
-                              <span
-                                className="inline-flex items-center justify-center min-w-[38px] px-2 py-0.5 rounded-md font-semibold text-xs"
-                                style={{ background: pill.bg, color: pill.color }}
-                              >
-                                {r.score || 0}%
-                              </span>
-                            </td>
-                            <td className="px-4 py-2.5 text-brown-2">{r.date}</td>
-                          </tr>
-                        )
-                      })}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* ── PENGATURAN ── */}
         <div className="bg-ivory rounded-2xl border overflow-hidden mb-4" style={BORDER}>
