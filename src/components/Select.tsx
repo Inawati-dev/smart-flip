@@ -29,6 +29,7 @@ const POPUP_GAP = 10
 interface Pos {
   left: number
   width: number
+  maxWidth: number
   top?: number
   bottom?: number
 }
@@ -60,7 +61,7 @@ export function Select({
 }: SelectProps) {
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
-  const [pos, setPos] = useState<Pos>({ left: 0, width: 0 })
+  const [pos, setPos] = useState<Pos>({ left: 0, width: 0, maxWidth: 0 })
   const triggerRef = useRef<HTMLButtonElement>(null)
   const listboxRef = useRef<HTMLUListElement>(null)
   const listboxId = useId()
@@ -78,9 +79,16 @@ export function Select({
     // an even smaller space instead of just staying below with its own
     // internal scroll handling the overflow.
     const openUp = spaceBelow < POPUP_MAX_HEIGHT + POPUP_GAP && rect.top > spaceBelow
+    // Popup only ever GROWS past the trigger's own width (never narrower) --
+    // long option labels (e.g. full module titles) were getting clipped
+    // because width was forced to exactly match the trigger. Capped to
+    // available viewport space to the right of `left` so it can't overflow
+    // off-screen when the trigger sits near the right edge.
+    const maxWidth = Math.max(rect.width, Math.min(360, window.innerWidth - rect.left - 12))
     setPos({
       left: rect.left,
       width: rect.width,
+      maxWidth,
       top: openUp ? undefined : rect.bottom + POPUP_GAP,
       bottom: openUp ? window.innerHeight - rect.top + POPUP_GAP : undefined,
     })
@@ -214,7 +222,8 @@ export function Select({
           className="fixed overflow-y-auto py-1.5"
           style={{
             left: pos.left,
-            width: pos.width,
+            minWidth: pos.width,
+            maxWidth: pos.maxWidth,
             top: pos.top,
             bottom: pos.bottom,
             maxHeight: POPUP_MAX_HEIGHT,
@@ -243,7 +252,7 @@ export function Select({
                   aria-selected={selected}
                   onMouseEnter={() => setHighlighted(i)}
                   onClick={() => commit(i)}
-                  className="flex items-center px-3.5 text-sm cursor-pointer truncate"
+                  className="flex items-center px-3.5 py-1 text-sm leading-snug cursor-pointer"
                   style={{
                     minHeight: 44,
                     color: selected ? 'var(--brown)' : 'var(--brown2)',

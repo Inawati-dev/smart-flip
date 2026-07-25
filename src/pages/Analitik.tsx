@@ -419,7 +419,7 @@ export function Analitik() {
         </div>
 
         {/* ── GRAFIK SECTION ── */}
-        <div className={`grid grid-cols-1 md:grid-cols-2 gap-3.5 mb-5 ${tab === 'distribusi' ? '' : 'hidden'}`}>
+        <div className={`grid grid-cols-1 md:grid-cols-2 items-start gap-3.5 mb-5 ${tab === 'distribusi' ? '' : 'hidden'}`}>
           {/* Distribusi modul (horizontal bar) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5" style={BORDER}>
             <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4"><IconTrendingUp size={16} /> Penyelesaian per Modul</div>

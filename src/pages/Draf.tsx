@@ -113,7 +113,7 @@ export function Draf() {
       await updateDraftStatus(draftId, status)
       await refetchDrafts()
     } catch {
-      // ported from legacy/draf.html: status update failures only console.warn
+      showToast('Gagal menyimpan status — coba lagi')
     }
   }
 

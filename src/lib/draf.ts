@@ -255,11 +255,19 @@ export async function addDraftComment(
 export async function updateDraftStatus(draftId: string, status: DraftStatus): Promise<void> {
   if (isSupabaseConfigured) {
     try {
-      const { error } = await supabase.from('drafts').update({ status }).eq('id', draftId)
+      // .select('id') after update -- an UPDATE that RLS silently filters to
+      // 0 matching rows returns error: null (Postgrest doesn't treat "no
+      // rows matched" as an error), so without checking the returned rows
+      // this call would report success even when nothing was written. Bit
+      // us for real: dosen had no UPDATE policy on `drafts` (only SELECT),
+      // see migration_v12_drafts_dosen_update.sql.
+      const { data, error } = await supabase.from('drafts').update({ status }).eq('id', draftId).select('id')
       if (error) throw error
+      if (!data || data.length === 0) throw new Error('Update matched 0 rows (RLS?)')
       return
     } catch (e) {
       console.warn('[draf] updateDraftStatus → Supabase gagal, fallback localStorage:', e)
+      throw e
     }
   }
   const all = readLocalDrafts()
