@@ -94,6 +94,7 @@ const versions: VersionEntry[] = [
         <>&quot;Aktivitas Kelas Terkini&quot; ({c('RecentActivityCard')}) sekarang juga tampil di Dashboard dosen, bukan cuma di Profil — plus tombol &quot;Lihat Semua&quot; (naikkan limit dari 5 ke 200 baris), sebelumnya gak ada cara lihat lebih dari 5 aktivitas terakhir</>,
         <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
         <>Pengaturan: kartu &quot;Akun&quot; (cuma berisi link ke Profil) dihapus — sudah redundan dengan menu Profil di sidebar</>,
+        <>Manajemen Modul: reorder Daftar Modul jadi drag-and-drop (seret baris), menggantikan tombol naik/turun per baris</>,
       ],
       Fixed: [
         <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
