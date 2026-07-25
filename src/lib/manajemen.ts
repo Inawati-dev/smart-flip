@@ -151,6 +151,44 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
   return objectUrl
 }
 
+export interface ModulPdfFile {
+  name: string
+  url: string
+  updatedAt: string | null
+}
+
+// Lists every file sitting in the `modul-pdf` bucket, including ones no
+// module currently points at (e.g. a PDF uploaded for a module that was
+// later deleted/re-created, or uploaded ahead of time). Lets a dosen reuse
+// an already-uploaded file for another module instead of uploading the
+// exact same PDF twice. Not available in demo mode -- there's no Storage
+// backend to list.
+export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
+  if (!isSupabaseConfigured) return []
+  const { data, error } = await supabase.storage.from('modul-pdf').list('', {
+    limit: 200,
+    sortBy: { column: 'created_at', order: 'desc' },
+  })
+  if (error) throw error
+  return (data || [])
+    .filter((f) => f.name.toLowerCase().endsWith('.pdf'))
+    .map((f) => ({
+      name: f.name,
+      url: supabase.storage.from('modul-pdf').getPublicUrl(f.name).data.publicUrl,
+      updatedAt: f.updated_at ?? null,
+    }))
+}
+
+// Points a module at an already-uploaded file (picked via listModulPdfFiles)
+// instead of uploading a new one — just a metadata update, no Storage write.
+export async function assignModulPdf(moduleId: number, url: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('assignModulPdf membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
+  }
+  const { error } = await supabase.from('modules').update({ pdf_path: url }).eq('id', moduleId)
+  if (error) throw error
+}
+
 // Mirrors legacy/data-layer.js getModulCustom(). In Supabase mode only
 // judul/deskripsi/status (aktif|nonaktif) come back — durasi/catatan have no
 // backing columns and are only ever available via the localStorage fallback.
