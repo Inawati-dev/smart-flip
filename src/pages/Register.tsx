@@ -138,7 +138,7 @@ export function Register() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="fullName" className="text-[0.78rem] font-semibold text-brown-2">
             Nama Lengkap

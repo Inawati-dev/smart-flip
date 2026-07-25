@@ -22,10 +22,10 @@ function BrandMark({ size = 30 }: { size?: number }) {
 function IntroDetails() {
   return (
     <>
-      <p className="text-[0.95rem] leading-relaxed text-brown-2 mb-5">
+      <p className="text-[0.95rem] leading-relaxed text-brown-2 mb-4">
         E-Modul Adaptif Metode Penelitian &amp; Pengembangan.
       </p>
-      <div className="flex flex-col gap-1.5 text-[0.8rem] text-brown-3 border-t border-[color:var(--border)] pt-4 mb-4">
+      <div className="flex flex-col gap-1.5 text-[0.8rem] text-brown-3 border-t border-[color:var(--border)] pt-3 mb-3">
         <span>Fakultas Vokasi</span>
         <span>Universitas Negeri Malang</span>
         <span>Dana Internal UM 2026</span>
@@ -42,9 +42,9 @@ function IntroDetails() {
 
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-8 sm:py-14 lg:px-12 lg:py-16">
+    <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
       <div
-        className="w-full max-w-[860px] rounded-2xl p-6 sm:p-8 lg:p-11 grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-11"
+        className="w-full max-w-[860px] rounded-2xl p-5 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-9"
         style={{ background: 'var(--ivory)', boxShadow: '0 0.5px 2px rgba(62,54,46,.06), 0 8px 28px rgba(62,54,46,.09)' }}
       >
         {/* Mobile-only compact header — icon mark + wordmark, replaces the
@@ -55,16 +55,16 @@ export function AuthShell({ children }: { children: ReactNode }) {
           <span className="font-display text-lg font-semibold text-brown">Smart Flip 5.0</span>
         </div>
 
-        <div className="order-2 lg:order-2 flex flex-col gap-5">{children}</div>
+        <div className="order-2 lg:order-2 flex flex-col gap-4">{children}</div>
 
         {/* Desktop wordmark column — hidden on mobile, shown as the left
             half of the card with a thin divider (border-r) instead of a
             separate floating column far from the form. */}
         <div
-          className="hidden lg:flex lg:order-1 flex-col justify-center lg:pr-11 lg:border-r"
+          className="hidden lg:flex lg:order-1 flex-col justify-center lg:pr-9 lg:border-r"
           style={{ borderColor: 'var(--border)' }}
         >
-          <h1 className="font-display font-light text-[3.4rem] leading-[0.98] tracking-tight text-brown mb-5">
+          <h1 className="font-display font-light text-[2.9rem] leading-[0.98] tracking-tight text-brown mb-4">
             Smart
             <br />
             Flip. <span className="text-[1.35rem] align-middle text-terra-d font-semibold">5.0</span>
