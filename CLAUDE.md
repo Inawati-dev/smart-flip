@@ -1,5 +1,16 @@
 # SMART-FLIP 5.0 — Project Guide for Claude
 
+## ⚠️ BELUM DI-PUSH (2026-07-25) — cek sebelum lanjut kerja
+
+Branch `main` lokal **209 commit ahead, 11 commit behind** `origin/main` (dicek via `git status -sb`) — diverge, BUKAN cuma "belum push" biasa. Perlu direkonsiliasi (pull/merge 11 commit remote) dulu sebelum push 209 commit lokal, bukan `git push` polos.
+
+Beberapa fix dari sesi lain (proyek "AI Skill", commit terakhir relevan `c9df8b8`) sudah **committed lokal** tapi ikut ke-block push ini — semua sudah `tsc -b --noEmit`+`eslint` clean:
+- `src/components/Layout.tsx` — sidebar ciut 1 icon/section (bukan per-item, match SAKTI `IconRailV2`), flyout close-delay 250ms, radius flyout `rounded-[4px]`
+- `src/components/WelcomeModal.tsx` — fix bug nyata: `@keyframes welcomeCountdown` gak pernah didefinisikan (progress bar gak pernah animasi dari dulu), durasi 5s, tombol gak lagi `disabled`, judul "Selamat Datang,"+baris baru
+- `src/components/LoginFlipCard.tsx` + `src/pages/Login.tsx` — flip card login (front=hero, back=form asli), sudah direfactor lanjut oleh sesi lain jadi primitif `FlipPanel` reusable + grid-based dynamic height
+
+Detail lengkap tiap fix ada di `04 - Referensi/Referensi UI Standar/index.html` (Registri.148) proyek AI Skill, dossier 04/08/13/20.
+
 ## Overview
 Perpustakaan Digital / Flipbook Reader untuk penelitian dana internal UM 2026.
 Live: https://smart-filp.vercel.app — Vercel, Production Branch = `main`, auto-deploy tiap push (GitHub Pages/legacy sudah di-retire, lihat backup di branch `legacy/main-vanilla-html`).

@@ -240,6 +240,16 @@ button:not(:disabled):active {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* WelcomeModal.tsx step-countdown bar — referenced by name but never defined
+   anywhere, so the bar rendered fully solid/static with zero animation
+   (a no-op animation-name is silently ignored per CSS spec, not an error).
+   from/to drive width directly since the bar has no explicit inline width
+   of its own; `forwards` fill-mode (set at the call site) holds width:0%
+   once a step's countdown finishes instead of snapping back to full. */
+@keyframes welcomeCountdown {
+  from { width: 100%; }
+  to { width: 0%; }
+}
 /* src/components/Select.tsx popup listbox — lighter/faster than the modal
    pair above (a dropdown opening is a much smaller, more frequent motion
    than a modal), same easing family. `[style*="animation"]` under
