@@ -1,6 +1,6 @@
 import { useState, type ComponentType, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
-import { supabase } from '../lib/supabase'
+import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
@@ -104,7 +104,7 @@ const DEFAULT_OPEN_SECTIONS: Record<string, boolean> = Object.fromEntries(
 export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { role } = useAuth()
+  const { user, role } = useAuth()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
   const [flyout, setFlyout] = useState<string | null>(null)
@@ -202,6 +202,36 @@ export function Layout({ children }: { children: ReactNode }) {
           <Icon size={17} />
           <span className="truncate">{item.label}</span>
         </Link>
+      </div>
+    )
+  }
+
+  // Anonymous visitor on a real (Supabase-configured) deploy — e.g. /changelog
+  // reached from the logged-out AuthShell footer, before ProtectedRoute would
+  // otherwise gate it: render a minimal standalone header instead of the full
+  // authenticated nav, since the real sidebar/drawer expose the whole app's
+  // menu structure (Dashboard, Forum, Draf, Profil, etc.) to outside visitors.
+  // Demo mode (isSupabaseConfigured === false) never has a real `user` by
+  // design, so it's excluded here — that mode intentionally browses the full
+  // app locally without auth.
+  if (isSupabaseConfigured && !user) {
+    return (
+      <div className="min-h-screen bg-cream">
+        <header className="sticky top-0 z-40 h-[58px] bg-cream/90 backdrop-blur-lg border-b border-[color:var(--border)]">
+          <div className="h-full px-4 sm:px-6 flex items-center justify-between gap-4 max-w-[900px] mx-auto">
+            <Link to="/" className="flex items-center gap-2 no-underline text-brown">
+              <IconBook size={20} />
+              <span className="font-display font-bold text-brown">Smart Flip</span>
+            </Link>
+            <Link
+              to="/"
+              className="h-9 px-4 rounded-lg flex items-center text-sm font-semibold text-brown-2 hover:bg-brown/[0.06] hover:text-brown transition-colors"
+            >
+              Masuk
+            </Link>
+          </div>
+        </header>
+        <main className="page-fadein">{children}</main>
       </div>
     )
   }
