@@ -56,6 +56,8 @@ const versions: VersionEntry[] = [
         <>Konten Workshop (Tujuan/Aktivitas/Checklist/Lembar Kerja) jadi dosen-editable di {c('/manajemen')} — sebelumnya statis hardcode, sekarang override per modul lewat tabel {c('workshop_content')}</>,
         <>Edit Profil: upload foto avatar ({c('profiles.avatar_url')}, disimpan sebagai data URL)</>,
         <>Dashboard dosen: ringkasan kelas (jumlah kelas/mahasiswa/modul) + shortcut ke Kelola Modul/Analitik/Kelas/Validasi — bukan lagi list &quot;Lanjut Belajar&quot; ala mahasiswa</>,
+        <>Logo Smart Flip: badge kotak rounded (echo pola SAKTI) berisi ikon buku terbuka, dipakai konsisten di sidebar (dobel jadi tombol ciut/expand), topbar mobile, header pengunjung anonim, dan favicon tab browser</>,
+        <>N-Gain Calculator ({c('/ngain')}) sekarang tersimpan permanen ({c('ngain_entries')}/{c('ngain_config')}) — sebelumnya murni state React, refresh halaman selalu balik ke 5 baris contoh (Ahmad Rizki dkk) dan menghapus semua yang sudah diketik dosen</>,
       ],
       Changed: [
         <>Profil dosen: &quot;Aktivitas Kelas Terkini&quot; dan stat card statistik mengajar sekarang data asli Supabase, bukan angka contoh (28 mahasiswa/64%/76%)</>,
@@ -68,6 +70,8 @@ const versions: VersionEntry[] = [
         <>Halaman Register: layout satu kartu tersentral (bukan dua kolom terpisah jauh) — versi desktop wordmark &quot;Smart Flip 5.0&quot; jadi kolom kiri kartu dengan pembatas garis, versi mobile header ringkas di atas lalu form lalu keterangan di bawah</>,
         <>Halaman Login: diganti jadi kartu flip 3D ({c('LoginFlipCard')}) — sisi depan branding + tombol &quot;Masuk →&quot;, sisi belakang toggle peran + form, klik &quot;Masuk →&quot; membalik kartu alih-alih langsung menampilkan form</>,
         <>Login: transisi ke &quot;Lupa kata sandi?&quot; sekarang ikut membalik ({c('FlipPanel')} bersarang di sisi belakang kartu), bukan tukar konten statis seperti sebelumnya</>,
+        <>Manajemen Modul: Daftar Modul/Soal Diagnostik/Soal Kuis/Konten Workshop jadi tab, sebelumnya 4 kartu ditumpuk yang bikin halaman scroll panjang</>,
+        <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
       ],
       Fixed: [
         <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
@@ -82,6 +86,8 @@ const versions: VersionEntry[] = [
         <>Login: tombol &quot;Lupa kata sandi?&quot; sebelumnya keluar total dari kartu login ke layout {c('AuthShell')} dua-kolom yang berbeda — terasa melompat, bukan bagian animasi flip. Sekarang jadi kartu flip bersarang di dalam sisi belakang kartu utama, ikut membalik seperti flip utama</>,
         <>Kartu Login: sisi depan/belakang {c('FlipPanel')} dulu pakai tinggi tetap ({c('min-h')} angka px) — begitu ada banner error (mis. &quot;Akun ini terdaftar sebagai Dosen&quot;) muncul di sisi belakang, tingginya lewat batas dan kartu jadi scroll internal. Diganti ke overlay grid ({c('grid-area:1/1')}) yang otomatis menyesuaikan tinggi ke konten manapun yang lebih tinggi — muat tanpa scroll di kondisi apa pun, termasuk saat toast error tampil</>,
         <>Register/AuthShell: padding &amp; jarak vertikal dipadatkan (~20%) — di layar laptop biasa (zoom 100%) halaman sempat butuh scroll penuh; sekarang muat satu layar tanpa scroll</>,
+        <>Analitik: popup dropdown filter Kelas/Status nyaris nempel tabel di bawahnya (jarak cuma 6px), kelihatan seperti overlap — jarak popup dinaikkan ke 10px di semua dropdown ({c('Select.tsx')}) app-wide</>,
+        <>Distribusi Skor Kuis: bucket berisi 0 mahasiswa render sebagai garis tipis mengambang dekat angka &quot;0&quot; alih-alih terlihat kosong — angka, bar, dan label sekarang 3 baris terpisah dengan baseline seragam, bukan satu grup per-bucket yang posisinya ikut naik-turun mengikuti tinggi bar</>,
       ],
     },
     desc: 'Kelas/rombongan belajar (kode gabung + import CSV), empat bug produksi ditemukan &amp; diperbaiki lewat verifikasi login browser langsung (kuis kosong total, signup gagal, Analitik fallback ke data contoh, simpan soal kuis 403), dan sweep dosen-editable content (kuis, workshop) + PDF template + kontras.',
