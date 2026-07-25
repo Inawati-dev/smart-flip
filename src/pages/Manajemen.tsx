@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type DragEvent } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useModulOrder, useModulCustoms } from '../hooks/useManajemen'
@@ -26,7 +26,7 @@ import {
 } from '../lib/workshop'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
-import { IconDocument, IconEdit, IconTrash } from '../components/icons'
+import { IconDocument, IconEdit, IconTrash, IconGrip } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -374,20 +374,39 @@ export function Manajemen() {
     }
   }
 
-  function moveUp(id: number) {
-    const idx = order.indexOf(id)
-    if (idx <= 0) return
-    const next = order.slice()
-    ;[next[idx - 1], next[idx]] = [next[idx], next[idx - 1]]
-    void persistOrder(next)
+  // Drag-and-drop reorder (replaces the up/down buttons as the primary way
+  // to reorder) -- native HTML5 DnD, no library needed for a single-column
+  // list this short. dragOverId drives the drop-target highlight only;
+  // the actual reorder happens once on drop, not live while dragging over
+  // each row, to avoid persistOrder firing dozens of times per drag.
+  const [dragId, setDragId] = useState<number | null>(null)
+  const [dragOverId, setDragOverId] = useState<number | null>(null)
+
+  function handleDragStart(id: number) {
+    setDragId(id)
   }
 
-  function moveDown(id: number) {
-    const idx = order.indexOf(id)
-    if (idx < 0 || idx >= order.length - 1) return
-    const next = order.slice()
-    ;[next[idx], next[idx + 1]] = [next[idx + 1], next[idx]]
-    void persistOrder(next)
+  function handleDragOver(e: DragEvent, id: number) {
+    e.preventDefault()
+    if (id !== dragOverId) setDragOverId(id)
+  }
+
+  function handleDrop(targetId: number) {
+    if (dragId != null && dragId !== targetId) {
+      const next = order.slice()
+      const from = next.indexOf(dragId)
+      const to = next.indexOf(targetId)
+      next.splice(from, 1)
+      next.splice(to, 0, dragId)
+      void persistOrder(next)
+    }
+    setDragId(null)
+    setDragOverId(null)
+  }
+
+  function handleDragEnd() {
+    setDragId(null)
+    setDragOverId(null)
   }
 
   function toggleRow(id: number, checked: boolean) {
@@ -640,13 +659,13 @@ export function Manajemen() {
                       className="w-4 h-4 accent-terra cursor-pointer"
                     />
                   </th>
+                  <th className="w-11" aria-label="Urutan (seret)" />
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Judul</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 hidden md:table-cell max-w-[220px]">
                     Deskripsi
                   </th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-24">Status</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-20">Urutan</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-32">Aksi</th>
                 </tr>
               </thead>
@@ -667,12 +686,25 @@ export function Manajemen() {
                     const status = statusFor(id)
                     const badge = STATUS_BADGE[status] || STATUS_BADGE.aktif
                     const descTrunc = desc.length > 60 ? desc.slice(0, 60) + '…' : desc
-                    const isFirst = idx === 0
-                    const isLast = idx === order.length - 1
                     const checked = selectedIds.has(id)
+                    const isDragging = dragId === id
+                    const isDropTarget = dragOverId === id && dragId !== id
 
                     return (
-                      <tr key={id} className="border-t" style={BORDER}>
+                      <tr
+                        key={id}
+                        draggable
+                        onDragStart={() => handleDragStart(id)}
+                        onDragOver={(e) => handleDragOver(e, id)}
+                        onDrop={() => handleDrop(id)}
+                        onDragEnd={handleDragEnd}
+                        className="border-t transition-colors"
+                        style={{
+                          ...BORDER,
+                          opacity: isDragging ? 0.4 : 1,
+                          background: isDropTarget ? 'var(--accent-soft)' : undefined,
+                        }}
+                      >
                         <td className="px-3 py-2.5">
                           <input
                             type="checkbox"
@@ -681,6 +713,15 @@ export function Manajemen() {
                             className="w-4 h-4 accent-terra cursor-pointer"
                             aria-label={`Pilih ${judul}`}
                           />
+                        </td>
+                        <td className="px-3 py-2.5">
+                          <div
+                            className="w-11 h-11 flex items-center justify-center text-brown-3 cursor-grab active:cursor-grabbing"
+                            title="Seret untuk mengurutkan"
+                            aria-label={`Seret untuk mengurutkan ${judul}`}
+                          >
+                            <IconGrip size={16} />
+                          </div>
                         </td>
                         <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
                         <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{judul}</td>
@@ -694,30 +735,6 @@ export function Manajemen() {
                           >
                             {STATUS_LABEL[status] || 'Aktif'}
                           </span>
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => moveUp(id)}
-                              disabled={isFirst}
-                              title="Geser ke atas"
-                              aria-label={`Geser ${judul} ke atas`}
-                              className="w-11 h-11 rounded-md border text-brown-3 flex items-center justify-center disabled:opacity-30"
-                              style={BORDER}
-                            >
-                              ↑
-                            </button>
-                            <button
-                              onClick={() => moveDown(id)}
-                              disabled={isLast}
-                              title="Geser ke bawah"
-                              aria-label={`Geser ${judul} ke bawah`}
-                              className="w-11 h-11 rounded-md border text-brown-3 flex items-center justify-center disabled:opacity-30"
-                              style={BORDER}
-                            >
-                              ↓
-                            </button>
-                          </div>
                         </td>
                         <td className="px-3 py-2.5">
                           <div className="flex flex-col sm:flex-row gap-1.5">
