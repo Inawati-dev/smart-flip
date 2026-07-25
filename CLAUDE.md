@@ -2,9 +2,11 @@
 
 ## ⚠️ BELUM DI-PUSH (2026-07-25) — cek sebelum lanjut kerja
 
-Branch `main` lokal **209 commit ahead, 11 commit behind** `origin/main` (dicek via `git status -sb`) — diverge, BUKAN cuma "belum push" biasa. Perlu direkonsiliasi (pull/merge 11 commit remote) dulu sebelum push 209 commit lokal, bukan `git push` polos.
+Branch `main` lokal **210 commit ahead, 26 commit behind** `origin/main` — diverge, BUKAN reconciliation trivial.
 
-Beberapa fix dari sesi lain (proyek "AI Skill", commit terakhir relevan `c9df8b8`) sudah **committed lokal** tapi ikut ke-block push ini — semua sudah `tsc -b --noEmit`+`eslint` clean:
+**SUDAH DICOBA & DIBATALKAN (aman, jangan diulang tanpa investigasi dulu):** `git pull --rebase origin main` — awalnya kelihatan aman (`git diff --stat main...origin/main` cuma nunjuk `config.json` 1 baris, 26 commit remote semua "chore: auto-update book catalog [skip ci]"), TAPI rebase asli coba replay **184 commit lokal** dan LANGSUNG conflict `add/add` di puluhan file legacy `*.html` mulai commit ke-2 (`6f58207... init: SMART-FLIP 5.0 v0.9.7`). Kemungkinan besar histori lokal vs remote punya common ancestor jauh lebih lama dari perkiraan (bukan cuma "26 commit ketinggalan" yang sederhana) — butuh investigasi kenapa (force-push? branch rewrite? merge-base aneh?) sebelum coba rebase/merge lagi. **Di-`git rebase --abort`, state balik bersih** — commit lokal `bacaa09` (fix WelcomeModal) aman, 2 stash punya sesi lain (`Select.tsx`/`Analitik.tsx`/`Manajemen.tsx`/`Ngain.tsx`) sudah di-pop balik ke working tree utuh, nol yang hilang.
+
+Beberapa fix dari sesi lain (proyek "AI Skill", commit terakhir relevan `bacaa09`) sudah **committed lokal** tapi ikut ke-block push ini — semua sudah `tsc -b --noEmit`+`eslint` clean:
 - `src/components/Layout.tsx` — sidebar ciut 1 icon/section (bukan per-item, match SAKTI `IconRailV2`), flyout close-delay 250ms, radius flyout `rounded-[4px]`
 - `src/components/WelcomeModal.tsx` — fix bug nyata: `@keyframes welcomeCountdown` gak pernah didefinisikan (progress bar gak pernah animasi dari dulu), durasi 5s, tombol gak lagi `disabled`, judul "Selamat Datang,"+baris baru
 - `src/components/LoginFlipCard.tsx` + `src/pages/Login.tsx` — flip card login (front=hero, back=form asli), sudah direfactor lanjut oleh sesi lain jadi primitif `FlipPanel` reusable + grid-based dynamic height
