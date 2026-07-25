@@ -71,6 +71,7 @@ const versions: VersionEntry[] = [
         <>Halaman Login: diganti jadi kartu flip 3D ({c('LoginFlipCard')}) — sisi depan branding + tombol &quot;Masuk →&quot;, sisi belakang toggle peran + form, klik &quot;Masuk →&quot; membalik kartu alih-alih langsung menampilkan form</>,
         <>Login: transisi ke &quot;Lupa kata sandi?&quot; sekarang ikut membalik ({c('FlipPanel')} bersarang di sisi belakang kartu), bukan tukar konten statis seperti sebelumnya</>,
         <>Manajemen Modul: Daftar Modul/Soal Diagnostik/Soal Kuis/Konten Workshop jadi tab, sebelumnya 4 kartu ditumpuk yang bikin halaman scroll panjang</>,
+        <>Hero {c('/vark')}: kartu dibatasi ~560px dan ditengah, sebelumnya selebar area konten penuh sehingga teks jadi satu baris sangat panjang di layar lebar</>,
         <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
       ],
       Fixed: [
