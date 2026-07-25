@@ -39,10 +39,14 @@ const STEPS_DOSEN: Step[] = [
   },
 ]
 
-// Per-step minimum dwell time before "Lanjut" activates — replaces a manual
-// skip button. Progress bar fill is a CSS animation keyed by `step`, not a
-// JS interval, so it restarts cleanly every step change for free.
-const STEP_DELAY_MS = 3000
+// Per-step auto-advance delay, matches SAKTI's Welcome Modal timing
+// (App.tsx, 5000ms). Progress bar fill is a CSS animation keyed by `step`,
+// not a JS interval, so it restarts cleanly every step change for free.
+// "Lanjut"/"Kembali"/dots are NEVER disabled while this counts down — SAKTI's
+// pattern is "user sees a countdown they can act on", not "user is blocked
+// until it finishes" (that was a prior iteration here, reverted — see
+// Changelog).
+const STEP_DELAY_MS = 5000
 
 export function WelcomeModal({
   role,
@@ -54,21 +58,17 @@ export function WelcomeModal({
   onClose: () => void
 }) {
   const [step, setStep] = useState(0)
-  const [ready, setReady] = useState(false)
   const steps = role === 'dosen' ? STEPS_DOSEN : STEPS_MAHASISWA
   const isLast = step === steps.length - 1
   const current = steps[step]
   const Icon = current.icon
-  const title = step === 0 && userName ? `Selamat Datang, ${userName}!` : current.title
 
   // Countdown doubles as auto-advance — once the bar fills, move on by
   // itself (auto-close on the last step) instead of just sitting there
-  // waiting for a click. "Lanjut"/"Kembali" still work immediately for
-  // anyone who doesn't want to wait.
+  // waiting for a click. "Lanjut"/"Kembali" always work immediately
+  // regardless of countdown state — never gated behind it.
   useEffect(() => {
-    setReady(false)
     const t = setTimeout(() => {
-      setReady(true)
       if (isLast) onClose()
       else setStep((s) => s + 1)
     }, STEP_DELAY_MS)
@@ -99,7 +99,17 @@ export function WelcomeModal({
           <Icon size={30} />
         </div>
 
-        <h3 className="font-display text-xl font-bold text-brown mb-2">{title}</h3>
+        <h3 className="font-display text-xl font-bold text-brown mb-2">
+          {step === 0 && userName ? (
+            <>
+              Selamat Datang,
+              <br />
+              {userName}!
+            </>
+          ) : (
+            current.title
+          )}
+        </h3>
         <p className="text-sm text-brown-2 leading-relaxed mb-6">{current.desc}</p>
 
         <div className="flex items-center justify-center mb-6">
@@ -133,9 +143,8 @@ export function WelcomeModal({
             </button>
           )}
           <button
-            onClick={() => ready && (isLast ? onClose() : setStep((s) => s + 1))}
-            disabled={!ready}
-            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1 disabled:cursor-not-allowed"
+            onClick={() => (isLast ? onClose() : setStep((s) => s + 1))}
+            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1"
           >
             {isLast ? (role === 'dosen' ? 'Mulai Mengajar' : 'Mulai Belajar') : 'Lanjut'}
             {!isLast && <IconChevronRight size={15} />}
