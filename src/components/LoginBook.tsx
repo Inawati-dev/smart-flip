@@ -16,20 +16,24 @@ import type { ReactNode } from 'react'
 // bisa di-Tab saat sudah terbuka.
 export function LoginBook({
   open,
+  onOpen,
   cover,
   page,
 }: {
   open: boolean
+  onOpen?: () => void
   cover: ReactNode
   page: ReactNode
 }) {
   return (
     <div className="group w-full" style={{ perspective: 1600 }}>
+      {/* Tilt statis saja — TANPA perubahan tilt saat hover. Di layar sentuh
+          (termasuk HP yang pakai desktop mode), tap pertama men-trigger
+          :hover; kalau hover menggeser tilt, tombol pindah dari bawah jari
+          persis saat tap dan kliknya meleset. */}
       <div
         className={`relative w-full transition-transform duration-700 [transform-style:preserve-3d] motion-reduce:transition-none ${
-          open
-            ? ''
-            : 'sm:[transform:rotateY(16deg)_rotateX(3deg)] sm:group-hover:[transform:rotateY(8deg)_rotateX(1.5deg)]'
+          open ? '' : 'sm:[transform:rotateY(14deg)_rotateX(2.5deg)]'
         }`}
         style={{ transitionTimingFunction: 'cubic-bezier(.4,.1,.2,1)' }}
       >
@@ -62,9 +66,11 @@ export function LoginBook({
           }`}
           style={{ transitionTimingFunction: 'cubic-bezier(.65,0,.3,1)' }}
         >
-          {/* muka depan */}
+          {/* muka depan — SELURUH sampul bisa diklik/tap untuk membuka,
+              bukan cuma tombol kecil (target sentuh jauh lebih luas) */}
           <div
-            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden select-none"
+            onClick={open ? undefined : onOpen}
+            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden select-none cursor-pointer"
             style={{
               background:
                 'linear-gradient(150deg, color-mix(in srgb, var(--brown) 94%, #000) 0%, color-mix(in srgb, var(--brown) 84%, #fff) 68%, var(--brown) 100%)',
