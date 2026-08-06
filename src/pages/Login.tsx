@@ -3,6 +3,20 @@ import { useNavigate, Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { authInputClass, authInputStyle } from '../components/AuthShell'
 import { LoginFlipCard, FlipPanel } from '../components/LoginFlipCard'
+import { LoginBook } from '../components/LoginBook'
+
+// REVERT MODE — ganti ke 'flip' untuk balik ke tampilan kartu flip lama
+// (satu baris, tanpa hapus kode). Bisa juga dites tanpa redeploy lewat URL:
+// /login?variant=flip (lama) atau /login?variant=book (baru).
+const LOGIN_VARIANT: 'book' | 'flip' = 'book'
+
+function resolveVariant(): 'book' | 'flip' {
+  if (typeof window !== 'undefined') {
+    const v = new URLSearchParams(window.location.search).get('variant')
+    if (v === 'flip' || v === 'book') return v
+  }
+  return LOGIN_VARIANT
+}
 
 export function Login() {
   const navigate = useNavigate()
@@ -288,6 +302,61 @@ export function Login() {
     </>
   )
 
+  // ── Varian 'book' (Opsi C): buku berdiri 3D, sampul membuka ke form ──
+  if (resolveVariant() === 'book') {
+    const bookCover = (
+      <>
+        <div>
+          <p className="text-[10px] tracking-[.16em] uppercase font-bold text-terra mb-3.5">
+            SMART-FLIP 5.0
+          </p>
+          <h1 className="font-display font-light text-[2.6rem] leading-[1.05] tracking-tight text-cream mb-3.5">
+            Smart
+            <br />
+            Flip.
+          </h1>
+          <p className="text-[0.82rem] leading-relaxed text-cream/60 mb-4">
+            E-Modul Adaptif Metode Penelitian &amp; Pengembangan — Fakultas Vokasi, Universitas
+            Negeri Malang.
+          </p>
+          <ul className="flex flex-col gap-1.5 text-[0.78rem] text-cream/45 list-disc pl-4">
+            <li>Baca modul interaktif per-bab</li>
+            <li>Progress tersimpan otomatis</li>
+            <li>Sinkron lintas perangkat</li>
+          </ul>
+        </div>
+        <button
+          type="button"
+          onClick={() => setFlipped(true)}
+          className="self-start h-[46px] px-6 rounded-xl font-semibold text-[0.92rem] mt-6 text-brown"
+          style={{ background: 'var(--terra)', boxShadow: '0 4px 16px rgba(0,0,0,.28)' }}
+        >
+          Buka Buku →
+        </button>
+      </>
+    )
+
+    return (
+      <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-10 sm:py-14 overflow-x-clip">
+        <div className="w-full max-w-[400px]">
+          <LoginBook
+            open={flipped}
+            cover={bookCover}
+            page={
+              <FlipPanel
+                flipped={forgotMode}
+                front={loginView}
+                back={forgotView}
+                faceClassName="flex flex-col gap-5"
+              />
+            }
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // ── Varian 'flip' (lama) — dipertahankan utuh sebagai jalur revert ──
   return (
     <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-10 sm:py-14">
       <div className="w-full max-w-[420px]">
