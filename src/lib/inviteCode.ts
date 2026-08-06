@@ -28,7 +28,23 @@ export async function verifyDosenInviteCode(code: string): Promise<boolean> {
   if (!trimmed) return false
   try {
     const { data, error } = await supabase.rpc('verify_dosen_invite_code', { submitted: trimmed })
-    if (error) throw error
+    if (error) {
+      // Jaring pengaman urutan rilis: frontend bisa saja sudah ter-deploy
+      // sementara migration v16 belum sempat dijalankan di Supabase. Tanpa
+      // cabang ini, RPC yang belum ada = semua pendaftaran dosen tertolak
+      // sampai migration jalan. Kalau begitu, mundur sementara ke cara lama
+      // (bandingkan ke env build-time). Server tetap penentu akhirnya —
+      // handle_new_user() dari v6 sudah memvalidasi kode yang sama, jadi
+      // fallback ini tidak melonggarkan keamanan, cuma menjaga alurnya hidup.
+      const missingRpc =
+        error.code === 'PGRST202' || /function .*verify_dosen_invite_code/i.test(error.message ?? '')
+      if (missingRpc) {
+        console.warn('[inviteCode] RPC belum ada (migration v16 belum jalan) — pakai env sementara.')
+        const envCode = import.meta.env.VITE_DOSEN_INVITE_CODE as string | undefined
+        return !!envCode && trimmed === envCode
+      }
+      throw error
+    }
     return data === true
   } catch (e) {
     console.warn('[inviteCode] verifikasi gagal:', e)
