@@ -307,12 +307,16 @@ export function Login() {
     const bookCover = (
       <>
         <div>
-          <h1 className="font-display font-light text-[2.7rem] leading-[1.02] tracking-tight text-cream mb-3.5">
+          <h1 className="font-display font-light text-[2.7rem] leading-[1.02] tracking-tight text-cream mb-2">
             Smart
             <br />
             Flip.{' '}
             <span className="text-[1.3rem] align-middle text-terra font-semibold">5.0</span>
           </h1>
+          {/* Kredit penulis di bawah judul, gaya sampul buku sungguhan */}
+          <p className="font-display italic text-[0.82rem] text-cream/55 mb-3.5">
+            oleh Inawati, S.IP., M.M.
+          </p>
           <p className="text-[0.84rem] leading-relaxed text-cream/65 mb-4">
             E-Modul Adaptif Metode Penelitian &amp; Pengembangan.
           </p>
@@ -322,9 +326,11 @@ export function Login() {
             <span>Dana Internal UM 2026</span>
           </div>
           <ul className="flex flex-col gap-1.5 text-[0.78rem] text-cream/45 list-disc pl-4">
-            <li>Baca modul interaktif per-bab</li>
-            <li>Progress tersimpan otomatis</li>
-            <li>Sinkron lintas perangkat</li>
+            <li>Modul interaktif per-bab dengan video &amp; kuis</li>
+            <li>Jalur belajar adaptif dari tes diagnostik</li>
+            <li>Asesmen gaya belajar VARK</li>
+            <li>Forum diskusi &amp; asistensi draf penelitian</li>
+            <li>Progress otomatis, sinkron lintas perangkat</li>
           </ul>
         </div>
         <button
