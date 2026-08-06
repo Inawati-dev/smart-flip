@@ -17,7 +17,7 @@ import { Vark } from './pages/Vark'
 import { Forum } from './pages/Forum'
 import { Draf } from './pages/Draf'
 import { Feedback } from './pages/Feedback'
-import Ngain from './pages/Ngain'
+import Asesmen from './pages/Asesmen'
 import { Validasi } from './pages/Validasi'
 import { Analitik } from './pages/Analitik'
 import { Manajemen } from './pages/Manajemen'
@@ -62,7 +62,10 @@ export default function App() {
               <Route path="/forum" element={<ProtectedRoute><Forum /></ProtectedRoute>} />
               <Route path="/draf" element={<ProtectedRoute><Draf /></ProtectedRoute>} />
               <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
-              <Route path="/ngain" element={<ProtectedRoute roles={['dosen']}><Ngain /></ProtectedRoute>} />
+              <Route path="/asesmen" element={<ProtectedRoute roles={['dosen']}><Asesmen /></ProtectedRoute>} />
+              {/* /ngain dipertahankan sebagai alias — tautan/bookmark lama ke
+                  halaman ini masih ada sebelum namanya berubah jadi Asesmen. */}
+              <Route path="/ngain" element={<ProtectedRoute roles={['dosen']}><Asesmen /></ProtectedRoute>} />
               <Route path="/validasi" element={<ProtectedRoute roles={['dosen']}><Validasi /></ProtectedRoute>} />
               <Route path="/analitik" element={<ProtectedRoute roles={['dosen']}><Analitik /></ProtectedRoute>} />
               <Route path="/manajemen" element={<ProtectedRoute roles={['dosen']}><Manajemen /></ProtectedRoute>} />
