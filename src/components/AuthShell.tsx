@@ -1,6 +1,4 @@
 import type { ReactNode } from 'react'
-import { Link } from 'react-router'
-import { IconClipboard } from './icons'
 
 // Brand badge — rounded square (echoes SAKTI's IconRailV2 sidebar badge)
 // with an open-book glyph, white on terra-d. Exported for reuse in
@@ -32,26 +30,25 @@ export function BrandMark({ size = 30 }: { size?: number }) {
 }
 
 // Both the desktop wordmark column and the mobile compact-header + footer
-// block render the SAME tagline/meta/changelog content, just laid out
-// differently — simpler than reordering one shared block with CSS `order`
-// across a breakpoint-dependent grid.
+// block render the SAME tagline/meta content, just laid out differently —
+// simpler than reordering one shared block with CSS `order` across a
+// breakpoint-dependent grid.
+//
+// Tautan Changelog sengaja TIDAK ada di sini: riwayat rilis cuma untuk dosen
+// (lihat rute /changelog di App.tsx), jadi menampilkannya di halaman
+// login/daftar yang bisa diakses siapa saja cuma mengarah ke halaman yang
+// akan menolak pengunjungnya.
 function IntroDetails() {
   return (
     <>
       <p className="text-[0.95rem] leading-relaxed text-brown-2 mb-4">
         E-Modul Adaptif Metode Penelitian &amp; Pengembangan.
       </p>
-      <div className="flex flex-col gap-1.5 text-[0.8rem] text-brown-3 border-t border-[color:var(--border)] pt-3 mb-3">
+      <div className="flex flex-col gap-1.5 text-[0.8rem] text-brown-3 border-t border-[color:var(--border)] pt-3">
         <span>Fakultas Vokasi</span>
         <span>Universitas Negeri Malang</span>
         <span>Dana Internal UM 2026</span>
       </div>
-      <Link
-        to="/changelog"
-        className="inline-flex items-center gap-1.5 text-[13px] font-medium text-brown-3 hover:text-terra-d"
-      >
-        <IconClipboard size={14} /> Changelog
-      </Link>
     </>
   )
 }

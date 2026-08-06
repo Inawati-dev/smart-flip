@@ -64,9 +64,45 @@ function compareVersionsDesc(a: VersionEntry, b: VersionEntry): number {
 
 const versions: VersionEntry[] = [
   {
+    version: 'v1.2.0',
+    date: '2026-08-06',
+    current: true,
+    sections: {
+      Added: [
+        <><strong>Asesmen</strong> menggantikan menu N-Gain — lima tab: Tes Formatif (rekap agregat per modul: rata-rata, tertinggi/terendah, % lulus), Pilihan Ganda (rincian tiap pengerjaan + benar/total butir, filter modul, export CSV), N-Gain (kalkulator lama, dipertahankan utuh), Aktivitas Mandiri, dan Progres Observasi. Dua tab pertama membaca {c('quiz_attempts')} yang sudah ada — tanpa tabel baru — dan otomatis ter-scope ke kelas dosen sendiri lewat RLS {c('is_dosen_of()')}</>,
+        <><strong>Aktivitas Mandiri (observasi lapangan)</strong> — dosen menyusun tugas observasi ({c('observasi_tugas')}: judul, instruksi, modul opsional, deadline, urutan), mahasiswa mengumpulkan lewat {c('/observasi')} dengan menulis langsung di sistem, mengunggah berkas, atau keduanya. Dosen memantau siapa yang sudah/belum mengumpulkan, membaca jawaban, dan memberi status + catatan</>,
+        <><strong>Projek Akhir / Luaran Pembelajaran</strong> ({c('/projek-akhir')}) — proposal penelitian &amp; pengembangan dengan lima bagian tetap (ringkasan, latar belakang, rumusan masalah, tujuan, metode), boleh ditulis langsung maupun diunggah. Satu rute dua peran: mahasiswa mengerjakan &amp; mengajukan, dosen memantau dan menilai ({c('draf → diajukan → revisi → disetujui')}). Dibuat sebagai tabel sendiri ({c('final_projects')}, satu baris per mahasiswa) alih-alih menumpang {c('drafts')} yang berbentuk aliran banyak-baris per modul</>,
+        <>Hapus modul di {c('/manajemen')} — dengan modal konfirmasi yang menyebut dampaknya secara eksplisit (progres belajar, soal &amp; hasil kuis, dan diskusi forum modul itu ikut terhapus lewat cascade), dan file PDF-nya sekalian dibuang dari Storage</>,
+        <>Kode Undangan Dosen bisa dilihat &amp; diganti dari {c('/pengaturan')} (khusus dosen) — sebelumnya cuma bisa lewat SQL Editor. Kode disembunyikan sampai ditekan &quot;Tampilkan&quot; supaya tidak nongol begitu saja di layar yang sedang diproyeksikan, dan ada peringatan kalau masih memakai kode contoh bawaan</>,
+        <>Kartu identitas (nama + peran Dosen/Mahasiswa) tepat di atas tombol Keluar di sidebar — beberapa halaman tampil berbeda per peran, jadi perlu jelas sedang masuk sebagai siapa</>,
+        <>Halaman Login bergaya flipbook: buku berdiri 3D dengan tepi halaman &amp; punggung terlihat, sampul gelap membuka penuh ke form di &quot;halaman pertama&quot;. Sampul memuat wordmark, kredit penulis, institusi, dan daftar fitur sistem. Ada jalur balik ke tampilan lama tanpa hapus kode ({c('LOGIN_VARIANT')}, atau {c('?variant=flip')} lewat URL tanpa perlu redeploy)</>,
+      ],
+      Changed: [
+        <>Feedback untuk dosen jadi rekap saja — dosen adalah penerima penilaian, bukan pengisinya, jadi form rating/komentar disembunyikan dan dropdown modul beralih fungsi jadi filter riwayat yang langsung terbuka</>,
+        <>Sidebar ikut struktur dokumen Konsep Modul Flip Book 5.0: seksi <strong>Asesmen</strong> berdiri sendiri (memuat Asesmen untuk dosen, Aktivitas Mandiri untuk mahasiswa, dan Projek Akhir untuk keduanya), dan &quot;Kelola Kelas&quot; berganti nama jadi <strong>Manajemen Sistem</strong></>,
+        <>Riwayat rilis ({c('/changelog')}) sekarang khusus dosen — isinya catatan teknis dan temuan keamanan yang tidak perlu dibaca mahasiswa maupun pengunjung anonim. Tautannya di footer halaman login/daftar ikut dicabut supaya tidak ada jalan masuk yang menggantung</>,
+        <>Pendaftaran dosen memverifikasi kode undangan ke database lewat RPC, bukan lagi membandingkan ke env build-time {c('VITE_DOSEN_INVITE_CODE')} — dua sumber kebenaran yang dulu gampang lepas sinkron: mengganti kode di DB tanpa rebuild frontend justru mematikan pendaftaran dosen. Env itu kini tidak dibaca lagi (kecuali sebagai jaring pengaman kalau RPC-nya belum ada)</>,
+        <>Batas minimum kode undangan diturunkan 8 → 6 karakter, disamakan antara pengecekan di RPC dan di form</>,
+        <>Dropdown &quot;pakai file yang sudah ada&quot; di Edit Modul kini menandai tiap berkas dengan modul pemakainya (atau &quot;belum dipakai&quot;), supaya file yatim gampang dibedakan dari yang aktif</>,
+      ],
+      Fixed: [
+        <>Mengunggah PDF baru untuk sebuah modul tidak pernah menghapus file lamanya — tiap unggahan memakai nama ber-timestamp baru, jadi versi lama menumpuk selamanya di bucket dan terus muncul di daftar &quot;pakai file yang sudah ada&quot; walau tidak ada modul yang memakainya. Sekarang file lama ikut dibuang, entri 0-byte disaring</>,
+        <>{c('var(--brown-3)')} dipakai di 5 tempat (RoadmapWidget, Analitik, Asesmen, Ebook, Manajemen) padahal token itu tidak pernah ada — nama yang benar {c('var(--brown3)')}. Selama ini warnanya diam-diam diwarisi dari elemen induk, bukan token yang dimaksud; paling kelihatan di label tab non-aktif</>,
+        <>Login buku: tombol &quot;Buka Buku&quot; tidak bisa diklik sama sekali — muka belakang sampul ({c('backface-visibility:hidden')}) berada setelahnya di DOM dan tetap menang hit-testing walau tak terlihat, jadi klik mouse tersegat elemen kosong. Luput dari pengujian awal karena {c('.click()')} programatik melewati hit-testing</>,
+        <>Login buku di layar sentuh (termasuk HP mode desktop): tap pertama memicu {c(':hover')} yang menggeser kemiringan buku — tombolnya pindah dari bawah jari tepat saat tap, kliknya meleset. Kemiringan hover dihapus (tilt statis), dan seluruh sampul kini bisa di-tap, bukan cuma tombol kecilnya</>,
+        <>{c('/ebook')}: baris header memakai {c('max-w-4xl')} sementara grid katalog di bawahnya selebar penuh, jadi tombol &quot;Kembali ke Dashboard&quot; terlihat mencong ke kanan. Lebar header sekarang mengikuti konten di bawahnya</>,
+      ],
+      Security: [
+        <>Kode undangan dosen dibuka lewat tiga RPC {c('SECURITY DEFINER')} ({c('verify')}/{c('get')}/{c('set')}), bukan dengan memberi policy ke tabel {c('dosen_invite_codes')} — tabelnya tetap tertutup total tanpa satu pun policy, RPC adalah satu-satunya pintu. {c('verify')} boleh dipanggil anon (pendaftaran terjadi sebelum ada sesi) tapi hanya membalas benar/salah, kode aslinya tidak pernah ikut terkirim ke klien</>,
+        <>Projek Akhir dijaga trigger {c('final_projects_guard()')}: RLS hanya bisa membatasi per-baris, jadi policy &quot;mahasiswa kelola baris sendiri&quot; sebenarnya juga mengizinkan dia meng-UPDATE {c('status')}/{c('catatan_dosen')} miliknya lewat REST API — alias menyetujui proposalnya sendiri dari devtools. Trigger ini mengembalikan kolom yang bukan haknya ke nilai lama: mahasiswa pegang isi + geser {c('draf ⇄ diajukan')}, dosen pegang vonis + catatan</>,
+        <>Bucket {c('projek-akhir')} dibuat PRIVAT (beda dari {c('modul-pdf')}/{c('observasi-file')} yang publik) dan diunduh lewat signed URL — proposal adalah karya pribadi mahasiswa. Akses dosen ke berkasnya pun tetap lewat {c('is_dosen_of()')}</>,
+      ],
+    },
+    desc: 'Konsep Modul Flip Book 5.0 diwujudkan: Asesmen (tes formatif, pilihan ganda, observasi lapangan) dan Projek Akhir, plus hapus modul, kode undangan dosen yang bisa dikelola sendiri, dan halaman login bergaya buku. CPMK/sub-CPMK per modul masih menunggu contoh isi.',
+  },
+  {
     version: 'v1.1.0',
     date: '2026-07-24',
-    current: true,
     sections: {
       Added: [
         <>Kelas/rombongan belajar: dosen buat kelas (nama, angkatan, kapasitas) dengan kode gabung acak, mahasiswa self-register pakai kode di {c('/register')}, import CSV mahasiswa massal dengan password auto-generate</>,
