@@ -369,7 +369,13 @@ export function Ebook() {
   return (
     <Layout>
       <div className="flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
-        <div className="w-full max-w-4xl flex items-center gap-3 flex-wrap">
+        {/* Lebar header mengikuti konten di bawahnya: katalog memakai w-full
+            (grid banyak kolom), reader memakai max-w-4xl. Kalau header selalu
+            max-w-4xl, di mode katalog dia jadi tersendiri ke tengah sementara
+            grid membentang penuh — tombol "Kembali" terlihat mencong ke kanan. */}
+        <div
+          className={`w-full flex items-center gap-3 flex-wrap ${moduleId != null ? 'max-w-4xl' : ''}`}
+        >
           <Link
             to={moduleId != null ? '/ebook' : '/dashboard'}
             className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg text-sm font-semibold text-brown-2 border hover:bg-[rgba(62,54,46,.04)] hover:text-brown transition-colors"

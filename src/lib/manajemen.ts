@@ -113,6 +113,67 @@ export async function createModul(data: {
   }
 }
 
+// Nama file Storage dari sebuah public URL `modul-pdf`. Mengembalikan null
+// untuk URL di luar bucket ini (mis. blob: dari mode demo, atau path statis
+// /books/... bawaan repo) supaya pemanggil tidak pernah salah menghapus.
+function storageObjectName(publicUrl: string | null | undefined): string | null {
+  if (!publicUrl) return null
+  const marker = '/storage/v1/object/public/modul-pdf/'
+  const i = publicUrl.indexOf(marker)
+  if (i === -1) return null
+  const name = publicUrl.slice(i + marker.length).split('?')[0]
+  return name ? decodeURIComponent(name) : null
+}
+
+// Hapus modul beserta file PDF-nya di Storage.
+//
+// Tabel turunan (user_progress, quiz_questions, quiz_attempts, forum_posts,
+// workshop_content) sudah ON DELETE CASCADE di schema, jadi ikut terhapus
+// sendiri. `drafts.module_id` SENGAJA tanpa cascade — draf mahasiswa adalah
+// karya mereka, tidak boleh lenyap diam-diam gara-gara dosen merapikan daftar
+// modul. Postgres akan menolak delete-nya (kode 23503); kita terjemahkan jadi
+// pesan yang bisa ditindaklanjuti alih-alih melempar error mentah.
+export async function deleteModul(moduleId: number): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('deleteModul membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
+  }
+
+  // Ambil pdf_path SEBELUM baris hilang, supaya file Storage-nya bisa ikut
+  // dibersihkan dan tidak menumpuk jadi orphan di bucket.
+  const { data: row } = await supabase
+    .from('modules')
+    .select('pdf_path')
+    .eq('id', moduleId)
+    .maybeSingle()
+
+  const { error } = await supabase.from('modules').delete().eq('id', moduleId)
+  if (error) {
+    if (error.code === '23503') {
+      throw new Error(
+        'Modul ini masih dipakai draf mahasiswa, jadi tidak bisa dihapus. Nonaktifkan modul lewat Status kalau hanya ingin menyembunyikannya.',
+      )
+    }
+    throw error
+  }
+
+  const objectName = storageObjectName(row?.pdf_path as string | undefined)
+  if (objectName) {
+    try {
+      await supabase.storage.from('modul-pdf').remove([objectName])
+    } catch (cleanupError) {
+      // Baris DB sudah hilang — kegagalan bersih-bersih file jangan sampai
+      // memunculkan error seolah penghapusan modulnya gagal.
+      console.warn('[manajemen] deleteModul → gagal menghapus PDF di Storage:', cleanupError)
+    }
+  }
+
+  try {
+    localStorage.removeItem(customKey(moduleId))
+  } catch {
+    // ignore
+  }
+}
+
 // Upload a dosen-provided PDF to the public `modul-pdf` Storage bucket (see
 // database/migration_v3_modul_pdf_storage.sql) and point the module's
 // pdf_path at the resulting public URL. Demo/localStorage mode has no
@@ -120,6 +181,17 @@ export async function createModul(data: {
 // file itself never leaves the browser in that mode.
 export async function uploadModulPdf(moduleId: number, file: File): Promise<string> {
   if (isSupabaseConfigured) {
+    // Nama file lama dicatat dulu: setiap upload memakai path ber-timestamp
+    // baru, jadi tanpa pembersihan ini file versi sebelumnya menumpuk
+    // selamanya di bucket dan muncul terus di daftar "pakai file yang sudah
+    // ada" walau tidak ada modul yang memakainya lagi.
+    const { data: prevRow } = await supabase
+      .from('modules')
+      .select('pdf_path')
+      .eq('id', moduleId)
+      .maybeSingle()
+    const prevObject = storageObjectName(prevRow?.pdf_path as string | undefined)
+
     const path = `modul-${moduleId}-${Date.now()}.pdf`
     const { error: uploadError } = await supabase.storage
       .from('modul-pdf')
@@ -142,6 +214,17 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
       }
       throw updateError
     }
+    // Modul sudah menunjuk file baru — file lama kini yatim, buang.
+    // Dilindungi guard `!== path` supaya re-upload dengan nama identik
+    // (secara teori mustahil karena timestamp, tapi murah untuk dijaga)
+    // tidak menghapus file yang baru saja diunggah.
+    if (prevObject && prevObject !== path) {
+      try {
+        await supabase.storage.from('modul-pdf').remove([prevObject])
+      } catch (cleanupError) {
+        console.warn('[manajemen] uploadModulPdf → gagal menghapus PDF lama:', cleanupError)
+      }
+    }
     return data.publicUrl
   }
   // Demo mode: no Storage backend — keep the override local only.
@@ -155,6 +238,8 @@ export interface ModulPdfFile {
   name: string
   url: string
   updatedAt: string | null
+  /** Judul modul yang sedang memakai file ini, atau null kalau tidak dipakai siapa pun. */
+  usedBy: string | null
 }
 
 // Lists every file sitting in the `modul-pdf` bucket, including ones no
@@ -165,17 +250,37 @@ export interface ModulPdfFile {
 // backend to list.
 export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
   if (!isSupabaseConfigured) return []
-  const { data, error } = await supabase.storage.from('modul-pdf').list('', {
-    limit: 200,
-    sortBy: { column: 'created_at', order: 'desc' },
-  })
-  if (error) throw error
-  return (data || [])
-    .filter((f) => f.name.toLowerCase().endsWith('.pdf'))
+  const [listRes, modulesRes] = await Promise.all([
+    supabase.storage.from('modul-pdf').list('', {
+      limit: 200,
+      sortBy: { column: 'created_at', order: 'desc' },
+    }),
+    supabase.from('modules').select('title, pdf_path'),
+  ])
+  if (listRes.error) throw listRes.error
+
+  // Peta nama-objek → judul modul pemakainya, supaya file yatim (sisa upload
+  // lama yang sudah tidak ditunjuk modul mana pun) bisa dibedakan di UI.
+  const usedBy = new Map<string, string>()
+  for (const m of modulesRes.data ?? []) {
+    const name = storageObjectName((m as { pdf_path?: string }).pdf_path)
+    if (name) usedBy.set(name, (m as { title?: string }).title || 'Tanpa judul')
+  }
+
+  return (listRes.data || [])
+    .filter((f) => {
+      if (!f.name.toLowerCase().endsWith('.pdf')) return false
+      // Supabase menyisakan baris placeholder 0-byte untuk folder kosong dan
+      // untuk sebagian upload yang gagal di tengah jalan — keduanya bukan PDF
+      // yang bisa dibuka, jadi jangan ditawarkan.
+      const size = (f.metadata as { size?: number } | null)?.size
+      return size == null || size > 0
+    })
     .map((f) => ({
       name: f.name,
       url: supabase.storage.from('modul-pdf').getPublicUrl(f.name).data.publicUrl,
       updatedAt: f.updated_at ?? null,
+      usedBy: usedBy.get(f.name) ?? null,
     }))
 }
 

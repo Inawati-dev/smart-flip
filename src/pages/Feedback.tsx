@@ -37,10 +37,15 @@ export function Feedback() {
   const [errRating, setErrRating] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  const [riwayatOpen, setRiwayatOpen] = useState(false)
+  const [riwayatOpen, setRiwayatOpen] = useState(profile?.role === 'dosen')
 
   const viewerRole = profile?.role ?? null
   const { data: feedbacks = [], isLoading } = useFeedback(selectedModuleId, viewerRole)
+
+  // Dosen adalah PENERIMA penilaian, bukan pengisi — halaman ini untuknya
+  // jadi rekap read-only: form rating/komentar disembunyikan, dropdown modul
+  // tinggal berfungsi sebagai filter, dan riwayat langsung terbuka.
+  const isDosen = viewerRole === 'dosen'
 
   const allRatingsFilled = Object.values(ratings).every((v) => v > 0)
 
@@ -86,19 +91,24 @@ export function Feedback() {
         <div>
         <div className="text-center mb-7">
           <h1 className="font-display text-2xl font-bold text-brown leading-tight">
-            Penilaian Kepraktisan Modul
+            {isDosen ? 'Penilaian Kepraktisan dari Mahasiswa' : 'Penilaian Kepraktisan Modul'}
           </h1>
           <p className="text-sm text-brown-3 mt-1.5">
-            Berikan penilaian jujur untuk membantu pengembangan materi yang lebih baik
+            {isDosen
+              ? 'Rekap penilaian yang masuk dari mahasiswa — pilih modul untuk menyaring.'
+              : 'Berikan penilaian jujur untuk membantu pengembangan materi yang lebih baik'}
           </p>
         </div>
 
-        {/* FORM CARD */}
-        <div className="bg-ivory rounded-2xl border p-5 md:p-7 mb-5" style={BORDER}>
+        {/* FORM CARD — bagi dosen menyusut jadi panel filter modul saja */}
+        <div className={`bg-ivory rounded-2xl border p-5 md:p-7 mb-5 ${isDosen ? 'py-4 md:py-5' : ''}`} style={BORDER}>
           {/* PILIH MODUL */}
-          <div className="mb-6">
+          <div className={isDosen ? '' : 'mb-6'}>
             <label className="block text-xs font-semibold uppercase tracking-wide text-brown-2 mb-2">
-              Pilih Modul <span className="normal-case tracking-normal font-normal text-brown-3 ml-1">wajib</span>
+              {isDosen ? 'Filter Modul' : 'Pilih Modul'}{' '}
+              <span className="normal-case tracking-normal font-normal text-brown-3 ml-1">
+                {isDosen ? 'kosongkan untuk lihat semua' : 'wajib'}
+              </span>
             </label>
             <Select
               value={String(selectedModuleId ?? '')}
@@ -112,17 +122,19 @@ export function Feedback() {
               }`}
               style={{ borderColor: errModul ? 'var(--red)' : 'var(--border)' }}
               options={[
-                { value: '', label: '— Pilih modul yang ingin dinilai —' },
+                { value: '', label: isDosen ? '— Semua modul —' : '— Pilih modul yang ingin dinilai —' },
                 ...modules.map((m) => ({ value: String(m.id), label: `Modul ${m.id} — ${m.title}` })),
               ]}
             />
-            {errModul && (
+            {errModul && !isDosen && (
               <div className="text-xs text-red mt-1.5 px-2.5 py-1.5 rounded-md bg-red/10">
                 Silakan pilih modul terlebih dahulu.
               </div>
             )}
           </div>
 
+          {!isDosen && (
+            <>
           {/* RATING ASPEK */}
           <div className="mb-6">
             <label className="block text-xs font-semibold uppercase tracking-wide text-brown-2 mb-2">
@@ -212,6 +224,8 @@ export function Feedback() {
           >
             {submitting ? 'Menyimpan…' : 'Kirim Penilaian'}
           </button>
+            </>
+          )}
         </div>
 
         {/* RIWAYAT SECTION */}
