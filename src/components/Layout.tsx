@@ -71,6 +71,21 @@ const NAV_SECTIONS: NavSection[] = [
       { to: '/draf', icon: IconEdit, label: 'Draf' },
     ],
   },
+  // Asesmen & Projek Akhir dipisah dari "Kelola Kelas" mengikuti konsep modul
+  // 5.0: keduanya adalah tempat MENILAI capaian belajar, bukan mengelola
+  // kelas/modul. Dosen dan mahasiswa masuk lewat pintu berbeda ke pekerjaan
+  // yang sama (dosen memantau & menilai, mahasiswa mengerjakan), makanya satu
+  // seksi ini memuat item dua-duanya.
+  {
+    key: 'asesmen',
+    label: 'Asesmen',
+    icon: IconChart,
+    items: [
+      { to: '/asesmen', icon: IconChart, label: 'Asesmen', dosenOnly: true },
+      { to: '/observasi', icon: IconCompass, label: 'Aktivitas Mandiri', mahasiswaOnly: true },
+      { to: '/projek-akhir', icon: IconTarget, label: 'Projek Akhir' },
+    ],
+  },
   {
     key: 'belajar',
     label: 'Belajar',
@@ -82,12 +97,11 @@ const NAV_SECTIONS: NavSection[] = [
   },
   {
     key: 'kelola-kelas',
-    label: 'Kelola Kelas',
+    label: 'Manajemen Sistem',
     icon: IconUsers,
-    // Alfabetis by label -- gampang di-scan sekarang isinya 5 item.
+    // Alfabetis by label -- gampang di-scan sekarang isinya 4 item.
     items: [
       { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
-      { to: '/asesmen', icon: IconChart, label: 'Asesmen', dosenOnly: true },
       { to: '/kelas', icon: IconUsers, label: 'Kelas', dosenOnly: true },
       { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
       { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },

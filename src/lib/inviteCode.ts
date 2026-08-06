@@ -6,8 +6,12 @@ import { supabase, isSupabaseConfigured } from './supabase'
 // satu-satunya pintunya, dan pengecekan perannya ada di sisi server, bukan di
 // sini. Jangan pernah menambahkan query langsung ke tabel itu dari klien.
 
-/** Panjang minimum yang juga divalidasi ulang di sisi server. */
-export const MIN_INVITE_CODE_LENGTH = 8
+/**
+ * Panjang minimum yang juga divalidasi ulang di sisi server. Angka ini HARUS
+ * sama dengan pengecekan di set_dosen_invite_code() (migration v16) — kalau
+ * berbeda, form di Pengaturan akan meloloskan kode yang kemudian ditolak server.
+ */
+export const MIN_INVITE_CODE_LENGTH = 6
 
 export function isInviteCodeLongEnough(code: string): boolean {
   return code.trim().length >= MIN_INVITE_CODE_LENGTH

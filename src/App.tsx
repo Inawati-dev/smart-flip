@@ -18,6 +18,8 @@ import { Forum } from './pages/Forum'
 import { Draf } from './pages/Draf'
 import { Feedback } from './pages/Feedback'
 import Asesmen from './pages/Asesmen'
+import Observasi from './pages/Observasi'
+import { ProjekAkhir } from './pages/ProjekAkhir'
 import { Validasi } from './pages/Validasi'
 import { Analitik } from './pages/Analitik'
 import { Manajemen } from './pages/Manajemen'
@@ -62,6 +64,12 @@ export default function App() {
               <Route path="/forum" element={<ProtectedRoute><Forum /></ProtectedRoute>} />
               <Route path="/draf" element={<ProtectedRoute><Draf /></ProtectedRoute>} />
               <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
+              {/* Sisi mahasiswa dari Aktivitas Mandiri — /asesmen dosen-only,
+                  jadi pengumpulan observasi butuh rutenya sendiri. */}
+              <Route path="/observasi" element={<ProtectedRoute roles={['mahasiswa']}><Observasi /></ProtectedRoute>} />
+              {/* Satu rute, dua tampilan: mahasiswa mengerjakan proposal,
+                  dosen memantau & menilai (bercabang di dalam komponennya). */}
+              <Route path="/projek-akhir" element={<ProtectedRoute><ProjekAkhir /></ProtectedRoute>} />
               <Route path="/asesmen" element={<ProtectedRoute roles={['dosen']}><Asesmen /></ProtectedRoute>} />
               {/* /ngain dipertahankan sebagai alias — tautan/bookmark lama ke
                   halaman ini masih ada sebelum namanya berubah jadi Asesmen. */}

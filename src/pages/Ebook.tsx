@@ -405,7 +405,7 @@ export function Ebook() {
                   style={
                     readerStyleState === opt.key
                       ? { background: 'var(--brown)', color: 'var(--btn-text)' }
-                      : { color: 'var(--brown-3)' }
+                      : { color: 'var(--brown3)' }
                   }
                 >
                   {opt.label}

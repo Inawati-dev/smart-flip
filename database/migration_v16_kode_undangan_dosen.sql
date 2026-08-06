@@ -80,8 +80,8 @@ BEGIN
   IF caller_role IS DISTINCT FROM 'dosen' THEN
     RAISE EXCEPTION 'Hanya dosen yang boleh mengganti kode undangan.';
   END IF;
-  IF new_code IS NULL OR length(btrim(new_code)) < 8 THEN
-    RAISE EXCEPTION 'Kode undangan minimal 8 karakter.';
+  IF new_code IS NULL OR length(btrim(new_code)) < 6 THEN
+    RAISE EXCEPTION 'Kode undangan minimal 6 karakter.';
   END IF;
 
   INSERT INTO dosen_invite_codes (id, code, updated_at)
