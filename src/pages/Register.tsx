@@ -2,14 +2,19 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
+import { verifyDosenInviteCode } from '../lib/inviteCode'
 
-// Client-side pre-check only, for instant form feedback — the REAL
-// enforcement is server-side now (database/migration_v6_dosen_invite_gate.sql):
-// handle_new_user() validates raw_user_meta_data->>'dosen_invite_code'
-// against the dosen_invite_codes table before ever assigning role='dosen',
-// and a BEFORE UPDATE trigger locks profiles.role against client-side
-// changes after signup too. This function alone would still be bypassable
-// via devtools; it's the migration that actually closes the hole.
+// Pengecekan awal di sisi klien saja, untuk umpan balik form yang instan —
+// penegakan SEBENARNYA ada di server (database/migration_v6_dosen_invite_gate.sql):
+// handle_new_user() memvalidasi raw_user_meta_data->>'dosen_invite_code'
+// terhadap tabel dosen_invite_codes sebelum berani memberi role='dosen', dan
+// trigger BEFORE UPDATE mengunci profiles.role dari perubahan sisi klien
+// setelah signup. Fungsi ini sendiri masih bisa dilewati lewat devtools;
+// migration itulah yang benar-benar menutup lubangnya.
+//
+// Dipertahankan sebagai fungsi murni supaya tetap gampang diuji, TAPI sejak
+// migration v16 pemanggilnya tidak lagi membandingkan ke env build-time —
+// lihat catatan di handleSubmit.
 export function isDosenInviteCodeValid(inputCode: string, expectedCode: string | undefined): boolean {
   if (!expectedCode) return false
   return inputCode.trim().length > 0 && inputCode.trim() === expectedCode
@@ -37,12 +42,21 @@ export function Register() {
       return
     }
 
-    if (role === 'dosen' && !isDosenInviteCodeValid(inviteCode, import.meta.env.VITE_DOSEN_INVITE_CODE)) {
-      setError('Kode undangan dosen tidak valid. Hubungi admin untuk mendapatkan kode undangan.')
-      return
+    // Verifikasi ke DB lewat RPC (migration v16), BUKAN ke env build-time
+    // seperti sebelumnya. Alasannya: kode kini bisa diganti dosen dari halaman
+    // Pengaturan; kalau klien masih membandingkan ke nilai yang dipanggang saat
+    // build, mengganti kode akan langsung mematikan pendaftaran dosen sampai
+    // ada rebuild — dua sumber kebenaran yang pasti lepas sinkron.
+    setLoading(true)
+    if (role === 'dosen') {
+      const ok = await verifyDosenInviteCode(inviteCode)
+      if (!ok) {
+        setError('Kode undangan dosen tidak valid. Hubungi admin untuk mendapatkan kode undangan.')
+        setLoading(false)
+        return
+      }
     }
 
-    setLoading(true)
     try {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
