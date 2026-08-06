@@ -307,18 +307,20 @@ export function Login() {
     const bookCover = (
       <>
         <div>
-          <p className="text-[10px] tracking-[.16em] uppercase font-bold text-terra mb-3.5">
-            SMART-FLIP 5.0
-          </p>
-          <h1 className="font-display font-light text-[2.6rem] leading-[1.05] tracking-tight text-cream mb-3.5">
+          <h1 className="font-display font-light text-[2.7rem] leading-[1.02] tracking-tight text-cream mb-3.5">
             Smart
             <br />
-            Flip.
+            Flip.{' '}
+            <span className="text-[1.3rem] align-middle text-terra font-semibold">5.0</span>
           </h1>
-          <p className="text-[0.82rem] leading-relaxed text-cream/60 mb-4">
-            E-Modul Adaptif Metode Penelitian &amp; Pengembangan — Fakultas Vokasi, Universitas
-            Negeri Malang.
+          <p className="text-[0.84rem] leading-relaxed text-cream/65 mb-4">
+            E-Modul Adaptif Metode Penelitian &amp; Pengembangan.
           </p>
+          <div className="flex flex-col gap-1 text-[0.78rem] text-cream/50 border-t border-white/10 pt-3 mb-4">
+            <span>Fakultas Vokasi</span>
+            <span>Universitas Negeri Malang</span>
+            <span>Dana Internal UM 2026</span>
+          </div>
           <ul className="flex flex-col gap-1.5 text-[0.78rem] text-cream/45 list-disc pl-4">
             <li>Baca modul interaktif per-bab</li>
             <li>Progress tersimpan otomatis</li>
