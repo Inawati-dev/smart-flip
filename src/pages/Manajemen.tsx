@@ -710,7 +710,7 @@ export function Manajemen() {
               className="px-3.5 min-h-11 text-sm font-semibold whitespace-nowrap border-b-2 -mb-px"
               style={{
                 borderColor: tab === t.key ? 'var(--terra)' : 'transparent',
-                color: tab === t.key ? 'var(--terra-d)' : 'var(--brown-3)',
+                color: tab === t.key ? 'var(--terra-d)' : 'var(--brown3)',
               }}
             >
               {t.label}

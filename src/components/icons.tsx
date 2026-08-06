@@ -228,6 +228,18 @@ export function IconDownload({ size = 18, ...p }: IconProps) {
   )
 }
 
+// Cerminan IconDownload (panah dibalik ke atas) — dipakai tombol unggah
+// berkas hasil observasi di /observasi.
+export function IconUpload({ size = 18, ...p }: IconProps) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M12 15.5v-11" />
+      <path d="m7.5 9 4.5-4.5L16.5 9" />
+      <path d="M5 18.5h14" />
+    </svg>
+  )
+}
+
 export function IconVideo({ size = 18, ...p }: IconProps) {
   return (
     <svg {...base(size, p)}>

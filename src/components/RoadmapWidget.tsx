@@ -96,7 +96,7 @@ function RoadmapPill({ node }: { node: RoadmapNode }) {
   } else if (node.state === 'current') {
     circleStyle = { background: 'var(--terra)', borderColor: 'var(--terra)', color: '#fff' }
   } else {
-    circleStyle = { background: 'var(--bg3)', borderColor: 'var(--border)', color: 'var(--brown-3)' }
+    circleStyle = { background: 'var(--bg3)', borderColor: 'var(--border)', color: 'var(--brown3)' }
     Icon = IconLock
   }
 
