@@ -78,9 +78,12 @@ export default function App() {
               <Route path="/analitik" element={<ProtectedRoute roles={['dosen']}><Analitik /></ProtectedRoute>} />
               <Route path="/manajemen" element={<ProtectedRoute roles={['dosen']}><Manajemen /></ProtectedRoute>} />
               <Route path="/kelas" element={<ProtectedRoute roles={['dosen']}><Kelas /></ProtectedRoute>} />
-              {/* Public — linked from the logged-out AuthShell footer too, so
-                  it must render standalone without bouncing through auth. */}
-              <Route path="/changelog" element={<Changelog />} />
+              {/* Dosen-only: riwayat rilis memuat catatan teknis & temuan
+                  keamanan yang tidak perlu dibaca mahasiswa maupun pengunjung
+                  anonim. Sempat publik sebelumnya (dan tautannya dulu ada di
+                  footer AuthShell) — tautan itu sudah dicabut bersamaan dengan
+                  perubahan ini, jadi tidak ada lagi jalan masuk yang menggantung. */}
+              <Route path="/changelog" element={<ProtectedRoute roles={['dosen']}><Changelog /></ProtectedRoute>} />
               <Route path="/pengaturan" element={<ProtectedRoute><Pengaturan /></ProtectedRoute>} />
             </Routes>
           </ErrorBoundary>
