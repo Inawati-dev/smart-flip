@@ -64,7 +64,7 @@ export function LoginBook({
         >
           {/* muka depan */}
           <div
-            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden"
+            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden select-none"
             style={{
               background:
                 'linear-gradient(150deg, color-mix(in srgb, var(--brown) 94%, #000) 0%, color-mix(in srgb, var(--brown) 84%, #fff) 68%, var(--brown) 100%)',
@@ -75,9 +75,14 @@ export function LoginBook({
             <div aria-hidden="true" className="absolute left-3.5 top-0 bottom-0 w-px bg-white/15" />
             <div className="h-full p-6 sm:p-8 pl-8 sm:pl-10 flex flex-col justify-between">{cover}</div>
           </div>
-          {/* muka belakang sampul (kelihatan sekilas saat membuka) */}
+          {/* muka belakang sampul (kelihatan sekilas saat membuka).
+              pointer-events-none WAJIB: dia absolute inset-0 SETELAH muka
+              depan di DOM, jadi walau tak terlihat (backface-hidden) dia
+              tetap menang hit-testing dan menyegat klik mouse ke tombol
+              "Buka Buku" — bug yang tidak ketahuan lewat .click()
+              programatik karena itu melewati hit-testing. */}
           <div
-            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex items-end p-5"
+            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex items-end p-5 pointer-events-none"
             style={{ background: 'var(--bg3)' }}
           >
             <p className="font-display italic text-[11.5px] text-brown-3">
