@@ -349,6 +349,7 @@ export function Login() {
         <div className="w-full max-w-[400px]">
           <LoginBook
             open={flipped}
+            onOpen={() => setFlipped(true)}
             cover={bookCover}
             page={
               <FlipPanel
