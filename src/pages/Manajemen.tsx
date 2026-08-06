@@ -7,6 +7,7 @@ import {
   saveModulOrder,
   uploadModulPdf,
   createModul,
+  deleteModul,
   listModulPdfFiles,
   assignModulPdf,
   type ModulCustom,
@@ -593,6 +594,30 @@ export function Manajemen() {
     }
   }
 
+  // Hapus modul — destruktif dan berdampak ke data mahasiswa (progres, kuis,
+  // forum ikut terhapus lewat cascade), jadi selalu lewat modal konfirmasi
+  // sesuai aturan "Modal Wajib" di CLAUDE.md.
+  const [modulDeleteId, setModulDeleteId] = useState<number | null>(null)
+  const [deletingModul, setDeletingModul] = useState(false)
+
+  async function confirmDeleteModul() {
+    if (modulDeleteId == null) return
+    setDeletingModul(true)
+    try {
+      await deleteModul(modulDeleteId)
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+      await queryClient.invalidateQueries({ queryKey: ['modul-pdf-files'] })
+      showToast('Modul dihapus')
+      setModulDeleteId(null)
+    } catch (err) {
+      // deleteModul menerjemahkan pelanggaran FK draf jadi pesan yang bisa
+      // ditindaklanjuti — tampilkan apa adanya, jangan ditelan jadi teks generik.
+      showToast(err instanceof Error ? err.message : 'Gagal menghapus modul')
+    } finally {
+      setDeletingModul(false)
+    }
+  }
+
   async function saveEdit() {
     const judul = formJudul.trim()
     if (!judul) return
@@ -836,6 +861,14 @@ export function Manajemen() {
                               style={BORDER}
                             >
                               Preview
+                            </button>
+                            <button
+                              onClick={() => setModulDeleteId(id)}
+                              aria-label={`Hapus modul ${judul}`}
+                              title="Hapus modul"
+                              className="h-11 w-11 rounded-md border border-red/25 bg-red/10 text-red inline-flex items-center justify-center flex-shrink-0"
+                            >
+                              <IconTrash size={15} />
                             </button>
                           </div>
                         </td>
@@ -1199,7 +1232,12 @@ export function Manajemen() {
                     placeholder="Pilih file…"
                     className="h-9 px-2.5 rounded-lg border text-xs text-brown flex-1 min-w-[160px] cursor-pointer"
                     style={BORDER}
-                    options={pdfFiles.map((f) => ({ value: f.url, label: f.name }))}
+                    // Tandai file yang sedang dipakai modul lain supaya file
+                    // yatim (sisa upload lama) gampang dibedakan dari yang aktif.
+                    options={pdfFiles.map((f) => ({
+                      value: f.url,
+                      label: f.usedBy ? `${f.name} — dipakai: ${f.usedBy}` : `${f.name} — belum dipakai`,
+                    }))}
                   />
                   <button
                     type="button"
@@ -1354,6 +1392,49 @@ export function Manajemen() {
 
       {/* Diagnostic question delete confirmation modal — destructive action per
           CLAUDE.md, mirrors bulkConfirm above / Ngain.tsx's per-row delete confirm. */}
+      {/* Konfirmasi hapus MODUL — dampaknya paling luas dari semua aksi hapus
+          di halaman ini (progres belajar, kuis, dan forum modul ikut terhapus),
+          jadi konsekuensinya disebut eksplisit, bukan sekadar "tidak dapat
+          dibatalkan". */}
+      {modulDeleteId != null && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !deletingModul) setModulDeleteId(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">
+              Hapus modul “{modMap[modulDeleteId]?.title || ''}”?
+            </h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Progres belajar mahasiswa, soal &amp; hasil kuis, serta diskusi forum untuk modul ini ikut
+              terhapus permanen. File PDF-nya juga dibuang dari penyimpanan. Tindakan ini tidak dapat
+              dibatalkan.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setModulDeleteId(null)}
+                disabled={deletingModul}
+                className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2 disabled:opacity-50"
+                style={BORDER}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => void confirmDeleteModul()}
+                disabled={deletingModul}
+                className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold disabled:opacity-60"
+                style={{ background: 'var(--red)' }}
+              >
+                {deletingModul ? 'Menghapus…' : 'Ya, Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {diagDeleteId != null && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"

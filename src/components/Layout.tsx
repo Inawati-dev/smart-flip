@@ -111,10 +111,20 @@ const DEFAULT_OPEN_SECTIONS: Record<string, boolean> = Object.fromEntries(
   NAV_SECTIONS.map((s) => [s.key, true]),
 )
 
+function initialsOf(name: string | undefined): string {
+  if (!name?.trim()) return '?'
+  const parts = name.trim().split(/\s+/)
+  return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '')).toUpperCase()
+}
+
+function roleLabel(role: 'mahasiswa' | 'dosen' | null): string {
+  return role === 'dosen' ? 'Dosen' : role === 'mahasiswa' ? 'Mahasiswa' : 'Memuat…'
+}
+
 export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, role } = useAuth()
+  const { user, role, profile } = useAuth()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [logoutOpen, setLogoutOpen] = useState(false)
   const [flyout, setFlyout] = useState<string | null>(null)
@@ -414,6 +424,52 @@ export function Layout({ children }: { children: ReactNode }) {
             })}
           </nav>
         )}
+
+        {/* Kartu identitas tepat di atas Keluar — biar langsung kelihatan
+            sedang masuk sebagai siapa dan dengan peran apa (dosen/mahasiswa),
+            karena beberapa halaman tampil beda per peran. Saat rail ciut,
+            tinggal avatar; nama/peran pindah ke flyout hover. */}
+        <Link
+          to="/profil"
+          onMouseEnter={(e) => {
+            if (!collapsed) return
+            cancelCloseFlyout()
+            setFlyout('profil-ident')
+            setFlyoutTop(e.currentTarget.getBoundingClientRect().top + e.currentTarget.getBoundingClientRect().height / 2)
+          }}
+          className={`relative no-underline transition-colors hover:bg-[rgba(62,54,46,.05)] ${
+            collapsed
+              ? 'w-10 h-10 rounded-xl flex items-center justify-center mb-1'
+              : 'mb-1.5 px-2.5 py-2 rounded-lg flex items-center gap-2.5 border border-[color:var(--border)]'
+          }`}
+        >
+          <span
+            className="w-7 h-7 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold overflow-hidden"
+            style={{ background: 'var(--terra-d)', color: '#fff' }}
+          >
+            {profile?.avatar_url ? (
+              <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              initialsOf(profile?.full_name)
+            )}
+          </span>
+          {!collapsed && (
+            <span className="min-w-0 flex flex-col leading-tight">
+              <span className="text-[12.5px] font-semibold text-brown truncate">
+                {profile?.full_name || 'Pengguna'}
+              </span>
+              <span className="text-[10.5px] text-brown-3">{roleLabel(role)}</span>
+            </span>
+          )}
+          {collapsed && flyout === 'profil-ident' && (
+            <div
+              className="fixed left-[80px] z-[999] whitespace-nowrap rounded-lg px-3 py-2 text-xs font-semibold shadow-[0_8px_24px_rgba(62,54,46,.18)]"
+              style={{ top: flyoutTop, transform: 'translateY(-50%)', background: 'var(--brown)', color: 'var(--ivory)', animation: 'fadeInBg 0.12s ease' }}
+            >
+              {profile?.full_name || 'Pengguna'} · {roleLabel(role)}
+            </div>
+          )}
+        </Link>
 
         <button
           onClick={() => setLogoutOpen(true)}
