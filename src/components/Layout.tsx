@@ -87,9 +87,9 @@ const NAV_SECTIONS: NavSection[] = [
     // Alfabetis by label -- gampang di-scan sekarang isinya 5 item.
     items: [
       { to: '/analitik', icon: IconTrendingUp, label: 'Analitik Kelas', dosenOnly: true },
+      { to: '/asesmen', icon: IconChart, label: 'Asesmen', dosenOnly: true },
       { to: '/kelas', icon: IconUsers, label: 'Kelas', dosenOnly: true },
       { to: '/manajemen', icon: IconFolder, label: 'Kelola Modul', dosenOnly: true },
-      { to: '/ngain', icon: IconChart, label: 'N-Gain', dosenOnly: true },
       { to: '/validasi', icon: IconCheck, label: 'Validasi Ahli', dosenOnly: true },
     ],
   },

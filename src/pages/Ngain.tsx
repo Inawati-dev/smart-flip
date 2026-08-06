@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Layout } from '../components/Layout'
 import { useAuth } from '../contexts/AuthContext'
 import { IconGear, IconChart, IconTrendingUp, IconDownload, IconLightbulb } from '../components/icons'
 import {
@@ -60,7 +59,10 @@ function csvEscape(value: string): string {
   return value.replace(/"/g, '""')
 }
 
-export default function Ngain() {
+// Dirender sebagai salah satu tab di dalam halaman Asesmen (src/pages/Asesmen.tsx),
+// jadi komponen ini TIDAK memasang <Layout> sendiri — pembungkusnya yang punya.
+// Header halaman juga ditiadakan di sini karena Asesmen sudah menyediakannya.
+export function NgainPanel() {
   const { user } = useAuth()
   // Demo mode (no real session) still gets a stable per-browser worksheet
   // instead of losing everything on refresh -- see lib/ngainEntries.ts.
@@ -218,18 +220,12 @@ export default function Ngain() {
   const pctRendah = distribution && distribution.total ? (distribution.rendah / distribution.total) * 100 : 0
 
   return (
-    <Layout>
-      <div className="p-4 md:p-6 pb-16">
-        {/* PAGE HEADER */}
-        <div className="mb-6 pb-4 border-b" style={BORDER}>
-          <h1 className="font-display text-xl sm:text-2xl font-bold text-brown mb-1">
-            N-Gain Calculator SDL
-          </h1>
-          <p className="text-sm text-brown-3 leading-relaxed">
-            Analisis Peningkatan Self-Directed Learning — hitung dan interpretasi N-Gain dari data pre-test dan
-            post-test mahasiswa.
-          </p>
-        </div>
+    <>
+      <div>
+        <p className="text-sm text-brown-3 leading-relaxed mb-5">
+          Analisis Peningkatan Self-Directed Learning — hitung dan interpretasi N-Gain dari data pre-test dan
+          post-test mahasiswa.
+        </p>
 
         {/* CONFIG PANEL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
@@ -649,6 +645,6 @@ export default function Ngain() {
           {toast}
         </div>
       )}
-    </Layout>
+    </>
   )
 }

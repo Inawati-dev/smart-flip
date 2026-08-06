@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
-import Ngain from './Ngain'
+import { NgainPanel } from './Ngain'
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
@@ -18,12 +18,12 @@ vi.mock('../lib/supabase', () => ({
 function renderNgain() {
   return renderToStaticMarkup(
     <MemoryRouter>
-      <Ngain />
+      <NgainPanel />
     </MemoryRouter>,
   )
 }
 
-describe('Ngain', () => {
+describe('NgainPanel', () => {
   beforeEach(() => {
     localStorage.clear()
   })
@@ -33,9 +33,11 @@ describe('Ngain', () => {
     expect(html).toBeTruthy()
   })
 
-  it('renders the page heading and formula/threshold explanation', () => {
+  // Judul halaman kini milik pembungkusnya (Asesmen.tsx); panel ini
+  // menyumbang deskripsi + penjelasan rumus/ambangnya saja.
+  it('renders the description and formula/threshold explanation', () => {
     const html = renderNgain()
-    expect(html).toContain('N-Gain Calculator SDL')
+    expect(html).toContain('Analisis Peningkatan Self-Directed Learning')
     expect(html).toContain('g = (Post')
     expect(html).toContain('Tinggi (g')
     expect(html).toContain('Sedang (0.3')
