@@ -6,7 +6,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useKelasByDosen } from '../hooks/useKelas'
-import { labelKelas } from '../lib/kelas'
+import { cocokFilter } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
 import type { ModuleRow } from '../lib/modules'
@@ -15,6 +15,7 @@ import { WelcomeModal } from '../components/WelcomeModal'
 import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
+import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { downloadCsv } from '../lib/analitik'
 import { timeAgo } from '../lib/forum'
 import {
@@ -103,23 +104,55 @@ function StatusChip({ status }: { status: MatriksSel['status'] }) {
 // perhatian, dan matriks — tidak ada angka statis di halaman ini.
 function DosenHome({ dosenId }: { dosenId?: string }) {
   const { data: kelasList = [] } = useKelasByDosen(dosenId)
-  const [kelasId, setKelasId] = useState<string>('semua')
+  const [tahun, setTahun] = useState<number | null>(null)
+  const [kelas, setKelas] = useState<string | null>(null)
   const [hari, setHari] = useState<FilterAktivitas['hari']>(7)
   const [feedLimit, setFeedLimit] = useState(50)
-  const filter = useMemo<FilterAktivitas>(() => ({ kelasId, hari }), [kelasId, hari])
 
-  const { data: sumber, isLoading } = useQuery({
+  // Kelas yang lolos filter tahun/kelas terpilih. RLS + fetchSumberAktivitas
+  // hanya tahu memfilter satu class_id di server, jadi: tepat satu kelas lolos
+  // -> filter di server seperti sebelumnya; filter aktif tapi kelasnya
+  // beberapa (mis. tahun saja) atau tidak ada yang cocok -> tarik 'semua' dan
+  // saring sumber di klien menurut himpunan id ini.
+  const filterAktif = tahun != null || kelas != null
+  const kelasIdCocok = useMemo(
+    () => new Set(kelasList.filter((k) => cocokFilter(k, { tahun, kelas })).map((k) => k.id)),
+    [kelasList, tahun, kelas],
+  )
+  const idTunggal = kelasIdCocok.size === 1 ? [...kelasIdCocok][0] : null
+  const kelasIdServer: FilterAktivitas['kelasId'] = !filterAktif ? 'semua' : (idTunggal ?? 'semua')
+  const perluSaringKlien = filterAktif && idTunggal == null
+  const filter = useMemo<FilterAktivitas>(() => ({ kelasId: kelasIdServer, hari }), [kelasIdServer, hari])
+
+  const { data: sumberMentah, isLoading } = useQuery({
     queryKey: ['aktivitas', filter],
     queryFn: () => fetchSumberAktivitas(filter),
   })
+
+  // Sumber sudah dibatasi server saat kelasIdServer bukan 'semua'; saring
+  // tambahan di klien hanya dijalankan saat server mengirim 'semua' padahal
+  // filter tahun/kelas aktif dan cocok dengan beberapa (atau nol) kelas.
+  const sumber = useMemo(() => {
+    if (!sumberMentah || !perluSaringKlien) return sumberMentah
+    const profiles = sumberMentah.profiles.filter((p) => p.classId != null && kelasIdCocok.has(p.classId))
+    const ids = new Set(profiles.map((p) => p.id))
+    return {
+      ...sumberMentah,
+      profiles,
+      attempts: sumberMentah.attempts.filter((a) => ids.has(a.userId)),
+      progress: sumberMentah.progress.filter((p) => ids.has(p.userId)),
+      video: sumberMentah.video.filter((v) => ids.has(v.userId)),
+    }
+  }, [sumberMentah, perluSaringKlien, kelasIdCocok])
 
   const kejadian = useMemo(() => (sumber ? gabungKejadian(sumber) : []), [sumber])
   const ringkas = useMemo(() => (sumber ? ringkasKelas(sumber) : null), [sumber])
   const perhatian = useMemo(() => (sumber ? perluPerhatian(sumber) : []), [sumber])
   const matriks = useMemo(() => (sumber ? matriksProgres(sumber) : []), [sumber])
 
-  function handleKelasChange(v: string) {
-    setKelasId(v)
+  function handleKelasTahunChange(f: { tahun: number | null; kelas: string | null }) {
+    setTahun(f.tahun)
+    setKelas(f.kelas)
     setFeedLimit(50)
   }
   function handleHariChange(v: FilterAktivitas['hari']) {
@@ -135,16 +168,7 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
     <div className="flex flex-col gap-5">
       {/* Filter */}
       <div className="flex flex-wrap gap-2">
-        <Select
-          value={kelasId}
-          onChange={handleKelasChange}
-          aria-label="Filter kelas"
-          size="sm"
-          options={[
-            { value: 'semua', label: 'Semua Kelas' },
-            ...kelasList.map((k) => ({ value: k.id, label: labelKelas(k, kelasList) })),
-          ]}
-        />
+        <KelasTahunFilter kelasList={kelasList} tahun={tahun} kelas={kelas} onChange={handleKelasTahunChange} />
         <Select
           value={String(hari)}
           onChange={(v) => handleHariChange(v === 'semester' ? 'semester' : (Number(v) as 7 | 30))}

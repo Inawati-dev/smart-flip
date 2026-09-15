@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup, waitFor } from '@testing-library/react'
+import { render, screen, cleanup, waitFor, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import ModulList from './ModulList'
@@ -112,5 +112,34 @@ describe('ModulList', () => {
 
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10)) // header + 9 modules
     expect(navigateMock).not.toHaveBeenCalled()
+  })
+
+  // Antrean 16 Sep 2026: dosen bisa menambah dan menghapus modul dari tabel ini.
+  it('shows a "Tambah modul" button for a dosen', async () => {
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
+
+    renderModulList(queryClient)
+
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    expect(screen.getByText(/Tambah modul/)).toBeTruthy()
+  })
+
+  it('clicking Hapus on a row opens a delete confirmation modal', async () => {
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
+
+    renderModulList(queryClient)
+
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    fireEvent.click(screen.getByLabelText('Hapus modul Modul 1'))
+
+    expect(screen.getByText(/Hapus modul/)).toBeTruthy()
+    expect(screen.getByText(/ikut terhapus/)).toBeTruthy()
+    expect(screen.getByText('Ya, Hapus')).toBeTruthy()
   })
 })

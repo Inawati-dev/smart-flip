@@ -5,13 +5,14 @@ import { useAuth } from '../contexts/AuthContext'
 import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
 import { BrandMark } from './AuthShell'
-import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout } from './icons'
+import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument } from './icons'
 
 interface NavItem {
   to: string
   icon: ComponentType<{ size?: number }>
   label: string
   desc: string
+  dosenOnly?: boolean
 }
 
 // Tata letak C "Jalur Pertemuan" (spec 2026-09-15 §8.0): lima menu datar, SAMA
@@ -19,11 +20,14 @@ interface NavItem {
 // lama (Forum, Draf, Validasi, dst.) disembunyikan dari navigasi di sini,
 // TAPI route-nya tetap terdaftar di App.tsx (keputusan #2 — bukan dihapus).
 // `desc` = keterangan satu baris di flyout rel (WP-B, permintaan 16 Sep 2026).
+// PDF (dosenOnly) ditambahkan 16 Sep 2026 — dipindah keluar dari Akun ke rel
+// navigasi sendiri, cuma dirender untuk role dosen (lihat filter di bawah).
 const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', icon: IconHome, label: 'Dashboard', desc: 'Ringkasan dan langkah berikutnya' },
   { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
   { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Pre-test, formatif, post-test' },
+  { to: '/akun/pdf', icon: IconDocument, label: 'PDF', desc: 'Kelola berkas PDF modul', dosenOnly: true },
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil, kelas, pengaturan' },
 ]
 
@@ -46,6 +50,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
   const { user, role, profile } = useAuth()
   const [logoutOpen, setLogoutOpen] = useState(false)
+  const navItems = NAV_ITEMS.filter((item) => !item.dosenOnly || role === 'dosen')
 
   async function doLogout() {
     // Onboarding is "seen" per-browser (localStorage), not per-session — reset
@@ -100,7 +105,7 @@ export function Layout({ children }: { children: ReactNode }) {
         </Link>
 
         <nav className="flex-1 flex flex-col items-center gap-1.5 w-full px-2">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const active = isActive(location.pathname, item.to)
             const Icon = item.icon
             return (
@@ -182,7 +187,7 @@ export function Layout({ children }: { children: ReactNode }) {
         className="sm:hidden fixed bottom-0 inset-x-0 z-40 h-[52px] bg-ivory border-t border-[color:var(--border)] flex"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const active = isActive(location.pathname, item.to)
           const Icon = item.icon
           return (

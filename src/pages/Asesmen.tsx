@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { Layout } from '../components/Layout'
-import { Select } from '../components/Select'
+import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { IconChart, IconClipboard, IconDownload, IconTrendingUp, IconUsers } from '../components/icons'
 import { useAuth } from '../contexts/AuthContext'
 import { useKelasByDosen } from '../hooks/useKelas'
-import { labelKelas } from '../lib/kelas'
+import { cocokFilter } from '../lib/kelas'
 import {
   buildAsesmenCsv,
   fetchAsesmenAttempts,
@@ -51,7 +51,8 @@ function scoreClass(score: number): string {
 export default function Asesmen() {
   const { user } = useAuth()
   const { data: kelasList = [] } = useKelasByDosen(user?.id)
-  const [kelasFilter, setKelasFilter] = useState('')
+  const [tahunFilter, setTahunFilter] = useState<number | null>(null)
+  const [kelasFilter, setKelasFilter] = useState<string | null>(null)
 
   const { data: prePostRows, isLoading: loadingPrePost } = useQuery({
     queryKey: ['asesmen-pre-post'],
@@ -68,20 +69,27 @@ export default function Asesmen() {
   const offline = prePostRows === null && formatifRows === null
   const loading = loadingPrePost || loadingFormatif
 
-  const kelasOptions = useMemo(
-    () => [{ value: '', label: 'Semua kelas' }, ...kelasList.map((k) => ({ value: k.name, label: labelKelas(k, kelasList) }))],
-    [kelasList],
-  )
+  // Baris pre/post dan formatif hanya membawa NAMA kelas (r.kelasId / r.kelas,
+  // lihat AttemptPrePostRow/AsesmenAttempt di lib/asesmen.ts), bukan
+  // angkatan. Untuk menyaring menurut tahun, hitung dulu himpunan nama kelas
+  // yang lolos filter dari kelasList (yang punya angkatan), baru saring
+  // baris berdasarkan nama itu. Batas: kalau ada dua kelas bernama sama di
+  // angkatan berbeda, baris kedua kelas itu ikut lolos bersama karena nama
+  // kelas di baris data tidak membawa angkatan untuk membedakannya.
+  const namaKelasCocok = useMemo(() => {
+    if (tahunFilter == null && kelasFilter == null) return null
+    return new Set(kelasList.filter((k) => cocokFilter(k, { tahun: tahunFilter, kelas: kelasFilter })).map((k) => k.name))
+  }, [kelasList, tahunFilter, kelasFilter])
 
   const prePostFiltered = useMemo(() => {
     const rows = prePostRows ?? []
-    return kelasFilter ? rows.filter((r) => r.kelasId === kelasFilter) : rows
-  }, [prePostRows, kelasFilter])
+    return namaKelasCocok ? rows.filter((r) => r.kelasId != null && namaKelasCocok.has(r.kelasId)) : rows
+  }, [prePostRows, namaKelasCocok])
 
   const formatifFiltered = useMemo(() => {
     const rows = formatifRows ?? []
-    return kelasFilter ? rows.filter((r) => r.kelas === kelasFilter) : rows
-  }, [formatifRows, kelasFilter])
+    return namaKelasCocok ? rows.filter((r) => r.kelas != null && namaKelasCocok.has(r.kelas)) : rows
+  }, [formatifRows, namaKelasCocok])
 
   const peningkatan = useMemo(() => hitungPeningkatanKelas(prePostFiltered), [prePostFiltered])
   const rekapFormatif = useMemo(() => rekapPerModul(formatifFiltered), [formatifFiltered])
@@ -138,9 +146,17 @@ export default function Asesmen() {
           </div>
         </div>
 
-        {/* FILTER KELAS */}
-        <div className="mb-5 max-w-xs">
-          <Select value={kelasFilter} onChange={setKelasFilter} label="Filter Kelas" options={kelasOptions} />
+        {/* FILTER TAHUN + KELAS */}
+        <div className="mb-5">
+          <KelasTahunFilter
+            kelasList={kelasList}
+            tahun={tahunFilter}
+            kelas={kelasFilter}
+            onChange={(f) => {
+              setTahunFilter(f.tahun)
+              setKelasFilter(f.kelas)
+            }}
+          />
         </div>
 
         {/* TIGA ANGKA */}

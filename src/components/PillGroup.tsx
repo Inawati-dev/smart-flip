@@ -26,11 +26,11 @@ export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: 
             type="button"
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
-            className="rounded-full px-3.5 text-xs font-semibold whitespace-nowrap border"
+            className={`rounded-full px-3.5 text-xs font-semibold whitespace-nowrap border ${active ? '' : 'bg-ivory'}`}
             style={{
               minHeight: minH,
               borderColor: active ? 'var(--brown)' : 'var(--border)',
-              background: active ? 'var(--brown)' : 'transparent',
+              background: active ? 'var(--brown)' : undefined,
               color: active ? 'var(--cream)' : 'var(--brown2)',
             }}
           >

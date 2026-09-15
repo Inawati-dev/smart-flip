@@ -1,16 +1,18 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
-import { AuthProvider } from '../contexts/AuthContext'
 import { Layout } from './Layout'
 
 const mockIsSupabaseConfigured = vi.hoisted(() => ({ value: false }))
+const mockAuth = vi.hoisted(() => ({
+  user: null as { id: string; email: string } | null,
+  role: null as 'mahasiswa' | 'dosen' | null,
+  profile: null as { full_name: string; avatar_url: string | null } | null,
+}))
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
-      getSession: async () => ({ data: { session: null } }),
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
       signOut: async () => ({ error: null }),
     },
   },
@@ -19,18 +21,35 @@ vi.mock('../lib/supabase', () => ({
   },
 }))
 
+vi.mock('../contexts/AuthContext', () => ({
+  useAuth: () => mockAuth,
+}))
+
+// Rute PDF (dosenOnly) ditambahkan 16 Sep 2026 — dipindah keluar dari Akun
+// ke rel navigasi. Dipakai dua tes di bawah untuk hitung tautan menu persis.
+const ALL_NAV_HREFS = ['/dashboard', '/modul', '/video', '/asesmen', '/akun/pdf', '/akun']
+
+function presentNavHrefs(html: string): string[] {
+  return ALL_NAV_HREFS.filter((href) => html.includes(`href="${href}"`))
+}
+
+function renderLayout() {
+  return renderToStaticMarkup(
+    <MemoryRouter>
+      <Layout>
+        <p>page content</p>
+      </Layout>
+    </MemoryRouter>,
+  )
+}
+
 describe('Layout', () => {
   it('renders the topbar nav links and its children (demo mode, no session)', () => {
     mockIsSupabaseConfigured.value = false
-    const html = renderToStaticMarkup(
-      <MemoryRouter>
-        <AuthProvider>
-          <Layout>
-            <p>page content</p>
-          </Layout>
-        </AuthProvider>
-      </MemoryRouter>,
-    )
+    mockAuth.user = null
+    mockAuth.role = null
+    mockAuth.profile = null
+    const html = renderLayout()
     expect(html).toContain('page content')
     // Tata letak C "Jalur Pertemuan" (spec 2026-09-15 §8.0): lima menu datar,
     // SAMA untuk semua peran — Dashboard, Modul, Video, Asesmen, Akun.
@@ -50,17 +69,34 @@ describe('Layout', () => {
     expect(html).toContain('PDF tiap pertemuan')
   })
 
+  it('mahasiswa melihat 5 tautan menu, tanpa /akun/pdf', () => {
+    mockIsSupabaseConfigured.value = false
+    mockAuth.user = { id: 'u1', email: 'mhs@test.local' }
+    mockAuth.role = 'mahasiswa'
+    mockAuth.profile = { full_name: 'Mahasiswa Test', avatar_url: null }
+    const html = renderLayout()
+    const hrefs = presentNavHrefs(html)
+    expect(hrefs).toHaveLength(5)
+    expect(hrefs).not.toContain('/akun/pdf')
+  })
+
+  it('dosen melihat 6 tautan menu, termasuk /akun/pdf', () => {
+    mockIsSupabaseConfigured.value = false
+    mockAuth.user = { id: 'u2', email: 'dos@test.local' }
+    mockAuth.role = 'dosen'
+    mockAuth.profile = { full_name: 'Dosen Test', avatar_url: null }
+    const html = renderLayout()
+    const hrefs = presentNavHrefs(html)
+    expect(hrefs).toHaveLength(6)
+    expect(hrefs).toContain('/akun/pdf')
+  })
+
   it('renders a minimal standalone header (no sidebar/menu) for an anonymous visitor on a real deploy', () => {
     mockIsSupabaseConfigured.value = true
-    const html = renderToStaticMarkup(
-      <MemoryRouter>
-        <AuthProvider>
-          <Layout>
-            <p>page content</p>
-          </Layout>
-        </AuthProvider>
-      </MemoryRouter>,
-    )
+    mockAuth.user = null
+    mockAuth.role = null
+    mockAuth.profile = null
+    const html = renderLayout()
     expect(html).toContain('page content')
     // No authenticated menu structure should leak to an anonymous visitor.
     expect(html).not.toContain('href="/profil"')

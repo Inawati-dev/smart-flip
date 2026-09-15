@@ -1,9 +1,9 @@
 import { IconEye } from './icons'
 
-// Tombol kecil "pratinjau PDF": buka berkas di tab baru. Dipakai di semua
-// tempat yang menampilkan nama berkas PDF (Modul dosen, Kelola PDF, modal
-// Ganti PDF) supaya bentuknya sama (antrean #31, 16 Sep 2026).
-export function PdfPreviewLink({ url, label = 'Pratinjau PDF' }: { url: string; label?: string }) {
+// Tombol kecil "pratinjau": buka URL di tab baru. Dipakai di semua tempat
+// yang menampilkan nama berkas atau tautan (Modul dosen, Kelola PDF, modal
+// Ganti PDF, tabel Video dosen) supaya bentuknya sama (antrean #31/#32).
+export function PreviewLink({ url, label = 'Pratinjau' }: { url: string; label?: string }) {
   return (
     <a
       href={url}
@@ -17,4 +17,10 @@ export function PdfPreviewLink({ url, label = 'Pratinjau PDF' }: { url: string; 
       <IconEye size={16} />
     </a>
   )
+}
+
+// Nama lama, dipertahankan supaya pemakai existing (KelolaPdf.tsx,
+// ModulList.tsx) tidak perlu berubah — sekadar label default beda.
+export function PdfPreviewLink({ url, label = 'Pratinjau PDF' }: { url: string; label?: string }) {
+  return <PreviewLink url={url} label={label} />
 }

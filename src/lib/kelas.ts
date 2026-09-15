@@ -325,3 +325,33 @@ export function labelKelas(k: { name: string; angkatan: number; code?: string },
   const duplikat = allKelas.filter((o) => o.name === k.name && o.angkatan === k.angkatan).length > 1
   return duplikat && k.code ? `${base} · ${k.code}` : base
 }
+
+// ── Filter Tahun + Kelas terpisah ───────────────────────────────────────
+// Ganti satu dropdown gabungan "Kelas A · 2026" (susah dibaca begitu
+// kombinasi kelas x angkatan banyak, screenshot Johan 16 Sep 2026) dengan
+// dua filter: tahun (angkatan) dan kelas. Dipakai src/components/
+// KelasTahunFilter.tsx, dan langsung oleh Asesmen.tsx/Dashboard.tsx untuk
+// menghitung kelas mana saja yang lolos filter.
+
+export interface FilterTahunKelas {
+  tahun: number | null
+  kelas: string | null
+}
+
+/** Angkatan unik dari daftar kelas, urut menurun (terbaru dulu). */
+export function tahunUnik(kelasList: Array<{ angkatan: number }>): number[] {
+  return [...new Set(kelasList.map((k) => k.angkatan))].sort((a, b) => b - a)
+}
+
+/** Nama kelas unik pada tahun terpilih (semua tahun kalau null), urut A-Z. */
+export function namaKelasUnik(kelasList: Array<{ name: string; angkatan: number }>, tahun: number | null): string[] {
+  const relevan = tahun == null ? kelasList : kelasList.filter((k) => k.angkatan === tahun)
+  return [...new Set(relevan.map((k) => k.name))].sort((a, b) => a.localeCompare(b))
+}
+
+/** True kalau kelas k cocok filter (tahun/kelas null = tidak membatasi). */
+export function cocokFilter(k: { name: string; angkatan: number }, filter: FilterTahunKelas): boolean {
+  if (filter.tahun != null && k.angkatan !== filter.tahun) return false
+  if (filter.kelas != null && k.name !== filter.kelas) return false
+  return true
+}

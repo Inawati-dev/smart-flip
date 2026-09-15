@@ -23,6 +23,13 @@ describe('PillGroup', () => {
     expect(screen.getByText('Post-test').getAttribute('aria-pressed')).toBe('false')
   })
 
+  // Antrean 16 Sep 2026: pil tidak aktif diberi latar bg-ivory supaya tidak
+  // menyatu dengan latar landing/halaman di belakangnya.
+  it('gives an inactive pill a bg-ivory background', () => {
+    render(<ControlledPillGroup />)
+    expect(screen.getByText('Post-test').className).toContain('bg-ivory')
+  })
+
   it('clicking a pill switches the active state to it', () => {
     render(<ControlledPillGroup />)
     fireEvent.click(screen.getByText('Post-test'))

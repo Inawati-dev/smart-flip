@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
@@ -10,16 +10,17 @@ import { computeStatSummary } from '../lib/analitik'
 import { saveProfilExtra } from '../lib/profil'
 import { PASS_SCORE } from '../lib/quizAttempts'
 import { TOTAL_MODULES } from '../lib/progress'
-import { resetOnboarding } from '../lib/onboarding'
-import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
-import { LogoutModal } from '../components/LogoutModal'
-import { IconUser, IconGraduationCap, IconTarget, IconUsers, IconEdit, IconBook, IconDocument } from '../components/icons'
+import { PengaturanSections } from './Pengaturan'
+import { IconUser, IconGraduationCap, IconTarget, IconUsers, IconEdit, IconBook } from '../components/icons'
 
 // /akun (WP-C) — Profil.tsx dilebur ke sini: kartu identitas dengan modal
 // Ubah (nama, NIM/NIDN, avatar — logika dari Profil.tsx/lib/profil.ts),
-// kartu Kelas, kartu Progres singkat, lalu tautan Pengaturan/Kelola PDF dan
-// satu tombol Keluar. /akun/profil dihapus dari App.tsx; Profil.tsx
+// kartu Kelas, kartu Progres singkat, lalu seluruh bagian Pengaturan
+// (koreksi Johan 16 Sep 2026). Kelola PDF pindah ke rel navigasi
+// (Layout.tsx, dosen saja); tombol keluar dari akun sudah ada di rel/bilah
+// bawah, jadi tidak diulang di sini. Rute lama yang menuju halaman pengaturan
+// terpisah sudah dilebur, /akun/profil dihapus dari App.tsx; Profil.tsx
 // dibiarkan ada (tidak ber-route) sesuai keputusan Johan #2.
 const BORDER = { borderColor: 'var(--border)' } as const
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024
@@ -31,7 +32,6 @@ function initialsOf(name: string | undefined): string {
 }
 
 export function Akun() {
-  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user, profile, role, refreshProfile } = useAuth()
   const isDosen = role === 'dosen'
@@ -50,7 +50,6 @@ export function Akun() {
   const formatifLulus = [...bestByModule.values()].filter((s) => s >= PASS_SCORE).length
   const dosenSummary = computeStatSummary(dosenStudents ?? [], totalModules)
 
-  const [logoutOpen, setLogoutOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [formNama, setFormNama] = useState('')
   const [formNidn, setFormNidn] = useState('')
@@ -107,16 +106,6 @@ export function Akun() {
     } finally {
       setSaving(false)
     }
-  }
-
-  async function doLogout() {
-    if (role) resetOnboarding(role)
-    try {
-      await supabase.auth.signOut()
-    } catch {
-      // ignore — navigate away regardless, matches Layout.tsx's doLogout
-    }
-    navigate('/')
   }
 
   return (
@@ -205,31 +194,7 @@ export function Akun() {
           </div>
         </div>
 
-        <div className="flex gap-2.5 flex-wrap">
-          {isDosen && (
-            <Link
-              to="/akun/pdf"
-              className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2"
-              style={BORDER}
-            >
-              <IconDocument size={15} /> Kelola PDF
-            </Link>
-          )}
-          <Link
-            to="/pengaturan"
-            className="inline-flex items-center min-h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2"
-            style={BORDER}
-          >
-            Pengaturan
-          </Link>
-          <button
-            onClick={() => setLogoutOpen(true)}
-            className="inline-flex items-center min-h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2"
-            style={BORDER}
-          >
-            Keluar
-          </button>
-        </div>
+        <PengaturanSections />
       </div>
 
       {editOpen && (
@@ -313,15 +278,6 @@ export function Akun() {
           {toast}
         </div>
       )}
-
-      <LogoutModal
-        open={logoutOpen}
-        onCancel={() => setLogoutOpen(false)}
-        onConfirm={() => {
-          setLogoutOpen(false)
-          doLogout()
-        }}
-      />
     </Layout>
   )
 }
