@@ -54,7 +54,7 @@ const DEMO_MODULES: ModuleRow[] = [
   ['Uji Coba & Implementasi', 'Uji kelompok kecil, uji lapangan, revisi produk'],
   ['Evaluasi & Diseminasi', 'Kuasi-eksperimen, peningkatan skor, pelaporan, publikasi'],
 ].map(([title, description], i) =>
-  normalizeModuleRow({ id: i + 1, order_num: i + 1, title, description, video_url: i === 0 ? 'https://youtu.be/dQw4w9WgXcQ' : null, pdf_path: null }),
+  normalizeModuleRow({ id: i + 1, order_num: i + 1, title, description, video_url: i === 0 ? 'https://youtu.be/dQw4w9WgXcQ' : null, pdf_path: i === 0 ? '/books/modul-01.pdf' : null }),
 )
 
 export async function fetchModules(): Promise<ModuleRow[]> {

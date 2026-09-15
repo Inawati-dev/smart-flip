@@ -12,6 +12,7 @@ import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { IconEdit } from '../components/icons'
+import { PdfPreviewLink } from '../components/PdfPreviewLink'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -148,7 +149,16 @@ export function DosenModulTable() {
                     <tr key={m.id} className="border-t" style={BORDER}>
                       <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
                       <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{judul}</td>
-                      <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[220px] truncate">{fileName || '—'}</td>
+                      <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[260px]">
+                        {m.pdf_path ? (
+                          <span className="inline-flex items-center gap-2 max-w-full">
+                            <span className="truncate">{fileName}</span>
+                            <PdfPreviewLink url={m.pdf_path} />
+                          </span>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
                       <td className="px-3 py-2.5">
                         <span
                           className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
@@ -282,6 +292,7 @@ export function DosenModulTable() {
                     label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
                   }))}
                 />
+                {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau berkas yang dipilih" />}
                 <button
                   type="button"
                   onClick={handleAssignPdf}
