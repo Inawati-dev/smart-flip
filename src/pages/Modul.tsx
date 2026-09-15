@@ -1,19 +1,14 @@
-import { useState } from 'react'
-import { useParams, Link } from 'react-router'
+import { Link, useParams } from 'react-router'
 import { useModule } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { useAuth } from '../contexts/AuthContext'
 import { moduleIdToPath } from '../lib/progress'
+import { useTopikStatus } from '../lib/topik'
 import { Layout } from '../components/Layout'
-import { IconBook, IconDocument, IconEdit, IconFolder, IconTarget, IconChart, IconClipboard, IconChat, IconLink, IconChevronRight } from '../components/icons'
-
-// Only allow https:/http: DOI links — block javascript: and other dangerous
-// protocols. Ported verbatim from legacy/modul.html:904-907.
-export function safeDoi(doi: string | undefined): string {
-  if (typeof doi === 'string' && /^https?:\/\//i.test(doi.trim())) return doi
-  return '#'
-}
+import { PertemuanStepper } from '../components/PertemuanStepper'
+import { DosenModulTable } from './ModulList'
+import { IconBook, IconDocument, IconChart, IconPlay, IconEdit } from '../components/icons'
 
 // progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
 // -- was rendering as-is ("2026-07-24T04:04:55.479+00:00") instead of a
@@ -25,251 +20,149 @@ export function formatLastOpened(iso: string | null | undefined): string {
   return d.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-// modul.jurnal/modul.studiKasus are typed `unknown[]` on ModuleRow (untyped JSON
-// column) — narrow to the shape this page actually consumes.
-interface JurnalItem {
-  judul: string
-  penulis: string
-  tahun: number
-  jurnal: string
-  abstrak: string
-  doi: string
-}
-interface StudiKasusItem {
-  judul: string
-  konteks: string
-  pertanyaan: string
-}
-
+// /modul/:id (spec §8.0, §9 WP5). Mahasiswa: satu pertemuan tampil penuh
+// (tata letak C) — stepper, kartu modul + tombol baca, panel posisi baca +
+// langkah berikutnya. Dosen: tabel kelola modul, sama seperti /modul
+// (ModulList.tsx) — dosen tidak "membaca" satu pertemuan, jadi tidak
+// memakai tata letak dua kolom di bawah.
 export default function Modul() {
   const { id } = useParams()
   const moduleId = parseInt(id ?? '1', 10) || 1
+  const { role } = useAuth()
   const { data: modul, isLoading } = useModule(moduleId)
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useQuizAttempts(moduleId)
-  const { profile } = useAuth()
-  const [jTab, setJTab] = useState<'jurnal' | 'kasus'>('jurnal')
-  // Jalur cepat collapses materi[] behind a disclosure by default; jalur mendalam
-  // (and null/dosen, i.e. diagnostic not taken) keeps it open — current behavior.
-  // `materiOverride` lets the student flip it manually without fighting the default.
-  const [materiOverride, setMateriOverride] = useState<boolean | null>(null)
-  const isJalurCepat = profile?.jalur === 'cepat'
-  const materiOpen = materiOverride ?? !isJalurCepat
+  const { statusOf } = useTopikStatus()
+
+  if (role === 'dosen') {
+    return (
+      <Layout>
+        <div className="p-4 md:p-6">
+          <h1 className="text-2xl font-bold text-brown mb-4">Modul</h1>
+          <DosenModulTable />
+        </div>
+      </Layout>
+    )
+  }
 
   if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
   if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
-  const bestScore = attempts.length ? Math.max(...attempts.map((a) => a.score)) : null
-  const jurnalStudiKasusSection = (
-    <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-      <div className="flex items-center gap-2 mb-3">
-        <h2 className="font-bold text-brown flex items-center gap-2"><IconBook size={18} /> Jurnal &amp; Studi Kasus</h2>
-        <span className="text-xs text-brown-3 bg-bg3 border border-gray-200 rounded-full px-2.5 py-0.5 ml-auto">
-          {modul.jurnal.length} jurnal · {modul.studiKasus.length} kasus
-        </span>
-      </div>
-
-      <div className="flex gap-2 mb-4 border-b-2 border-gray-200 pb-2">
-        <button
-          onClick={() => setJTab('jurnal')}
-          className={`px-4 py-2 rounded-t-lg text-sm font-semibold ${jTab === 'jurnal' ? 'text-terra bg-terra/10' : 'text-brown-3'}`}
-        >
-          Referensi Jurnal
-        </button>
-        <button
-          onClick={() => setJTab('kasus')}
-          className={`px-4 py-2 rounded-t-lg text-sm font-semibold ${jTab === 'kasus' ? 'text-terra bg-terra/10' : 'text-brown-3'}`}
-        >
-          Studi Kasus
-        </button>
-      </div>
-
-      {jTab === 'jurnal' ? (
-        modul.jurnal.length ? (
-          (modul.jurnal as JurnalItem[]).map((j, i) => (
-            <div key={i} className="bg-cream border border-gray-200 rounded-xl p-5 mb-3">
-              <div className="font-semibold text-brown mb-1">{j.judul}</div>
-              <div className="text-sm text-brown-3 mb-2">
-                {j.penulis} · {j.tahun} · <em>{j.jurnal}</em>
-              </div>
-              <p className="text-sm text-brown-2 leading-relaxed mb-3">{j.abstrak}</p>
-              <a href={safeDoi(j.doi)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-terra">
-                <IconLink size={14} /> Buka DOI
-              </a>
-            </div>
-          ))
-        ) : (
-          <p className="text-brown-3 text-center py-8">Belum ada referensi jurnal.</p>
-        )
-      ) : modul.studiKasus.length ? (
-        (modul.studiKasus as StudiKasusItem[]).map((k, i) => (
-          <div key={i} className="bg-cream border-l-4 border-sage rounded-r-xl p-5 mb-3">
-            <div className="font-semibold text-brown mb-2">{k.judul}</div>
-            <p className="text-sm text-brown-2 mb-3">{k.konteks}</p>
-            <div className="bg-sage/10 rounded-lg p-3 text-sm text-brown">
-              <span className="inline-flex items-center gap-1 font-bold"><IconChat size={14} /> Diskusi:</span> {k.pertanyaan}
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-brown-3 text-center py-8">Belum ada studi kasus.</p>
-      )}
-    </div>
-  )
-
-  const materiSection = (
-    <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-      {isJalurCepat ? (
-        <button
-          type="button"
-          onClick={() => setMateriOverride(!materiOpen)}
-          aria-expanded={materiOpen}
-          className="font-bold text-brown mb-3 flex items-center gap-2 w-full text-left"
-        >
-          <IconBook size={18} /> Materi per Sesi
-          <span className="ml-auto inline-flex items-center gap-1 text-xs font-semibold text-brown-3">
-            {materiOpen ? 'Sembunyikan Detail' : 'Lihat Detail Materi'}
-            <IconChevronRight size={14} className={`transition-transform ${materiOpen ? 'rotate-90' : ''}`} />
-          </span>
-        </button>
-      ) : (
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconBook size={18} /> Materi per Sesi</h2>
-      )}
-      {materiOpen && (
-        <div className="flex flex-col">
-          {modul.materi.map((m, i) => (
-            <div key={i} className="flex items-center gap-3.5 py-2.5 border-b border-gray-100 last:border-0 text-sm text-brown-2">
-              <span className="w-7 h-7 rounded-full bg-bg3 border border-gray-200 flex items-center justify-center text-xs font-bold text-brown-3 flex-shrink-0">
-                {m.sesi}
-              </span>
-              <span>{m.topik}</span>
-            </div>
-          ))}
+  const status = statusOf(modul.id)
+  if (status === 'locked') {
+    return (
+      <Layout>
+        <div className="p-8 text-center">
+          <p className="text-brown mb-3">Selesaikan topik {modul.order_num - 1} dulu.</p>
+          <Link to="/modul" className="text-terra text-sm font-semibold">
+            ← Kembali
+          </Link>
         </div>
-      )}
-    </div>
-  )
+      </Layout>
+    )
+  }
+
+  const bestScore = attempts.length ? Math.max(...attempts.map((a) => a.score)) : null
   const prog = progress[moduleIdToPath(modul.id)]
   const pct = prog?.pct ?? 0
-  const bacaLabel = pct >= 100
-    ? <><IconBook size={16} /> Baca Ulang</>
-    : pct > 0 ? '▶ Lanjut Belajar' : '▶ Mulai Belajar'
+  const hasPdf = !!(modul.pdf_path || modul.path)
 
   return (
     <Layout>
-    <div className="p-6">
-      <Link to="/dashboard" className="text-brown-3 text-sm mb-6 inline-block">
-        ← Kembali ke Dashboard
-      </Link>
+      <div className="p-4 md:p-6">
+        <h1 className="text-2xl font-bold text-brown mb-4">
+          Pertemuan {modul.order_num} · {modul.title}
+        </h1>
+        <PertemuanStepper current={modul.id} basePath="/modul" statusOf={statusOf} />
 
-      <div className="flex gap-7 mb-8">
-        <div
-          className="w-[140px] h-[186px] rounded-xl flex items-center justify-center text-4xl flex-shrink-0"
-          style={{ background: `linear-gradient(135deg, ${modul.color} 0%, var(--bg3) 100%)` }}
-        >
-          <IconDocument size={36} />
-        </div>
-        <div className="flex flex-col gap-2 pt-1">
-          <span className="inline-flex bg-terra text-white text-xs font-bold px-2.5 py-0.5 rounded-full w-fit">
-            Modul {modul.order_num}
-          </span>
-          <h1 className="text-2xl font-bold text-brown">{modul.title}</h1>
-          {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
-          {modul.description && <p className="text-sm text-brown-2 leading-relaxed">{modul.description}</p>}
-
-          {pct > 0 && (
-            <div className="flex items-center gap-2.5 mt-1">
-              <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full"
-                  style={{ width: `${pct}%`, background: pct >= 100 ? 'var(--sage)' : 'var(--terra)' }}
-                />
+        <div className="grid md:grid-cols-[1fr_320px] gap-5 mt-6">
+          <div className="bg-ivory border rounded-xl p-5" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex gap-5 flex-col sm:flex-row">
+              <div
+                className="w-full sm:w-[140px] h-[140px] sm:h-[186px] rounded-xl flex items-center justify-center text-4xl flex-shrink-0"
+                style={{ background: `linear-gradient(135deg, ${modul.color} 0%, var(--bg3) 100%)` }}
+              >
+                <IconDocument size={36} />
               </div>
-              <span className="text-xs font-semibold text-brown-3 flex-shrink-0">{pct}%</span>
-            </div>
-          )}
-
-          <div className="flex gap-2.5 flex-wrap mt-3">
-            <Link
-              to={`/ebook?book=${modul.id}`}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
-            >
-              {bacaLabel}
-            </Link>
-            <Link
-              to={`/modul/${modul.id}/kuis`}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-gray-300 text-brown-2 text-sm font-semibold"
-            >
-              <IconEdit size={16} /> Mulai Kuis
-            </Link>
-            <Link
-              to={`/modul/${modul.id}/workshop`}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full border-2 border-gray-300 text-brown-2 text-sm font-semibold"
-            >
-              <IconFolder size={16} /> Panduan Workshop
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconTarget size={18} /> Capaian Pembelajaran</h2>
-        <div className="flex flex-col gap-2">
-          {modul.capaian.map((c, i) => (
-            <div key={i} className="flex items-start gap-2.5 text-sm text-brown-2">
-              <span className="w-4.5 h-4.5 rounded-full bg-sage flex items-center justify-center flex-shrink-0 mt-0.5 text-white text-xs">✓</span>
-              <span>{c}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {isJalurCepat && jurnalStudiKasusSection}
-
-      {materiSection}
-
-      <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconChart size={18} /> Riwayat Belajar</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="bg-bg3 rounded-lg p-3.5">
-            <div className="text-xl font-bold text-brown">{pct}%</div>
-            <div className="text-xs text-brown-3 mt-0.5">Progress baca</div>
-          </div>
-          <div className="bg-bg3 rounded-lg p-3.5">
-            <div className="text-xl font-bold text-brown">{bestScore !== null ? `${bestScore}%` : '—'}</div>
-            <div className="text-xs text-brown-3 mt-0.5">Skor kuis terbaik</div>
-          </div>
-          <div className="bg-bg3 rounded-lg p-3.5">
-            <div className="text-xl font-bold text-brown">{formatLastOpened(prog?.lastOpened)}</div>
-            <div className="text-xs text-brown-3 mt-0.5">Terakhir dibuka</div>
-          </div>
-          <div className="bg-bg3 rounded-lg p-3.5">
-            <div className="text-xl font-bold text-brown">—</div>
-            <div className="text-xs text-brown-3 mt-0.5">Waktu Belajar</div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-ivory border border-gray-200 rounded-xl p-5 mb-4">
-        <h2 className="font-bold text-brown mb-3 flex items-center gap-2"><IconClipboard size={18} /> Riwayat Kuis</h2>
-        {attempts.length ? (
-          <div className="flex flex-col gap-2">
-            {attempts.slice().reverse().map((a, i) => (
-              <div key={i} className="flex items-center justify-between px-3 py-2.5 bg-bg3 rounded-lg text-sm">
-                <span>{a.date}</span>
-                <span className={`font-bold ${a.score >= 60 ? 'text-sage-d' : 'text-red'}`}>
-                  {a.score}% — {a.score >= 80 ? 'Sangat Baik' : a.score >= 60 ? 'Lulus' : 'Perlu Ulang'}
-                </span>
+              <div className="flex flex-col gap-2">
+                {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
+                {modul.description && <p className="text-sm text-brown-2 leading-relaxed">{modul.description}</p>}
+                {hasPdf ? (
+                  <Link
+                    to={`/ebook?book=${modul.id}`}
+                    className="inline-flex items-center gap-1.5 mt-2 px-5 min-h-11 rounded-full bg-terra text-white text-sm font-semibold w-fit"
+                  >
+                    <IconBook size={16} /> Baca modul
+                  </Link>
+                ) : (
+                  <p className="text-sm text-brown-3 mt-2">Dosen belum mengunggah PDF.</p>
+                )}
               </div>
-            ))}
+            </div>
           </div>
-        ) : (
-          <p className="text-sm text-brown-3 text-center py-4">Belum pernah mengerjakan kuis</p>
-        )}
-      </div>
 
-      {!isJalurCepat && jurnalStudiKasusSection}
-    </div>
+          <div className="bg-ivory border rounded-xl p-5 flex flex-col gap-4 h-fit" style={{ borderColor: 'var(--border)' }}>
+            <div>
+              <h2 className="font-bold text-brown mb-2 flex items-center gap-2 text-sm">
+                <IconChart size={16} /> Posisi baca
+              </h2>
+              <div className="flex items-center gap-2.5">
+                <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${pct}%`, background: pct >= 100 ? 'var(--sage)' : 'var(--terra)' }}
+                  />
+                </div>
+                <span className="text-xs font-semibold text-brown-3 flex-shrink-0">{pct}%</span>
+              </div>
+              <p className="text-xs text-brown-3 mt-1.5">
+                {prog?.currentPage ? `Halaman terakhir: ${prog.currentPage}` : 'Belum mulai membaca'}
+              </p>
+            </div>
+            <div>
+              <h2 className="font-bold text-brown mb-2 text-sm">Langkah berikutnya</h2>
+              <div className="flex flex-col gap-2">
+                <Link
+                  to={`/video/${modul.id}`}
+                  className="min-h-11 flex items-center gap-1.5 px-4 rounded-lg border text-sm font-semibold text-brown-2"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <IconPlay size={14} /> Tonton video {modul.order_num}
+                </Link>
+                <Link
+                  to={`/asesmen/formatif/${modul.id}`}
+                  className="min-h-11 flex items-center gap-1.5 px-4 rounded-lg border text-sm font-semibold text-brown-2"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <IconEdit size={14} /> Kerjakan tes formatif
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-ivory border rounded-xl p-4 mt-5" style={{ borderColor: 'var(--border)' }}>
+          <h2 className="font-bold text-brown mb-3 text-sm">Riwayat belajar</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="bg-bg3 rounded-lg p-3">
+              <div className="text-lg font-bold text-brown">{pct}%</div>
+              <div className="text-xs text-brown-3 mt-0.5">Progress baca</div>
+            </div>
+            <div className="bg-bg3 rounded-lg p-3">
+              <div className="text-lg font-bold text-brown">{bestScore !== null ? `${bestScore}%` : '—'}</div>
+              <div className="text-xs text-brown-3 mt-0.5">Skor kuis terbaik</div>
+            </div>
+            <div className="bg-bg3 rounded-lg p-3">
+              <div className="text-lg font-bold text-brown">{formatLastOpened(prog?.lastOpened)}</div>
+              <div className="text-xs text-brown-3 mt-0.5">Terakhir dibuka</div>
+            </div>
+            <div className="bg-bg3 rounded-lg p-3">
+              <div className="text-lg font-bold text-brown">—</div>
+              <div className="text-xs text-brown-3 mt-0.5">Waktu Belajar</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </Layout>
   )
 }

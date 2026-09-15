@@ -32,12 +32,18 @@ describe('Layout', () => {
       </MemoryRouter>,
     )
     expect(html).toContain('page content')
-    // Profil and Pengaturan are visible to every role — nav must link to them
-    // in-app, not exit to legacy/*.html. Changelog is dosenOnly, so it's
-    // deliberately absent here (no role/dosen mocked in this render).
-    expect(html).toContain('href="/profil"')
-    expect(html).toContain('href="/pengaturan"')
+    // Tata letak C "Jalur Pertemuan" (spec 2026-09-15 §8.0): lima menu datar,
+    // SAMA untuk semua peran — Dashboard, Modul, Video, Asesmen, Akun.
+    expect(html).toContain('href="/dashboard"')
+    expect(html).toContain('href="/modul"')
+    expect(html).toContain('href="/video"')
+    expect(html).toContain('href="/asesmen"')
+    expect(html).toContain('href="/akun"')
+    // Menu lama disembunyikan dari navigasi (route-nya tetap ada di App.tsx).
+    expect(html).not.toContain('href="/profil"')
+    expect(html).not.toContain('href="/pengaturan"')
     expect(html).not.toContain('href="/changelog"')
+    expect(html).not.toContain('href="/forum"')
     expect(html).not.toContain('/legacy/')
   })
 

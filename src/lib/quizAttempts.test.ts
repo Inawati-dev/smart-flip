@@ -1,11 +1,38 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { formatAttemptDate, fetchAllQuizAttempts, fetchQuizAttempts, saveQuizAttempt } from './quizAttempts'
+import { formatAttemptDate, fetchAllQuizAttempts, fetchQuizAttempts, saveQuizAttempt, PASS_SCORE } from './quizAttempts'
+
+// Mutable mock state so individual tests can flip Supabase "configured" on
+// to inspect what saveQuizAttempt sends to `.insert()`, while the existing
+// tests below keep running against the plain localStorage fallback (the
+// default, configured = false).
+const supabaseMock = {
+  configured: false,
+  insertCalls: [] as Array<Record<string, unknown>>,
+}
 
 vi.mock('./supabase', () => ({
-  supabase: { auth: { getUser: async () => ({ data: { user: null } }) } },
-  isSupabaseConfigured: false,
+  supabase: {
+    auth: {
+      getUser: async () => ({ data: { user: supabaseMock.configured ? { id: 'user-1' } : null } }),
+    },
+    from: () => ({
+      insert: (row: Record<string, unknown>) => {
+        supabaseMock.insertCalls.push(row)
+        return Promise.resolve({ error: null })
+      },
+    }),
+  },
+  get isSupabaseConfigured() {
+    return supabaseMock.configured
+  },
 }))
+
+describe('PASS_SCORE', () => {
+  it('is 80, matching the quiz_attempts.passed generated column (migration_v17)', () => {
+    expect(PASS_SCORE).toBe(80)
+  })
+})
 
 describe('formatAttemptDate', () => {
   it('formats an ISO date string into id-ID short date format', () => {
@@ -65,5 +92,25 @@ describe('saveQuizAttempt', () => {
     const attempts = await fetchQuizAttempts(6)
     expect(attempts).toHaveLength(10)
     expect(attempts.map((a) => a.score)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 11])
+  })
+})
+
+describe('saveQuizAttempt — kind (v17)', () => {
+  beforeEach(() => {
+    supabaseMock.configured = true
+    supabaseMock.insertCalls = []
+  })
+
+  it('does not send `kind` for a formatif attempt (DB defaults to formatif)', async () => {
+    await saveQuizAttempt(3, { score: 80, answers: [0, 1] })
+    expect(supabaseMock.insertCalls).toHaveLength(1)
+    expect(supabaseMock.insertCalls[0]).not.toHaveProperty('kind')
+  })
+
+  it("sends kind:'pre' for a pre-test attempt", async () => {
+    await saveQuizAttempt(null, { score: 70, answers: [0, 1], kind: 'pre' })
+    expect(supabaseMock.insertCalls).toHaveLength(1)
+    expect(supabaseMock.insertCalls[0].kind).toBe('pre')
+    expect(supabaseMock.insertCalls[0].module_id).toBeNull()
   })
 })

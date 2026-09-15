@@ -1,9 +1,20 @@
 // @vitest-environment jsdom
+import type { ReactNode } from 'react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { render, screen, waitFor, act, cleanup } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
 import { AuthProvider } from './AuthContext'
+
+// ProtectedRoute (spec §9 WP6) now calls usePreTestDone() (react-query)
+// unconditionally, so every render() below needs a QueryClientProvider
+// ancestor — without it useQuery throws before the role-gate check the
+// tests below actually exercise even runs.
+function wrapQuery(children: ReactNode) {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+}
 
 // This file makes several real `render()` calls (RTL appends to
 // document.body and does not auto-cleanup unless vitest's `globals: true`
@@ -62,21 +73,23 @@ describe('ProtectedRoute fail-closed behavior', () => {
     )
 
     render(
-      <MemoryRouter initialEntries={['/dosen-only']}>
-        <MockedAuthProvider>
-          <Routes>
-            <Route
-              path="/dosen-only"
-              element={
-                <MockedProtectedRoute roles={['dosen']}>
-                  <div>Dosen Secret Content</div>
-                </MockedProtectedRoute>
-              }
-            />
-            <Route path="/dashboard" element={<div>Dashboard Fallback</div>} />
-          </Routes>
-        </MockedAuthProvider>
-      </MemoryRouter>,
+      wrapQuery(
+        <MemoryRouter initialEntries={['/dosen-only']}>
+          <MockedAuthProvider>
+            <Routes>
+              <Route
+                path="/dosen-only"
+                element={
+                  <MockedProtectedRoute roles={['dosen']}>
+                    <div>Dosen Secret Content</div>
+                  </MockedProtectedRoute>
+                }
+              />
+              <Route path="/dashboard" element={<div>Dashboard Fallback</div>} />
+            </Routes>
+          </MockedAuthProvider>
+        </MemoryRouter>,
+      ),
     )
 
     await waitFor(() => {
@@ -124,21 +137,23 @@ describe('AuthProvider initial session load', () => {
     )
 
     render(
-      <MemoryRouter initialEntries={['/dosen-only']}>
-        <MockedAuthProvider>
-          <Routes>
-            <Route
-              path="/dosen-only"
-              element={
-                <MockedProtectedRoute roles={['dosen']}>
-                  <div>Dosen Secret Content</div>
-                </MockedProtectedRoute>
-              }
-            />
-            <Route path="/dashboard" element={<div>Dashboard Fallback</div>} />
-          </Routes>
-        </MockedAuthProvider>
-      </MemoryRouter>,
+      wrapQuery(
+        <MemoryRouter initialEntries={['/dosen-only']}>
+          <MockedAuthProvider>
+            <Routes>
+              <Route
+                path="/dosen-only"
+                element={
+                  <MockedProtectedRoute roles={['dosen']}>
+                    <div>Dosen Secret Content</div>
+                  </MockedProtectedRoute>
+                }
+              />
+              <Route path="/dashboard" element={<div>Dashboard Fallback</div>} />
+            </Routes>
+          </MockedAuthProvider>
+        </MemoryRouter>,
+      ),
     )
 
     // Flush the getSession() microtask chain. loadProfile() is now awaiting

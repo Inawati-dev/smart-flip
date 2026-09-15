@@ -1,126 +1,21 @@
 import { useState, type ReactElement } from 'react'
 import { Link } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useVarkResult } from '../hooks/useVarkResult'
-import { saveVarkResult, clearVarkResult, computeVarkDominant, VARK_KEYS, type VarkKey, type VarkScores } from '../lib/vark'
+import {
+  saveVarkResult,
+  clearVarkResult,
+  computeVarkDominant,
+  fetchVarkQuestions,
+  VARK_QUESTIONS_DEFAULT,
+  VARK_KEYS,
+  type VarkKey,
+  type VarkScores,
+} from '../lib/vark'
 import { Layout } from '../components/Layout'
 import { IconTarget, IconClipboard, IconClock, IconLock, IconEye, IconHeadphones, IconBook, IconCompass, IconStar } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
-
-// ── QUESTIONS — ported verbatim from legacy/vark.html ──
-// Each question has 4 options; option index maps 1:1 to a VARK dimension via
-// VARK_KEYS (index 0 → V, 1 → A, 2 → R, 3 → K), consistently across all 12.
-const QUESTIONS: Array<{ text: string; opts: [string, string, string, string] }> = [
-  {
-    text: 'Ketika mempelajari konsep penelitian baru, saya lebih suka…',
-    opts: [
-      'Melihat diagram, grafik, atau ilustrasi yang menjelaskan konsep tersebut',
-      'Mendengarkan penjelasan dosen atau menonton video podcast',
-      'Membaca buku teks, artikel ilmiah, atau catatan kuliah',
-      'Langsung mencoba dengan studi kasus atau eksperimen nyata',
-    ],
-  },
-  {
-    text: 'Saat perlu mengingat materi kuliah, cara terbaik bagi saya adalah…',
-    opts: [
-      'Membuat mind map berwarna atau poster visual',
-      'Mendiskusikan materi dengan teman atau menjelaskannya secara lisan',
-      'Merangkum dalam catatan tertulis atau membuat daftar poin penting',
-      'Mempraktikkan langsung atau membuat simulasi dari materi tersebut',
-    ],
-  },
-  {
-    text: 'Ketika belajar mandiri di luar kelas, saya biasanya…',
-    opts: [
-      'Mencari video tutorial atau infografis yang relevan dengan topik',
-      'Memutar rekaman kuliah atau berdiskusi lewat voice note dengan teman',
-      'Membaca ulang catatan dan merangkum bab per bab secara tertulis',
-      'Mengerjakan latihan soal atau membuat proyek kecil terkait materi',
-    ],
-  },
-  {
-    text: 'Saat mengerjakan tugas kuliah, langkah pertama yang saya lakukan adalah…',
-    opts: [
-      'Membuat kerangka visual atau sketsa alur pengerjaan tugas',
-      'Mendiskusikan tugas dengan teman untuk mendapat gambaran awal',
-      'Membaca instruksi tugas dengan teliti dan mencatat poin-poin utama',
-      'Langsung mulai mengerjakan dan belajar dari hasil yang sudah dibuat',
-    ],
-  },
-  {
-    text: 'Ketika memahami instruksi dari dosen, saya merasa paling jelas jika…',
-    opts: [
-      'Instruksi disertai diagram alur, tabel, atau contoh visual',
-      'Dosen menjelaskan secara lisan dan saya dapat bertanya langsung',
-      'Instruksi diberikan secara tertulis, rinci, dan terstruktur',
-      'Ada demonstrasi langkah demi langkah yang bisa saya ikuti',
-    ],
-  },
-  {
-    text: 'Ketika memilih media belajar untuk mempersiapkan ujian, saya lebih memilih…',
-    opts: [
-      'Slide presentasi dengan banyak gambar, bagan, dan warna',
-      'Rekaman audio penjelasan materi atau podcast akademik',
-      'Buku teks, modul PDF, atau ringkasan teks yang detail',
-      'Kuis latihan interaktif atau flashcard yang bisa langsung dicoba',
-    ],
-  },
-  {
-    text: 'Saat harus mempresentasikan hasil penelitian, cara saya yang paling nyaman adalah…',
-    opts: [
-      'Membuat slide visual menarik dengan grafik dan ilustrasi',
-      'Berbicara langsung kepada audiens dengan gaya natural dan interaktif',
-      'Menyiapkan naskah atau poin presentasi yang tertulis lengkap',
-      'Menampilkan demo produk atau simulasi langsung kepada audiens',
-    ],
-  },
-  {
-    text: 'Ketika menghadapi kuis atau tes, saya biasanya…',
-    opts: [
-      'Mengingat kembali diagram, tabel, atau gambar yang pernah saya lihat',
-      'Mendengar kembali penjelasan dosen di kepala saya saat menjawab',
-      'Membayangkan catatan atau teks yang pernah saya tulis',
-      'Mempraktikkan cara penyelesaian masalah seperti yang pernah saya coba',
-    ],
-  },
-  {
-    text: 'Ketika mencari sumber referensi untuk penelitian, saya lebih suka…',
-    opts: [
-      'Mencari jurnal atau artikel yang memiliki banyak gambar, grafik, dan visualisasi data',
-      'Mencari rekaman seminar, podcast akademik, atau diskusi panel',
-      'Membaca artikel jurnal lengkap dengan teks yang komprehensif',
-      'Mencari laporan studi kasus atau hasil penelitian terapan',
-    ],
-  },
-  {
-    text: 'Ketika membuat laporan penelitian, bagian yang paling mudah bagi saya adalah…',
-    opts: [
-      'Membuat visualisasi data seperti grafik, diagram, dan infografis',
-      'Menyusun bagian diskusi yang berisi narasi dan argumen lisan',
-      'Menulis deskripsi metodologi dan kajian pustaka secara rinci',
-      'Mendeskripsikan prosedur praktik dan hasil uji coba lapangan',
-    ],
-  },
-  {
-    text: 'Ketika belajar dari kesalahan dalam tugas atau kuis, saya lebih mudah berkembang jika…',
-    opts: [
-      'Melihat perbandingan jawaban saya vs. jawaban benar dalam format visual',
-      'Mendapat penjelasan lisan langsung dari dosen atau teman',
-      'Membaca umpan balik tertulis yang menjelaskan letak kesalahan secara rinci',
-      'Mencoba mengerjakan ulang soal yang sama atau soal serupa secara langsung',
-    ],
-  },
-  {
-    text: 'Dalam mempersiapkan ujian akhir, strategi belajar yang paling efektif bagi saya adalah…',
-    opts: [
-      'Membuat poster ringkasan, mind map berwarna, atau diagram konsep',
-      'Berdiskusi intensif bersama kelompok belajar atau mendengarkan rekaman kuliah',
-      'Membaca ulang semua catatan dan modul serta merangkumnya kembali',
-      'Mengerjakan sebanyak mungkin soal latihan dan simulasi ujian',
-    ],
-  },
-]
 
 const LETTERS = ['A', 'B', 'C', 'D'] as const
 
@@ -162,14 +57,22 @@ type Phase = 'intro' | 'quiz' | 'loading' | 'result'
 export function Vark() {
   const queryClient = useQueryClient()
   const { data: existing } = useVarkResult()
+  // initialData = the same 12 hardcoded questions this page used to render
+  // synchronously, so nothing here needs a loading state — fetchVarkQuestions
+  // just replaces it once the bank soal (or its absence) is known.
+  const { data: questions } = useQuery({
+    queryKey: ['vark-questions'],
+    queryFn: fetchVarkQuestions,
+    initialData: VARK_QUESTIONS_DEFAULT,
+  })
 
   const [phase, setPhase] = useState<Phase>('intro')
   const [currentQ, setCurrentQ] = useState(0)
-  const [answers, setAnswers] = useState<Array<number | null>>(() => new Array(QUESTIONS.length).fill(null))
+  const [answers, setAnswers] = useState<Array<number | null>>(() => new Array(questions.length).fill(null))
   const [result, setResult] = useState<{ scores: VarkScores; dominant: VarkKey } | null>(null)
 
-  const total = QUESTIONS.length
-  const q = QUESTIONS[currentQ]
+  const total = questions.length
+  const q = questions[currentQ]
   const pct = Math.round((currentQ / total) * 100)
   const hasAnswer = answers[currentQ] !== null
   const isLast = currentQ === total - 1
@@ -221,7 +124,7 @@ export function Vark() {
     } catch {
       // ported from legacy/vark.html: clear failures are swallowed, page still reloads to intro
     }
-    setAnswers(new Array(QUESTIONS.length).fill(null))
+    setAnswers(new Array(questions.length).fill(null))
     setCurrentQ(0)
     setResult(null)
     setPhase('intro')

@@ -1,7 +1,10 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { computeNGain, categorizeNGain, type NGainCategory } from './ngain'
 
-// Sumber data halaman Asesmen: tabel `quiz_attempts` yang sudah ada — tidak
-// ada tabel/migrasi baru. Cakupan barisnya dibatasi RLS (migration_v13:
+// Sumber data halaman Asesmen dosen (WP7,
+// docs/superpowers/specs/2026-09-15-tiga-menu-asesmen-design.md §5.3):
+// tabel `quiz_attempts` yang sudah ada, disaring per `kind`, tidak ada
+// tabel/migrasi baru. Cakupan barisnya dibatasi RLS (migration_v13:
 // is_dosen_of), jadi select polos di sini otomatis hanya mengembalikan
 // mahasiswa dari kelas yang dosen ini pegang; tidak perlu filter manual.
 
@@ -13,11 +16,9 @@ export interface AsesmenAttempt {
   moduleId: number
   modulJudul: string
   score: number
-  /** `passed` di DB adalah kolom generated (score >= 60), bukan hitungan klien. */
+  /** Kolom generated di DB: `score >= 80`, pasangan PASS_SCORE di src/lib/quizAttempts.ts. */
   passed: boolean
   attemptedAt: string
-  /** Jawaban per butir bila tersimpan; dipakai tab Pilihan Ganda buat hitung benar/salah. */
-  answers: unknown
 }
 
 export interface ModulRekap {
@@ -32,29 +33,18 @@ export interface ModulRekap {
   persenLulus: number
 }
 
-/** Jumlah butir benar/salah dari kolom `answers`, null kalau formatnya tak dikenali. */
-export function tallyAnswers(answers: unknown): { benar: number; total: number } | null {
-  if (!Array.isArray(answers) || answers.length === 0) return null
-
-  // Dua bentuk yang dipakai penulis kuis di repo ini: array boolean
-  // (sudah dinilai) atau array objek dengan flag benar/correct.
-  let benar = 0
-  for (const a of answers) {
-    if (typeof a === 'boolean') {
-      if (a) benar++
-    } else if (a && typeof a === 'object') {
-      const o = a as Record<string, unknown>
-      const flag = o.benar ?? o.correct ?? o.isCorrect
-      if (flag === true) benar++
-      else if (flag !== false) return null // bentuk tak dikenali — jangan tebak
-    } else {
-      return null
-    }
-  }
-  return { benar, total: answers.length }
+// True kalau errornya "kolom kind belum ada", dijalankan sebelum migrasi
+// v17 (database/migration_v17_bank_soal.sql). Pola yang sama dengan
+// src/lib/kuisSoal.ts dan src/lib/quizAttempts.ts (isMissingKindColumn).
+function isMissingKindColumn(e: unknown): boolean {
+  const err = e as { code?: string; message?: string } | null | undefined
+  if (!err) return false
+  if (err.code === '42703') return true
+  const msg = (err.message || '').toLowerCase()
+  return msg.includes('column') && msg.includes('kind')
 }
 
-/** Rekap agregat per modul untuk tab Tes Formatif. */
+/** Rekap agregat per modul untuk tabel "Tes Formatif per Modul". Ambang lulus = PASS_SCORE (80), dari kolom `passed` generated di DB. */
 export function rekapPerModul(attempts: AsesmenAttempt[]): ModulRekap[] {
   const byModul = new Map<number, AsesmenAttempt[]>()
   for (const a of attempts) {
@@ -82,15 +72,36 @@ export function rekapPerModul(attempts: AsesmenAttempt[]): ModulRekap[] {
     .sort((a, b) => a.moduleId - b.moduleId)
 }
 
+// Ambil baris quiz_attempts kind='formatif' saja (bukan pre/post, module_id
+// keduanya bisa NULL sejak v17 dan tidak relevan untuk rekap per modul).
+// Toleran terhadap deploy sebelum migrasi v17: kalau kolom kind belum ada,
+// jatuh ke query lama tanpa filter (baris lama memang semuanya formatif).
+async function queryFormatifAttempts() {
+  try {
+    const { data, error } = await supabase
+      .from('quiz_attempts')
+      .select('id, user_id, module_id, score, passed, attempted_at')
+      .eq('kind', 'formatif')
+      .order('attempted_at', { ascending: false })
+    if (error) throw error
+    return data ?? []
+  } catch (e) {
+    if (!isMissingKindColumn(e)) throw e
+    const { data, error } = await supabase
+      .from('quiz_attempts')
+      .select('id, user_id, module_id, score, passed, attempted_at')
+      .order('attempted_at', { ascending: false })
+    if (error) throw error
+    return data ?? []
+  }
+}
+
 export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
   if (!isSupabaseConfigured) return null
   try {
-    const [attemptsRes, studentsRes, modulesRes] = await Promise.all([
-      supabase
-        .from('quiz_attempts')
-        .select('id, user_id, module_id, score, passed, answers, attempted_at')
-        .order('attempted_at', { ascending: false }),
-      // Embed eksplisit lewat nama FK — profiles<->classes punya DUA relasi,
+    const [attemptsRows, studentsRes, modulesRes] = await Promise.all([
+      queryFormatifAttempts(),
+      // Embed eksplisit lewat nama FK: profiles<->classes punya DUA relasi,
       // embed tanpa kualifikasi ditolak PostgREST (PGRST201). Lihat catatan
       // yang sama di analitik.ts fetchStudentStats().
       supabase
@@ -99,7 +110,6 @@ export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
         .eq('role', 'mahasiswa'),
       supabase.from('modules').select('id, title'),
     ])
-    if (attemptsRes.error) throw attemptsRes.error
 
     const namaById = new Map<string, string>()
     const kelasById = new Map<string, string | null>()
@@ -113,35 +123,171 @@ export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
       judulById.set(m.id as number, (m.title as string) || `Modul ${m.id}`)
     }
 
-    return (attemptsRes.data ?? []).map((r) => ({
-      id: r.id as number,
-      userId: r.user_id as string,
-      nama: namaById.get(r.user_id as string) ?? 'Mahasiswa',
-      kelas: kelasById.get(r.user_id as string) ?? null,
-      moduleId: r.module_id as number,
-      modulJudul: judulById.get(r.module_id as number) ?? `Modul ${r.module_id}`,
-      score: r.score as number,
-      passed: !!r.passed,
-      attemptedAt: r.attempted_at as string,
-      answers: r.answers,
-    }))
+    return attemptsRows
+      .filter((r) => r.module_id != null)
+      .map((r) => ({
+        id: r.id as number,
+        userId: r.user_id as string,
+        nama: namaById.get(r.user_id as string) ?? 'Mahasiswa',
+        kelas: kelasById.get(r.user_id as string) ?? null,
+        moduleId: r.module_id as number,
+        modulJudul: judulById.get(r.module_id as number) ?? `Modul ${r.module_id}`,
+        score: r.score as number,
+        passed: !!r.passed,
+        attemptedAt: r.attempted_at as string,
+      }))
   } catch (e) {
     console.warn('[asesmen] fetchAsesmenAttempts gagal:', e)
     return null
   }
 }
 
-export function buildAsesmenCsv(attempts: AsesmenAttempt[]): string {
+// ── Peningkatan skor kelas (pre-test → post-test) ──────────────────────
+// Istilah UI: "peningkatan skor" (bukan "N-Gain", lihat spec §1.1). Rumus dan
+// kategori tetap dari src/lib/ngain.ts (Hake 1998), hanya dibungkus di sini
+// supaya pre-test = 100 DILEWATI dari rata-rata kelas (bukan dihitung 0
+// seperti computeNGain, karena pembaginya nol/mustahil naik lagi).
+
+export interface AttemptPrePostRow {
+  userId: string
+  nama: string
+  kelasId: string | null
+  pre?: number
+  post?: number
+}
+
+export interface PeningkatanMahasiswa {
+  userId: string
+  nama: string
+  kelasId: string | null
+  pre: number | null
+  post: number | null
+  /** null → tampil "—" (belum pre, belum post, atau pre=100/dilewati). */
+  peningkatan: number | null
+  kategori: NGainCategory | null
+}
+
+export interface PeningkatanKelas {
+  perMahasiswa: PeningkatanMahasiswa[]
+  rataPre: number | null
+  rataPost: number | null
+  rataPeningkatan: number | null
+  kategoriKelas: NGainCategory | null
+  sebaran: { tinggi: number; sedang: number; rendah: number }
+}
+
+/** Fungsi murni: dari baris pre/post per mahasiswa, hitung gain+kategori per orang, rata-rata kelas, dan sebaran kategori. */
+export function hitungPeningkatanKelas(rows: AttemptPrePostRow[]): PeningkatanKelas {
+  const perMahasiswa: PeningkatanMahasiswa[] = rows.map((r) => {
+    const pre = r.pre ?? null
+    const post = r.post ?? null
+    let peningkatan: number | null = null
+    let kategori: NGainCategory | null = null
+    // pre=100 dilewati: ruang naik yang tersisa nol, rumus (post-pre)/(100-pre)
+    // tidak terdefinisi, bukan digenapkan ke 0 seperti computeNGain.
+    if (pre != null && post != null && pre < 100) {
+      const hasil = computeNGain(pre, post, 100)
+      peningkatan = hasil.gain
+      kategori = hasil.category
+    }
+    return { userId: r.userId, nama: r.nama, kelasId: r.kelasId, pre, post, peningkatan, kategori }
+  })
+
+  const preValues = perMahasiswa.map((m) => m.pre).filter((v): v is number => v != null)
+  const postValues = perMahasiswa.map((m) => m.post).filter((v): v is number => v != null)
+  const gains = perMahasiswa.map((m) => m.peningkatan).filter((v): v is number => v != null)
+
+  const rataPre = preValues.length ? preValues.reduce((a, b) => a + b, 0) / preValues.length : null
+  const rataPost = postValues.length ? postValues.reduce((a, b) => a + b, 0) / postValues.length : null
+  const rataPeningkatan = gains.length ? gains.reduce((a, b) => a + b, 0) / gains.length : null
+
+  const sebaran = { tinggi: 0, sedang: 0, rendah: 0 }
+  for (const m of perMahasiswa) {
+    if (m.kategori) sebaran[m.kategori]++
+  }
+
+  return {
+    perMahasiswa,
+    rataPre,
+    rataPost,
+    rataPeningkatan,
+    kategoriKelas: rataPeningkatan != null ? categorizeNGain(rataPeningkatan) : null,
+    sebaran,
+  }
+}
+
+// Ambil skor pre-test dan post-test tiap mahasiswa, digabung satu baris per
+// orang. Sama seperti fetchAttemptsByKind di quizAttempts.ts: kalau kolom
+// kind belum ada (belum migrasi v17), tidak ada cara membedakan pre/post
+// dari data lama, kembalikan array kosong, bukan menebak.
+export async function fetchAttemptsPrePost(): Promise<AttemptPrePostRow[] | null> {
+  if (!isSupabaseConfigured) return null
+  try {
+    const [attemptsRes, studentsRes] = await Promise.all([
+      supabase.from('quiz_attempts').select('user_id, score, kind').in('kind', ['pre', 'post']),
+      supabase
+        .from('profiles')
+        .select('id, full_name, classes!profiles_class_id_fkey(name)')
+        .eq('role', 'mahasiswa'),
+    ])
+    if (attemptsRes.error) {
+      if (isMissingKindColumn(attemptsRes.error)) return []
+      throw attemptsRes.error
+    }
+
+    const namaById = new Map<string, string>()
+    const kelasById = new Map<string, string | null>()
+    for (const s of studentsRes.data ?? []) {
+      namaById.set(s.id as string, (s.full_name as string) || 'Tanpa nama')
+      const rel = (s as { classes?: { name: string } | { name: string }[] | null }).classes
+      kelasById.set(s.id as string, Array.isArray(rel) ? rel[0]?.name ?? null : rel?.name ?? null)
+    }
+
+    const byUser = new Map<string, AttemptPrePostRow>()
+    for (const r of attemptsRes.data ?? []) {
+      const uid = r.user_id as string
+      let row = byUser.get(uid)
+      if (!row) {
+        row = { userId: uid, nama: namaById.get(uid) ?? 'Mahasiswa', kelasId: kelasById.get(uid) ?? null }
+        byUser.set(uid, row)
+      }
+      if (r.kind === 'pre') row.pre = r.score as number
+      else if (r.kind === 'post') row.post = r.score as number
+    }
+    return [...byUser.values()]
+  } catch (e) {
+    console.warn('[asesmen] fetchAttemptsPrePost gagal:', e)
+    return null
+  }
+}
+
+// ── CSV gabungan: tabel per mahasiswa + tabel formatif per modul ───────
+export function buildAsesmenCsv(perMahasiswa: PeningkatanMahasiswa[], rekapFormatif: ModulRekap[]): string {
   const esc = (v: string) => `"${v.replace(/"/g, '""')}"`
-  let csv = 'Nama,Kelas,Modul,Skor,Status,Tanggal\n'
-  for (const a of attempts) {
+  const KATEGORI_LABEL: Record<NGainCategory, string> = { tinggi: 'Tinggi', sedang: 'Sedang', rendah: 'Rendah' }
+
+  let csv = 'Nama,Kelas,Pre-test,Post-test,Peningkatan Skor,Kategori\n'
+  for (const m of perMahasiswa) {
     csv += [
-      esc(a.nama),
-      esc(a.kelas ?? '—'),
-      esc(a.modulJudul),
-      a.score,
-      a.passed ? 'Lulus' : 'Belum Lulus',
-      esc(new Date(a.attemptedAt).toLocaleDateString('id-ID')),
+      esc(m.nama),
+      esc(m.kelasId ?? '—'),
+      m.pre ?? '—',
+      m.post ?? '—',
+      m.peningkatan != null ? m.peningkatan.toFixed(2) : '—',
+      m.kategori ? KATEGORI_LABEL[m.kategori] : '—',
+    ].join(',') + '\n'
+  }
+
+  csv += '\nModul,Pengerjaan,Mahasiswa,Rata-rata,Tertinggi,Terendah,% Lulus\n'
+  for (const r of rekapFormatif) {
+    csv += [
+      esc(r.judul),
+      r.jumlahPengerjaan,
+      r.jumlahMahasiswa,
+      r.rataRata,
+      r.tertinggi,
+      r.terendah,
+      r.persenLulus,
     ].join(',') + '\n'
   }
   return csv

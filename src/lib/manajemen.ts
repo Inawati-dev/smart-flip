@@ -19,9 +19,14 @@ export interface ModulCustom {
 
 const CUSTOM_KEY_PREFIX = 'sfp_modul_custom_'
 const ORDER_KEY = 'sfp_modul_order'
+const VIDEO_URL_KEY_PREFIX = 'sfp_video_url_'
 
 function customKey(moduleId: number): string {
   return CUSTOM_KEY_PREFIX + moduleId
+}
+
+function videoUrlKey(moduleId: number): string {
+  return VIDEO_URL_KEY_PREFIX + moduleId
 }
 
 function lsGet<T>(key: string): T | null {
@@ -63,6 +68,24 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
     }
   }
   lsSet(customKey(moduleId), data)
+}
+
+// Dosen sets the pemutar URL for a module (spec §5.1, §9 WP4). Same
+// dual-mode fallback as saveModulCustom above: Supabase when configured,
+// else localStorage keyed by module id so the "Ubah" modal still works in
+// demo mode even though (like saveModulCustom's other localStorage-only
+// fields) it won't be read back into fetchModules() there.
+export async function saveVideoUrl(moduleId: number, url: string): Promise<void> {
+  if (isSupabaseConfigured) {
+    try {
+      const { error } = await supabase.from('modules').update({ video_url: url }).eq('id', moduleId)
+      if (error) throw error
+      return
+    } catch (e) {
+      console.warn('[manajemen] saveVideoUrl → Supabase gagal, fallback localStorage:', e)
+    }
+  }
+  lsSet(videoUrlKey(moduleId), url)
 }
 
 // Creates a brand-new module row (dosen-only, gated by the same RLS as
