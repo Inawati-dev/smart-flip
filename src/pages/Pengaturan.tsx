@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Layout } from '../components/Layout'
+import { Navigate } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
 import { computeNeedsAttentionStudents } from '../lib/analitik'
@@ -15,7 +15,13 @@ import {
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
-export function Pengaturan() {
+// /pengaturan dilebur ke /akun (koreksi Johan 16 Sep 2026 — "pengaturan itu
+// kan page sendiri, dilebur ke page akun saja semua fungsinya"). Isi
+// fungsional dipindah ke PengaturanSections (tanpa Layout, tanpa judul
+// halaman sendiri) dan dirender langsung di Akun.tsx. Default export di
+// bawah cuma pengalih supaya /pengaturan (kalau masih ada tautan lama) tidak
+// 404.
+export function PengaturanSections() {
   const { role } = useAuth()
   const isDosen = role === 'dosen'
   const [active, setActive] = useState<ThemeId>(() => getTheme())
@@ -105,14 +111,8 @@ export function Pengaturan() {
   }
 
   return (
-    <Layout>
-      <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-brown mb-1">Pengaturan</h1>
-          <p className="text-brown-3 text-sm">Preferensi tampilan &amp; notifikasi akun kamu</p>
-        </div>
-
-        <div className="flex flex-col gap-4">
+    <>
+      <div className="flex flex-col gap-4">
           <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
             <div className="flex items-center gap-2.5 mb-3">
               <IconCompass size={18} className="text-brown-3" />
@@ -313,7 +313,6 @@ export function Pengaturan() {
             )}
           </div>
         </div>
-      </div>
 
       {/* Konfirmasi ganti kode — sekali diganti, kode lama langsung mati dan
           siapa pun yang sudah terlanjur dikirimi kode lama tidak bisa lagi
@@ -356,8 +355,14 @@ export function Pengaturan() {
           </div>
         </div>
       )}
-    </Layout>
+    </>
   )
+}
+
+// /pengaturan lama — cuma pengalih sekarang, isinya sudah pindah ke
+// PengaturanSections di atas (dirender dari Akun.tsx).
+export default function Pengaturan() {
+  return <Navigate to="/akun" replace />
 }
 
 // Duplikat kecil dari ToggleRow milik Profil.tsx (tidak diekspor dari sana) —
@@ -394,5 +399,3 @@ function PengaturanToggleRow({
     </div>
   )
 }
-
-export default Pengaturan

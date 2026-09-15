@@ -10,6 +10,7 @@ import { parseVideoUrl } from '../lib/video'
 import { saveVideoUrl } from '../lib/manajemen'
 import { upsertVideoProgress, shouldSendTimeUpdate } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
+import { PreviewLink } from '../components/PdfPreviewLink'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -242,6 +243,7 @@ function VideoDosen() {
   function closeEdit() {
     setEditModul(null)
   }
+  const parsedInput = parseVideoUrl(urlInput.trim())
 
   async function saveEdit() {
     if (!editModul) return
@@ -301,8 +303,15 @@ function VideoDosen() {
                       <tr key={m.id} className="border-t" style={BORDER}>
                         <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
                         <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{m.title}</td>
-                        <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[240px] truncate">
-                          {url ? (url.length > 40 ? url.slice(0, 40) + '…' : url) : '—'}
+                        <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[240px]">
+                          {url ? (
+                            <span className="inline-flex items-center gap-2 max-w-full">
+                              <span className="truncate">{url.length > 40 ? url.slice(0, 40) + '…' : url}</span>
+                              <PreviewLink url={url} label="Pratinjau tautan video" />
+                            </span>
+                          ) : (
+                            '—'
+                          )}
                         </td>
                         <td className="px-3 py-2.5 text-brown-3">—</td>
                         <td className="px-3 py-2.5">
@@ -319,7 +328,7 @@ function VideoDosen() {
                             className="min-h-11 px-3 rounded-md text-xs font-semibold whitespace-nowrap"
                             style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
                           >
-                            Ubah
+                            {url ? 'Ubah' : 'Tambah tautan'}
                           </button>
                         </td>
                       </tr>
@@ -354,6 +363,21 @@ function VideoDosen() {
               style={{ ...BORDER, fontSize: '16px' }}
             />
             {urlError && <p className="text-xs mb-2" style={{ color: 'var(--red, #C0392B)' }}>{urlError}</p>}
+            {parsedInput && (
+              <div className="mb-2 rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
+                {parsedInput.kind === 'youtube' ? (
+                  <iframe
+                    src={parsedInput.embedUrl}
+                    title="Pratinjau video"
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video controls src={parsedInput.src} className="w-full h-full" />
+                )}
+              </div>
+            )}
             <div className="flex gap-3 mt-3">
               <button
                 onClick={closeEdit}

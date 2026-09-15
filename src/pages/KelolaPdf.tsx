@@ -50,11 +50,11 @@ export function KelolaPdf() {
     <Layout>
       <div className="p-4 md:p-6 pb-16">
         <div className="flex items-center gap-1.5 text-xs text-brown-3 mb-2">
-          <Link to="/akun" className="hover:underline">Akun</Link>
+          <Link to="/modul" className="hover:underline">Modul</Link>
           <IconChevronRight size={12} />
-          <span>Kelola PDF</span>
+          <span>PDF Modul</span>
         </div>
-        <h1 className="font-display text-2xl font-bold text-brown mb-1">Kelola PDF</h1>
+        <h1 className="font-display text-2xl font-bold text-brown mb-1">PDF Modul</h1>
         <p className="text-sm text-brown-3 mb-5">
           Semua berkas di penyimpanan modul-pdf, termasuk yang tidak lagi dipakai modul mana pun.
         </p>

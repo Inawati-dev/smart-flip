@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, afterEach, vi } from 'vitest'
+import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest'
 import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import Video from './Video'
-import { AuthProvider } from '../contexts/AuthContext'
 
 afterEach(cleanup)
 
@@ -23,6 +22,12 @@ vi.mock('../lib/supabase', () => ({
   },
   isSupabaseConfigured: false,
 }))
+
+// mahasiswa test tidak butuh role tertentu (Video() hanya cabang ke
+// VideoDosen kalau role === 'dosen'), jadi mock ini cukup untuk keduanya —
+// tes dosen di bawah mengubah mockAuth.role sebelum render.
+const mockAuth = vi.hoisted(() => ({ role: 'mahasiswa' as 'mahasiswa' | 'dosen', loading: false }))
+vi.mock('../contexts/AuthContext', () => ({ useAuth: () => mockAuth }))
 
 function makeModule(id: number, videoUrl: string | null) {
   return {
@@ -62,17 +67,19 @@ function renderVideo(moduleId: number) {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={[`/video/${moduleId}`]}>
-        <AuthProvider>
-          <Routes>
-            <Route path="/video/:id" element={<Video />} />
-          </Routes>
-        </AuthProvider>
+        <Routes>
+          <Route path="/video/:id" element={<Video />} />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
 describe('Video (mahasiswa)', () => {
+  beforeEach(() => {
+    mockAuth.role = 'mahasiswa'
+  })
+
   it('renders an iframe for a module with a YouTube URL', async () => {
     renderVideo(1)
     await waitFor(() => expect(document.querySelector('[data-testid="video-player"] iframe')).toBeTruthy())
@@ -81,5 +88,27 @@ describe('Video (mahasiswa)', () => {
   it('shows the "belum memasang video" message when the module has no URL', async () => {
     renderVideo(2)
     await waitFor(() => expect(screen.getByText(/belum memasang video/)).toBeTruthy())
+  })
+})
+
+// Antrean 16 Sep 2026: label tombol dosen berubah sesuai ada/tidaknya
+// video_url, dan tautan yang sudah ada dapat ikon pratinjau (buka tab baru).
+describe('Video (dosen)', () => {
+  beforeEach(() => {
+    mockAuth.role = 'dosen'
+  })
+
+  it('shows "Tambah tautan" for a module without a URL', async () => {
+    renderVideo(2)
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3)) // header + 2 modules
+    expect(screen.getByText('Tambah tautan')).toBeTruthy()
+  })
+
+  it('shows a preview link opening in a new tab for a module with a URL', async () => {
+    renderVideo(1)
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
+    expect(screen.getByText('Ubah')).toBeTruthy()
+    const preview = document.querySelector('a[target="_blank"]')
+    expect(preview).toBeTruthy()
   })
 })

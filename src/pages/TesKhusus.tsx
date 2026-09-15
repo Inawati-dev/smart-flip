@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
 import { useKelasByDosen } from '../hooks/useKelas'
-import { labelKelas } from '../lib/kelas'
+import { labelKelas, tahunUnik } from '../lib/kelas'
 import { fetchBankSoal, type KuisSoal } from '../lib/kuisSoal'
 import { fetchAttemptsByKind, saveQuizAttempt } from '../lib/quizAttempts'
 import { acakSoal, nilai, type AcakSoalResult, type AcakUrutSoal, type SoalTampil } from '../lib/acak'
@@ -338,17 +338,26 @@ function DosenTesKhusus() {
                 Semua kelas
               </label>
               {!semuaKelas && (
-                <div className="flex flex-col gap-1.5 max-h-32 overflow-y-auto border rounded-lg p-2" style={BORDER}>
-                  {kelasList.map((k) => (
-                    <label key={k.id} className="flex items-center gap-2 text-sm text-brown-2 min-h-11">
-                      <input
-                        type="checkbox"
-                        checked={classIds.includes(k.id)}
-                        onChange={() => toggleKelas(k.id)}
-                        className="w-4 h-4 accent-terra"
-                      />
-                      {labelKelas(k, kelasList)}
-                    </label>
+                <div className="flex flex-col gap-2 max-h-40 overflow-y-auto border rounded-lg p-2" style={BORDER}>
+                  {tahunUnik(kelasList).map((tahun) => (
+                    <div key={tahun}>
+                      <div className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-1">{tahun}</div>
+                      <div className="flex flex-col gap-1.5">
+                        {kelasList
+                          .filter((k) => k.angkatan === tahun)
+                          .map((k) => (
+                            <label key={k.id} className="flex items-center gap-2 text-sm text-brown-2 min-h-11">
+                              <input
+                                type="checkbox"
+                                checked={classIds.includes(k.id)}
+                                onChange={() => toggleKelas(k.id)}
+                                className="w-4 h-4 accent-terra"
+                              />
+                              {labelKelas(k, kelasList)}
+                            </label>
+                          ))}
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}

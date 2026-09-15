@@ -9,6 +9,9 @@ import {
   parseImportCsv,
   importMahasiswaCSV,
   labelKelas,
+  tahunUnik,
+  namaKelasUnik,
+  cocokFilter,
   type KelasWithCount,
 } from './kelas'
 
@@ -220,6 +223,62 @@ describe('labelKelas', () => {
       { name: 'Kelas A', angkatan: 2024 },
     ]
     expect(labelKelas({ name: 'Kelas A', angkatan: 2024, code: 'KLS-A24' }, semua)).toBe('Kelas A · 2024 · KLS-A24')
+  })
+})
+
+describe('tahunUnik / namaKelasUnik / cocokFilter', () => {
+  const KELAS = [
+    { name: 'Kelas A', angkatan: 2024 },
+    { name: 'Kelas A', angkatan: 2025 },
+    { name: 'Kelas B', angkatan: 2026 },
+    { name: 'Kelas D', angkatan: 2026 },
+  ]
+
+  describe('tahunUnik', () => {
+    it('returns unique angkatan sorted descending', () => {
+      expect(tahunUnik(KELAS)).toEqual([2026, 2025, 2024])
+    })
+
+    it('returns an empty array for an empty list', () => {
+      expect(tahunUnik([])).toEqual([])
+    })
+  })
+
+  describe('namaKelasUnik', () => {
+    it('returns every unique nama sorted A-Z when tahun is null', () => {
+      expect(namaKelasUnik(KELAS, null)).toEqual(['Kelas A', 'Kelas B', 'Kelas D'])
+    })
+
+    it('narrows to nama kelas that exist in the given tahun', () => {
+      expect(namaKelasUnik(KELAS, 2026)).toEqual(['Kelas B', 'Kelas D'])
+      expect(namaKelasUnik(KELAS, 2024)).toEqual(['Kelas A'])
+    })
+
+    it('returns an empty array for a tahun with no classes', () => {
+      expect(namaKelasUnik(KELAS, 1999)).toEqual([])
+    })
+  })
+
+  describe('cocokFilter', () => {
+    it('matches everything when both tahun and kelas are null', () => {
+      for (const k of KELAS) expect(cocokFilter(k, { tahun: null, kelas: null })).toBe(true)
+    })
+
+    it('filters by tahun alone', () => {
+      expect(cocokFilter({ name: 'Kelas B', angkatan: 2026 }, { tahun: 2026, kelas: null })).toBe(true)
+      expect(cocokFilter({ name: 'Kelas A', angkatan: 2024 }, { tahun: 2026, kelas: null })).toBe(false)
+    })
+
+    it('filters by kelas alone', () => {
+      expect(cocokFilter({ name: 'Kelas A', angkatan: 2024 }, { tahun: null, kelas: 'Kelas A' })).toBe(true)
+      expect(cocokFilter({ name: 'Kelas A', angkatan: 2025 }, { tahun: null, kelas: 'Kelas A' })).toBe(true)
+      expect(cocokFilter({ name: 'Kelas B', angkatan: 2026 }, { tahun: null, kelas: 'Kelas A' })).toBe(false)
+    })
+
+    it('requires both to match when both are set', () => {
+      expect(cocokFilter({ name: 'Kelas A', angkatan: 2024 }, { tahun: 2024, kelas: 'Kelas A' })).toBe(true)
+      expect(cocokFilter({ name: 'Kelas A', angkatan: 2025 }, { tahun: 2024, kelas: 'Kelas A' })).toBe(false)
+    })
   })
 })
 

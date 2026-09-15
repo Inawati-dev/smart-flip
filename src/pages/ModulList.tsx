@@ -7,11 +7,19 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTopikStatus } from '../lib/topik'
 import { moduleIdToPath } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
-import { saveModulCustom, uploadModulPdf, listModulPdfFiles, assignModulPdf, type ModulCustom } from '../lib/manajemen'
+import {
+  saveModulCustom,
+  createModul,
+  deleteModul,
+  uploadModulPdf,
+  listModulPdfFiles,
+  assignModulPdf,
+  type ModulCustom,
+} from '../lib/manajemen'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
-import { IconEdit } from '../components/icons'
+import { IconEdit, IconTrash } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -37,6 +45,7 @@ export function DosenModulTable() {
   }
 
   const [editId, setEditId] = useState<number | null>(null)
+  const [creatingNew, setCreatingNew] = useState(false)
   const [formJudul, setFormJudul] = useState('')
   const [formDeskripsi, setFormDeskripsi] = useState('')
   const [saving, setSaving] = useState(false)
@@ -44,24 +53,69 @@ export function DosenModulTable() {
   function openEdit(id: number) {
     const m = modules.find((x) => x.id === id)
     const custom = customs[id]
+    setCreatingNew(false)
     setEditId(id)
     setFormJudul(custom?.judul || m?.title || '')
     setFormDeskripsi(custom?.deskripsi || m?.description || '')
   }
 
+  function openCreate() {
+    setEditId(null)
+    setCreatingNew(true)
+    setFormJudul('')
+    setFormDeskripsi('')
+  }
+
+  function closeFormModal() {
+    setEditId(null)
+    setCreatingNew(false)
+  }
+
   async function saveEdit() {
-    if (editId == null || !formJudul.trim()) return
+    const judul = formJudul.trim()
+    if (!judul) return
+    if (creatingNew && !isSupabaseConfigured) {
+      showToast('Tambah modul butuh koneksi Supabase, belum tersedia di mode demo.')
+      return
+    }
     setSaving(true)
     try {
-      const data: ModulCustom = { ...customs[editId], judul: formJudul.trim(), deskripsi: formDeskripsi.trim() }
-      await saveModulCustom(editId, data)
-      await queryClient.invalidateQueries({ queryKey: ['manajemen', 'customs'] })
-      showToast('Modul disimpan')
-      setEditId(null)
+      if (creatingNew) {
+        const nextOrderNum = Math.max(0, ...modules.map((m) => m.order_num)) + 1
+        await createModul({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum })
+        await queryClient.invalidateQueries({ queryKey: ['modules'] })
+        showToast('Modul baru ditambahkan')
+      } else if (editId != null) {
+        const data: ModulCustom = { ...customs[editId], judul, deskripsi: formDeskripsi.trim() }
+        await saveModulCustom(editId, data)
+        await queryClient.invalidateQueries({ queryKey: ['manajemen', 'customs'] })
+        showToast('Modul disimpan')
+      }
+      closeFormModal()
     } catch {
-      showToast('Gagal menyimpan modul')
+      showToast(creatingNew ? 'Gagal menambahkan modul' : 'Gagal menyimpan modul')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Hapus modul (destruktif — progres, soal formatif via cascade, dan file
+  // PDF di Storage ikut terhapus lewat deleteModul, lihat lib/manajemen.ts).
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  async function confirmDelete() {
+    if (deleteId == null) return
+    setDeleting(true)
+    try {
+      await deleteModul(deleteId)
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+      showToast('Modul dihapus')
+      setDeleteId(null)
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal menghapus modul')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -121,6 +175,16 @@ export function DosenModulTable() {
   return (
     <>
       <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+        <div className="flex items-center justify-between px-4 py-3 border-b flex-wrap gap-2" style={BORDER}>
+          <span className="text-sm font-semibold text-brown">Daftar Modul</span>
+          <button
+            onClick={openCreate}
+            className="h-9 px-3.5 rounded-lg text-xs font-semibold text-white"
+            style={{ background: 'var(--terra)' }}
+          >
+            + Tambah modul
+          </button>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm border-collapse">
             <thead>
@@ -185,6 +249,14 @@ export function DosenModulTable() {
                           >
                             <IconEdit size={13} /> Ubah
                           </button>
+                          <button
+                            onClick={() => setDeleteId(m.id)}
+                            aria-label={`Hapus modul ${judul}`}
+                            title="Hapus modul"
+                            className="min-h-11 w-11 rounded-md border border-red/25 bg-red/10 text-red inline-flex items-center justify-center flex-shrink-0"
+                          >
+                            <IconTrash size={14} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -196,19 +268,19 @@ export function DosenModulTable() {
         </div>
       </div>
 
-      {editId != null && (
+      {(editId != null || creatingNew) && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'rgba(44,36,32,.55)' }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setEditId(null)
+            if (e.target === e.currentTarget) closeFormModal()
           }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">Ubah Modul</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">{creatingNew ? 'Tambah Modul' : 'Ubah Modul'}</h3>
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
               Judul
               <input
@@ -229,7 +301,7 @@ export function DosenModulTable() {
               />
             </label>
             <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-              <button onClick={() => setEditId(null)} className="min-h-11 px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+              <button onClick={closeFormModal} className="min-h-11 px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
                 Batal
               </button>
               <button
@@ -239,6 +311,43 @@ export function DosenModulTable() {
                 style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
               >
                 {saving ? 'Menyimpan…' : 'Simpan'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {deleteId != null && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !deleting) setDeleteId(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">
+              Hapus modul “{customs[deleteId]?.judul || modules.find((m) => m.id === deleteId)?.title || ''}”?
+            </h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Progres, soal formatif, dan PDF yang terpasang ikut terhapus.
+            </p>
+            <div className="flex gap-2.5">
+              <button
+                onClick={() => setDeleteId(null)}
+                disabled={deleting}
+                className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2 disabled:opacity-50"
+                style={BORDER}
+              >
+                Batal
+              </button>
+              <button
+                onClick={() => void confirmDelete()}
+                disabled={deleting}
+                className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold disabled:opacity-60"
+                style={{ background: 'var(--red)' }}
+              >
+                {deleting ? 'Menghapus…' : 'Ya, Hapus'}
               </button>
             </div>
           </div>
