@@ -280,3 +280,40 @@ button:not(:disabled):active {
     animation: none !important;
   }
 }
+
+/* Rel navigasi (Layout.tsx) — ubin ikon berkesan timbul (3D). Satu definisi
+   dipakai di rel kiri desktop dan bilah bawah mobile, supaya keduanya tetap
+   sama persis kalau salah satunya berubah nanti. Warna pakai --color-* (yang
+   benar-benar terdaftar di @theme di atas) — bukan --ivory/--terra tanpa
+   awalan, itu tidak pernah dideklarasikan di mana pun di src/ jadi var()-nya
+   resolve ke kosong. */
+.nav-tile {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-ivory) 70%, white), var(--color-cream));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 1px 2px rgba(62, 54, 46, .18), 0 3px 6px -2px rgba(62, 54, 46, .18);
+  transition: transform 0.12s ease;
+}
+.nav-tile-active {
+  background: linear-gradient(180deg, var(--color-terra), var(--color-terra-d));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 1px 2px rgba(62, 54, 46, .18), 0 3px 6px -2px rgba(62, 54, 46, .18);
+  color: var(--color-ivory);
+}
+a:hover .nav-tile,
+a:hover .nav-tile-active {
+  transform: translateY(-1px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nav-tile,
+  .nav-tile-active {
+    transition: none;
+  }
+  a:hover .nav-tile,
+  a:hover .nav-tile-active {
+    transform: none;
+  }
+}

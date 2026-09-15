@@ -11,6 +11,7 @@ import {
 } from '../lib/diagnostic'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
+import { PillGroup } from '../components/PillGroup'
 import { IconEdit, IconTrash, IconGrip } from '../components/icons'
 
 // Bank soal terpadu — dosen mengelola 5 jenis soal (pre/formatif/post/vark
@@ -268,29 +269,20 @@ export function BankSoal() {
           </button>
         </div>
 
-        {/* Filter jenis — tombol pil */}
+        {/* Filter jenis */}
         <div className="flex items-center gap-2 flex-wrap mb-5">
-          {KIND_ORDER.map((k) => (
-            <button
-              key={k}
-              onClick={() => selectJenis(k)}
-              className="min-h-11 px-3.5 rounded-full text-xs font-semibold whitespace-nowrap border"
-              style={{
-                borderColor: jenis === k ? 'var(--terra)' : 'var(--border)',
-                background: jenis === k ? 'var(--brown)' : 'transparent',
-                color: jenis === k ? 'var(--btn-text)' : 'var(--brown2)',
-              }}
-            >
-              {KIND_LABELS[k]}
-            </button>
-          ))}
+          <PillGroup
+            options={KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k] }))}
+            value={jenis}
+            onChange={(v) => selectJenis(v as FilterKind)}
+            ariaLabel="Filter jenis soal"
+          />
           {jenis === 'formatif' && (
             <Select
               value={String(modulId ?? '')}
               onChange={(v) => selectModul(parseInt(v, 10))}
               aria-label="Pilih modul"
-              className="min-h-11 px-3 rounded-full border text-xs text-brown cursor-pointer"
-              style={BORDER}
+              size="sm"
               options={modules.map((m) => ({ value: String(m.id), label: m.title }))}
             />
           )}
@@ -424,8 +416,6 @@ export function BankSoal() {
                   value={String(modalModuleId ?? '')}
                   onChange={(v) => setModalModuleId(parseInt(v, 10))}
                   aria-label="Pilih modul"
-                  className="h-10 px-3 rounded-lg border text-sm text-brown cursor-pointer"
-                  style={BORDER}
                   options={modules.map((m) => ({ value: String(m.id), label: m.title }))}
                 />
               </label>

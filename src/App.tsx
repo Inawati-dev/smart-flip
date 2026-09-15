@@ -16,7 +16,7 @@ import { ResetPassword } from './pages/ResetPassword'
 const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
 const Diagnostik = lazy(() => import('./pages/Diagnostik'))
 const Akun = lazy(() => import('./pages/Akun'))
-const Profil = lazy(() => import('./pages/Profil'))
+const KelolaPdf = lazy(() => import('./pages/KelolaPdf'))
 const Modul = lazy(() => import('./pages/Modul'))
 const ModulList = lazy(() => import('./pages/ModulList'))
 const Video = lazy(() => import('./pages/Video'))
@@ -85,8 +85,11 @@ export default function App() {
               <Route path="/video" element={<ProtectedRoute><Video /></ProtectedRoute>} />
               <Route path="/video/:id" element={<ProtectedRoute><Video /></ProtectedRoute>} />
               <Route path="/akun" element={<ProtectedRoute><Akun /></ProtectedRoute>} />
-              {/* Form ubah nama/avatar/NIM masih di halaman Profil lama; /profil sendiri dialihkan ke /akun. */}
-              <Route path="/akun/profil" element={<ProtectedRoute><Profil /></ProtectedRoute>} />
+              {/* Form ubah nama/avatar/NIM sudah dilebur ke modal di /akun
+                  (WP-C) — /akun/profil dihapus, Profil.tsx dibiarkan ada
+                  tapi tidak ber-route (keputusan Johan #2: sembunyikan,
+                  jangan hapus berkasnya). */}
+              <Route path="/akun/pdf" element={<ProtectedRoute roles={['dosen']}><KelolaPdf /></ProtectedRoute>} />
               {/* /profil dipertahankan sebagai alias route lama (dipakai
                   beberapa tautan internal), dialihkan ke /akun untuk menu. */}
               <Route path="/profil" element={<Navigate to="/akun" replace />} />

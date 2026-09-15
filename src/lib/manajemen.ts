@@ -317,6 +317,27 @@ export async function assignModulPdf(moduleId: number, url: string): Promise<voi
   if (error) throw error
 }
 
+// Hapus satu berkas di bucket `modul-pdf` (dipanggil dari /akun/pdf, WP-C).
+// Beda dari deleteModul: ini menghapus BERKAS, bukan baris modul — kalau ada
+// modul yang masih menunjuk ke berkas ini, pdf_path modul itu dikosongkan
+// dulu supaya tidak menyisakan tautan ke berkas yang sudah tidak ada.
+export async function deleteModulPdfFile(path: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('deleteModulPdfFile membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
+  }
+  const { data: modulesRes } = await supabase.from('modules').select('id, pdf_path')
+  const usedByIds = (modulesRes ?? [])
+    .filter((m) => storageObjectName((m as { pdf_path?: string }).pdf_path) === path)
+    .map((m) => (m as { id: number }).id)
+
+  const { error } = await supabase.storage.from('modul-pdf').remove([path])
+  if (error) throw error
+
+  if (usedByIds.length) {
+    await supabase.from('modules').update({ pdf_path: null }).in('id', usedByIds)
+  }
+}
+
 // Mirrors legacy/data-layer.js getModulCustom(). In Supabase mode only
 // judul/deskripsi/status (aktif|nonaktif) come back — durasi/catatan have no
 // backing columns and are only ever available via the localStorage fallback.

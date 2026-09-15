@@ -8,6 +8,7 @@ import {
   summarizeKelas,
   parseImportCsv,
   importMahasiswaCSV,
+  labelKelas,
   type KelasWithCount,
 } from './kelas'
 
@@ -205,6 +206,20 @@ describe('parseImportCsv', () => {
 
   it('returns an empty array for a CSV with only a header', () => {
     expect(parseImportCsv('nama,nim,email')).toEqual([])
+  })
+})
+
+describe('labelKelas', () => {
+  it('formats as "nama · angkatan" when no duplicate exists', () => {
+    expect(labelKelas({ name: 'Kelas A', angkatan: 2024 })).toBe('Kelas A · 2024')
+  })
+
+  it('appends the class code when another kelas shares the same nama+angkatan', () => {
+    const semua = [
+      { name: 'Kelas A', angkatan: 2024 },
+      { name: 'Kelas A', angkatan: 2024 },
+    ]
+    expect(labelKelas({ name: 'Kelas A', angkatan: 2024, code: 'KLS-A24' }, semua)).toBe('Kelas A · 2024 · KLS-A24')
   })
 })
 

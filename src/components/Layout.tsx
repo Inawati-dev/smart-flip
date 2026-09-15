@@ -11,18 +11,20 @@ interface NavItem {
   to: string
   icon: ComponentType<{ size?: number }>
   label: string
+  desc: string
 }
 
 // Tata letak C "Jalur Pertemuan" (spec 2026-09-15 §8.0): lima menu datar, SAMA
 // untuk semua peran (dosen melihat isi kelola di halaman yang sama). Menu
 // lama (Forum, Draf, Validasi, dst.) disembunyikan dari navigasi di sini,
 // TAPI route-nya tetap terdaftar di App.tsx (keputusan #2 — bukan dihapus).
+// `desc` = keterangan satu baris di flyout rel (WP-B, permintaan 16 Sep 2026).
 const NAV_ITEMS: NavItem[] = [
-  { to: '/dashboard', icon: IconHome, label: 'Dashboard' },
-  { to: '/modul', icon: IconBook, label: 'Modul' },
-  { to: '/video', icon: IconPlay, label: 'Video' },
-  { to: '/asesmen', icon: IconChart, label: 'Asesmen' },
-  { to: '/akun', icon: IconUser, label: 'Akun' },
+  { to: '/dashboard', icon: IconHome, label: 'Dashboard', desc: 'Ringkasan dan langkah berikutnya' },
+  { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
+  { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
+  { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Pre-test, formatif, post-test' },
+  { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil, kelas, pengaturan' },
 ]
 
 function isActive(pathname: string, to: string): boolean {
@@ -88,10 +90,10 @@ export function Layout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-cream sm:pl-[72px]">
+    <div className="min-h-screen bg-cream sm:pl-[80px]">
       {/* ── Rel ikon kiri (desktop/tablet, >=640px) ── */}
       <aside
-        className="hidden sm:flex fixed inset-y-0 left-0 z-40 flex-col items-center w-[72px] bg-ivory border-r border-[color:var(--border)] py-4"
+        className="hidden sm:flex fixed inset-y-0 left-0 z-40 flex-col items-center w-[80px] bg-ivory border-r border-[color:var(--border)] py-4"
       >
         <Link to="/dashboard" className="mb-4 flex items-center justify-center" aria-label="Dashboard">
           <BrandMark size={30} />
@@ -106,19 +108,33 @@ export function Layout({ children }: { children: ReactNode }) {
                 key={item.to}
                 to={item.to}
                 aria-current={active ? 'page' : undefined}
-                className={`w-full flex flex-col items-center gap-0.5 py-2 rounded-xl text-[10.5px] font-semibold transition-colors ${
-                  active ? 'bg-brown text-cream' : 'text-brown-2 hover:bg-brown/[0.06] hover:text-brown'
-                }`}
+                className="group relative flex w-[68px] flex-col items-center gap-1 rounded-xl p-[6px]"
               >
-                <Icon size={19} />
-                <span>{item.label}</span>
+                <span className={active ? 'nav-tile nav-tile-active' : 'nav-tile'}>
+                  <Icon size={19} />
+                </span>
+                <span
+                  className={`max-w-full text-center text-[10px] leading-tight tracking-tight font-semibold ${
+                    active ? 'text-brown' : 'text-brown-2'
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {/* Flyout hover/fokus — hanya efektif di >=640px karena aside
+                    ini sendiri hidden di bawah itu. group-hover + group-focus-
+                    within saja (tanpa state React) supaya ringan. pointer-events
+                    -none supaya flyout tidak pernah menghalangi klik pada item. */}
+                <span className="nav-flyout pointer-events-none absolute left-full top-1/2 z-50 ml-2 w-max max-w-[190px] -translate-y-1/2 rounded-[10px] border border-[color:var(--border)] bg-ivory px-3 py-2 text-[13px] opacity-0 shadow-[0_4px_16px_rgba(62,54,46,.14)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+                  <span className="block font-semibold text-brown">{item.label}</span>
+                  <span className="block text-brown-2">{item.desc}</span>
+                </span>
               </Link>
             )
           })}
         </nav>
 
         {/* Identitas + Keluar — dipertahankan sesuai aturan proyek (logout
-            wajib modal konfirmasi). Rel sempit (72px) jadi hanya avatar +
+            wajib modal konfirmasi). Rel sempit (80px) jadi hanya avatar +
             title tooltip native, bukan nama penuh. */}
         <Link
           to="/akun"
@@ -178,7 +194,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 active ? 'text-brown' : 'text-brown-3'
               }`}
             >
-              <Icon size={19} />
+              <span className={active ? 'nav-tile nav-tile-active' : 'nav-tile'}>
+                <Icon size={19} />
+              </span>
               <span>{item.label}</span>
             </Link>
           )

@@ -45,6 +45,9 @@ describe('Layout', () => {
     expect(html).not.toContain('href="/changelog"')
     expect(html).not.toContain('href="/forum"')
     expect(html).not.toContain('/legacy/')
+    // Flyout rel (WP-B, 16 Sep 2026): keterangan singkat tiap menu ikut ter-
+    // render (CSS-only via group-hover, jadi selalu ada di markup).
+    expect(html).toContain('PDF tiap pertemuan')
   })
 
   it('renders a minimal standalone header (no sidebar/menu) for an anonymous visitor on a real deploy', () => {

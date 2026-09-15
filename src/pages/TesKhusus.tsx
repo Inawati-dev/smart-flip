@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
 import { useKelasByDosen } from '../hooks/useKelas'
+import { labelKelas } from '../lib/kelas'
 import { fetchBankSoal, type KuisSoal } from '../lib/kuisSoal'
 import { fetchAttemptsByKind, saveQuizAttempt } from '../lib/quizAttempts'
 import { acakSoal, nilai, type AcakSoalResult, type AcakUrutSoal, type SoalTampil } from '../lib/acak'
@@ -23,6 +24,7 @@ import {
 } from '../lib/testSessions'
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
+import { PillGroup } from '../components/PillGroup'
 import { IconTarget } from '../components/icons'
 
 // Tes khusus berkode (spec §4.6, §9 WP6b) - satu-satunya tes mahasiswa yang
@@ -166,7 +168,12 @@ function DosenTesKhusus() {
 
   function namaKelas(ids: string[]): string {
     if (ids.length === 0) return 'Semua kelas'
-    return ids.map((id) => kelasList.find((k) => k.id === id)?.name ?? '-').join(', ')
+    return ids
+      .map((id) => {
+        const k = kelasList.find((k) => k.id === id)
+        return k ? labelKelas(k, kelasList) : '-'
+      })
+      .join(', ')
   }
 
   return (
@@ -291,29 +298,16 @@ function DosenTesKhusus() {
 
             <div className="mb-3">
               <span className="text-xs font-semibold text-brown-2 block mb-1.5">Sumber soal</span>
-              <div className="flex gap-2 flex-wrap mb-2">
-                <button
-                  onClick={() => setKind('post')}
-                  className="min-h-11 px-3.5 rounded-full text-xs font-semibold border"
-                  style={{
-                    borderColor: kind === 'post' ? 'var(--terra)' : 'var(--border)',
-                    background: kind === 'post' ? 'var(--brown)' : 'transparent',
-                    color: kind === 'post' ? 'var(--btn-text)' : 'var(--brown2)',
-                  }}
-                >
-                  Bank soal post-test
-                </button>
-                <button
-                  onClick={() => setKind('campuran')}
-                  className="min-h-11 px-3.5 rounded-full text-xs font-semibold border"
-                  style={{
-                    borderColor: kind === 'campuran' ? 'var(--terra)' : 'var(--border)',
-                    background: kind === 'campuran' ? 'var(--brown)' : 'transparent',
-                    color: kind === 'campuran' ? 'var(--btn-text)' : 'var(--brown2)',
-                  }}
-                >
-                  Gabungan soal formatif
-                </button>
+              <div className="mb-2">
+                <PillGroup
+                  options={[
+                    { value: 'post', label: 'Bank soal post-test' },
+                    { value: 'campuran', label: 'Gabungan soal formatif' },
+                  ]}
+                  value={kind}
+                  onChange={(v) => setKind(v as SessionKind)}
+                  ariaLabel="Sumber soal"
+                />
               </div>
               {kind === 'campuran' && (
                 <div className="flex flex-col gap-1.5 max-h-36 overflow-y-auto border rounded-lg p-2" style={BORDER}>
@@ -353,7 +347,7 @@ function DosenTesKhusus() {
                         onChange={() => toggleKelas(k.id)}
                         className="w-4 h-4 accent-terra"
                       />
-                      {k.name}
+                      {labelKelas(k, kelasList)}
                     </label>
                   ))}
                 </div>
