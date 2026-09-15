@@ -2,6 +2,8 @@
 
 Tanggal: 15 September 2026. Penulis: Claude (sesi Smart Flipbook), atas permintaan Johan.
 Sumber keputusan: `docs/antrean-permintaan.md` #2–#16. Mockup: https://claude.ai/artifact/NxBQfhQYjKNhhdVmPynQab (versi 4, sesuai revisi ini).
+**Status 15 Sep 2026 malam:** semua paket dikode dan tayang (commit `ad8996e`, bundle `index-D1V2kYaX.js`). Migrasi v17 sudah dijalankan; v18 dan v19 menunggu Johan. Rincian pelaksanaan: `docs/jejak-permintaan.md` #12–#13.
+
 Revisi 15 Sep 2026 sore: pre-test tanpa kode; kode hanya untuk halaman tes khusus; menu sama untuk semua peran (Dashboard · Modul · Video · Asesmen); Dashboard dosen = aktivitas kelas.
 
 Dokumen ini ditulis supaya tiap paket kerja bisa dikirim ke agen pelaksana tanpa membaca percakapan. Tiap paket menyebut berkas yang disentuh, pola yang ditiru, langkah verifikasi, dan kriteria terima yang bisa dijalankan orang lain.
