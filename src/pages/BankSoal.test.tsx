@@ -107,7 +107,7 @@ describe('BankSoal', () => {
     renderBankSoal('/asesmen/bank?jenis=vark')
     const addBtn = await screen.findByText('+ Tambah soal')
     fireEvent.click(addBtn)
-    expect(await screen.findByText(/Tambah Soal — VARK/)).toBeTruthy()
+    expect(await screen.findByText(/Tambah Soal: VARK/)).toBeTruthy()
     expect(document.querySelectorAll('input[type="radio"]').length).toBe(0)
   })
 })

@@ -92,7 +92,7 @@ export function LoginBook({
             style={{ background: 'var(--bg3)' }}
           >
             <p className="font-display italic text-[11.5px] text-brown-3">
-              Edisi 5.0 — Fakultas Vokasi UM
+              Edisi 5.0: Fakultas Vokasi UM
             </p>
           </div>
         </div>

@@ -61,9 +61,9 @@ const VARK_NAMES: Record<string, string> = {
   K: 'Kinestetik',
 }
 const VARK_DESCS: Record<string, string> = {
-  V: 'Kamu belajar paling efektif melalui visual — diagram, grafik, warna, dan ilustrasi sangat membantumu memahami dan mengingat informasi baru.',
+  V: 'Kamu belajar paling efektif melalui visual: diagram, grafik, warna, dan ilustrasi sangat membantumu memahami dan mengingat informasi baru.',
   A: 'Kamu belajar paling efektif melalui pendengaran dan diskusi. Mendengarkan penjelasan langsung dan berdiskusi dengan teman mempercepat pemahamanmu.',
-  R: 'Kamu belajar paling efektif melalui teks. Membaca dan menulis adalah kekuatanmu — merangkum materi dan membaca modul secara mendalam sangat cocok bagimu.',
+  R: 'Kamu belajar paling efektif melalui teks. Membaca dan menulis adalah kekuatanmu: merangkum materi dan membaca modul secara mendalam sangat cocok bagimu.',
   K: 'Kamu belajar paling efektif melalui praktik langsung. Mengerjakan soal latihan, simulasi, dan studi kasus nyata membuat pemahaman bertahan jauh lebih lama.',
 }
 

@@ -69,33 +69,33 @@ const versions: VersionEntry[] = [
     current: true,
     sections: {
       Added: [
-        <><strong>Asesmen</strong> menggantikan menu N-Gain — lima tab: Tes Formatif (rekap agregat per modul: rata-rata, tertinggi/terendah, % lulus), Pilihan Ganda (rincian tiap pengerjaan + benar/total butir, filter modul, export CSV), N-Gain (kalkulator lama, dipertahankan utuh), Aktivitas Mandiri, dan Progres Observasi. Dua tab pertama membaca {c('quiz_attempts')} yang sudah ada — tanpa tabel baru — dan otomatis ter-scope ke kelas dosen sendiri lewat RLS {c('is_dosen_of()')}</>,
-        <><strong>Aktivitas Mandiri (observasi lapangan)</strong> — dosen menyusun tugas observasi ({c('observasi_tugas')}: judul, instruksi, modul opsional, deadline, urutan), mahasiswa mengumpulkan lewat {c('/observasi')} dengan menulis langsung di sistem, mengunggah berkas, atau keduanya. Dosen memantau siapa yang sudah/belum mengumpulkan, membaca jawaban, dan memberi status + catatan</>,
-        <><strong>Projek Akhir / Luaran Pembelajaran</strong> ({c('/projek-akhir')}) — proposal penelitian &amp; pengembangan dengan lima bagian tetap (ringkasan, latar belakang, rumusan masalah, tujuan, metode), boleh ditulis langsung maupun diunggah. Satu rute dua peran: mahasiswa mengerjakan &amp; mengajukan, dosen memantau dan menilai ({c('draf → diajukan → revisi → disetujui')}). Dibuat sebagai tabel sendiri ({c('final_projects')}, satu baris per mahasiswa) alih-alih menumpang {c('drafts')} yang berbentuk aliran banyak-baris per modul</>,
-        <>Hapus modul di {c('/manajemen')} — dengan modal konfirmasi yang menyebut dampaknya secara eksplisit (progres belajar, soal &amp; hasil kuis, dan diskusi forum modul itu ikut terhapus lewat cascade), dan file PDF-nya sekalian dibuang dari Storage</>,
-        <>Kode Undangan Dosen bisa dilihat &amp; diganti dari {c('/pengaturan')} (khusus dosen) — sebelumnya cuma bisa lewat SQL Editor. Kode disembunyikan sampai ditekan &quot;Tampilkan&quot; supaya tidak nongol begitu saja di layar yang sedang diproyeksikan, dan ada peringatan kalau masih memakai kode contoh bawaan</>,
-        <>Kartu identitas (nama + peran Dosen/Mahasiswa) tepat di atas tombol Keluar di sidebar — beberapa halaman tampil berbeda per peran, jadi perlu jelas sedang masuk sebagai siapa</>,
+        <><strong>Asesmen</strong> menggantikan menu N-Gain dengan lima tab: Tes Formatif (rekap agregat per modul: rata-rata, tertinggi/terendah, % lulus), Pilihan Ganda (rincian tiap pengerjaan + benar/total butir, filter modul, export CSV), N-Gain (kalkulator lama, dipertahankan utuh), Aktivitas Mandiri, dan Progres Observasi. Dua tab pertama membaca {c('quiz_attempts')} yang sudah ada, tanpa tabel baru, dan otomatis ter-scope ke kelas dosen sendiri lewat RLS {c('is_dosen_of()')}</>,
+        <><strong>Aktivitas Mandiri (observasi lapangan)</strong>: dosen menyusun tugas observasi ({c('observasi_tugas')}: judul, instruksi, modul opsional, deadline, urutan), mahasiswa mengumpulkan lewat {c('/observasi')} dengan menulis langsung di sistem, mengunggah berkas, atau keduanya. Dosen memantau siapa yang sudah/belum mengumpulkan, membaca jawaban, dan memberi status + catatan</>,
+        <><strong>Projek Akhir / Luaran Pembelajaran</strong> ({c('/projek-akhir')}): proposal penelitian &amp; pengembangan dengan lima bagian tetap (ringkasan, latar belakang, rumusan masalah, tujuan, metode), boleh ditulis langsung maupun diunggah. Satu rute dua peran: mahasiswa mengerjakan &amp; mengajukan, dosen memantau dan menilai ({c('draf → diajukan → revisi → disetujui')}). Dibuat sebagai tabel sendiri ({c('final_projects')}, satu baris per mahasiswa) alih-alih menumpang {c('drafts')} yang berbentuk aliran banyak-baris per modul</>,
+        <>Hapus modul di {c('/manajemen')}, dengan modal konfirmasi yang menyebut dampaknya secara eksplisit (progres belajar, soal &amp; hasil kuis, dan diskusi forum modul itu ikut terhapus lewat cascade), dan file PDF-nya sekalian dibuang dari Storage</>,
+        <>Kode Undangan Dosen bisa dilihat &amp; diganti dari {c('/pengaturan')} (khusus dosen). Sebelumnya cuma bisa lewat SQL Editor. Kode disembunyikan sampai ditekan &quot;Tampilkan&quot; supaya tidak nongol begitu saja di layar yang sedang diproyeksikan, dan ada peringatan kalau masih memakai kode contoh bawaan</>,
+        <>Kartu identitas (nama + peran Dosen/Mahasiswa) tepat di atas tombol Keluar di sidebar: beberapa halaman tampil berbeda per peran, jadi perlu jelas sedang masuk sebagai siapa</>,
         <>Halaman Login bergaya flipbook: buku berdiri 3D dengan tepi halaman &amp; punggung terlihat, sampul gelap membuka penuh ke form di &quot;halaman pertama&quot;. Sampul memuat wordmark, kredit penulis, institusi, dan daftar fitur sistem. Ada jalur balik ke tampilan lama tanpa hapus kode ({c('LOGIN_VARIANT')}, atau {c('?variant=flip')} lewat URL tanpa perlu redeploy)</>,
       ],
       Changed: [
-        <>Feedback untuk dosen jadi rekap saja — dosen adalah penerima penilaian, bukan pengisinya, jadi form rating/komentar disembunyikan dan dropdown modul beralih fungsi jadi filter riwayat yang langsung terbuka</>,
+        <>Feedback untuk dosen jadi rekap saja: dosen adalah penerima penilaian, bukan pengisinya, jadi form rating/komentar disembunyikan dan dropdown modul beralih fungsi jadi filter riwayat yang langsung terbuka</>,
         <>Sidebar ikut struktur dokumen Konsep Modul Flip Book 5.0: seksi <strong>Asesmen</strong> berdiri sendiri (memuat Asesmen untuk dosen, Aktivitas Mandiri untuk mahasiswa, dan Projek Akhir untuk keduanya), dan &quot;Kelola Kelas&quot; berganti nama jadi <strong>Manajemen Sistem</strong></>,
-        <>Riwayat rilis ({c('/changelog')}) sekarang khusus dosen — isinya catatan teknis dan temuan keamanan yang tidak perlu dibaca mahasiswa maupun pengunjung anonim. Tautannya di footer halaman login/daftar ikut dicabut supaya tidak ada jalan masuk yang menggantung</>,
-        <>Pendaftaran dosen memverifikasi kode undangan ke database lewat RPC, bukan lagi membandingkan ke env build-time {c('VITE_DOSEN_INVITE_CODE')} — dua sumber kebenaran yang dulu gampang lepas sinkron: mengganti kode di DB tanpa rebuild frontend justru mematikan pendaftaran dosen. Env itu kini tidak dibaca lagi (kecuali sebagai jaring pengaman kalau RPC-nya belum ada)</>,
+        <>Riwayat rilis ({c('/changelog')}) sekarang khusus dosen: isinya catatan teknis dan temuan keamanan yang tidak perlu dibaca mahasiswa maupun pengunjung anonim. Tautannya di footer halaman login/daftar ikut dicabut supaya tidak ada jalan masuk yang menggantung</>,
+        <>Pendaftaran dosen memverifikasi kode undangan ke database lewat RPC, bukan lagi membandingkan ke env build-time {c('VITE_DOSEN_INVITE_CODE')}. Dua sumber kebenaran yang dulu gampang lepas sinkron: mengganti kode di DB tanpa rebuild frontend justru mematikan pendaftaran dosen. Env itu kini tidak dibaca lagi (kecuali sebagai jaring pengaman kalau RPC-nya belum ada)</>,
         <>Batas minimum kode undangan diturunkan 8 → 6 karakter, disamakan antara pengecekan di RPC dan di form</>,
         <>Dropdown &quot;pakai file yang sudah ada&quot; di Edit Modul kini menandai tiap berkas dengan modul pemakainya (atau &quot;belum dipakai&quot;), supaya file yatim gampang dibedakan dari yang aktif</>,
       ],
       Fixed: [
-        <>Mengunggah PDF baru untuk sebuah modul tidak pernah menghapus file lamanya — tiap unggahan memakai nama ber-timestamp baru, jadi versi lama menumpuk selamanya di bucket dan terus muncul di daftar &quot;pakai file yang sudah ada&quot; walau tidak ada modul yang memakainya. Sekarang file lama ikut dibuang, entri 0-byte disaring</>,
-        <>{c('var(--brown-3)')} dipakai di 5 tempat (RoadmapWidget, Analitik, Asesmen, Ebook, Manajemen) padahal token itu tidak pernah ada — nama yang benar {c('var(--brown3)')}. Selama ini warnanya diam-diam diwarisi dari elemen induk, bukan token yang dimaksud; paling kelihatan di label tab non-aktif</>,
-        <>Login buku: tombol &quot;Buka Buku&quot; tidak bisa diklik sama sekali — muka belakang sampul ({c('backface-visibility:hidden')}) berada setelahnya di DOM dan tetap menang hit-testing walau tak terlihat, jadi klik mouse tersegat elemen kosong. Luput dari pengujian awal karena {c('.click()')} programatik melewati hit-testing</>,
-        <>Login buku di layar sentuh (termasuk HP mode desktop): tap pertama memicu {c(':hover')} yang menggeser kemiringan buku — tombolnya pindah dari bawah jari tepat saat tap, kliknya meleset. Kemiringan hover dihapus (tilt statis), dan seluruh sampul kini bisa di-tap, bukan cuma tombol kecilnya</>,
+        <>Mengunggah PDF baru untuk sebuah modul tidak pernah menghapus file lamanya. Tiap unggahan memakai nama ber-timestamp baru, jadi versi lama menumpuk selamanya di bucket dan terus muncul di daftar &quot;pakai file yang sudah ada&quot; walau tidak ada modul yang memakainya. Sekarang file lama ikut dibuang, entri 0-byte disaring</>,
+        <>{c('var(--brown-3)')} dipakai di 5 tempat (RoadmapWidget, Analitik, Asesmen, Ebook, Manajemen) padahal token itu tidak pernah ada: nama yang benar {c('var(--brown3)')}. Selama ini warnanya diam-diam diwarisi dari elemen induk, bukan token yang dimaksud; paling kelihatan di label tab non-aktif</>,
+        <>Login buku: tombol &quot;Buka Buku&quot; tidak bisa diklik sama sekali: muka belakang sampul ({c('backface-visibility:hidden')}) berada setelahnya di DOM dan tetap menang hit-testing walau tak terlihat, jadi klik mouse tersegat elemen kosong. Luput dari pengujian awal karena {c('.click()')} programatik melewati hit-testing</>,
+        <>Login buku di layar sentuh (termasuk HP mode desktop): tap pertama memicu {c(':hover')} yang menggeser kemiringan buku: tombolnya pindah dari bawah jari tepat saat tap, kliknya meleset. Kemiringan hover dihapus (tilt statis), dan seluruh sampul kini bisa di-tap, bukan cuma tombol kecilnya</>,
         <>{c('/ebook')}: baris header memakai {c('max-w-4xl')} sementara grid katalog di bawahnya selebar penuh, jadi tombol &quot;Kembali ke Dashboard&quot; terlihat mencong ke kanan. Lebar header sekarang mengikuti konten di bawahnya</>,
       ],
       Security: [
-        <>Kode undangan dosen dibuka lewat tiga RPC {c('SECURITY DEFINER')} ({c('verify')}/{c('get')}/{c('set')}), bukan dengan memberi policy ke tabel {c('dosen_invite_codes')} — tabelnya tetap tertutup total tanpa satu pun policy, RPC adalah satu-satunya pintu. {c('verify')} boleh dipanggil anon (pendaftaran terjadi sebelum ada sesi) tapi hanya membalas benar/salah, kode aslinya tidak pernah ikut terkirim ke klien</>,
-        <>Projek Akhir dijaga trigger {c('final_projects_guard()')}: RLS hanya bisa membatasi per-baris, jadi policy &quot;mahasiswa kelola baris sendiri&quot; sebenarnya juga mengizinkan dia meng-UPDATE {c('status')}/{c('catatan_dosen')} miliknya lewat REST API — alias menyetujui proposalnya sendiri dari devtools. Trigger ini mengembalikan kolom yang bukan haknya ke nilai lama: mahasiswa pegang isi + geser {c('draf ⇄ diajukan')}, dosen pegang vonis + catatan</>,
-        <>Bucket {c('projek-akhir')} dibuat PRIVAT (beda dari {c('modul-pdf')}/{c('observasi-file')} yang publik) dan diunduh lewat signed URL — proposal adalah karya pribadi mahasiswa. Akses dosen ke berkasnya pun tetap lewat {c('is_dosen_of()')}</>,
+        <>Kode undangan dosen dibuka lewat tiga RPC {c('SECURITY DEFINER')} ({c('verify')}/{c('get')}/{c('set')}), bukan dengan memberi policy ke tabel {c('dosen_invite_codes')}: tabelnya tetap tertutup total tanpa satu pun policy, RPC adalah satu-satunya pintu. {c('verify')} boleh dipanggil anon (pendaftaran terjadi sebelum ada sesi) tapi hanya membalas benar/salah, kode aslinya tidak pernah ikut terkirim ke klien</>,
+        <>Projek Akhir dijaga trigger {c('final_projects_guard()')}: RLS hanya bisa membatasi per-baris, jadi policy &quot;mahasiswa kelola baris sendiri&quot; sebenarnya juga mengizinkan dia meng-UPDATE {c('status')}/{c('catatan_dosen')} miliknya lewat REST API, alias menyetujui proposalnya sendiri dari devtools. Trigger ini mengembalikan kolom yang bukan haknya ke nilai lama: mahasiswa pegang isi + geser {c('draf ⇄ diajukan')}, dosen pegang vonis + catatan</>,
+        <>Bucket {c('projek-akhir')} dibuat PRIVAT (beda dari {c('modul-pdf')}/{c('observasi-file')} yang publik) dan diunduh lewat signed URL: proposal adalah karya pribadi mahasiswa. Akses dosen ke berkasnya pun tetap lewat {c('is_dosen_of()')}</>,
       ],
     },
     desc: 'Konsep Modul Flip Book 5.0 diwujudkan: Asesmen (tes formatif, pilihan ganda, observasi lapangan) dan Projek Akhir, plus hapus modul, kode undangan dosen yang bisa dikelola sendiri, dan halaman login bergaya buku. CPMK/sub-CPMK per modul masih menunggu contoh isi.',
@@ -106,53 +106,53 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>Kelas/rombongan belajar: dosen buat kelas (nama, angkatan, kapasitas) dengan kode gabung acak, mahasiswa self-register pakai kode di {c('/register')}, import CSV mahasiswa massal dengan password auto-generate</>,
-        <>Reset Jalur Diagnostik (dosen) di {c('/analitik')}: reset individu maupun bulk per kelas (checkbox pilih + filter kelas), lewat RPC {c('reset_mahasiswa_jalur')} — sebelumnya cuma bisa lewat SQL manual</>,
-        <>CRUD Soal Kuis per modul di {c('/manajemen')} — dropdown pilih modul, tambah/edit/hapus soal + penjelasan opsional</>,
-        <>Konten Workshop (Tujuan/Aktivitas/Checklist/Lembar Kerja) jadi dosen-editable di {c('/manajemen')} — sebelumnya statis hardcode, sekarang override per modul lewat tabel {c('workshop_content')}</>,
+        <>Reset Jalur Diagnostik (dosen) di {c('/analitik')}: reset individu maupun bulk per kelas (checkbox pilih + filter kelas), lewat RPC {c('reset_mahasiswa_jalur')}, sebelumnya cuma bisa lewat SQL manual</>,
+        <>CRUD Soal Kuis per modul di {c('/manajemen')}: dropdown pilih modul, tambah/edit/hapus soal + penjelasan opsional</>,
+        <>Konten Workshop (Tujuan/Aktivitas/Checklist/Lembar Kerja) jadi dosen-editable di {c('/manajemen')}, sebelumnya statis hardcode, sekarang override per modul lewat tabel {c('workshop_content')}</>,
         <>Edit Profil: upload foto avatar ({c('profiles.avatar_url')}, disimpan sebagai data URL)</>,
-        <>Dashboard dosen: ringkasan kelas (jumlah kelas/mahasiswa/modul) + shortcut ke Kelola Modul/Analitik/Kelas/Validasi — bukan lagi list &quot;Lanjut Belajar&quot; ala mahasiswa</>,
+        <>Dashboard dosen: ringkasan kelas (jumlah kelas/mahasiswa/modul) + shortcut ke Kelola Modul/Analitik/Kelas/Validasi, bukan lagi list &quot;Lanjut Belajar&quot; ala mahasiswa</>,
         <>Logo Smart Flip: badge kotak rounded (echo pola SAKTI) berisi ikon buku terbuka, dipakai konsisten di sidebar (dobel jadi tombol ciut/expand), topbar mobile, header pengunjung anonim, dan favicon tab browser</>,
-        <>N-Gain Calculator ({c('/ngain')}) sekarang tersimpan permanen ({c('ngain_entries')}/{c('ngain_config')}) — sebelumnya murni state React, refresh halaman selalu balik ke 5 baris contoh (Ahmad Rizki dkk) dan menghapus semua yang sudah diketik dosen</>,
-        <>Notifikasi dasar (dosen) di {c('/pengaturan')}: daftar mahasiswa yang belum mulai modul apa pun atau belum mengerjakan tes diagnostik — versi pertama, belum ada email/push, cuma daftar di halaman</>,
+        <>N-Gain Calculator ({c('/ngain')}) sekarang tersimpan permanen ({c('ngain_entries')}/{c('ngain_config')}), sebelumnya murni state React, refresh halaman selalu balik ke 5 baris contoh (Ahmad Rizki dkk) dan menghapus semua yang sudah diketik dosen</>,
+        <>Notifikasi dasar (dosen) di {c('/pengaturan')}: daftar mahasiswa yang belum mulai modul apa pun atau belum mengerjakan tes diagnostik, versi pertama, belum ada email/push, cuma daftar di halaman</>,
       ],
       Changed: [
         <>Profil dosen: &quot;Aktivitas Kelas Terkini&quot; dan stat card statistik mengajar sekarang data asli Supabase, bukan angka contoh (28 mahasiswa/64%/76%)</>,
         <>Edit Profil jadi modal (sebelumnya section inline yang bikin halaman panjang)</>,
         <>Kelola Kelas: &quot;Buat Kelas Baru&quot; jadi modal, &quot;Daftar Kelas&quot; dikelompokkan per angkatan/tahun</>,
-        <>Analitik Kelas dipecah jadi 3 tab (Progress Mahasiswa / Distribusi &amp; Grafik / Perhatian Khusus) — sebelumnya satu halaman panjang tanpa navigasi</>,
-        <>WelcomeModal: pakai {c('sessionStorage')} bukan {c('localStorage')} — tampil lagi tiap sesi login baru, bukan cuma sekali selamanya per browser; step indicator dots sekarang bisa diklik langsung, durasi per step 3 detik</>,
+        <>Analitik Kelas dipecah jadi 3 tab (Progress Mahasiswa / Distribusi &amp; Grafik / Perhatian Khusus), sebelumnya satu halaman panjang tanpa navigasi</>,
+        <>WelcomeModal: pakai {c('sessionStorage')} bukan {c('localStorage')}: tampil lagi tiap sesi login baru, bukan cuma sekali selamanya per browser; step indicator dots sekarang bisa diklik langsung, durasi per step 3 detik</>,
         <>Sidebar ciut (icon rail): hover sembarang ikon di satu section munculin flyout menu berisi semua item section itu dengan label (ala SAKTI IconRailV2), bukan cuma satu list ikon rata dengan tooltip per-item</>,
         <>Tombol &quot;Cetak Lembar Kerja&quot; (Workshop) dan &quot;Cetak Hasil&quot; (Validasi Ahli) pakai template PDF khusus (hidden iframe), bukan {c('window.print()')} halaman mentah</>,
-        <>Halaman Register: layout satu kartu tersentral (bukan dua kolom terpisah jauh) — versi desktop wordmark &quot;Smart Flip 5.0&quot; jadi kolom kiri kartu dengan pembatas garis, versi mobile header ringkas di atas lalu form lalu keterangan di bawah</>,
-        <>Halaman Login: diganti jadi kartu flip 3D ({c('LoginFlipCard')}) — sisi depan branding + tombol &quot;Masuk →&quot;, sisi belakang toggle peran + form, klik &quot;Masuk →&quot; membalik kartu alih-alih langsung menampilkan form</>,
+        <>Halaman Register: layout satu kartu tersentral (bukan dua kolom terpisah jauh): versi desktop wordmark &quot;Smart Flip 5.0&quot; jadi kolom kiri kartu dengan pembatas garis, versi mobile header ringkas di atas lalu form lalu keterangan di bawah</>,
+        <>Halaman Login: diganti jadi kartu flip 3D ({c('LoginFlipCard')}): sisi depan branding + tombol &quot;Masuk →&quot;, sisi belakang toggle peran + form, klik &quot;Masuk →&quot; membalik kartu alih-alih langsung menampilkan form</>,
         <>Login: transisi ke &quot;Lupa kata sandi?&quot; sekarang ikut membalik ({c('FlipPanel')} bersarang di sisi belakang kartu), bukan tukar konten statis seperti sebelumnya</>,
         <>Manajemen Modul: Daftar Modul/Soal Diagnostik/Soal Kuis/Konten Workshop jadi tab, sebelumnya 4 kartu ditumpuk yang bikin halaman scroll panjang</>,
         <>Hero {c('/vark')}: kartu dibatasi ~560px dan ditengah, sebelumnya selebar area konten penuh sehingga teks jadi satu baris sangat panjang di layar lebar</>,
-        <>&quot;Aktivitas Kelas Terkini&quot; ({c('RecentActivityCard')}) sekarang juga tampil di Dashboard dosen, bukan cuma di Profil — plus tombol &quot;Lihat Semua&quot; (naikkan limit dari 5 ke 200 baris), sebelumnya gak ada cara lihat lebih dari 5 aktivitas terakhir</>,
+        <>&quot;Aktivitas Kelas Terkini&quot; ({c('RecentActivityCard')}) sekarang juga tampil di Dashboard dosen, bukan cuma di Profil, plus tombol &quot;Lihat Semua&quot; (naikkan limit dari 5 ke 200 baris), sebelumnya gak ada cara lihat lebih dari 5 aktivitas terakhir</>,
         <>Analitik: grafik &quot;Penyelesaian per Modul&quot;, &quot;Distribusi Skor Kuis&quot;, dan &quot;Kepraktisan per Aspek&quot; sekarang tumbuh dari 0 tiap kali tab Distribusi &amp; Grafik dibuka, bukan langsung tampil penuh tanpa animasi</>,
-        <>Pengaturan: kartu &quot;Akun&quot; (cuma berisi link ke Profil) dihapus — sudah redundan dengan menu Profil di sidebar</>,
+        <>Pengaturan: kartu &quot;Akun&quot; (cuma berisi link ke Profil) dihapus: sudah redundan dengan menu Profil di sidebar</>,
         <>Manajemen Modul: reorder Daftar Modul jadi drag-and-drop (seret baris), menggantikan tombol naik/turun per baris</>,
-        <>Manajemen Modul: Soal Tes Diagnostik juga bisa di-drag-and-drop sekarang — sebelumnya urutan cuma bisa diubah lewat isi ulang angka {c('order_num')} manual di modal edit</>,
+        <>Manajemen Modul: Soal Tes Diagnostik juga bisa di-drag-and-drop sekarang, sebelumnya urutan cuma bisa diubah lewat isi ulang angka {c('order_num')} manual di modal edit</>,
         <>Edit Modul: sekarang bisa pilih PDF dari file yang sudah pernah diunggah ({c('listModulPdfFiles')}, list bucket Storage {c('modul-pdf')}) alih-alih harus upload ulang file yang sama untuk modul lain</>,
         <>{c('/ebook')}: tombol &quot;Kembali&quot; dirapikan jadi tombol beneran (border+padding), teks &quot;Perpustakaan Digital&quot; yang redundan dihapus, ditambah kartu ringkas jumlah modul yang sudah diunggah</>,
       ],
       Fixed: [
         <>Kontras teks nav aktif di tema warna (mis. Seline/biru): sebelumnya {c('text-terra')} di atas {c('bg-brown')} bisa nyaris tak terbaca, sekarang pakai token {c('btn-text')} per tema</>,
-        <><strong>Bug produksi</strong>: soal kuis per modul ({c('/modul/:id/kuis')}) membaca dari {c('modules.kuis')}, kolom JSON yang tidak pernah ada di skema — akibatnya semua modul selalu tampil &quot;Soal kuis belum tersedia&quot; untuk SEMUA akun, bukan cuma dummy. Diperbaiki: baca dari tabel {c('quiz_questions')} yang benar</>,
+        <><strong>Bug produksi</strong>: soal kuis per modul ({c('/modul/:id/kuis')}) membaca dari {c('modules.kuis')}, kolom JSON yang tidak pernah ada di skema: akibatnya semua modul selalu tampil &quot;Soal kuis belum tersedia&quot; untuk SEMUA akun, bukan cuma dummy. Diperbaiki: baca dari tabel {c('quiz_questions')} yang benar</>,
         <>Kelas: {c('classes')} table sempat kena {c('permission denied')} (belum ada GRANT eksplisit) dan {c('handle_new_user()')} gagal untuk SEMUA signup (bukan cuma yang pakai kode kelas) karena referensi tabel tak terkualifikasi di dalam fungsi {c('SECURITY DEFINER')}</>,
-        <><strong>Bug produksi</strong>: Analitik Kelas &amp; Profil dosen diam-diam fallback ke data contoh (Ahmad Rizki dkk) di SEMUA akun dosen asli — {c('profiles')} punya DUA relasi FK ke {c('classes')} ({c('classes.dosen_id')} dan {c('profiles.class_id')}), jadi embed {c("classes(name)")} tanpa nama FK eksplisit ditolak PostgREST ({c('PGRST201')}, ambiguous embed). Ketemu &amp; diperbaiki lewat verifikasi login dosen langsung di production, bukan dari test lokal (mock query gak kena error PostgREST asli)</>,
-        <><strong>Bug produksi</strong>: tombol Simpan di Soal Kuis gagal 403 total — {c('quiz_questions')} cuma punya RLS policy SELECT, gak ada policy INSERT/UPDATE/DELETE buat dosen (beda dari {c('diagnostic_questions')} yang sudah benar). Ditambah policy {c('quiz_questions write dosen')}, diverifikasi ulang lewat REST call langsung: insert 201, delete 204</>,
-        <>Pola kontras {c('bg-brown')}/{c('text-terra')} yang sama disapu di 24 titik/11 halaman lain (Login, Diagnostik, Draf, Ebook, Forum, Kelas, Manajemen, Profil, Validasi, Vark, Analitik) — toggle peran Mahasiswa/Dosen di {c('/login')} jadi contoh pertama yang ketauan lewat screenshot</>,
-        <>Toggle peran Mahasiswa/Dosen di {c('/register')} masih pakai {c('text-terra')} lama, luput dari sweep kontras di atas karena halaman ini baru ada dari fan-out belakangan — disamakan ke {c('btn-text')} seperti {c('/login')}</>,
-        <><strong>Keamanan</strong>: {c('/changelog')} (halaman publik, tanpa {c('ProtectedRoute')}) sempat merender {c('<Layout>')} versi lengkap apa adanya — pengunjung anonim di production melihat seluruh struktur menu sidebar (Dashboard, Forum, Draf, Profil, dst). {c('Layout')} sekarang cek sesi asli ({c('isSupabaseConfigured && !user')}) dan merender header minimal standalone untuk pengunjung anonim, tanpa mengganggu mode demo lokal (tanpa Supabase) yang memang sengaja tanpa login</>,
-        <>{c('/register')}: teks bantuan &quot;Kode Kelas&quot; (mahasiswa, 4 baris) jauh lebih panjang dari &quot;Kode Undangan Dosen&quot; (dosen, 2 baris) — toggle peran jadi mengubah tinggi kartu dan bikin posisi kartu di layar berpindah tiap ganti tab. Dipendekkan jadi satu kalimat, tinggi kartu sekarang identik di kedua peran</>,
-        <>Login: tombol &quot;Lupa kata sandi?&quot; sebelumnya keluar total dari kartu login ke layout {c('AuthShell')} dua-kolom yang berbeda — terasa melompat, bukan bagian animasi flip. Sekarang jadi kartu flip bersarang di dalam sisi belakang kartu utama, ikut membalik seperti flip utama</>,
-        <>Kartu Login: sisi depan/belakang {c('FlipPanel')} dulu pakai tinggi tetap ({c('min-h')} angka px) — begitu ada banner error (mis. &quot;Akun ini terdaftar sebagai Dosen&quot;) muncul di sisi belakang, tingginya lewat batas dan kartu jadi scroll internal. Diganti ke overlay grid ({c('grid-area:1/1')}) yang otomatis menyesuaikan tinggi ke konten manapun yang lebih tinggi — muat tanpa scroll di kondisi apa pun, termasuk saat toast error tampil</>,
-        <>Register/AuthShell: padding &amp; jarak vertikal dipadatkan (~20%) — di layar laptop biasa (zoom 100%) halaman sempat butuh scroll penuh; sekarang muat satu layar tanpa scroll</>,
-        <>Analitik: popup dropdown filter Kelas/Status nyaris nempel tabel di bawahnya (jarak cuma 6px), kelihatan seperti overlap — jarak popup dinaikkan ke 10px di semua dropdown ({c('Select.tsx')}) app-wide</>,
-        <>Distribusi Skor Kuis: bucket berisi 0 mahasiswa render sebagai garis tipis mengambang dekat angka &quot;0&quot; alih-alih terlihat kosong — angka, bar, dan label sekarang 3 baris terpisah dengan baseline seragam, bukan satu grup per-bucket yang posisinya ikut naik-turun mengikuti tinggi bar</>,
-        <>Kartu &quot;Distribusi Skor Kuis&quot; sempat ikut stretch ke tinggi kartu sebelah (&quot;Penyelesaian per Modul&quot;) lewat default grid, nyisain area kosong gede di bawah chart — grid diganti {c('items-start')} biar tiap kartu ikut tinggi kontennya sendiri, lalu bar chart-nya sendiri diperbesar ({c('h-[220px]')}) biar lebih substansial, bukan chart mini di kartu kosong</>,
-        <><strong>Keamanan</strong>: RLS {c('profiles')}/{c('user_progress')}/{c('quiz_attempts')}/{c('drafts')}/{c('feedback')} sebelumnya &quot;dosen SELECT semua baris&quot; — dosen mana pun bisa lihat SEMUA mahasiswa/progress/kuis/draf/feedback se-sistem, bukan cuma milik kelasnya sendiri. Ditambah fungsi {c('is_dosen_of()')} dan policy baru yang scope ke kelas yang benar-benar dia miliki ({c('classes.dosen_id')}) — modul tetap dibagi bersama, forum sengaja tidak ikut di-scope (ruang diskusi lintas kelas)</>,
+        <><strong>Bug produksi</strong>: Analitik Kelas &amp; Profil dosen diam-diam fallback ke data contoh (Ahmad Rizki dkk) di SEMUA akun dosen asli: {c('profiles')} punya DUA relasi FK ke {c('classes')} ({c('classes.dosen_id')} dan {c('profiles.class_id')}), jadi embed {c("classes(name)")} tanpa nama FK eksplisit ditolak PostgREST ({c('PGRST201')}, ambiguous embed). Ketemu &amp; diperbaiki lewat verifikasi login dosen langsung di production, bukan dari test lokal (mock query gak kena error PostgREST asli)</>,
+        <><strong>Bug produksi</strong>: tombol Simpan di Soal Kuis gagal 403 total: {c('quiz_questions')} cuma punya RLS policy SELECT, gak ada policy INSERT/UPDATE/DELETE buat dosen (beda dari {c('diagnostic_questions')} yang sudah benar). Ditambah policy {c('quiz_questions write dosen')}, diverifikasi ulang lewat REST call langsung: insert 201, delete 204</>,
+        <>Pola kontras {c('bg-brown')}/{c('text-terra')} yang sama disapu di 24 titik/11 halaman lain (Login, Diagnostik, Draf, Ebook, Forum, Kelas, Manajemen, Profil, Validasi, Vark, Analitik), toggle peran Mahasiswa/Dosen di {c('/login')} jadi contoh pertama yang ketauan lewat screenshot</>,
+        <>Toggle peran Mahasiswa/Dosen di {c('/register')} masih pakai {c('text-terra')} lama, luput dari sweep kontras di atas karena halaman ini baru ada dari fan-out belakangan, disamakan ke {c('btn-text')} seperti {c('/login')}</>,
+        <><strong>Keamanan</strong>: {c('/changelog')} (halaman publik, tanpa {c('ProtectedRoute')}) sempat merender {c('<Layout>')} versi lengkap apa adanya: pengunjung anonim di production melihat seluruh struktur menu sidebar (Dashboard, Forum, Draf, Profil, dst). {c('Layout')} sekarang cek sesi asli ({c('isSupabaseConfigured && !user')}) dan merender header minimal standalone untuk pengunjung anonim, tanpa mengganggu mode demo lokal (tanpa Supabase) yang memang sengaja tanpa login</>,
+        <>{c('/register')}: teks bantuan &quot;Kode Kelas&quot; (mahasiswa, 4 baris) jauh lebih panjang dari &quot;Kode Undangan Dosen&quot; (dosen, 2 baris): toggle peran jadi mengubah tinggi kartu dan bikin posisi kartu di layar berpindah tiap ganti tab. Dipendekkan jadi satu kalimat, tinggi kartu sekarang identik di kedua peran</>,
+        <>Login: tombol &quot;Lupa kata sandi?&quot; sebelumnya keluar total dari kartu login ke layout {c('AuthShell')} dua-kolom yang berbeda: terasa melompat, bukan bagian animasi flip. Sekarang jadi kartu flip bersarang di dalam sisi belakang kartu utama, ikut membalik seperti flip utama</>,
+        <>Kartu Login: sisi depan/belakang {c('FlipPanel')} dulu pakai tinggi tetap ({c('min-h')} angka px): begitu ada banner error (mis. &quot;Akun ini terdaftar sebagai Dosen&quot;) muncul di sisi belakang, tingginya lewat batas dan kartu jadi scroll internal. Diganti ke overlay grid ({c('grid-area:1/1')}) yang otomatis menyesuaikan tinggi ke konten manapun yang lebih tinggi: muat tanpa scroll di kondisi apa pun, termasuk saat toast error tampil</>,
+        <>Register/AuthShell: padding &amp; jarak vertikal dipadatkan (~20%): di layar laptop biasa (zoom 100%) halaman sempat butuh scroll penuh; sekarang muat satu layar tanpa scroll</>,
+        <>Analitik: popup dropdown filter Kelas/Status nyaris nempel tabel di bawahnya (jarak cuma 6px), kelihatan seperti overlap: jarak popup dinaikkan ke 10px di semua dropdown ({c('Select.tsx')}) app-wide</>,
+        <>Distribusi Skor Kuis: bucket berisi 0 mahasiswa render sebagai garis tipis mengambang dekat angka &quot;0&quot; alih-alih terlihat kosong: angka, bar, dan label sekarang 3 baris terpisah dengan baseline seragam, bukan satu grup per-bucket yang posisinya ikut naik-turun mengikuti tinggi bar</>,
+        <>Kartu &quot;Distribusi Skor Kuis&quot; sempat ikut stretch ke tinggi kartu sebelah (&quot;Penyelesaian per Modul&quot;) lewat default grid, nyisain area kosong gede di bawah chart: grid diganti {c('items-start')} biar tiap kartu ikut tinggi kontennya sendiri, lalu bar chart-nya sendiri diperbesar ({c('h-[220px]')}) biar lebih substansial, bukan chart mini di kartu kosong</>,
+        <><strong>Keamanan</strong>: RLS {c('profiles')}/{c('user_progress')}/{c('quiz_attempts')}/{c('drafts')}/{c('feedback')} sebelumnya &quot;dosen SELECT semua baris&quot;: dosen mana pun bisa lihat SEMUA mahasiswa/progress/kuis/draf/feedback se-sistem, bukan cuma milik kelasnya sendiri. Ditambah fungsi {c('is_dosen_of()')} dan policy baru yang scope ke kelas yang benar-benar dia miliki ({c('classes.dosen_id')}), modul tetap dibagi bersama, forum sengaja tidak ikut di-scope (ruang diskusi lintas kelas)</>,
       ],
     },
     desc: 'Kelas/rombongan belajar (kode gabung + import CSV), empat bug produksi ditemukan &amp; diperbaiki lewat verifikasi login browser langsung (kuis kosong total, signup gagal, Analitik fallback ke data contoh, simpan soal kuis 403), dan sweep dosen-editable content (kuis, workshop) + PDF template + kontras.',
@@ -163,56 +163,56 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>Rewrite penuh 18 halaman dari vanilla HTML/JS ke React 19 + Vite + TypeScript + Tailwind v4 ({c('@theme')} CSS-first, tanpa {c('tailwind.config.ts')}), mengikuti stack SAKTI</>,
-        <>Strangler-fig migration: {c('legacy/*.html')} dipertahankan sebagai fallback statis, semua navigasi live sudah 100% React Router — nol dead-end ke halaman lama</>,
+        <>Strangler-fig migration: {c('legacy/*.html')} dipertahankan sebagai fallback statis, semua navigasi live sudah 100% React Router: nol dead-end ke halaman lama</>,
         <>Data layer dual-mode di setiap modul ({c('src/lib/*.ts')}): query Supabase kalau {c('isSupabaseConfigured')}, fallback localStorage dengan key {c('sfp_*')} identik legacy</>,
-        <>Login: alur &quot;Lupa kata sandi?&quot; via {c('supabase.auth.resetPasswordForEmail')} inline (bukan native prompt) — kirim link reset ke email</>,
+        <>Login: alur &quot;Lupa kata sandi?&quot; via {c('supabase.auth.resetPasswordForEmail')} inline (bukan native prompt): kirim link reset ke email</>,
         <>Tes Diagnostik Awal ({c('/diagnostik')}): 15 soal penempatan sekali di awal, skor &gt;80 → Jalur Cepat, ≤80 → Jalur Mendalam, permanen untuk 1 mata kuliah</>,
         <>Roadmap belajar visual di dashboard mahasiswa: Diagnostik → Bab 1..N → Rangkuman → UAS, status done/current/locked mengikuti progres nyata</>,
-        <>Upload PDF modul langsung dari dosen ({c('/manajemen')}) ke Supabase Storage — sebelumnya cuma bisa lewat script dev atau edit DB manual</>,
+        <>Upload PDF modul langsung dari dosen ({c('/manajemen')}) ke Supabase Storage, sebelumnya cuma bisa lewat script dev atau edit DB manual</>,
         <>Tambah modul baru dari {c('/manajemen')} (sebelumnya cuma bisa edit modul yang sudah ada)</>,
         <>Katalog {c('/ebook')}: grid pilihan modul dengan cover asli (render halaman pertama PDF), bukan lagi dead-end &quot;Tidak ada buku yang dipilih&quot;</>,
-        <>Admin CRUD soal tes diagnostik di {c('/manajemen')} — dosen bisa tambah/edit/hapus soal, bukan hardcode</>,
+        <>Admin CRUD soal tes diagnostik di {c('/manajemen')}: dosen bisa tambah/edit/hapus soal, bukan hardcode</>,
         <>Set ikon SVG custom ({c('src/components/icons.tsx')}) menggantikan emoji di seluruh UI</>,
       ],
       Changed: [
-        <><strong>AuthShell</strong> — Login, Register &amp; Reset Password memakai layout editorial (wordmark besar + panel form terpisah), diadaptasi dari referensi Refero (bukan single-card generik hasil porting awal)</>,
-        <>Login end-to-end diverifikasi dengan Supabase asli (bukan demo mode) — sign-in, fetch profile, redirect dashboard berjalan</>,
+        <><strong>AuthShell</strong>: Login, Register &amp; Reset Password memakai layout editorial (wordmark besar + panel form terpisah), diadaptasi dari referensi Refero (bukan single-card generik hasil porting awal)</>,
+        <>Login end-to-end diverifikasi dengan Supabase asli (bukan demo mode): sign-in, fetch profile, redirect dashboard berjalan</>,
         <>Sidebar navigasi: dari topbar jadi kombinasi expanded-label + collapsible icon-rail + hover-flyout (ala SAKTI), preferensi collapse tersimpan per-browser</>,
         <>Tiap ikon nav punya aksen warna sendiri, bukan satu warna monokrom</>,
         <>Animasi transisi antar halaman: gaya iOS push (slide dari kanan + fade, easing khas {c('UINavigationController')})</>,
         <>Toast notifikasi pindah ke pojok kanan bawah di semua halaman (sebelumnya tengah-bawah, sering numpuk dengan modal)</>,
-        <>{c('?book=')} di {c('/ebook')} sekarang membawa id modul, bukan URL Supabase Storage mentah — mencegah path storage bocor lewat address bar</>,
+        <>{c('?book=')} di {c('/ebook')} sekarang membawa id modul, bukan URL Supabase Storage mentah: mencegah path storage bocor lewat address bar</>,
         <>Jalur cepat/mendalam jadi toggle densitas konten di halaman modul (bukan konten baru): jalur cepat menonjolkan studi kasus + meringkas materi jadi disclosure</>,
       ],
       Fixed: [
-        <>Font Playfair Display &amp; DM Sans akhirnya termuat — {c('<link>')} Google Fonts sempat tidak pernah ditambahkan ke {c('index.html')} sehingga 13 file yang mereferensikannya diam-diam fallback ke font sistem</>,
-        <>Isolasi env test dari kredensial Supabase asli — {c('.env.test.local')} kosong supaya {c('pnpm test')} tidak ikut kepakai kredensial dev lokal</>,
-        <>Migrasi skema {c('profiles')}: tambah kolom {c('jabatan')} &amp; {c('fakultas')} — satu-satunya gap ditemukan dari audit skema penuh 15 halaman baru vs Supabase live</>,
-        <>{c('ProtectedRoute')} fail-open saat fetch profil gagal — role {c('null')} bisa lolos role-gating; diperbaiki jadi fail-closed</>,
-        <>Progress belajar gagal sync ke Supabase untuk modul dengan PDF hasil upload — key progres sekarang konsisten pakai id modul, bukan diturunkan dari nama file</>,
-        <>Favicon hilang (default ikon browser) — ditambahkan</>,
+        <>Font Playfair Display &amp; DM Sans akhirnya termuat: {c('<link>')} Google Fonts sempat tidak pernah ditambahkan ke {c('index.html')} sehingga 13 file yang mereferensikannya diam-diam fallback ke font sistem</>,
+        <>Isolasi env test dari kredensial Supabase asli: {c('.env.test.local')} kosong supaya {c('pnpm test')} tidak ikut kepakai kredensial dev lokal</>,
+        <>Migrasi skema {c('profiles')}: tambah kolom {c('jabatan')} &amp; {c('fakultas')}: satu-satunya gap ditemukan dari audit skema penuh 15 halaman baru vs Supabase live</>,
+        <>{c('ProtectedRoute')} fail-open saat fetch profil gagal: role {c('null')} bisa lolos role-gating; diperbaiki jadi fail-closed</>,
+        <>Progress belajar gagal sync ke Supabase untuk modul dengan PDF hasil upload: key progres sekarang konsisten pakai id modul, bukan diturunkan dari nama file</>,
+        <>Favicon hilang (default ikon browser), ditambahkan</>,
       ],
     },
-    desc: 'Migrasi arsitektur — aplikasi lama tetap hidup di legacy/ sebagai jaring pengaman, tapi seluruh pengalaman pengguna sekarang React.',
+    desc: 'Migrasi arsitektur: aplikasi lama tetap hidup di legacy/ sebagai jaring pengaman, tapi seluruh pengalaman pengguna sekarang React.',
   },
   {
     version: 'v0.9.6',
     date: '2026-06-18',
     sections: {
       Added: [
-        <><strong>profil-dos.html</strong> — Halaman profil khusus dosen: Data Diri (NIDN, jabatan fungsional, prodi, fakultas), Statistik Mengajar (4 stat cards), Aktivitas Kelas Terkini, Pengaturan (toggles + logout)</>,
-        <>CSS animations library di style.css: {c('pageIn')}, {c('fadeUp')} (stagger), {c('toastIn')}, {c('modalIn')}, {c('shimmer')}, {c('progressFill')} — semua GPU-composited (transform/opacity)</>,
+        <><strong>profil-dos.html</strong>: Halaman profil khusus dosen: Data Diri (NIDN, jabatan fungsional, prodi, fakultas), Statistik Mengajar (4 stat cards), Aktivitas Kelas Terkini, Pengaturan (toggles + logout)</>,
+        <>CSS animations library di style.css: {c('pageIn')}, {c('fadeUp')} (stagger), {c('toastIn')}, {c('modalIn')}, {c('shimmer')}, {c('progressFill')}: semua GPU-composited (transform/opacity)</>,
       ],
       Changed: [
         <>Card hover lift: {c('translateY(-3px)')} + shadow; button active: {c('scale(0.97)')}; nav item underline slide via {c('::after')}</>,
-        <>{c('@media (prefers-reduced-motion: reduce)')} — semua animasi dimatikan (accessibility compliance)</>,
-        <>CLAUDE.md: Sprint Roadmap diperbarui; v0.9.4–v0.9.6 tercatat lengkap</>,
+        <>{c('@media (prefers-reduced-motion: reduce)')}: semua animasi dimatikan (accessibility compliance)</>,
+        <>CLAUDE.md: Sprint Roadmap diperbarui; v0.9.4-v0.9.6 tercatat lengkap</>,
       ],
       Fixed: [
         <><strong>isDemo pattern</strong> diterapkan ke semua 15 halaman protected: {c("const isDemo = localStorage.getItem('sfp_demo')==='1' || typeof sb==='undefined'")}</>,
-        <>profil.html raw JS muncul di body — {c('</script>')} tag terpotong oleh injeksi sebelumnya; file dipulihkan + re-injected bersih</>,
+        <>profil.html raw JS muncul di body: {c('</script>')} tag terpotong oleh injeksi sebelumnya; file dipulihkan + re-injected bersih</>,
         <>Bug sweep 16 fixes: null checks, broken event listeners, missing auth guards di 8 halaman</>,
-        <>dashboard-dos.html — link profil mengarah ke {c('profil-dos.html')} di 4 titik navigasi (topbar, dropdown, mobile drawer, quick-card)</>,
+        <>dashboard-dos.html: link profil mengarah ke {c('profil-dos.html')} di 4 titik navigasi (topbar, dropdown, mobile drawer, quick-card)</>,
       ],
     },
   },
@@ -225,10 +225,10 @@ const versions: VersionEntry[] = [
         <>Login toast feedback: visual feedback sebelum redirect ke dashboard</>,
       ],
       Changed: [
-        <>CLAUDE.md: Mobile Support Rules ditambahkan — WAJIB setiap fitur support mobile 360–768px, input 16px (iOS anti-zoom), tap target 44×44px, modal 90vw/90vh</>,
-        <>Semua modal/dialog: {c('max-width:90vw; max-height:90vh; overflow-y:auto')} — responsive mobile</>,
+        <>CLAUDE.md: Mobile Support Rules ditambahkan, WAJIB setiap fitur support mobile 360-768px, input 16px (iOS anti-zoom), tap target 44×44px, modal 90vw/90vh</>,
+        <>Semua modal/dialog: {c('max-width:90vw; max-height:90vh; overflow-y:auto')}, responsive mobile</>,
       ],
-      Fixed: [<>Mobile audit: form, button, nav, grid di 375px dan 768px — semua halaman</>],
+      Fixed: [<>Mobile audit: form, button, nav, grid di 375px dan 768px, semua halaman</>],
     },
   },
   {
@@ -236,8 +236,8 @@ const versions: VersionEntry[] = [
     date: '2026-06-18',
     sections: {
       Added: [
-        <>Onboarding modal mahasiswa 3-step: Welcome, Cara Belajar, VARK Adaptive — flag {c('sfp_onboarded_v1')} di localStorage; bisa dipanggil ulang dari profil via {c('showOnboardingGuide()')}</>,
-        <>Onboarding modal dosen 2-step: Welcome, Panduan Mulai — flag {c('sfp_onboarded_dos_v1')} di localStorage</>,
+        <>Onboarding modal mahasiswa 3-step: Welcome, Cara Belajar, VARK Adaptive, flag {c('sfp_onboarded_v1')} di localStorage; bisa dipanggil ulang dari profil via {c('showOnboardingGuide()')}</>,
+        <>Onboarding modal dosen 2-step: Welcome, Panduan Mulai, flag {c('sfp_onboarded_dos_v1')} di localStorage</>,
         <>VARK summary visual di profil.html: dominant style card, rekomendasi konten per gaya belajar, bar chart per-warna, tips belajar 3 poin per tipe (V/A/R/K)</>,
         <>Export laporan belajar PDF dari profil.html ({c('window.print')} + {c('@media print')} CSS)</>,
         <>PWA: {c('manifest.json')} + {c('sw.js')} (cache-first strategy), icon 192px + 512px; manifest link + {c('theme-color')} di 6 halaman utama; SW registration di index.html &amp; profil.html</>,
@@ -248,35 +248,35 @@ const versions: VersionEntry[] = [
         <>Toast error ramah: &quot;Koneksi bermasalah. Data ditampilkan dari cache lokal.&quot; (fallback offline)</>,
       ],
       Fixed: [
-        <>&quot;Modul undefined&quot; di subtitle Lanjut Belajar — fallback {c('m.no || m.id')}</>,
+        <>&quot;Modul undefined&quot; di subtitle Lanjut Belajar: fallback {c('m.no || m.id')}</>,
         <>Global {c('unhandledrejection')} error handler di dashboard-mhs.html, modul.html, kuis.html</>,
       ],
     },
-    desc: 'Sprint 9 — onboarding flow, UX polish (skeleton + toast), VARK visual summary, ekspor PDF, dan PWA support.',
+    desc: 'Sprint 9: onboarding flow, UX polish (skeleton + toast), VARK visual summary, ekspor PDF, dan PWA support.',
   },
   {
     version: 'v0.9.3',
     date: '2026-06-18',
     sections: {
       Added: [
-        <><strong>validasi.html</strong> — Instrumen Validasi Ahli: form 16 indikator (8 aspek media + 8 aspek materi), hitung rata-rata otomatis, kategori kelayakan (Sangat Layak/Layak/Cukup/Kurang), cetak hasil</>,
-        <><strong>analitik.html</strong> — Dasbor Analitik Kelas: tabel progress 10 mahasiswa, grafik distribusi modul &amp; skor kuis, kepraktisan per aspek, flag mahasiswa tidak aktif, export CSV</>,
-        <><strong>profil.html</strong> — Profil Pengguna: edit data diri, hasil gaya belajar VARK, statistik belajar pribadi, riwayat kuis, reset data demo</>,
+        <><strong>validasi.html</strong>: Instrumen Validasi Ahli: form 16 indikator (8 aspek media + 8 aspek materi), hitung rata-rata otomatis, kategori kelayakan (Sangat Layak/Layak/Cukup/Kurang), cetak hasil</>,
+        <><strong>analitik.html</strong>: Dasbor Analitik Kelas: tabel progress 10 mahasiswa, grafik distribusi modul &amp; skor kuis, kepraktisan per aspek, flag mahasiswa tidak aktif, export CSV</>,
+        <><strong>profil.html</strong>: Profil Pengguna: edit data diri, hasil gaya belajar VARK, statistik belajar pribadi, riwayat kuis, reset data demo</>,
       ],
       Changed: [<>DataLayer: +6 methods baru (saveValidasi, getValidasi, saveProfil, getProfil)</>],
       Fixed: [<>Integrasi navigasi: link ke profil.html di semua halaman mahasiswa; link ke analitik.html &amp; validasi.html di halaman dosen</>],
     },
-    desc: 'Sprint 8 — validasi ahli instrumen, dasbor analitik kelas dosen, dan halaman profil pengguna.',
+    desc: 'Sprint 8: validasi ahli instrumen, dasbor analitik kelas dosen, dan halaman profil pengguna.',
   },
   {
     version: 'v0.9.2',
     date: '2026-06-17',
     sections: {
       Added: [
-        <><strong>feedback.html</strong> — Form kepraktisan pengguna: rating bintang 1–5 per 4 aspek (konten, kemudahan, keterbacaan, kebermanfaatan), riwayat per modul</>,
-        <><strong>ngain.html</strong> — N-Gain Calculator SDL: input pre/post-test, hitung N-Gain otomatis, kategori Tinggi/Sedang/Rendah, grafik distribusi, export CSV</>,
-        <><strong>workshop.html</strong> — Panduan sesi tatap muka 9 modul: tab Tujuan/Aktivitas/Checklist/Lembar Kerja, print-friendly</>,
-        <><strong>modul.html</strong> — Section Jurnal &amp; Studi Kasus: 3 referensi jurnal + 2 studi kasus per modul (27 jurnal, 18 kasus total)</>,
+        <><strong>feedback.html</strong>: Form kepraktisan pengguna: rating bintang 1-5 per 4 aspek (konten, kemudahan, keterbacaan, kebermanfaatan), riwayat per modul</>,
+        <><strong>ngain.html</strong>: N-Gain Calculator SDL: input pre/post-test, hitung N-Gain otomatis, kategori Tinggi/Sedang/Rendah, grafik distribusi, export CSV</>,
+        <><strong>workshop.html</strong>: Panduan sesi tatap muka 9 modul: tab Tujuan/Aktivitas/Checklist/Lembar Kerja, print-friendly</>,
+        <><strong>modul.html</strong>: Section Jurnal &amp; Studi Kasus: 3 referensi jurnal + 2 studi kasus per modul (27 jurnal, 18 kasus total)</>,
       ],
       Changed: [
         <>9 dummy PDF modul (8 halaman/modul): cover, capaian, peta konsep, 4 sesi materi, latihan &amp; ringkasan</>,
@@ -288,7 +288,7 @@ const versions: VersionEntry[] = [
         <>Folder cleanup: assets/, books/ modul-NN.pdf, .gitignore diperbarui</>,
       ],
     },
-    desc: 'Sprint 7 — Studi Kasus & Jurnal, form kepraktisan, N-Gain Calculator SDL, dan panduan workshop tatap muka.',
+    desc: 'Sprint 7: Studi Kasus & Jurnal, form kepraktisan, N-Gain Calculator SDL, dan panduan workshop tatap muka.',
   },
   {
     version: 'v0.9.1',
@@ -296,9 +296,9 @@ const versions: VersionEntry[] = [
     sections: {
       Changed: [<>CLAUDE.md: update Sprint Roadmap + Key Files list</>],
       Fixed: [
-        <>Auth guard konsistensi di semua halaman protected — null guard, role mismatch redirect</>,
-        <>DataLayer method calls — null checks, fallback values, error handling</>,
-        <>UI &amp; Mobile — tap targets, font sizes, overflow issues di semua halaman</>,
+        <>Auth guard konsistensi di semua halaman protected: null guard, role mismatch redirect</>,
+        <>DataLayer method calls: null checks, fallback values, error handling</>,
+        <>UI &amp; Mobile: tap targets, font sizes, overflow issues di semua halaman</>,
         <>style.css: {c('var(--terra-dark)')} → {c('var(--terra-d)')} (4 occurrences)</>,
         <>changelog.html: tambah entri v0.8, v0.8.1, v0.9, v0.9.1 yang hilang</>,
       ],
@@ -313,7 +313,7 @@ const versions: VersionEntry[] = [
         <>data-layer.js: abstraksi data layer (localStorage → Supabase toggle via USE_SUPABASE flag)</>,
         <>vark.html: asesmen gaya belajar VARK (12 pertanyaan, simpan ke DataLayer)</>,
         <>forum.html: forum peer-review per modul (post + reply + like, avatar warna per nama)</>,
-        <>draf.html: portal asistensi draf — mahasiswa upload, dosen review &amp; komentar</>,
+        <>draf.html: portal asistensi draf, mahasiswa upload, dosen review &amp; komentar</>,
         <>Notifikasi bell icon di semua dashboard (in-app, markRead, markAllRead)</>,
         <>Donut chart progress modul di dashboard-mhs &amp; dos (SVG animasi)</>,
         <>Checklist metakognitif self-reflection per modul (5 item, simpan ke DataLayer)</>,
@@ -325,7 +325,7 @@ const versions: VersionEntry[] = [
         <>Semua halaman: ganti hardcode langsung ke DataLayer.* calls</>,
       ],
     },
-    desc: 'Sprint 4 & 5 — adaptive learning engine, social features (forum + draf), dan donut chart SDL tracking.',
+    desc: 'Sprint 4 & 5: adaptive learning engine, social features (forum + draf), dan donut chart SDL tracking.',
   },
   {
     version: 'v0.8.1',
@@ -333,7 +333,7 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [<>reset-password.html: halaman reset password via Supabase email link (3 state: form → loading → success)</>],
       Changed: [<>Konsolidasi login.html → redirect stub ke index.html (hapus duplikasi form login)</>],
-      Fixed: [<>modules-data.js: fix distribusi jawaban kuis — A:11, B:11, C:11, D:12 (sebelumnya tidak merata)</>],
+      Fixed: [<>modules-data.js: fix distribusi jawaban kuis, A:11, B:11, C:11, D:12 (sebelumnya tidak merata)</>],
     },
   },
   {
@@ -342,15 +342,15 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>Auth guard di semua halaman protected (redirect ke index.html jika tidak ada sesi)</>,
-        <>Tombol &quot;Lanjut Belajar&quot; di dashboard-mhs — lanjut ke modul terakhir dikerjakan</>,
+        <>Tombol &quot;Lanjut Belajar&quot; di dashboard-mhs: lanjut ke modul terakhir dikerjakan</>,
       ],
-      Changed: [<>Mobile responsive: index.html, register.html, modul.html, kuis.html, dashboard (360px–768px)</>],
+      Changed: [<>Mobile responsive: index.html, register.html, modul.html, kuis.html, dashboard (360px-768px)</>],
       Fixed: [
         <>Bug sweep (10 bugs): null guard spineEl, HTML escaping kuis XSS, CSS var --terra-dark, race condition bgRunning, dan lainnya</>,
         <>style.css: tambah {c('-webkit-backdrop-filter')} untuk Safari compatibility</>,
       ],
     },
-    desc: 'Sprint 3 — auth, mobile, dan bug sweep menyeluruh.',
+    desc: 'Sprint 3: auth, mobile, dan bug sweep menyeluruh.',
   },
   {
     version: 'v0.6',
@@ -363,7 +363,7 @@ const versions: VersionEntry[] = [
         <>Tombol Lanjut Belajar</>,
       ],
     },
-    desc: 'Modul + Progress Tracking — versi ini gak sempat ditulis sebagai entry changelog detail waktu itu, cuma tercatat sebagai kartu roadmap. Dituliskan ulang belakangan dari judul & poin roadmap-nya, bukan dari commit asli.',
+    desc: 'Modul + Progress Tracking: versi ini gak sempat ditulis sebagai entry changelog detail waktu itu, cuma tercatat sebagai kartu roadmap. Dituliskan ulang belakangan dari judul & poin roadmap-nya, bukan dari commit asli.',
   },
   {
     version: 'v0.7',
@@ -371,9 +371,9 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>modules-data.js: 9 modul RPS + 45 soal kuis dummy pilihan ganda</>,
-        <>modul.html: halaman detail modul — cover PDF, capaian, materi sesi, progress, riwayat kuis</>,
-        <>kuis.html: kuis formatif 5 soal/modul — satu per satu, feedback langsung, pembahasan soal</>,
-        <>Skor kuis: verdict adaptif — Sangat Baik (≥80%) / Lulus (≥60%) / Perlu Mengulang (&lt;60%)</>,
+        <>modul.html: halaman detail modul, cover PDF, capaian, materi sesi, progress, riwayat kuis</>,
+        <>kuis.html: kuis formatif 5 soal/modul, satu per satu, feedback langsung, pembahasan soal</>,
+        <>Skor kuis: verdict adaptif, Sangat Baik (≥80%) / Lulus (≥60%) / Perlu Mengulang (&lt;60%)</>,
         <>localStorage progress baca: halaman terakhir, persentase, tanggal terakhir buka</>,
         <>localStorage riwayat kuis: simpan max 10 percobaan, tampil di modul.html</>,
       ],
@@ -390,40 +390,40 @@ const versions: VersionEntry[] = [
       Added: [
         <>Ebook: katalog buku pindah ke panel kiri; flipbook reader ke kanan</>,
         <>Ebook: cover buku dari halaman pertama PDF (render via pdf.js, async per kartu)</>,
-        <>Ebook: tombol ← Dashboard auth-aware — redirect ke dashboard-mhs/dos jika login, atau index.html jika demo</>,
+        <>Ebook: tombol ← Dashboard auth-aware: redirect ke dashboard-mhs/dos jika login, atau index.html jika demo</>,
         <>Dashboard Mahasiswa &amp; Dosen: link Changelog &amp; Checklist di sidebar footer</>,
       ],
       Changed: [<>Login (index.html + login.html): tombol Demo Mahasiswa &amp; Demo Dosen selalu tampil di semua environment</>],
       Fixed: [
-        <>index.html: error &quot;sb is not defined&quot; — DEMO_MODE guard pada semua panggilan sb.*</>,
-        <>register.html: error &quot;sb is not defined&quot; — fallback demo mode dengan redirect ke login</>,
+        <>index.html: error &quot;sb is not defined&quot;, DEMO_MODE guard pada semua panggilan sb.*</>,
+        <>register.html: error &quot;sb is not defined&quot;, fallback demo mode dengan redirect ke login</>,
       ],
     },
-    desc: 'Sprint 2 patch — perbaikan UX login demo, overhaul ebook reader, dan navigasi changelog/checklist di semua halaman.',
+    desc: 'Sprint 2 patch: perbaikan UX login demo, overhaul ebook reader, dan navigasi changelog/checklist di semua halaman.',
   },
   {
     version: 'v0.5',
     date: '2026-06-09',
     sections: {
       Added: [
-        <>Dashboard Mahasiswa — sidebar lengkap: Dashboard, Modul, Video, Kuis, Forum, Draf Saya, Progress, Pengaturan (semua dengan ikon SVG)</>,
-        <>Dashboard Mahasiswa — welcome banner dengan nama + streak belajar; stat cards animasi (modul selesai, rata-rata kuis, waktu belajar)</>,
-        <>Dashboard Mahasiswa — modul aktif dengan progress bar per modul (Selesai / Sedang / Terkunci), warna adaptif</>,
-        <>Dashboard Mahasiswa — halaman Video (6 video per modul), Kuis (riwayat + skor berwarna), Forum diskusi, Draf Saya, Progress visual, Pengaturan profil</>,
-        <>Dashboard Dosen — sidebar: Dashboard, Mahasiswa, Modul, Analitik, Forum, Validasi, Pengaturan</>,
-        <>Dashboard Dosen — class header MK Metpen &amp; Pengembangan Kelas A (32 mahasiswa); stat cards (68% progres, 24 draf, 5 perlu asistensi)</>,
-        <>Dashboard Dosen — bar chart distribusi skor kuis dengan tooltip hover (6 rentang: 40–100)</>,
-        <>Dashboard Dosen — tabel 32 mahasiswa dummy dengan search real-time + export CSV</>,
-        <>Dashboard Dosen — halaman Analitik (chart distribusi skor + penyelesaian per modul), Forum, Validasi ahli (media &amp; materi dengan skor bar)</>,
+        <>Dashboard Mahasiswa, sidebar lengkap: Dashboard, Modul, Video, Kuis, Forum, Draf Saya, Progress, Pengaturan (semua dengan ikon SVG)</>,
+        <>Dashboard Mahasiswa: welcome banner dengan nama + streak belajar; stat cards animasi (modul selesai, rata-rata kuis, waktu belajar)</>,
+        <>Dashboard Mahasiswa: modul aktif dengan progress bar per modul (Selesai / Sedang / Terkunci), warna adaptif</>,
+        <>Dashboard Mahasiswa: halaman Video (6 video per modul), Kuis (riwayat + skor berwarna), Forum diskusi, Draf Saya, Progress visual, Pengaturan profil</>,
+        <>Dashboard Dosen, sidebar: Dashboard, Mahasiswa, Modul, Analitik, Forum, Validasi, Pengaturan</>,
+        <>Dashboard Dosen: class header MK Metpen &amp; Pengembangan Kelas A (32 mahasiswa); stat cards (68% progres, 24 draf, 5 perlu asistensi)</>,
+        <>Dashboard Dosen: bar chart distribusi skor kuis dengan tooltip hover (6 rentang: 40-100)</>,
+        <>Dashboard Dosen: tabel 32 mahasiswa dummy dengan search real-time + export CSV</>,
+        <>Dashboard Dosen: halaman Analitik (chart distribusi skor + penyelesaian per modul), Forum, Validasi ahli (media &amp; materi dengan skor bar)</>,
       ],
       Changed: [
         <>Avatar dropdown di kedua dashboard: Edit Profil + Logout (menggantikan klik langsung logout)</>,
         <>Role badge di topbar (Mahasiswa / Dosen) untuk identifikasi cepat</>,
-        <>Dummy data lengkap — seluruh UI bisa dilihat tanpa koneksi database (fallback otomatis)</>,
-        <>Auth guard dipertahankan — fallback ke dummy jika offline/localhost, redirect ke login jika production &amp; tidak ada sesi</>,
+        <>Dummy data lengkap: seluruh UI bisa dilihat tanpa koneksi database (fallback otomatis)</>,
+        <>Auth guard dipertahankan: fallback ke dummy jika offline/localhost, redirect ke login jika production &amp; tidak ada sesi</>,
       ],
     },
-    desc: 'Sprint 2 — fokus UI/UX dashboard sebagai fondasi sebelum integrasi data Supabase live dan modul konten.',
+    desc: 'Sprint 2: fokus UI/UX dashboard sebagai fondasi sebelum integrasi data Supabase live dan modul konten.',
   },
   {
     version: 'v0.4',
@@ -431,7 +431,7 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>Split-layout baru: flip pane (kiri) + catalog pane (kanan) dengan CSS Grid 1fr 320px</>,
-        <>Autentikasi pengguna via Supabase Auth — login, register, forgot password</>,
+        <>Autentikasi pengguna via Supabase Auth: login, register, forgot password</>,
         <>Dashboard Mahasiswa: stat cards, daftar modul adaptif, progress bar, riwayat kuis</>,
         <>Dashboard Dosen: monitor progress semua mahasiswa, highlight perlu bantuan, export CSV</>,
         <>Database Supabase PostgreSQL: 8 tabel (profiles, modules, user_progress, quiz_questions, quiz_attempts, drafts, draft_comments, forum_posts)</>,
@@ -442,13 +442,13 @@ const versions: VersionEntry[] = [
         <>CHECKLIST.md: 10 fase pengembangan dari setup hingga HKI/diseminasi</>,
       ],
       Changed: [
-        <>Catalog pane selalu terlihat di desktop — tidak perlu beralih view</>,
+        <>Catalog pane selalu terlihat di desktop: tidak perlu beralih view</>,
         <>Auto-load buku pertama di desktop setelah katalog dimuat</>,
         <>DOM IDs baru: flipPane, catPane, flLoader, stage, toolbar (konsisten dengan split layout)</>,
         <>IndexedDB cache diperbarui ke FlipbookCache2 (hindari konflik cache lama)</>,
       ],
       Fixed: [<>supabase.js: variabel client diganti dari {c('db')} ke {c('sb')} (konsisten dengan semua halaman)</>],
-      Security: [<>supabase.js masuk .gitignore — credential tidak ter-commit ke repo publik</>],
+      Security: [<>supabase.js masuk .gitignore: credential tidak ter-commit ke repo publik</>],
     },
   },
   {
@@ -457,7 +457,7 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>GitHub Actions workflow ({c('scan-books.yml')}): auto-scan folder books/ setiap push, perbarui config.json otomatis</>,
-        <>IndexedDB cache (FlipbookCache) — buku langsung terbuka di kunjungan kedua tanpa render ulang</>,
+        <>IndexedDB cache (FlipbookCache): buku langsung terbuka di kunjungan kedua tanpa render ulang</>,
         <>Cache invalidation: deteksi perubahan PDF via Content-Length header</>,
         <>Lazy rendering: tampilkan buku setelah 6 halaman pertama selesai, render sisa di background</>,
       ],
@@ -488,14 +488,14 @@ const versions: VersionEntry[] = [
     sections: {
       Added: [
         <>Render PDF ke canvas menggunakan pdf.js v3.11.174 (CDN)</>,
-        <>Tampilan dua halaman (spread) — baca seperti buku fisik</>,
+        <>Tampilan dua halaman (spread): baca seperti buku fisik</>,
         <>Catalog view: grid buku dari config.json, klik untuk buka</>,
         <>Design warm earth-tone: Playfair Display + DM Sans, palet cream/sage/terra</>,
         <>Local dev server: serve.bat (python -m http.server 8080)</>,
         <>README awal, scan_books.py untuk generate config.json manual</>,
       ],
     },
-    desc: 'Versi pertama — fungsionalitas dasar membaca PDF sebagai flipbook dengan katalog sederhana.',
+    desc: 'Versi pertama: fungsionalitas dasar membaca PDF sebagai flipbook dengan katalog sederhana.',
   },
 ].sort(compareVersionsDesc)
 
@@ -551,7 +551,7 @@ const roadmap: RoadmapItem[] = [
     items: <>
       · Auth guard semua halaman protected<br />
       · Tombol Lanjut Belajar<br />
-      · Mobile responsive 360px–768px<br />
+      · Mobile responsive 360px-768px<br />
       · Bug sweep 10 bugs fixed
     </>,
   },
@@ -765,7 +765,7 @@ export default function Changelog() {
             Changelog <IconClipboard size={28} />
           </h1>
           <p className="text-brown-3 mt-2 text-sm">
-            Riwayat perubahan Perpustakaan Digital · SMART-FLIP 5.0 — mengikuti format{' '}
+            Riwayat perubahan Perpustakaan Digital · SMART-FLIP 5.0: mengikuti format{' '}
             <a
               href="https://keepachangelog.com/id/1.1.0/"
               target="_blank"
@@ -795,7 +795,7 @@ export default function Changelog() {
           </div>
           <div className="flex items-center gap-2.5 text-xs text-brown-3">
             <span>
-              {total === 0 ? 0 : start + 1}–{end} dari {total}
+              {total === 0 ? 0 : start + 1}-{end} dari {total}
             </span>
             {pageSize !== 'Semua' && totalPages > 1 && (
               <div className="flex items-center gap-1">

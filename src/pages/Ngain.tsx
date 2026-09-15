@@ -223,7 +223,7 @@ export function NgainPanel() {
     <>
       <div>
         <p className="text-sm text-brown-3 leading-relaxed mb-5">
-          Analisis Peningkatan Self-Directed Learning — hitung dan interpretasi N-Gain dari data pre-test dan
+          Analisis Peningkatan Self-Directed Learning: hitung dan interpretasi N-Gain dari data pre-test dan
           post-test mahasiswa.
         </p>
 
@@ -502,9 +502,9 @@ export function NgainPanel() {
               dinormalisasi terhadap kemungkinan peningkatan maksimal. Rumus: <strong>g = (Post − Pre) / (Max − Pre)</strong>.
             </p>
             <p className="text-sm text-brown-2 leading-relaxed">
-              Kategori interpretasi menurut Hake (1998): <strong className="text-sage-d">Tinggi (g &gt; 0.7)</strong> —
-              pembelajaran sangat efektif; <strong className="text-terra-d">Sedang (0.3 ≤ g ≤ 0.7)</strong> — cukup
-              efektif; <strong className="text-red">Rendah (g &lt; 0.3)</strong> — perlu perbaikan strategi
+              Kategori interpretasi menurut Hake (1998): <strong className="text-sage-d">Tinggi (g &gt; 0.7)</strong>:
+              pembelajaran sangat efektif; <strong className="text-terra-d">Sedang (0.3 ≤ g ≤ 0.7)</strong>: cukup
+              efektif; <strong className="text-red">Rendah (g &lt; 0.3)</strong>: perlu perbaikan strategi
               pembelajaran.
             </p>
           </div>
@@ -539,7 +539,7 @@ export function NgainPanel() {
               <p className="mt-2 text-xs text-brown-3">
                 Referensi: Hake, R.R. (1998). Interactive-engagement versus traditional methods: A six-thousand-student
                 survey of mechanics test data for introductory physics courses. <em>American Journal of Physics, 66</em>
-                (1), 64–74.
+                (1), 64-74.
               </p>
             </div>
           )}

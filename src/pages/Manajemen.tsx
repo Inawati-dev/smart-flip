@@ -520,7 +520,7 @@ export function Manajemen() {
     } else if (succeeded === 0) {
       showToast(`Gagal memperbarui status untuk semua ${n} modul`)
     } else {
-      showToast(`Berhasil untuk ${succeeded} dari ${n} modul — gagal: modul ${failedIds.join(', ')}`)
+      showToast(`Berhasil untuk ${succeeded} dari ${n} modul, gagal: modul ${failedIds.join(', ')}`)
     }
   }
 
@@ -624,7 +624,7 @@ export function Manajemen() {
 
     if (creatingNew) {
       if (!isSupabaseConfigured) {
-        showToast('Tambah modul butuh koneksi Supabase — belum tersedia di mode demo.')
+        showToast('Tambah modul butuh koneksi Supabase: belum tersedia di mode demo.')
         return
       }
       setSaving(true)
@@ -684,7 +684,7 @@ export function Manajemen() {
         <div className="mb-5">
           <h1 className="font-display text-2xl font-bold text-brown">Kelola Modul</h1>
           <p className="text-sm text-brown-3 mt-1">
-            Manajemen {totalModul} modul pembelajaran — edit metadata, atur status &amp; urutan
+            Manajemen {totalModul} modul pembelajaran: edit metadata, atur status &amp; urutan
           </p>
         </div>
 
@@ -988,7 +988,7 @@ export function Manajemen() {
                 aria-label="Pilih modul"
                 className="h-8 px-2.5 rounded-lg border text-xs text-brown cursor-pointer"
                 style={BORDER}
-                options={order.map((id, idx) => ({ value: String(id), label: `Modul ${idx + 1} — ${modMap[id]?.title || ''}` }))}
+                options={order.map((id, idx) => ({ value: String(id), label: `Modul ${idx + 1}: ${modMap[id]?.title || ''}` }))}
               />
             </div>
             <button
@@ -1068,7 +1068,7 @@ export function Manajemen() {
                 aria-label="Pilih modul"
                 className="h-8 px-2.5 rounded-lg border text-xs text-brown cursor-pointer"
                 style={BORDER}
-                options={order.map((id, idx) => ({ value: String(id), label: `Modul ${idx + 1} — ${modMap[id]?.title || ''}` }))}
+                options={order.map((id, idx) => ({ value: String(id), label: `Modul ${idx + 1}: ${modMap[id]?.title || ''}` }))}
               />
             </div>
             <button
@@ -1119,7 +1119,7 @@ export function Manajemen() {
           <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-lg font-semibold text-brown">
-                {creatingNew ? 'Tambah Modul Baru' : `Edit — ${modMap[editId!]?.title || ''}`}
+                {creatingNew ? 'Tambah Modul Baru' : `Edit: ${modMap[editId!]?.title || ''}`}
               </h3>
               <button onClick={closeEditModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
                 ×
@@ -1159,9 +1159,9 @@ export function Manajemen() {
                 className="h-10 rounded-lg border px-3 text-sm text-brown cursor-pointer"
                 style={BORDER}
                 options={[
-                  { value: 'aktif', label: 'Aktif — mahasiswa bisa akses' },
-                  { value: 'draf', label: 'Draf — belum dipublish' },
-                  { value: 'terkunci', label: 'Terkunci — dikunci manual dosen' },
+                  { value: 'aktif', label: 'Aktif: mahasiswa bisa akses' },
+                  { value: 'draf', label: 'Draf: belum dipublish' },
+                  { value: 'terkunci', label: 'Terkunci: dikunci manual dosen' },
                 ]}
               />
             </label>
@@ -1180,7 +1180,7 @@ export function Manajemen() {
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
               Catatan Dosen{' '}
-              <span className="font-normal text-brown-3">privat — tidak ditampilkan ke mahasiswa, maks. 500 karakter</span>
+              <span className="font-normal text-brown-3">privat: tidak ditampilkan ke mahasiswa, maks. 500 karakter</span>
               <textarea
                 value={formCatatan}
                 onChange={(e) => setFormCatatan(e.target.value.slice(0, 500))}
@@ -1236,7 +1236,7 @@ export function Manajemen() {
                     // yatim (sisa upload lama) gampang dibedakan dari yang aktif.
                     options={pdfFiles.map((f) => ({
                       value: f.url,
-                      label: f.usedBy ? `${f.name} — dipakai: ${f.usedBy}` : `${f.name} — belum dipakai`,
+                      label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
                     }))}
                   />
                   <button
@@ -1318,7 +1318,7 @@ export function Manajemen() {
           <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-lg font-semibold text-brown">
-                {diagEditId === 'new' ? 'Tambah Soal Diagnostik' : `Edit Soal — Urutan ${diagOrderNum}`}
+                {diagEditId === 'new' ? 'Tambah Soal Diagnostik' : `Edit Soal: Urutan ${diagOrderNum}`}
               </h3>
               <button onClick={closeDiagModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
                 ×
@@ -1338,7 +1338,7 @@ export function Manajemen() {
 
             <div className="flex flex-col gap-2 mb-3">
               <span className="text-xs font-semibold text-brown-2">
-                4 Opsi Jawaban <span className="font-normal text-brown-3">— pilih radio di sebelah opsi yang benar</span>
+                4 Opsi Jawaban <span className="font-normal text-brown-3">, pilih radio di sebelah opsi yang benar</span>
               </span>
               {diagOpsi.map((opsi, idx) => (
                 <label key={idx} className="flex items-center gap-2.5">
@@ -1477,7 +1477,7 @@ export function Manajemen() {
           <div className="bg-ivory rounded-2xl p-6 max-w-[520px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-lg font-semibold text-brown">
-                {kuisEditId === 'new' ? 'Tambah Soal Kuis' : `Edit Soal — Urutan ${kuisOrderNum}`}
+                {kuisEditId === 'new' ? 'Tambah Soal Kuis' : `Edit Soal: Urutan ${kuisOrderNum}`}
               </h3>
               <button onClick={closeKuisModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
                 ×
@@ -1497,7 +1497,7 @@ export function Manajemen() {
 
             <div className="flex flex-col gap-2 mb-3">
               <span className="text-xs font-semibold text-brown-2">
-                4 Opsi Jawaban <span className="font-normal text-brown-3">— pilih radio di sebelah opsi yang benar</span>
+                4 Opsi Jawaban <span className="font-normal text-brown-3">, pilih radio di sebelah opsi yang benar</span>
               </span>
               {kuisOpsi.map((opsi, idx) => (
                 <label key={idx} className="flex items-center gap-2.5">
@@ -1521,7 +1521,7 @@ export function Manajemen() {
             </div>
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
-              Penjelasan <span className="font-normal text-brown-3">opsional — ditampilkan setelah mahasiswa menjawab</span>
+              Penjelasan <span className="font-normal text-brown-3">opsional: ditampilkan setelah mahasiswa menjawab</span>
               <textarea
                 value={kuisPenjelasan}
                 onChange={(e) => setKuisPenjelasan(e.target.value)}
@@ -1604,7 +1604,7 @@ export function Manajemen() {
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-[640px] w-full my-8" style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg font-semibold text-brown">Edit Konten Workshop — {modMap[wsModuleId]?.title}</h3>
+              <h3 className="font-display text-lg font-semibold text-brown">Edit Konten Workshop: {modMap[wsModuleId]?.title}</h3>
               <button onClick={() => setWsEditOpen(false)} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
                 ×
               </button>
@@ -1644,7 +1644,7 @@ export function Manajemen() {
                     )}
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    <input value={a.waktu} onChange={(e) => updateWsAktivitas(idx, 'waktu', e.target.value)} placeholder="Waktu, mis. 0–15 menit" className="h-9 rounded-md border px-2.5 text-xs text-brown" style={BORDER} />
+                    <input value={a.waktu} onChange={(e) => updateWsAktivitas(idx, 'waktu', e.target.value)} placeholder="Waktu, mis. 0-15 menit" className="h-9 rounded-md border px-2.5 text-xs text-brown" style={BORDER} />
                     <input value={a.nama} onChange={(e) => updateWsAktivitas(idx, 'nama', e.target.value)} placeholder="Nama aktivitas" className="h-9 rounded-md border px-2.5 text-xs text-brown" style={BORDER} />
                   </div>
                   <textarea value={a.deskripsi} onChange={(e) => updateWsAktivitas(idx, 'deskripsi', e.target.value)} rows={2} placeholder="Deskripsi aktivitas" className="rounded-md border px-2.5 py-1.5 text-xs text-brown resize-y" style={BORDER} />
@@ -1663,7 +1663,7 @@ export function Manajemen() {
               <input value={wsLkJudul} onChange={(e) => setWsLkJudul(e.target.value)} placeholder="Judul lembar kerja" className="h-9 rounded-md border px-2.5 text-sm text-brown" style={BORDER} />
               <textarea value={wsLkInstruksi} onChange={(e) => setWsLkInstruksi(e.target.value)} rows={2} placeholder="Instruksi pengerjaan" className="rounded-md border px-2.5 py-1.5 text-sm text-brown resize-y" style={BORDER} />
               <label className="flex flex-col gap-1 text-[11px] font-semibold text-brown-3">
-                Pertanyaan — satu per baris
+                Pertanyaan: satu per baris
                 <textarea value={wsLkPertanyaan} onChange={(e) => setWsLkPertanyaan(e.target.value)} rows={4} className="rounded-md border px-2.5 py-1.5 text-sm text-brown resize-y" style={BORDER} />
               </label>
             </div>

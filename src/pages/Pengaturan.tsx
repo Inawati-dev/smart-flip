@@ -138,7 +138,7 @@ export function Pengaturan() {
               </div>
               <p className="text-xs text-brown-3 mb-3">
                 Kode yang harus diisi calon dosen saat mendaftar. Bagikan hanya ke orang yang memang
-                berhak dapat akses dosen — siapa pun yang punya kode ini bisa membuat akun dosen.
+                berhak dapat akses dosen: siapa pun yang punya kode ini bisa membuat akun dosen.
               </p>
 
               {inviteCode === null ? (
@@ -183,7 +183,7 @@ export function Pengaturan() {
                   </div>
                   {!isInviteCodeLongEnough(inviteDraft) && inviteDraft.length > 0 && (
                     <span className="text-[11px] text-brown-3">
-                      Kurang panjang — minimal {MIN_INVITE_CODE_LENGTH} karakter.
+                      Kurang panjang: minimal {MIN_INVITE_CODE_LENGTH} karakter.
                     </span>
                   )}
                 </div>
@@ -217,7 +217,7 @@ export function Pengaturan() {
 
               {inviteCode === 'GANTI_KODE_INI_SEKARANG' && (
                 <p className="text-xs text-red mt-2.5">
-                  Ini masih kode bawaan contoh. Ganti sekarang — kode ini ada di berkas migration yang
+                  Ini masih kode bawaan contoh. Ganti sekarang: kode ini ada di berkas migration yang
                   ikut tersimpan di repositori.
                 </p>
               )}
@@ -232,7 +232,7 @@ export function Pengaturan() {
               <span className="text-sm font-semibold text-brown">Notifikasi</span>
             </div>
             {!isDosen ? (
-              <p className="text-xs text-brown-3">Segera hadir — atur notifikasi email &amp; in-app di sini.</p>
+              <p className="text-xs text-brown-3">Segera hadir: atur notifikasi email &amp; in-app di sini.</p>
             ) : needsAttention.length === 0 ? (
               <p className="text-xs text-brown-3 mt-1">
                 Semua mahasiswa sudah mulai modul &amp; tes diagnostik. Tidak ada yang perlu ditindaklanjuti.

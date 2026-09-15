@@ -131,7 +131,7 @@ export default function Observasi() {
               <IconCompass size={28} />
             </span>
             {offline
-              ? 'Tugas observasi butuh koneksi Supabase — belum tersedia di mode demo.'
+              ? 'Tugas observasi butuh koneksi Supabase: belum tersedia di mode demo.'
               : 'Belum ada tugas observasi dari dosenmu.'}
           </div>
         ) : (
@@ -210,7 +210,7 @@ export default function Observasi() {
                         <IconUpload size={15} /> {berkasBaru ? 'Ganti Berkas' : 'Unggah Berkas'}
                       </button>
                       <span className="text-xs text-brown-3 break-all min-w-0">
-                        {berkasBaru ? berkasBaru.name : 'Opsional — foto, PDF, atau dokumen laporan.'}
+                        {berkasBaru ? berkasBaru.name : 'Opsional: foto, PDF, atau dokumen laporan.'}
                       </span>
                     </div>
 

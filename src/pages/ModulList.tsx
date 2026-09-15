@@ -279,7 +279,7 @@ export function DosenModulTable() {
                   style={BORDER}
                   options={pdfFiles.map((f) => ({
                     value: f.url,
-                    label: f.usedBy ? `${f.name} — dipakai: ${f.usedBy}` : `${f.name} — belum dipakai`,
+                    label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
                   }))}
                 />
                 <button

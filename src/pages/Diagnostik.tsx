@@ -147,7 +147,7 @@ export function Diagnostik() {
             </div>
 
             <p className="text-center text-xs text-brown-3 opacity-70 mb-5">
-              Tes diagnostik cuma dikerjakan sekali di awal dan hasilnya permanen untuk mata kuliah ini — jalurmu
+              Tes diagnostik cuma dikerjakan sekali di awal dan hasilnya permanen untuk mata kuliah ini: jalurmu
               tidak berubah lagi dari sini.
             </p>
 
@@ -174,8 +174,8 @@ export function Diagnostik() {
                 Tes Diagnostik Awal
               </h1>
               <p className="text-sm text-white/55 leading-relaxed max-w-[400px] mx-auto mb-3">
-                Sebelum mulai Bab 1, kerjakan tes penempatan singkat ini. Hasilnya menentukan jalur belajarmu —
-                Jalur Cepat atau Jalur Mendalam — untuk seluruh mata kuliah ini.
+                Sebelum mulai Bab 1, kerjakan tes penempatan singkat ini. Hasilnya menentukan jalur belajarmu
+                (Jalur Cepat atau Jalur Mendalam) untuk seluruh mata kuliah ini.
               </p>
               <div className="inline-flex flex-wrap items-center justify-center gap-3 md:gap-4 bg-white/[.06] rounded-lg px-4 py-2 text-xs text-white/45 mb-5">
                 <span className="inline-flex items-center gap-1">

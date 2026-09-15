@@ -38,9 +38,9 @@ function VarkIcon({ k, size = 14, className }: { k: VarkKey; size?: number; clas
 const VARK_COLORS: Record<VarkKey, string> = { V: '#8FA287', A: '#D4A373', R: '#4A7EA0', K: '#8B6BA0' }
 const VARK_NAMES: Record<VarkKey, string> = { V: 'Visual', A: 'Auditory', R: 'Read/Write', K: 'Kinestetik' }
 const VARK_DESCS: Record<VarkKey, string> = {
-  V: 'Kamu belajar paling baik melalui visual — diagram, grafik, warna, dan ilustrasi membantu kamu memahami dan mengingat informasi. Konten berupa slide visual dan infografis sangat cocok untukmu.',
+  V: 'Kamu belajar paling baik melalui visual: diagram, grafik, warna, dan ilustrasi membantu kamu memahami dan mengingat informasi. Konten berupa slide visual dan infografis sangat cocok untukmu.',
   A: 'Kamu belajar paling baik melalui pendengaran dan diskusi. Mendengarkan penjelasan, berdiskusi dengan teman, dan memanfaatkan rekaman audio sangat membantu proses belajarmu.',
-  R: 'Kamu belajar paling baik melalui teks — membaca dan menulis adalah kekuatanmu. Membuat catatan, merangkum, dan membaca buku teks adalah cara belajar yang paling efektif bagimu.',
+  R: 'Kamu belajar paling baik melalui teks: membaca dan menulis adalah kekuatanmu. Membuat catatan, merangkum, dan membaca buku teks adalah cara belajar yang paling efektif bagimu.',
   K: 'Kamu belajar paling baik melalui praktik langsung. Mengerjakan soal latihan, simulasi, dan studi kasus nyata membuat pemahaman konsep jauh lebih mudah dan bertahan lama.',
 }
 
@@ -150,7 +150,7 @@ export function Vark() {
                 Asesmen Gaya Belajar VARK
               </h1>
               <p className="text-sm text-white/55 leading-relaxed max-w-[400px] mx-auto mb-3">
-                Temukan cara belajar yang paling cocok untukmu — Visual, Auditory, Read/Write, atau Kinesthetic — agar
+                Temukan cara belajar yang paling cocok untukmu (Visual, Auditory, Read/Write, atau Kinesthetic) agar
                 pengalaman belajar di SMART-FLIP lebih personal dan efektif.
               </p>
               <div className="inline-flex flex-wrap items-center justify-center gap-3 md:gap-4 bg-white/[.06] rounded-lg px-4 py-2 text-xs text-white/45 mb-5">
@@ -360,7 +360,7 @@ export function Vark() {
                     />
                     <div>
                       <div className="flex items-center flex-wrap gap-1.5 text-sm font-semibold text-brown mb-0.5">
-                        <VarkIcon k={k} size={15} /> {VARK_LABELS[k]} — skor: {result.scores[k]}/{total}
+                        <VarkIcon k={k} size={15} /> {VARK_LABELS[k]}, skor: {result.scores[k]}/{total}
                         {isDom && <IconStar size={13} className="text-terra" />}
                       </div>
                       <div className="text-[13px] text-brown-3 leading-relaxed">{VARK_DESCS[k]}</div>

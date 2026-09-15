@@ -38,7 +38,7 @@ export function Register() {
     setSuccess('')
 
     if (!isSupabaseConfigured) {
-      setError('Pendaftaran belum bisa diproses — konfigurasi server belum lengkap. Hubungi admin.')
+      setError('Pendaftaran belum bisa diproses: konfigurasi server belum lengkap. Hubungi admin.')
       return
     }
 
@@ -214,14 +214,14 @@ export function Register() {
             <input
               id="classCode"
               type="text"
-              placeholder="Contoh: 7XQK2M — dari dosen Anda"
+              placeholder="Contoh: 7XQK2M, dari dosen Anda"
               value={classCode}
               onChange={(e) => setClassCode(e.target.value)}
               className={authInputClass}
               style={authInputStyle}
             />
             <p className="text-[13px] text-brown-3">
-              Isi jika dosen sudah memberi kode kelas — bisa juga dilewati dan diisi belakangan.
+              Isi jika dosen sudah memberi kode kelas: bisa juga dilewati dan diisi belakangan.
             </p>
           </div>
         )}

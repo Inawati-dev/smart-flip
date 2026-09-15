@@ -65,7 +65,7 @@ function IndikatorRow({
                 value={val}
                 checked={value === val}
                 onChange={() => onChange(val)}
-                aria-label={`${val} — ${SCALE_LABELS[val - 1]}`}
+                aria-label={`${val}: ${SCALE_LABELS[val - 1]}`}
                 className="sr-only"
               />
               <span
@@ -259,7 +259,7 @@ export function Validasi() {
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-[.7rem] font-bold uppercase tracking-wide text-brown-3">Skala Penilaian</span>
-              <span className="text-sm font-medium text-brown">1 (Sangat Kurang) — 5 (Sangat Baik)</span>
+              <span className="text-sm font-medium text-brown">1 (Sangat Kurang) hingga 5 (Sangat Baik)</span>
             </div>
             <div className="flex flex-col gap-0.5">
               <span className="text-[.7rem] font-bold uppercase tracking-wide text-brown-3">Aspek Dinilai</span>
@@ -270,7 +270,7 @@ export function Validasi() {
             className="text-sm text-brown-2 rounded-r-lg px-3.5 py-2.5 leading-relaxed"
             style={{ background: 'var(--bg3)', borderLeft: '3px solid var(--terra)' }}
           >
-            <strong>Petunjuk pengisian:</strong> Pilih angka 1–5 pada setiap indikator sesuai dengan penilaian Anda.
+            <strong>Petunjuk pengisian:</strong> Pilih angka 1-5 pada setiap indikator sesuai dengan penilaian Anda.
             Nilai 1 = Sangat Kurang, 2 = Kurang, 3 = Cukup, 4 = Baik, 5 = Sangat Baik. Isi semua indikator sebelum
             mengirimkan formulir. Saran dan komentar sangat membantu perbaikan e-modul ini.
           </div>
@@ -396,7 +396,7 @@ export function Validasi() {
             <div className={activeTab === 'media' ? 'block' : 'hidden'}>
               <div className="bg-ivory rounded-2xl border p-5 md:p-7 mb-5" style={BORDER}>
                 <div className="text-xs font-bold uppercase tracking-wide text-brown-3 mb-3 pb-2 border-b" style={BORDER}>
-                  Aspek Media — penilaian kualitas tampilan &amp; antarmuka
+                  Aspek Media: penilaian kualitas tampilan &amp; antarmuka
                 </div>
                 {errMedia && (
                   <div className="text-xs text-red mb-2.5 px-2.5 py-1.5 rounded-md bg-red/10">
@@ -444,7 +444,7 @@ export function Validasi() {
             <div className={activeTab === 'materi' ? 'block' : 'hidden'}>
               <div className="bg-ivory rounded-2xl border p-5 md:p-7 mb-5" style={BORDER}>
                 <div className="text-xs font-bold uppercase tracking-wide text-brown-3 mb-3 pb-2 border-b" style={BORDER}>
-                  Aspek Materi — penilaian kualitas konten &amp; pembelajaran
+                  Aspek Materi: penilaian kualitas konten &amp; pembelajaran
                 </div>
                 {errMateri && (
                   <div className="text-xs text-red mb-2.5 px-2.5 py-1.5 rounded-md bg-red/10">
@@ -518,7 +518,7 @@ export function Validasi() {
                     className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-bold mb-5"
                     style={badgeStyle}
                   >
-                    {ki.icon} {ki.label} — Rata-rata {result.totalAvg}
+                    {ki.icon} {ki.label}: Rata-rata {result.totalAvg}
                   </span>
                 )
               })()}
@@ -670,7 +670,7 @@ export function Validasi() {
                   <div className="flex justify-between items-start gap-2 mb-3">
                     <div>
                       <div className="text-sm font-semibold text-brown">
-                        {result.validator.nama} — {result.validator.institusi}
+                        {result.validator.nama}, {result.validator.institusi}
                       </div>
                       <div className="text-xs text-brown-3 mt-0.5">{result.validator.keahlian}</div>
                     </div>

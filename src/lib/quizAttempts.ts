@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { TOTAL_MODULES } from './progress'
 
 // Ambang lulus formatif/pre/post — pasangan: kolom generated
 // quiz_attempts.passed di database/migration_v17_bank_soal.sql
@@ -116,6 +117,70 @@ export async function fetchAllQuizAttempts(
     attempts.forEach((a) => rows.push({ ...a, moduleId: i }))
   }
   return rows
+}
+
+// Sama seperti fetchAllQuizAttempts, tapi SATU query Supabase (bukan 9
+// berurutan, satu per modul) — dipakai useTopikStatus di hampir semua
+// halaman, jadi 9 query jadi biang lambat saat pindah halaman (antrean #21).
+// Filter kind='formatif' + module_id not null dilakukan di query, bukan di
+// JS, supaya baris pre/post-test (module_id null) tidak ikut kehitung status
+// topik. Toleran kolom `kind` belum ada (migrasi v17 belum jalan, sama
+// seperti fetchAttemptsByKind di atas) — fallback tanpa filter kind.
+export async function fetchAllQuizAttemptsOnce(): Promise<QuizAttemptWithModule[]> {
+  if (isSupabaseConfigured) {
+    try {
+      const { data: userData } = await supabase.auth.getUser()
+      const uid = userData.user?.id
+      if (uid) {
+        let query = supabase
+          .from('quiz_attempts')
+          .select('module_id, score, answers, attempted_at, kind')
+          .eq('user_id', uid)
+          .not('module_id', 'is', null)
+          .order('attempted_at', { ascending: true })
+        try {
+          const { data, error } = await query.eq('kind', 'formatif')
+          if (error) throw error
+          if (data) {
+            return data.map((r) => ({
+              moduleId: r.module_id as number,
+              score: r.score,
+              answers: r.answers,
+              completedAt: r.attempted_at,
+              date: formatAttemptDate(r.attempted_at),
+              kind: r.kind,
+            }))
+          }
+        } catch (e) {
+          if (!isMissingKindColumn(e)) throw e
+          // Kolom `kind` belum ada -> semua baris lama otomatis formatif.
+          const { data, error } = await supabase
+            .from('quiz_attempts')
+            .select('module_id, score, answers, attempted_at')
+            .eq('user_id', uid)
+            .not('module_id', 'is', null)
+            .order('attempted_at', { ascending: true })
+          if (error) throw error
+          if (data) {
+            return data.map((r) => ({
+              moduleId: r.module_id as number,
+              score: r.score,
+              answers: r.answers,
+              completedAt: r.attempted_at,
+              date: formatAttemptDate(r.attempted_at),
+            }))
+          }
+        }
+        return []
+      }
+    } catch (e) {
+      console.warn('[quizAttempts] fetchAllQuizAttemptsOnce -> Supabase gagal:', e)
+    }
+  }
+
+  // Mode demo (tanpa Supabase): tidak ada satu query untuk localStorage,
+  // jadi tetap loop per modul seperti fetchAllQuizAttempts.
+  return fetchAllQuizAttempts(TOTAL_MODULES)
 }
 
 // Ported from legacy/data-layer.js's DataLayer.saveQuizAttempt(): insert into

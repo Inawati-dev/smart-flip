@@ -213,7 +213,7 @@ export function Analitik() {
         <div className="mb-5">
           <h1 className="font-display text-2xl font-bold text-brown">Analitik Kelas</h1>
           <p className="text-sm text-brown-3 mt-1">
-            Dasbor progress, nilai, dan kepraktisan seluruh mahasiswa — MK Metpen &amp; Pengembangan, Kelas A
+            Dasbor progress, nilai, dan kepraktisan seluruh mahasiswa: MK Metpen &amp; Pengembangan, Kelas A
           </p>
         </div>
 
@@ -446,7 +446,7 @@ export function Analitik() {
             </div>
             <div className="flex gap-3 flex-wrap mt-3 text-[11px] text-brown-3">
               <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: 'var(--sage)' }} />≥70% selesai</span>
-              <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: 'var(--terra)' }} />30–69%</span>
+              <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: 'var(--terra)' }} />30-69%</span>
               <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1" style={{ background: 'var(--brown3)' }} />&lt;30%</span>
             </div>
           </div>
@@ -498,7 +498,7 @@ export function Analitik() {
           {/* Kepraktisan per aspek (full width) */}
           <div className="bg-ivory rounded-2xl border p-4 md:p-5 md:col-span-2" style={BORDER}>
             <div className="flex items-center gap-1.5 text-sm font-semibold text-brown mb-4">
-              <IconStar size={16} /> Kepraktisan per Aspek (rata-rata skala 1–5)
+              <IconStar size={16} /> Kepraktisan per Aspek (rata-rata skala 1-5)
             </div>
             <div className="flex flex-col gap-3">
               {kepraktisanAspek.map((a) => (

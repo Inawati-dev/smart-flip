@@ -410,7 +410,7 @@ export function BankSoal() {
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-lg font-semibold text-brown">
-                {modalOpen === 'new' ? `Tambah Soal — ${KIND_LABELS[jenis]}` : `Ubah Soal — ${KIND_LABELS[jenis]}`}
+                {modalOpen === 'new' ? `Tambah Soal: ${KIND_LABELS[jenis]}` : `Ubah Soal: ${KIND_LABELS[jenis]}`}
               </h3>
               <button onClick={closeModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
                 ×
@@ -445,7 +445,7 @@ export function BankSoal() {
             <div className="flex flex-col gap-2 mb-4">
               <span className="text-xs font-semibold text-brown-2">
                 4 Opsi Jawaban
-                {!isVark && <span className="font-normal text-brown-3"> — pilih radio di sebelah opsi yang benar</span>}
+                {!isVark && <span className="font-normal text-brown-3">, pilih radio di sebelah opsi yang benar</span>}
               </span>
               {opsi.map((o, idx) => (
                 <label key={idx} className="flex items-center gap-2.5">

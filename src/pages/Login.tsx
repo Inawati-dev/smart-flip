@@ -41,7 +41,7 @@ export function Login() {
     setForgotMsg('')
 
     if (!isSupabaseConfigured) {
-      setForgotMsg('Fitur ini belum bisa diproses — konfigurasi server belum lengkap. Hubungi admin.')
+      setForgotMsg('Fitur ini belum bisa diproses: konfigurasi server belum lengkap. Hubungi admin.')
       return
     }
 
@@ -64,7 +64,7 @@ export function Login() {
     setError('')
 
     if (!isSupabaseConfigured) {
-      setError('Login belum bisa diproses — konfigurasi server belum lengkap. Hubungi admin.')
+      setError('Login belum bisa diproses: konfigurasi server belum lengkap. Hubungi admin.')
       return
     }
 
@@ -383,7 +383,7 @@ export function Login() {
                   Flip.
                 </h1>
                 <p className="text-[0.9rem] leading-relaxed text-brown-2 mb-5">
-                  E-Modul Adaptif Metode Penelitian &amp; Pengembangan — Fakultas Vokasi,
+                  E-Modul Adaptif Metode Penelitian &amp; Pengembangan: Fakultas Vokasi,
                   Universitas Negeri Malang.
                 </p>
                 <ul className="flex flex-col gap-1.5 text-[0.82rem] text-brown-3 list-disc pl-4">
