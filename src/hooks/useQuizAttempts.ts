@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchQuizAttempts, fetchAllQuizAttempts } from '../lib/quizAttempts'
-import { TOTAL_MODULES } from '../lib/progress'
+import { fetchQuizAttempts, fetchAllQuizAttemptsOnce } from '../lib/quizAttempts'
 
 export function useQuizAttempts(moduleId: number) {
   return useQuery({
@@ -12,6 +11,6 @@ export function useQuizAttempts(moduleId: number) {
 export function useAllQuizAttempts() {
   return useQuery({
     queryKey: ['quizAttempts', 'all'],
-    queryFn: () => fetchAllQuizAttempts(TOTAL_MODULES),
+    queryFn: () => fetchAllQuizAttemptsOnce(),
   })
 }

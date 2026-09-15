@@ -1,14 +1,38 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { formatAttemptDate, fetchAllQuizAttempts, fetchQuizAttempts, saveQuizAttempt, PASS_SCORE } from './quizAttempts'
+import {
+  formatAttemptDate,
+  fetchAllQuizAttempts,
+  fetchAllQuizAttemptsOnce,
+  fetchQuizAttempts,
+  saveQuizAttempt,
+  PASS_SCORE,
+} from './quizAttempts'
 
 // Mutable mock state so individual tests can flip Supabase "configured" on
-// to inspect what saveQuizAttempt sends to `.insert()`, while the existing
-// tests below keep running against the plain localStorage fallback (the
-// default, configured = false).
+// to inspect what saveQuizAttempt sends to `.insert()`, and to control what
+// a `.select()` chain resolves to for fetchAllQuizAttemptsOnce, while the
+// existing tests below keep running against the plain localStorage fallback
+// (the default, configured = false).
 const supabaseMock = {
   configured: false,
   insertCalls: [] as Array<Record<string, unknown>>,
+  selectResult: { data: [] as unknown[], error: null as unknown },
+  fromCalls: 0,
+}
+
+// Thenable query builder: every filter method returns itself so calls like
+// .select().eq().not().order() chain freely, and `await`ing it at any point
+// resolves to selectResult — same shape as the real supabase-js builder.
+function makeQueryBuilder() {
+  const builder = {
+    select: () => builder,
+    eq: () => builder,
+    not: () => builder,
+    order: () => builder,
+    then: (resolve: (v: unknown) => void) => resolve(supabaseMock.selectResult),
+  }
+  return builder
 }
 
 vi.mock('./supabase', () => ({
@@ -16,12 +40,16 @@ vi.mock('./supabase', () => ({
     auth: {
       getUser: async () => ({ data: { user: supabaseMock.configured ? { id: 'user-1' } : null } }),
     },
-    from: () => ({
-      insert: (row: Record<string, unknown>) => {
-        supabaseMock.insertCalls.push(row)
-        return Promise.resolve({ error: null })
-      },
-    }),
+    from: () => {
+      supabaseMock.fromCalls++
+      return {
+        insert: (row: Record<string, unknown>) => {
+          supabaseMock.insertCalls.push(row)
+          return Promise.resolve({ error: null })
+        },
+        ...makeQueryBuilder(),
+      }
+    },
   },
   get isSupabaseConfigured() {
     return supabaseMock.configured
@@ -112,5 +140,27 @@ describe('saveQuizAttempt — kind (v17)', () => {
     expect(supabaseMock.insertCalls).toHaveLength(1)
     expect(supabaseMock.insertCalls[0].kind).toBe('pre')
     expect(supabaseMock.insertCalls[0].module_id).toBeNull()
+  })
+})
+
+describe('fetchAllQuizAttemptsOnce', () => {
+  beforeEach(() => {
+    supabaseMock.configured = true
+    supabaseMock.fromCalls = 0
+    supabaseMock.selectResult = {
+      data: [
+        { module_id: 2, score: 80, answers: [], attempted_at: '2026-01-01T00:00:00.000Z', kind: 'formatif' },
+        { module_id: 5, score: 90, answers: [], attempted_at: '2026-01-02T00:00:00.000Z', kind: 'formatif' },
+      ],
+      error: null,
+    }
+  })
+
+  it('hits Supabase exactly once (one query, not one per module)', async () => {
+    const rows = await fetchAllQuizAttemptsOnce()
+    expect(supabaseMock.fromCalls).toBe(1)
+    expect(rows).toHaveLength(2)
+    expect(rows.find((r) => r.moduleId === 2)?.score).toBe(80)
+    expect(rows.find((r) => r.moduleId === 5)?.score).toBe(90)
   })
 })

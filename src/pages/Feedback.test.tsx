@@ -70,7 +70,7 @@ describe('Feedback', () => {
       </QueryClientProvider>,
     )
     fireEvent.click(screen.getByRole('combobox'))
-    expect(screen.getByText('Modul 1 — Dasar R&D')).toBeTruthy()
+    expect(screen.getByText('Modul 1: Dasar R&D')).toBeTruthy()
   })
 
   it('renders without throwing when there are no modules or feedback yet', () => {

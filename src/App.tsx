@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
@@ -7,34 +8,41 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { Login } from './pages/Login'
 import { Register } from './pages/Register'
 import { ResetPassword } from './pages/ResetPassword'
-import { Dashboard } from './pages/Dashboard'
-import { Diagnostik } from './pages/Diagnostik'
-import Akun from './pages/Akun'
-import { Profil } from './pages/Profil'
-import Modul from './pages/Modul'
-import ModulList from './pages/ModulList'
-import Video from './pages/Video'
-import Formatif from './pages/Formatif'
-import Workshop from './pages/Workshop'
-import Ebook from './pages/Ebook'
-import { Vark } from './pages/Vark'
-import { Forum } from './pages/Forum'
-import { Draf } from './pages/Draf'
-import { Feedback } from './pages/Feedback'
-import Asesmen from './pages/Asesmen'
-import AsesmenMhs from './pages/AsesmenMhs'
-import BankSoal from './pages/BankSoal'
-import TesKhusus from './pages/TesKhusus'
-import Observasi from './pages/Observasi'
-import { ProjekAkhir } from './pages/ProjekAkhir'
-import { Validasi } from './pages/Validasi'
-import { Analitik } from './pages/Analitik'
-import { Manajemen } from './pages/Manajemen'
-import { Kelas } from './pages/Kelas'
-import Changelog from './pages/Changelog'
-import { Pengaturan } from './pages/Pengaturan'
 
-const queryClient = new QueryClient()
+// Halaman selain Login/Register/ResetPassword dimuat per-route (code
+// splitting) supaya index bundle tidak membawa semua 29 halaman sekaligus —
+// antrean #21 (optimasi kecepatan akses). Dashboard.tsx tidak punya default
+// export, jadi dibungkus .then(); sisanya sudah punya default export.
+const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
+const Diagnostik = lazy(() => import('./pages/Diagnostik'))
+const Akun = lazy(() => import('./pages/Akun'))
+const Profil = lazy(() => import('./pages/Profil'))
+const Modul = lazy(() => import('./pages/Modul'))
+const ModulList = lazy(() => import('./pages/ModulList'))
+const Video = lazy(() => import('./pages/Video'))
+const Formatif = lazy(() => import('./pages/Formatif'))
+const Workshop = lazy(() => import('./pages/Workshop'))
+const Ebook = lazy(() => import('./pages/Ebook'))
+const Vark = lazy(() => import('./pages/Vark'))
+const Forum = lazy(() => import('./pages/Forum'))
+const Draf = lazy(() => import('./pages/Draf'))
+const Feedback = lazy(() => import('./pages/Feedback'))
+const Asesmen = lazy(() => import('./pages/Asesmen'))
+const AsesmenMhs = lazy(() => import('./pages/AsesmenMhs'))
+const BankSoal = lazy(() => import('./pages/BankSoal'))
+const TesKhusus = lazy(() => import('./pages/TesKhusus'))
+const Observasi = lazy(() => import('./pages/Observasi'))
+const ProjekAkhir = lazy(() => import('./pages/ProjekAkhir'))
+const Validasi = lazy(() => import('./pages/Validasi'))
+const Analitik = lazy(() => import('./pages/Analitik'))
+const Manajemen = lazy(() => import('./pages/Manajemen'))
+const Kelas = lazy(() => import('./pages/Kelas'))
+const Changelog = lazy(() => import('./pages/Changelog'))
+const Pengaturan = lazy(() => import('./pages/Pengaturan'))
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
+})
 
 // /asesmen: satu route, tampilan bercabang per peran (spec §8 tabel route) —
 // dosen melihat hasil kelas (Asesmen.tsx yang ada), mahasiswa melihat daftar
@@ -57,6 +65,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <ErrorBoundary>
+            <Suspense fallback={<div className="p-8 text-brown-3">Memuat…</div>}>
             <Routes>
               <Route path="/" element={<Login />} />
               <Route path="/register" element={<Register />} />
@@ -126,6 +135,7 @@ export default function App() {
               <Route path="/changelog" element={<ProtectedRoute roles={['dosen']}><Changelog /></ProtectedRoute>} />
               <Route path="/pengaturan" element={<ProtectedRoute><Pengaturan /></ProtectedRoute>} />
             </Routes>
+            </Suspense>
           </ErrorBoundary>
         </BrowserRouter>
       </AuthProvider>

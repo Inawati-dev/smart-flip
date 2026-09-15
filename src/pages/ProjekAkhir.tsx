@@ -193,7 +193,7 @@ function FormProposal({
       onToast('Proposal diajukan ke dosen')
     } catch {
       setKonfirmAjukan(false)
-      onToast('Gagal mengajukan — coba lagi')
+      onToast('Gagal mengajukan: coba lagi')
     } finally {
       setMemproses(false)
     }
@@ -262,7 +262,7 @@ function FormProposal({
 
         {terkunci && (
           <p className="mt-3 text-xs text-sage-d leading-relaxed">
-            Proposal sudah disetujui dosen — isinya dikunci. Hubungi dosen pengampu kalau masih perlu diubah.
+            Proposal sudah disetujui dosen: isinya dikunci. Hubungi dosen pengampu kalau masih perlu diubah.
           </p>
         )}
       </div>
@@ -312,7 +312,7 @@ function FormProposal({
             />
             {berkasBaru && (
               <p className="text-xs text-brown-3 mt-2 break-all">
-                Siap diunggah: {berkasBaru.name} ({formatUkuran(berkasBaru.size)}) — tekan “Simpan Proposal”.
+                Siap diunggah: {berkasBaru.name} ({formatUkuran(berkasBaru.size)}), tekan “Simpan Proposal”.
               </p>
             )}
           </>
@@ -325,7 +325,7 @@ function FormProposal({
           <IconClipboard size={18} /> Tulis Proposal di Sistem
         </div>
         <p className="text-xs text-brown-3 leading-relaxed mb-4">
-          Isi per bagian. Tidak harus sekaligus — simpan kapan saja, lanjutkan nanti.
+          Isi per bagian. Tidak harus sekaligus: simpan kapan saja, lanjutkan nanti.
         </p>
 
         <label className="block text-xs font-semibold text-brown-2 mb-4">
@@ -531,7 +531,7 @@ function PanelDosen() {
     } catch {
       // nilaiProjek melempar juga saat UPDATE-nya tersaring RLS jadi 0 baris —
       // jangan pernah tampilkan "tersimpan" untuk kasus itu.
-      tampilkanToast('Gagal menyimpan penilaian — coba lagi')
+      tampilkanToast('Gagal menyimpan penilaian: coba lagi')
     } finally {
       setMenyimpan(false)
     }

@@ -113,7 +113,7 @@ export function Draf() {
       await updateDraftStatus(draftId, status)
       await refetchDrafts()
     } catch {
-      showToast('Gagal menyimpan status — coba lagi')
+      showToast('Gagal menyimpan status: coba lagi')
     }
   }
 

@@ -289,7 +289,7 @@ export default function Workshop() {
               <button
                 onClick={() =>
                   printWorkshopPdf({
-                    moduleTitle: `Modul ${moduleId} — ${modul.title}`,
+                    moduleTitle: `Modul ${moduleId}: ${modul.title}`,
                     judul: workshop.lembarKerja.judul,
                     instruksi: workshop.lembarKerja.instruksi,
                     pertanyaan: workshop.lembarKerja.pertanyaan,

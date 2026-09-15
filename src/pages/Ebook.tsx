@@ -563,7 +563,7 @@ export function Ebook() {
               </button>
               <span className="text-sm font-semibold text-brown min-w-[80px] text-center">
                 {effectiveStyle === 'spread' && currentPage + 1 <= totalPages
-                  ? `${currentPage}–${currentPage + 1} / ${totalPages}`
+                  ? `${currentPage}-${currentPage + 1} / ${totalPages}`
                   : `${currentPage} / ${totalPages}`}
               </span>
               <button

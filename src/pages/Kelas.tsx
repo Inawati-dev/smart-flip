@@ -156,7 +156,7 @@ export function Kelas() {
       setName('')
       setAngkatan(CURRENT_YEAR)
       setMaxStudents(40)
-      showToast(`Kelas "${kelas.name}" dibuat — kode: ${kelas.code}`)
+      showToast(`Kelas "${kelas.name}" dibuat, kode: ${kelas.code}`)
       setCreateOpen(false)
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Gagal membuat kelas.')
@@ -170,7 +170,7 @@ export function Kelas() {
       await navigator.clipboard.writeText(code)
       showToast(`Kode "${code}" disalin`)
     } catch {
-      showToast('Gagal menyalin — salin manual dari layar.')
+      showToast('Gagal menyalin: salin manual dari layar.')
     }
   }
 
@@ -384,7 +384,7 @@ export function Kelas() {
               </label>
             </div>
             <p className="text-[11px] text-brown-3">
-              Kode kelas dibuat otomatis secara acak setelah kelas disimpan — tidak bisa diisi manual.
+              Kode kelas dibuat otomatis secara acak setelah kelas disimpan: tidak bisa diisi manual.
             </p>
             <div className="flex gap-2.5">
               <button
@@ -421,7 +421,7 @@ export function Kelas() {
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus kelas "{deleteTarget.name}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.studentCount > 0
-                ? `Kelas ini punya ${deleteTarget.studentCount} mahasiswa terdaftar. Mereka TIDAK akan terhapus — hanya keluar dari kelas ini (class_id jadi kosong).`
+                ? `Kelas ini punya ${deleteTarget.studentCount} mahasiswa terdaftar. Mereka TIDAK akan terhapus, hanya keluar dari kelas ini (class_id jadi kosong).`
                 : 'Tindakan ini tidak dapat dibatalkan.'}
             </p>
             <div className="flex gap-2.5">
@@ -461,7 +461,7 @@ export function Kelas() {
           >
             <div className="flex items-center justify-between gap-3 mb-1">
               <h3 className="text-base font-semibold text-brown">
-                Import CSV Mahasiswa — {importTarget.name}
+                Import CSV Mahasiswa: {importTarget.name}
               </h3>
               {importStep !== 'memproses' && (
                 <button
@@ -639,7 +639,7 @@ export function Kelas() {
                 </div>
 
                 <p className="text-xs text-brown-3 leading-relaxed">
-                  Password hanya ditampilkan <strong>satu kali di sini</strong> — unduh sekarang sebelum menutup atau
+                  Password hanya ditampilkan <strong>satu kali di sini</strong>: unduh sekarang sebelum menutup atau
                   memuat ulang halaman ini, karena tidak akan tersimpan/terlihat lagi setelahnya.
                 </p>
 

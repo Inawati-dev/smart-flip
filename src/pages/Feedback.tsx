@@ -95,7 +95,7 @@ export function Feedback() {
           </h1>
           <p className="text-sm text-brown-3 mt-1.5">
             {isDosen
-              ? 'Rekap penilaian yang masuk dari mahasiswa — pilih modul untuk menyaring.'
+              ? 'Rekap penilaian yang masuk dari mahasiswa: pilih modul untuk menyaring.'
               : 'Berikan penilaian jujur untuk membantu pengembangan materi yang lebih baik'}
           </p>
         </div>
@@ -122,8 +122,8 @@ export function Feedback() {
               }`}
               style={{ borderColor: errModul ? 'var(--red)' : 'var(--border)' }}
               options={[
-                { value: '', label: isDosen ? '— Semua modul —' : '— Pilih modul yang ingin dinilai —' },
-                ...modules.map((m) => ({ value: String(m.id), label: `Modul ${m.id} — ${m.title}` })),
+                { value: '', label: isDosen ? '(Semua modul)' : '(Pilih modul yang ingin dinilai)' },
+                ...modules.map((m) => ({ value: String(m.id), label: `Modul ${m.id}: ${m.title}` })),
               ]}
             />
             {errModul && !isDosen && (
@@ -140,7 +140,7 @@ export function Feedback() {
             <label className="block text-xs font-semibold uppercase tracking-wide text-brown-2 mb-2">
               Rating per Aspek{' '}
               <span className="normal-case tracking-normal font-normal text-brown-3 ml-1">
-                klik bintang untuk memberi nilai 1–5
+                klik bintang untuk memberi nilai 1-5
               </span>
             </label>
             {ASPECTS.map((a, i) => {
@@ -262,7 +262,7 @@ export function Feedback() {
               ) : (
                 feedbacks.map((fb) => {
                   const mod = modules.find((m) => m.id === fb.moduleId)
-                  const modTitle = mod ? `Modul ${fb.moduleId} — ${mod.title}` : `Modul ${fb.moduleId}`
+                  const modTitle = mod ? `Modul ${fb.moduleId}: ${mod.title}` : `Modul ${fb.moduleId}`
                   const dateStr = fb.date
                     ? new Date(fb.date).toLocaleDateString('id-ID', {
                         day: '2-digit',

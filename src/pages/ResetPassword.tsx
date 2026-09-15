@@ -173,7 +173,7 @@ export function ResetPassword() {
           <form onSubmit={handleSubmit}>
             {!isSupabaseConfigured && (
               <div className="text-sm text-brown-2 bg-bg3 border border-brown-3/20 rounded p-2 mb-3">
-                Anda sedang dalam <strong>Demo Mode</strong> — form ditampilkan tanpa verifikasi token.
+                Anda sedang dalam <strong>Demo Mode</strong>: form ditampilkan tanpa verifikasi token.
               </div>
             )}
 
