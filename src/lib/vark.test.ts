@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { fetchVarkResult, computeVarkDominant, saveVarkResult, clearVarkResult } from './vark'
+import { fetchVarkResult, computeVarkDominant, saveVarkResult, clearVarkResult, fetchVarkQuestions, VARK_QUESTIONS_DEFAULT } from './vark'
 
 vi.mock('./supabase', () => ({
   supabase: { auth: { getUser: async () => ({ data: { user: null } }) } },
@@ -60,6 +60,14 @@ describe('computeVarkDominant', () => {
     const { scores, dominant } = computeVarkDominant(new Array(12).fill(null))
     expect(scores).toEqual({ V: 0, A: 0, R: 0, K: 0 })
     expect(dominant).toBe('V')
+  })
+})
+
+describe('fetchVarkQuestions', () => {
+  it('falls back to the 12 default questions when the bank soal is empty (demo mode, no kind column yet)', async () => {
+    const questions = await fetchVarkQuestions()
+    expect(questions).toEqual(VARK_QUESTIONS_DEFAULT)
+    expect(questions).toHaveLength(12)
   })
 })
 

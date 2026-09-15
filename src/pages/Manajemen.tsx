@@ -266,7 +266,7 @@ export function Manajemen() {
     setKuisEditId(q.id)
     setKuisPertanyaan(q.question)
     setKuisOpsi(q.options.length === 4 ? [...q.options] : [...q.options, '', '', '', ''].slice(0, 4))
-    setKuisJawaban(q.answer_idx)
+    setKuisJawaban(q.answer_idx ?? 0)
     setKuisPenjelasan(q.explanation || '')
     setKuisOrderNum(q.order_num)
   }
@@ -1025,7 +1025,7 @@ export function Manajemen() {
                       <tr key={q.id} className="border-t" style={BORDER}>
                         <td className="px-3 py-2.5 font-semibold text-brown">{q.order_num}</td>
                         <td className="px-3 py-2.5 text-brown min-w-[200px]">{pertanyaanTrunc}</td>
-                        <td className="px-3 py-2.5 text-brown-2">Opsi {q.answer_idx + 1}</td>
+                        <td className="px-3 py-2.5 text-brown-2">Opsi {(q.answer_idx ?? 0) + 1}</td>
                         <td className="px-3 py-2.5">
                           <div className="flex gap-1.5">
                             <button

@@ -56,6 +56,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     mountedRef.current = true
     let active = true
 
+    // Pratinjau tampilan tanpa login, HANYA di dev server (import.meta.env.DEV)
+    // dan hanya bila VITE_UI_PREVIEW_ROLE diisi di .env.development.local
+    // (berkas itu diabaikan git). Dipakai sesi Claude untuk memotret dua
+    // viewport wajib tanpa memasukkan kata sandi siapa pun. Build produksi
+    // tidak pernah masuk cabang ini.
+    const previewRole = import.meta.env.DEV ? (import.meta.env.VITE_UI_PREVIEW_ROLE as string | undefined) : undefined
+    if (previewRole === 'mahasiswa' || previewRole === 'dosen') {
+      setUser({ id: `preview-${previewRole}`, email: `${previewRole}@pratinjau.local` } as unknown as User)
+      setProfile({
+        full_name: previewRole === 'dosen' ? 'Dosen Pratinjau' : 'Mahasiswa Pratinjau',
+        role: previewRole,
+        nim_nidn: previewRole === 'dosen' ? '0012345678' : '230512345',
+        learning_style: null,
+        jalur: null,
+        avatar_url: null,
+      })
+      setLoading(false)
+      return () => {
+        active = false
+        mountedRef.current = false
+      }
+    }
+
     supabase.auth.getSession().then(async ({ data }) => {
       if (!active) return
       setUser(data.session?.user ?? null)

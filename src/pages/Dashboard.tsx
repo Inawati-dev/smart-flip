@@ -1,18 +1,45 @@
-import { useEffect, useState } from 'react'
-import { useNavigate, Link } from 'react-router'
+import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router'
+import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
+import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useKelasByDosen } from '../hooks/useKelas'
-import { summarizeKelas } from '../lib/kelas'
-import { ModuleCard } from '../components/ModuleCard'
-import { RoadmapWidget } from '../components/RoadmapWidget'
+import { hitungLangkah, type Langkah } from '../lib/langkah'
+import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
+import type { ModuleRow } from '../lib/modules'
+import type { QuizAttemptWithModule } from '../lib/quizAttempts'
 import { WelcomeModal } from '../components/WelcomeModal'
-import { moduleIdToPath } from '../lib/progress'
 import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding'
 import { Layout } from '../components/Layout'
-import { RecentActivityCard } from '../components/RecentActivityCard'
-import { IconTrendingUp, IconUsers, IconFolder, IconCheck, IconBook } from '../components/icons'
+import { Select } from '../components/Select'
+import { downloadCsv } from '../lib/analitik'
+import { timeAgo } from '../lib/forum'
+import {
+  fetchSumberAktivitas,
+  gabungKejadian,
+  ringkasKelas,
+  perluPerhatian,
+  matriksProgres,
+  buildMatriksCsv,
+  type FilterAktivitas,
+  type MatriksSel,
+} from '../lib/aktivitas'
+import {
+  IconTrendingUp,
+  IconUsers,
+  IconFolder,
+  IconCheck,
+  IconBook,
+  IconChart,
+  IconRefresh,
+  IconTarget,
+  IconWarning,
+  IconDownload,
+  IconVideo,
+  IconClipboard,
+} from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -45,50 +72,252 @@ function ShortcutCard({ to, icon: Icon, label, desc }: { to: string; icon: typeo
   )
 }
 
-function DosenHome({ dosenId, totalModules }: { dosenId?: string; totalModules: number }) {
-  const { data: kelas = [] } = useKelasByDosen(dosenId)
-  const { totalStudents } = summarizeKelas(kelas)
+const HARI_OPTIONS: Array<{ value: FilterAktivitas['hari']; label: string }> = [
+  { value: 7, label: '7 hari' },
+  { value: 30, label: '30 hari' },
+  { value: 'semester', label: 'Semester' },
+]
+
+const STATUS_LABEL: Record<MatriksSel['status'], { label: string; bg: string; color: string }> = {
+  L: { label: 'L', bg: '#C0DD97', color: '#27500A' },
+  R: { label: 'R', bg: '#FAD7A0', color: '#7D4E00' },
+  '-': { label: '—', bg: 'transparent', color: 'var(--brown3)' },
+}
+
+function StatusChip({ status }: { status: MatriksSel['status'] }) {
+  const s = STATUS_LABEL[status]
+  return (
+    <span
+      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-[11px] font-semibold"
+      style={{ background: s.bg, color: s.color }}
+    >
+      {s.label}
+    </span>
+  )
+}
+
+// Dashboard dosen = seluruh aktivitas kelas (spec §5.0, §9 WP9). Satu
+// useQuery menarik 5 tabel sekaligus (fetchSumberAktivitas); 4 fungsi murni
+// di src/lib/aktivitas.ts mengubahnya jadi umpan, ringkasan, daftar
+// perhatian, dan matriks — tidak ada angka statis di halaman ini.
+function DosenHome({ dosenId }: { dosenId?: string }) {
+  const { data: kelasList = [] } = useKelasByDosen(dosenId)
+  const [kelasId, setKelasId] = useState<string>('semua')
+  const [hari, setHari] = useState<FilterAktivitas['hari']>(7)
+  const [feedLimit, setFeedLimit] = useState(50)
+  const filter = useMemo<FilterAktivitas>(() => ({ kelasId, hari }), [kelasId, hari])
+
+  const { data: sumber, isLoading } = useQuery({
+    queryKey: ['aktivitas', filter],
+    queryFn: () => fetchSumberAktivitas(filter),
+  })
+
+  const kejadian = useMemo(() => (sumber ? gabungKejadian(sumber) : []), [sumber])
+  const ringkas = useMemo(() => (sumber ? ringkasKelas(sumber) : null), [sumber])
+  const perhatian = useMemo(() => (sumber ? perluPerhatian(sumber) : []), [sumber])
+  const matriks = useMemo(() => (sumber ? matriksProgres(sumber) : []), [sumber])
+
+  function handleKelasChange(v: string) {
+    setKelasId(v)
+    setFeedLimit(50)
+  }
+  function handleHariChange(v: FilterAktivitas['hari']) {
+    setHari(v)
+    setFeedLimit(50)
+  }
+
+  function unduhCsv() {
+    downloadCsv(`progres-kelas-${new Date().toISOString().slice(0, 10)}.csv`, buildMatriksCsv(matriks))
+  }
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        <StatCard icon={IconUsers} val={String(kelas.length)} label="Kelas Dikelola" bar="var(--terra)" />
-        <StatCard icon={IconBook} val={String(totalStudents)} label="Mahasiswa Terdaftar" bar="var(--sage)" />
-        <StatCard icon={IconFolder} val={String(totalModules)} label="Modul Tersedia" bar="#4A7EA0" />
-      </div>
-
-      <div>
-        <h2 className="text-sm font-semibold text-brown-3 uppercase tracking-wide mb-2.5">Kelola Kelas</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <ShortcutCard to="/manajemen" icon={IconFolder} label="Kelola Modul" desc="Edit metadata, urutan & status modul" />
-          <ShortcutCard to="/analitik" icon={IconTrendingUp} label="Analitik Kelas" desc="Progress, skor kuis & keaktifan mahasiswa" />
-          <ShortcutCard to="/kelas" icon={IconUsers} label="Kelas" desc="Buat kelas, kode gabung & import CSV mahasiswa" />
-          <ShortcutCard to="/validasi" icon={IconCheck} label="Validasi Ahli" desc="Nilai kelayakan media & materi modul" />
+      {/* Filter */}
+      <div className="flex flex-wrap items-center gap-2.5">
+        <Select
+          value={kelasId}
+          onChange={handleKelasChange}
+          aria-label="Filter kelas"
+          className="h-9 px-3 rounded-lg border text-sm text-brown outline-none cursor-pointer"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg3)', minHeight: 44 }}
+          options={[{ value: 'semua', label: 'Semua Kelas' }, ...kelasList.map((k) => ({ value: k.id, label: k.name }))]}
+        />
+        <div className="flex gap-1.5 flex-wrap">
+          {HARI_OPTIONS.map((opt) => (
+            <button
+              key={String(opt.value)}
+              onClick={() => handleHariChange(opt.value)}
+              className="min-h-11 px-3.5 rounded-full text-xs font-semibold"
+              style={{
+                background: hari === opt.value ? 'var(--brown)' : 'transparent',
+                color: hari === opt.value ? 'var(--btn-text)' : 'var(--brown-2)',
+                border: '1.5px solid var(--border)',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      <RecentActivityCard />
+      {/* 6 angka ringkas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <StatCard
+          icon={IconUsers}
+          val={ringkas ? `${ringkas.aktif7Hari}/${ringkas.totalMhs}` : '—'}
+          label="Mahasiswa aktif 7 hari"
+          bar="var(--sage)"
+        />
+        <StatCard
+          icon={IconCheck}
+          val={ringkas ? `${ringkas.preSelesai}/${ringkas.totalMhs}` : '—'}
+          label="Pre-test selesai"
+          bar="var(--terra)"
+        />
+        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik rata-rata kelas" bar="#4A7EA0" />
+        <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata formatif" bar="var(--sage)" />
+        <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" />
+        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="#4A7EA0" />
+      </div>
+
+      {/* Jalan pintas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Kelola soal pre/formatif/post/VARK" />
+        <ShortcutCard to="/asesmen/tes" icon={IconTarget} label="Tes khusus" desc="Buat sesi tes berkode" />
+        <ShortcutCard to="/modul" icon={IconFolder} label="PDF modul" desc="Kelola PDF tiap modul" />
+        <ShortcutCard to="/video" icon={IconVideo} label="Tautan video" desc="Kelola tautan video tiap modul" />
+        <ShortcutCard to="/kelas" icon={IconUsers} label="Kelas" desc="Buat kelas & kode gabung" />
+      </div>
+
+      {/* Umpan aktivitas */}
+      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+        <div className="px-5 py-3.5 border-b" style={BORDER}>
+          <span className="text-sm font-semibold text-brown">Aktivitas kelas</span>
+        </div>
+        {isLoading ? (
+          <p className="text-brown-3 text-sm p-4">Memuat…</p>
+        ) : kejadian.length === 0 ? (
+          <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
+        ) : (
+          <>
+            <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+              <table className="w-full text-sm border-collapse">
+                <tbody>
+                  {kejadian.slice(0, feedLimit).map((k, i) => (
+                    <tr key={i} className="border-t" style={BORDER}>
+                      <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{timeAgo(k.waktu)}</td>
+                      <td className="px-4 py-2 text-brown font-medium whitespace-nowrap">{k.nama}</td>
+                      <td className="px-4 py-2 text-brown-2">{k.keterangan}</td>
+                      <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{k.kelasNama ?? '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {kejadian.length > feedLimit && (
+              <div className="p-3 text-center border-t" style={BORDER}>
+                <button onClick={() => setFeedLimit((n) => n + 50)} className="min-h-11 px-4 text-xs font-semibold text-terra-d">
+                  Muat 50 berikutnya
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Perlu perhatian */}
+      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+        <div className="px-5 py-3.5 border-b flex items-center gap-1.5" style={BORDER}>
+          <IconWarning size={15} />
+          <span className="text-sm font-semibold text-brown">Perlu perhatian</span>
+        </div>
+        <div className="p-3 flex flex-col gap-2">
+          {perhatian.length === 0 ? (
+            <p className="text-brown-3 text-sm px-2 py-1">Tidak ada yang perlu diperhatikan</p>
+          ) : (
+            perhatian.map((p, i) => (
+              <Link
+                key={i}
+                to={p.tautan}
+                className="flex items-center justify-between gap-2 px-3 min-h-11 rounded-lg border text-sm"
+                style={BORDER}
+              >
+                <span className="font-medium text-brown">{p.judul}</span>
+                <span className="text-brown-3 text-xs">{p.keterangan}</span>
+              </Link>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Progres mahasiswa x topik */}
+      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+        <div className="px-5 py-3.5 border-b flex items-center justify-between gap-2 flex-wrap" style={BORDER}>
+          <span className="text-sm font-semibold text-brown">Progres mahasiswa × topik</span>
+          <button
+            onClick={unduhCsv}
+            disabled={matriks.length === 0}
+            className="min-h-11 px-3 rounded-lg border text-xs font-semibold text-brown-2 inline-flex items-center gap-1.5 disabled:opacity-50"
+            style={BORDER}
+          >
+            <IconDownload size={13} /> Unduh CSV
+          </button>
+        </div>
+        {matriks.length === 0 ? (
+          <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-bg3">
+                  <th className="text-left px-3 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Nama</th>
+                  {matriks[0].sel.map((s) => (
+                    <th key={s.moduleId} className="px-3 py-2 text-xs font-semibold text-brown-3 text-center">
+                      M{s.orderNum}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {matriks.map((b) => (
+                  <tr key={b.userId} className="border-t" style={BORDER}>
+                    <td className="px-3 py-2 font-medium text-brown whitespace-nowrap">{b.nama}</td>
+                    {b.sel.map((s) => (
+                      <td key={s.moduleId} className="px-3 py-2 text-center">
+                        <StatusChip status={s.status} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
 
+// Aksi mahasiswa per langkah (§4.0 spec WP8) — tombol utama dipilih dari
+// `hasil.langkah`, dua sisanya jadi tombol sekunder di kartu yang sama.
+function langkahActions(topikId: number, orderNum: number): Record<Exclude<Langkah, 'selesai-semua'>, { label: string; to: string }> {
+  return {
+    baca: { label: `Baca modul ${orderNum}`, to: `/modul/${topikId}` },
+    video: { label: `Tonton video ${orderNum}`, to: `/video/${topikId}` },
+    formatif: { label: `Kerjakan tes formatif ${orderNum}`, to: `/asesmen/formatif/${topikId}` },
+  }
+}
+
 export function Dashboard() {
-  const navigate = useNavigate()
   const { user, profile, role, loading } = useAuth()
-  const { data: modules = [] } = useModules()
+  const { data: modules = [], isLoading: modulesLoading } = useModules()
   const { data: progress = {} } = useAllProgress()
+  const { data: attempts = [] } = useAllQuizAttempts()
   const [showWelcome, setShowWelcome] = useState(false)
 
-  // Diagnostic gate — see docs/superpowers/specs/2026-07-23-diagnostic-adaptive-roadmap-design.md
-  // ("Diagnostic flow"): on first authenticated visit to /dashboard, a
-  // mahasiswa with no jalur yet gets redirected to the one-time placement
-  // test. Guarded on `loading` + `profile` so it never fires before the
-  // profile has actually loaded, and never applies to dosen (no jalur concept).
-  useEffect(() => {
-    if (!loading && role === 'mahasiswa' && profile && profile.jalur == null) {
-      navigate('/diagnostik', { replace: true })
-    }
-  }, [loading, role, profile, navigate])
+  // Gerbang pre-test menggantikan gerbang diagnostik lama (D4 = A, spec §4.1):
+  // mahasiswa tanpa quiz_attempts kind='pre' dialihkan ke /asesmen/pre. Belum
+  // dikerjakan di WP8 — datang di WP6 bersama AsesmenMhs.tsx/gerbang pre-test.
 
   // First-visit onboarding — same trigger point as the legacy dashboard,
   // ported to React (see Changelog v0.9.4). Re-triggerable from Profil,
@@ -110,26 +339,109 @@ export function Dashboard() {
         />
       )}
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-brown mb-1">
-          Halo, {profile?.full_name || 'Pengguna'}
-        </h1>
-        <p className="text-brown-3 mb-6">
-          {profile?.role === 'dosen' ? 'Dashboard Dosen' : 'Dashboard Mahasiswa'}
-        </p>
-
         {role === 'dosen' ? (
-          <DosenHome dosenId={user?.id} totalModules={modules.length} />
+          <>
+            <h1 className="text-2xl font-bold text-brown mb-1">
+              Halo, {profile?.full_name || 'Pengguna'}
+            </h1>
+            <p className="text-brown-3 mb-6">Dashboard Dosen</p>
+            <DosenHome dosenId={user?.id} />
+          </>
+        ) : modules.length === 0 ? (
+          <p className="text-brown-3">{modulesLoading ? 'Memuat…' : 'Belum ada modul. Dosen mengunggah modul lewat menu Modul.'}</p>
+        ) : (
+          <DashboardMhs modules={modules} progress={progress} attempts={attempts} />
+        )}
+      </div>
+    </Layout>
+  )
+}
+
+// Exported terpisah supaya bisa diuji langsung dengan props (bukan hook
+// async) — lihat Dashboard.test.tsx.
+export function DashboardMhs({
+  modules,
+  progress,
+  attempts,
+}: {
+  modules: ModuleRow[]
+  progress: ProgressMap
+  attempts: QuizAttemptWithModule[]
+}) {
+  const hasil = hitungLangkah({ modules, progress, attempts })
+  const totalModules = modules.length || TOTAL_MODULES
+  const actions = langkahActions(hasil.topikAktif.id, hasil.topikAktif.orderNum)
+  const langkahLain = (Object.keys(actions) as Array<keyof typeof actions>).filter(
+    (k) => k !== hasil.langkah,
+  )
+
+  return (
+    <>
+      <h1 className="text-2xl font-bold text-brown mb-1">Dashboard</h1>
+      <p className="text-brown-3 mb-6">
+        Topik {hasil.topikAktif.orderNum} dari {totalModules} · {hasil.topikAktif.title}
+      </p>
+
+      <div className="bg-ivory rounded-2xl border p-5 mb-4" style={BORDER}>
+        <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-3">
+          Langkah berikutnya
+        </div>
+        {hasil.langkah === 'selesai-semua' ? (
+          <p className="text-brown-2 text-sm">
+            Semua topik selesai. Menunggu sesi post-test dari dosen.
+          </p>
         ) : (
           <>
-            <RoadmapWidget />
-            <div className="flex flex-col gap-3">
-              {modules.map((m) => (
-                <ModuleCard key={m.id} module={m} progress={progress[moduleIdToPath(m.id)]} />
+            <Link
+              to={actions[hasil.langkah].to}
+              className="inline-flex items-center justify-center min-h-11 px-5 rounded-lg bg-terra text-white text-sm font-semibold mb-3"
+            >
+              {actions[hasil.langkah].label}
+            </Link>
+            <div className="flex flex-wrap gap-2">
+              {langkahLain.map((k) => (
+                <Link
+                  key={k}
+                  to={actions[k].to}
+                  className="inline-flex items-center min-h-11 px-4 rounded-lg border text-sm text-brown-2"
+                  style={BORDER}
+                >
+                  {actions[k].label}
+                </Link>
               ))}
             </div>
           </>
         )}
       </div>
-    </Layout>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik selesai" bar="var(--sage)" />
+        <StatCard
+          icon={IconTrendingUp}
+          val={hasil.skorTerakhir ? `${hasil.skorTerakhir.score}%` : '—'}
+          label={
+            hasil.skorTerakhir
+              ? `Formatif terakhir · ${hasil.skorTerakhir.lulus ? 'Lulus' : 'Remedial'}`
+              : 'Formatif terakhir'
+          }
+          bar="var(--terra)"
+        />
+        <StatCard icon={IconFolder} val="—" label="Pre-test" bar="#4A7EA0" />
+      </div>
+
+      <div className="bg-ivory rounded-2xl border p-4" style={BORDER}>
+        <div className="text-sm font-semibold text-brown mb-1 flex items-center gap-1.5">
+          <IconBook size={15} /> Tes khusus dari dosen
+        </div>
+        <p className="text-xs text-brown-3 mb-3">Punya kode dari dosen? Masukkan di sini.</p>
+        <Link
+          to="/asesmen/tes"
+          className="inline-flex items-center justify-center min-h-11 px-4 rounded-lg border text-xs font-semibold text-brown-2"
+          style={BORDER}
+        >
+          Masukkan kode
+        </Link>
+      </div>
+    </>
   )
 }

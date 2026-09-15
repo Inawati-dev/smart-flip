@@ -17,12 +17,12 @@ const STEPS_MAHASISWA: Step[] = [
   {
     icon: IconTarget,
     title: 'Cara Belajar',
-    desc: 'Tiap modul punya materi, kuis formatif, jurnal & studi kasus. Diskusi di Forum, kumpulkan draf di halaman Draf — progresmu tersimpan otomatis di setiap langkah.',
+    desc: 'Tiap topik punya modul PDF, video, dan tes formatif. Urutannya: baca modul, tonton video, lalu kerjakan tes. Skor 80 membuka topik berikutnya; di bawah itu kerjakan ulang.',
   },
   {
     icon: IconCompass,
-    title: 'Jalur Belajar Adaptif',
-    desc: 'Kerjakan Tes Diagnostik sekali di awal — hasilnya menentukan Jalur Cepat atau Jalur Mendalam, menyesuaikan urutan materi tiap modul dengan gaya belajarmu.',
+    title: 'Pre-test Sekali di Awal',
+    desc: 'Kerjakan pre-test satu kali sebelum materi terbuka. Di akhir mata kuliah ada post-test lewat kode dari dosen; selisih keduanya menjadi peningkatan skormu.',
   },
 ]
 
@@ -30,12 +30,12 @@ const STEPS_DOSEN: Step[] = [
   {
     icon: IconUsers,
     title: 'Selamat Datang!',
-    desc: 'Panel pengelolaan kelas untuk mata kuliah Metode Penelitian & Pengembangan — pantau progres mahasiswa, kelola modul, dan validasi materi dari satu dashboard.',
+    desc: 'Panel kelas untuk mata kuliah Metode Penelitian & Pengembangan. Dashboard menampilkan seluruh aktivitas kelas: pre-test, tes formatif, modul dibaca, video ditonton.',
   },
   {
     icon: IconLightbulb,
     title: 'Panduan Mulai',
-    desc: 'Kelola Modul untuk atur materi & soal diagnostik, Analitik Kelas untuk pantau progres mahasiswa, Validasi Ahli untuk menilai kelayakan modul. Semua ada di sidebar.',
+    desc: 'Menu Modul untuk PDF, menu Video untuk tautan video, menu Asesmen untuk hasil kelas, bank soal, dan tes khusus berkode. Kelas dan kode undangan ada di menu Akun.',
   },
 ]
 
