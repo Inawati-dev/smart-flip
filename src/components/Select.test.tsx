@@ -116,4 +116,19 @@ describe('Select', () => {
     const html = renderToStaticMarkup(<Select value="" onChange={() => {}} options={OPTIONS} />)
     expect(html).toContain('role="combobox"')
   })
+
+  it('renders the optional label above the trigger', () => {
+    render(<ControlledSelect />)
+    // no label by default
+    expect(screen.queryByText('Status')).toBeNull()
+    cleanup()
+    render(<Select value="aktif" onChange={() => {}} options={OPTIONS} label="Status" />)
+    expect(screen.getByText('Status')).toBeTruthy()
+  })
+
+  it('size="sm" shrinks the trigger to a 36px min-height', () => {
+    render(<Select value="aktif" onChange={() => {}} options={OPTIONS} size="sm" />)
+    const trigger = screen.getByRole('combobox') as HTMLButtonElement
+    expect(trigger.style.minHeight).toBe('36px')
+  })
 })

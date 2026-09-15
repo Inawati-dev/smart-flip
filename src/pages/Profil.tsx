@@ -13,9 +13,7 @@ import { saveProfilExtra } from '../lib/profil'
 import { resetOnboarding } from '../lib/onboarding'
 import { printLaporanPdf } from '../lib/reportPdf'
 import { TOTAL_MODULES } from '../lib/progress'
-import { supabase } from '../lib/supabase'
 import { Layout } from '../components/Layout'
-import { LogoutModal } from '../components/LogoutModal'
 import { Select } from '../components/Select'
 import { RecentActivityCard } from '../components/RecentActivityCard'
 import {
@@ -151,7 +149,6 @@ export function Profil() {
 
   const [toast, setToast] = useState<string | null>(null)
   const [resetOpen, setResetOpen] = useState(false)
-  const [logoutOpen, setLogoutOpen] = useState(false)
   const [showProgress, setShowProgress] = useState(true)
   const [notifDraf, setNotifDraf] = useState(true)
   const [notifForum, setNotifForum] = useState(true)
@@ -241,16 +238,6 @@ export function Profil() {
     setResetOpen(false)
     showToast('Data demo direset. Memuat ulang…')
     setTimeout(() => window.location.reload(), 1200)
-  }
-
-  async function doLogout() {
-    if (role) resetOnboarding(role)
-    try {
-      await supabase.auth.signOut()
-    } catch {
-      // ignore — navigate away regardless, matches Layout.tsx's doLogout
-    }
-    navigate('/')
   }
 
   if (authLoading) {
@@ -743,13 +730,9 @@ export function Profil() {
                   <IconTrash size={14} /> Reset Data Demo
                 </button>
               )}
-              <button
-                onClick={() => setLogoutOpen(true)}
-                className="min-h-11 px-4 rounded-lg border text-xs font-semibold text-brown-2"
-                style={BORDER}
-              >
-                Keluar dari Akun
-              </button>
+              {/* Tombol Keluar dihapus dari sini (WP-C sapuan §4) — halaman
+                  ini tidak lagi ber-route, dan satu-satunya tombol Keluar
+                  yang tersisa ada di /akun serta rel bawah Layout.tsx. */}
             </div>
           </div>
         </div>
@@ -796,15 +779,6 @@ export function Profil() {
           </div>
         </div>
       )}
-
-      <LogoutModal
-        open={logoutOpen}
-        onCancel={() => setLogoutOpen(false)}
-        onConfirm={() => {
-          setLogoutOpen(false)
-          doLogout()
-        }}
-      />
     </Layout>
   )
 }

@@ -17,13 +17,17 @@ interface SelectProps {
   className?: string
   style?: CSSProperties
   'aria-label'?: string
+  /** 'sm' = 36px trigger height for inline filter bars. Default 'md' = 44px. */
+  size?: 'sm' | 'md'
+  /** Optional small label rendered above the trigger. */
+  label?: string
 }
 
-// Listbox sizing — 260px comfortably shows ~5 rows of the 44px-min-height
-// options (mobile tap target, per CLAUDE.md) before it needs its own
-// internal scroll, and leaves the gap used to flip the popup above the
-// trigger when there isn't 260px of room below it.
-const POPUP_MAX_HEIGHT = 260
+// Listbox sizing: 280px per the unified dropdown design (16 Sep 2026
+// screenshot review), comfortably shows ~7 rows of the ~40px options before
+// it needs its own internal scroll, and leaves the gap used to flip the
+// popup above the trigger when there isn't 280px of room below it.
+const POPUP_MAX_HEIGHT = 280
 const POPUP_GAP = 10
 
 interface Pos {
@@ -58,6 +62,8 @@ export function Select({
   className,
   style,
   'aria-label': ariaLabel,
+  size = 'md',
+  label,
 }: SelectProps) {
   const [open, setOpen] = useState(false)
   const [highlighted, setHighlighted] = useState(0)
@@ -182,36 +188,47 @@ export function Select({
     }
   }
 
+  const trigger = (
+    <button
+      ref={triggerRef}
+      type="button"
+      id={id}
+      name={name}
+      role="combobox"
+      aria-haspopup="listbox"
+      aria-expanded={open}
+      aria-controls={open ? listboxId : undefined}
+      aria-label={ariaLabel}
+      disabled={disabled}
+      onClick={() => (open ? closePopup(false) : openPopup())}
+      onKeyDown={handleTriggerKeyDown}
+      className={`select-trigger${className ? ` ${className}` : ''}`}
+      style={{ ...(size === 'sm' ? { minHeight: 36 } : undefined), ...style }}
+    >
+      <span
+        className="select-trigger-label"
+        style={selectedIndex < 0 && placeholder ? { color: 'var(--brown3)', fontWeight: 400 } : undefined}
+      >
+        {displayLabel}
+      </span>
+      <IconChevronDown
+        size={15}
+        className="select-trigger-chevron"
+        style={{ transform: open ? 'translateY(-50%) rotate(180deg)' : 'translateY(-50%) rotate(0deg)' }}
+      />
+    </button>
+  )
+
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        id={id}
-        name={name}
-        role="combobox"
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={open ? listboxId : undefined}
-        aria-label={ariaLabel}
-        disabled={disabled}
-        onClick={() => (open ? closePopup(false) : openPopup())}
-        onKeyDown={handleTriggerKeyDown}
-        className={`select-trigger${className ? ` ${className}` : ''}`}
-        style={style}
-      >
-        <span
-          className="select-trigger-label"
-          style={selectedIndex < 0 && placeholder ? { color: 'var(--brown3)', fontWeight: 400 } : undefined}
-        >
-          {displayLabel}
-        </span>
-        <IconChevronDown
-          size={15}
-          className="select-trigger-chevron"
-          style={{ transform: open ? 'translateY(-50%) rotate(180deg)' : 'translateY(-50%) rotate(0deg)' }}
-        />
-      </button>
+      {label ? (
+        <div className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-brown-2">{label}</span>
+          {trigger}
+        </div>
+      ) : (
+        trigger
+      )}
 
       {open && (
         <ul
@@ -242,7 +259,7 @@ export function Select({
           ) : (
             options.map((opt, i) => {
               const selected = opt.value === value
-              const active = i === highlighted
+              const hovered = i === highlighted
               return (
                 <li
                   key={opt.value}
@@ -252,12 +269,19 @@ export function Select({
                   aria-selected={selected}
                   onMouseEnter={() => setHighlighted(i)}
                   onClick={() => commit(i)}
-                  className="flex items-center px-3.5 py-1 text-sm leading-snug cursor-pointer"
+                  className="flex items-center px-3 py-2 text-sm leading-snug cursor-pointer whitespace-normal"
                   style={{
-                    minHeight: 44,
+                    // 1px gutter between options (not on the first row),
+                    // as a border-top instead of a margin so it doesn't
+                    // add extra gaps on top of the ul's own padding.
+                    borderTop: i > 0 ? '1px solid var(--border)' : undefined,
                     color: selected ? 'var(--brown)' : 'var(--brown2)',
                     fontWeight: selected ? 600 : 500,
-                    background: active ? 'var(--accent-soft)' : 'transparent',
+                    background: selected
+                      ? 'color-mix(in srgb, var(--terra) 18%, transparent)'
+                      : hovered
+                        ? 'var(--cream)'
+                        : 'transparent',
                   }}
                 >
                   {opt.label}

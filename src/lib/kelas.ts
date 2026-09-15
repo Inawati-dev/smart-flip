@@ -313,3 +313,15 @@ export async function importMahasiswaCSV(classId: string, students: ImportRow[])
   if (!data) throw new Error('Tidak ada respons dari server.')
   return data.results
 }
+
+// Label kelas untuk dropdown/daftar. Nama saja ("Kelas A") tidak
+// membedakan angkatan, jadi setiap pemakai dropdown kelas (Dashboard dosen,
+// Asesmen, TesKhusus) memakai fungsi ini, bukan k.name langsung. Kode kelas
+// hanya ditambahkan kalau nama dan angkatan sama-sama duplikat di
+// `allKelas`, supaya kode (yang lebih sulit dibaca sekilas) hanya muncul
+// saat benar-benar perlu membedakan.
+export function labelKelas(k: { name: string; angkatan: number; code?: string }, allKelas: Array<{ name: string; angkatan: number }> = []): string {
+  const base = `${k.name} · ${k.angkatan}`
+  const duplikat = allKelas.filter((o) => o.name === k.name && o.angkatan === k.angkatan).length > 1
+  return duplikat && k.code ? `${base} · ${k.code}` : base
+}

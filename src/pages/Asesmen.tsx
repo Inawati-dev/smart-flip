@@ -6,6 +6,7 @@ import { Select } from '../components/Select'
 import { IconChart, IconClipboard, IconDownload, IconTrendingUp, IconUsers } from '../components/icons'
 import { useAuth } from '../contexts/AuthContext'
 import { useKelasByDosen } from '../hooks/useKelas'
+import { labelKelas } from '../lib/kelas'
 import {
   buildAsesmenCsv,
   fetchAsesmenAttempts,
@@ -68,7 +69,7 @@ export default function Asesmen() {
   const loading = loadingPrePost || loadingFormatif
 
   const kelasOptions = useMemo(
-    () => [{ value: '', label: 'Semua kelas' }, ...kelasList.map((k) => ({ value: k.name, label: k.name }))],
+    () => [{ value: '', label: 'Semua kelas' }, ...kelasList.map((k) => ({ value: k.name, label: labelKelas(k, kelasList) }))],
     [kelasList],
   )
 
@@ -138,15 +139,8 @@ export default function Asesmen() {
         </div>
 
         {/* FILTER KELAS */}
-        <div className="flex flex-col gap-1.5 mb-5 max-w-xs">
-          <label className="text-xs font-semibold text-brown-2 tracking-wide">Filter Kelas</label>
-          <Select
-            value={kelasFilter}
-            onChange={setKelasFilter}
-            className="h-11 px-3 rounded-lg border-[1.5px] bg-[var(--bg3)] text-sm text-brown cursor-pointer outline-none"
-            style={BORDER}
-            options={kelasOptions}
-          />
+        <div className="mb-5 max-w-xs">
+          <Select value={kelasFilter} onChange={setKelasFilter} label="Filter Kelas" options={kelasOptions} />
         </div>
 
         {/* TIGA ANGKA */}

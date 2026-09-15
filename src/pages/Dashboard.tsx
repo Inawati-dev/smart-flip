@@ -6,6 +6,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useKelasByDosen } from '../hooks/useKelas'
+import { labelKelas } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
 import type { ModuleRow } from '../lib/modules'
@@ -133,31 +134,24 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
   return (
     <div className="flex flex-col gap-5">
       {/* Filter */}
-      <div className="flex flex-wrap items-center gap-2.5">
+      <div className="flex flex-wrap gap-2">
         <Select
           value={kelasId}
           onChange={handleKelasChange}
           aria-label="Filter kelas"
-          className="h-9 px-3 rounded-lg border text-sm text-brown outline-none cursor-pointer"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg3)', minHeight: 44 }}
-          options={[{ value: 'semua', label: 'Semua Kelas' }, ...kelasList.map((k) => ({ value: k.id, label: k.name }))]}
+          size="sm"
+          options={[
+            { value: 'semua', label: 'Semua Kelas' },
+            ...kelasList.map((k) => ({ value: k.id, label: labelKelas(k, kelasList) })),
+          ]}
         />
-        <div className="flex gap-1.5 flex-wrap">
-          {HARI_OPTIONS.map((opt) => (
-            <button
-              key={String(opt.value)}
-              onClick={() => handleHariChange(opt.value)}
-              className="min-h-11 px-3.5 rounded-full text-xs font-semibold"
-              style={{
-                background: hari === opt.value ? 'var(--brown)' : 'transparent',
-                color: hari === opt.value ? 'var(--btn-text)' : 'var(--brown-2)',
-                border: '1.5px solid var(--border)',
-              }}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <Select
+          value={String(hari)}
+          onChange={(v) => handleHariChange(v === 'semester' ? 'semester' : (Number(v) as 7 | 30))}
+          aria-label="Filter rentang waktu"
+          size="sm"
+          options={HARI_OPTIONS.map((opt) => ({ value: String(opt.value), label: opt.label }))}
+        />
       </div>
 
       {/* 6 angka ringkas */}
