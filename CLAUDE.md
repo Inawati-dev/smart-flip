@@ -202,3 +202,13 @@ Data layer (data-layer.js) live sejak v0.9.7 — USE_SUPABASE auto-detect via `t
 ## Local Dev
 - **React app (src/, yang aktif)**: `pnpm install` lalu `pnpm dev` — buka http://localhost:5173
 - **Legacy statis (legacy/, arsip)**: `serve.bat` (double-click dari Explorer atau jalankan di terminal) — serve folder `legacy/` doang lewat `python -m http.server 8080`, buka http://localhost:8080. Sengaja dipertahankan di root (bukan didalam `legacy/`) biar gampang di-klik dari Explorer.
+
+<!-- ai-kemampuan-pointer -->
+## Basis Pengetahuan
+Baca dulu (efisiensi + navigasi): `C:\1-Johan\10. Pengembangan\AI Skill\03 - AI Kemampuan (Basis Pengetahuan)\hemat.md` lalu `kemampuan-index.md`.
+<!-- /ai-kemampuan-pointer -->
+
+<!-- aturan-wajib-pointer -->
+## Aturan Wajib Lintas Proyek (23 Agu 2026)
+Baca `C:\Users\Johan\.claude\CLAUDE.md` section "Protokol Penutup Task & Sesi Idle" dan "Papan Pekerjaan, Referensi Sumber, Kejujuran Inventaris". Ringkasnya: Papan Pekerjaan 10 kolom tiap pekerjaan di `docs/jejak-permintaan.md`; referensi sumber `docs/referensi_<proyek>.md` -> `.html` (template `C:\1-Johan\10. Pengembangan\AI Skill\00 - Dokumentasi\template-referensi-proyek.md`, build `build_html.py --proyek`); sumber luar baru = inventaris SEMUA yang tersedia dulu, tanya Johan sebelum melewatkan ruas, mengganti sumber, atau menjahit angka; sesi tanpa task = sinkron sesi paralel -> distilasi -> cek referensi -> `## Tugas Idle` -> tabel WF-137; tiap task selesai = log <=10 baris sebelum lapor.
+<!-- /aturan-wajib-pointer -->

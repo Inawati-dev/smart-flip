@@ -5,6 +5,7 @@ import { listModulPdfFiles, deleteModulPdfFile, type ModulPdfFile } from '../lib
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { IconTrash, IconChevronRight } from '../components/icons'
+import { PdfPreviewLink } from '../components/PdfPreviewLink'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -86,7 +87,12 @@ export function KelolaPdf() {
                   ) : (
                     files.map((f) => (
                       <tr key={f.name} className="border-t" style={BORDER}>
-                        <td className="px-4 py-2.5 text-brown-2 break-all">{f.name}</td>
+                        <td className="px-4 py-2.5 text-brown-2 break-all">
+                          <span className="inline-flex items-center gap-2">
+                            <span>{f.name}</span>
+                            <PdfPreviewLink url={f.url} />
+                          </span>
+                        </td>
                         <td className="px-4 py-2.5 text-brown-2 whitespace-nowrap">
                           {f.updatedAt ? new Date(f.updatedAt).toLocaleDateString('id-ID') : '—'}
                         </td>
