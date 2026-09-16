@@ -1,6 +1,8 @@
 export interface PillOption {
   value: string
   label: string
+  badge?: number | string
+  badgeTone?: 'danger' | 'neutral'
 }
 
 interface PillGroupProps {
@@ -20,13 +22,15 @@ export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: 
     <div role="group" aria-label={ariaLabel} className="flex flex-wrap gap-1.5">
       {options.map((opt) => {
         const active = opt.value === value
+        const showBadge = opt.badge != null && opt.badge !== 0 && opt.badge !== ''
+        const badgeText = typeof opt.badge === 'number' && opt.badge > 99 ? '99+' : String(opt.badge)
         return (
           <button
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
-            className={`min-w-[5.5rem] rounded-full px-3.5 text-xs font-semibold whitespace-nowrap border transition-colors ${active ? '' : 'bg-ivory hover:bg-bg3'}`}
+            className={`min-w-[5.5rem] rounded-full px-3.5 text-xs font-semibold whitespace-nowrap border transition-colors inline-flex items-center justify-center gap-1.5 ${active ? '' : 'bg-ivory hover:bg-bg3'}`}
             style={{
               minHeight: minH,
               borderColor: active ? 'var(--brown)' : 'var(--border)',
@@ -35,6 +39,17 @@ export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: 
             }}
           >
             {opt.label}
+            {showBadge && (
+              <span
+                className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[11px] font-bold rounded-full"
+                style={{
+                  background: active ? 'var(--ivory)' : opt.badgeTone === 'danger' ? 'var(--danger)' : 'var(--brown3)',
+                  color: active ? 'var(--brown)' : opt.badgeTone === 'danger' ? 'var(--btn-text)' : 'var(--ivory)',
+                }}
+              >
+                {badgeText}
+              </span>
+            )}
           </button>
         )
       })}

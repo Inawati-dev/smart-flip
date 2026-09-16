@@ -219,9 +219,9 @@ export default function Asesmen() {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="[&>tr+tr]:row-divider">
                   {peningkatan.perMahasiswa.map((m: PeningkatanMahasiswa) => (
-                    <tr key={m.userId} className="border-b last:border-b-0" style={BORDER}>
+                    <tr key={m.userId}>
                       <td className="px-3 py-2.5 text-sm font-medium text-brown">{m.nama}</td>
                       <td className="px-3 py-2.5 text-sm text-brown-3">{m.kelasId ?? '—'}</td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">
@@ -253,7 +253,7 @@ export default function Asesmen() {
         {/* TABEL FORMATIF PER MODUL */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
           <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
-            <IconChart size={18} /> Tes Formatif per Modul
+            <IconChart size={18} /> Tes formatif per topik
             {loading && <span className="text-xs font-normal text-brown-3">Memuat…</span>}
           </div>
           {rekapFormatif.length === 0 ? (
@@ -263,7 +263,7 @@ export default function Asesmen() {
               <table className="w-full border-collapse min-w-[640px]">
                 <thead className="bg-cream">
                   <tr>
-                    {['Modul', 'Pengerjaan', 'Mahasiswa', 'Rata-rata', 'Tertinggi', 'Terendah', '% Lulus'].map((h, i) => (
+                    {['Topik', 'Pengerjaan', 'Mahasiswa', 'Rata-rata', 'Tertinggi', 'Terendah', '% Lulus'].map((h, i) => (
                       <th
                         key={h}
                         className={`px-3 py-2.5 text-xs font-semibold text-brown-2 tracking-wide uppercase ${
@@ -275,9 +275,9 @@ export default function Asesmen() {
                     ))}
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="[&>tr+tr]:row-divider">
                   {rekapFormatif.map((r) => (
-                    <tr key={r.moduleId} className="border-b last:border-b-0" style={BORDER}>
+                    <tr key={r.moduleId}>
                       <td className="px-3 py-2.5 text-sm font-medium text-brown">{r.judul}</td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">{r.jumlahPengerjaan}</td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">{r.jumlahMahasiswa}</td>

@@ -277,7 +277,7 @@ export function BankSoal() {
             <Select
               value={String(modulId ?? '')}
               onChange={(v) => selectModul(parseInt(v, 10))}
-              aria-label="Pilih modul"
+              aria-label="Pilih topik"
               size="sm"
               options={modules.map((m) => ({ value: String(m.id), label: m.title }))}
             />
@@ -295,7 +295,7 @@ export function BankSoal() {
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">
                     {isVark ? 'Gaya belajar per opsi' : 'Kunci'}
                   </th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -318,8 +318,8 @@ export function BankSoal() {
                         onDragOver={(e) => handleDragOver(e, r.id)}
                         onDrop={() => handleDrop(r.id)}
                         onDragEnd={handleDragEnd}
-                        className="border-t transition-colors"
-                        style={{ ...BORDER, opacity: isDragging ? 0.4 : 1, background: isDropTarget ? 'var(--accent-soft)' : undefined }}
+                        className="row-divider transition-colors"
+                        style={{ opacity: isDragging ? 0.4 : 1, background: isDropTarget ? 'var(--accent-soft)' : undefined }}
                       >
                         <td className="px-3 py-2.5">
                           <div
@@ -354,18 +354,20 @@ export function BankSoal() {
                             </span>
                           )}
                         </td>
-                        <td className="px-3 py-2.5">
-                          <div className="flex gap-1.5">
+                        <td className="px-3 py-2.5 text-center">
+                          <div className="inline-flex items-center justify-center gap-1.5">
                             <button
                               onClick={() => openEditModal(r)}
                               aria-label={`Ubah soal urutan ${r.order_num}`}
-                              className="btn btn-secondary btn-icon flex-shrink-0"
+                              title="Ubah soal"
+                              className="btn btn-secondary whitespace-nowrap"
                             >
-                              <IconEdit size={15} />
+                              <IconEdit size={15} /> <span className="hidden sm:inline">Ubah soal</span>
                             </button>
                             <button
                               onClick={() => setDeleteId(r.id)}
                               aria-label={`Hapus soal urutan ${r.order_num}`}
+                              title="Hapus soal"
                               className="btn btn-danger btn-icon flex-shrink-0"
                             >
                               <IconTrash size={15} />
@@ -406,11 +408,11 @@ export function BankSoal() {
 
             {isFormatif && (
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
-                Modul
+                Topik
                 <Select
                   value={String(modalModuleId ?? '')}
                   onChange={(v) => setModalModuleId(parseInt(v, 10))}
-                  aria-label="Pilih modul"
+                  aria-label="Pilih topik"
                   options={modules.map((m) => ({ value: String(m.id), label: m.title }))}
                 />
               </label>

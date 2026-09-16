@@ -170,7 +170,7 @@ describe('perluPerhatian', () => {
       ],
     }
     const hasil = perluPerhatian(sumber, { now: NOW })
-    expect(hasil.some((h) => h.keterangan.includes('Remedial 3 kali di modul 1'))).toBe(true)
+    expect(hasil.some((h) => h.keterangan.includes('Remedial 3 kali di topik 1'))).toBe(true)
   })
 })
 

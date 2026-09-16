@@ -98,16 +98,16 @@ describe('Video (dosen)', () => {
     mockAuth.role = 'dosen'
   })
 
-  it('shows "Tambah tautan" for a module without a URL', async () => {
+  it('shows "Tambah video" for a module without a URL', async () => {
     renderVideo(2)
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3)) // header + 2 modules
-    expect(screen.getByText('Tambah tautan')).toBeTruthy()
+    expect(screen.getByText('Tambah video')).toBeTruthy()
   })
 
   it('shows a preview button for a module with a URL', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
-    expect(screen.getByText('Ubah')).toBeTruthy()
+    expect(screen.getByText('Ubah video')).toBeTruthy()
     const preview = document.querySelector('button[aria-label="Pratinjau video"]')
     expect(preview).toBeTruthy()
   })
@@ -124,8 +124,8 @@ describe('Video (dosen)', () => {
   it('shows a video file input in the Ubah tautan modal', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
-    fireEvent.click(screen.getByText('Ubah'))
-    const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm"]')
+    fireEvent.click(screen.getByText('Ubah video'))
+    const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm,.mp4,.webm"]')
     expect(input).toBeTruthy()
   })
 })

@@ -476,3 +476,13 @@ a:hover .nav-tile-active {
     transform: none;
   }
 }
+
+/* Pemisah ANTARBARIS tabel/daftar (sapuan gutter 16 Sep 2026) — 0.5px, bukan
+   1px seperti bingkai kartu. Pada layar DPR 1 (paling umum di laptop/desktop)
+   browser membulatkan 0.5px ke 1px device pixel, tapi warnanya tetap
+   var(--border) yang sudah tipis (alpha rendah), jadi hasilnya tetap kelihatan
+   lebih halus daripada border 1px solid biasa; pada layar DPR>=1.25 (retina,
+   sebagian besar laptop/HP modern) 0.5px betulan dirender separuh pixel.
+   Bingkai kartu (`border` biasa) TIDAK dipakaikan ini, tetap 1px. */
+.row-divider { border-top: 0.5px solid var(--border); }
+.row-divider-b { border-bottom: 0.5px solid var(--border); }

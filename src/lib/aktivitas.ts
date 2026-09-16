@@ -114,7 +114,7 @@ export function gabungKejadian(sumber: SumberAktivitas): Kejadian[] {
       items.push({
         ...base,
         jenis: lulus ? 'formatif-lulus' : 'formatif-remedial',
-        keterangan: `Formatif modul ${m?.orderNum ?? a.moduleId} · skor ${a.score} · ${lulus ? 'Lulus' : 'Remedial'}`,
+        keterangan: `Formatif topik ${m?.orderNum ?? a.moduleId} · skor ${a.score} · ${lulus ? 'Lulus' : 'Remedial'}`,
       })
     }
   }
@@ -130,7 +130,7 @@ export function gabungKejadian(sumber: SumberAktivitas): Kejadian[] {
       kelasId: p?.classId ?? null,
       kelasNama: p?.kelasNama ?? null,
       jenis: 'modul',
-      keterangan: `Modul ${m?.orderNum ?? pr.moduleId} dibaca sampai halaman ${pr.currentPage}`,
+      keterangan: `Topik ${m?.orderNum ?? pr.moduleId} dibaca sampai halaman ${pr.currentPage}`,
     })
   }
 
@@ -285,7 +285,7 @@ export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {
     const [userId, moduleIdStr] = key.split(':')
     const nama = profileOf(sumber.profiles, userId)?.fullName ?? 'Mahasiswa'
     const orderNum = moduleOf(sumber.modules, Number(moduleIdStr))?.orderNum ?? moduleIdStr
-    items.push({ judul: nama, keterangan: `Remedial ${count} kali di modul ${orderNum}`, tautan: TAUTAN_MAHASISWA })
+    items.push({ judul: nama, keterangan: `Remedial ${count} kali di topik ${orderNum}`, tautan: TAUTAN_MAHASISWA })
   }
 
   return items
@@ -326,7 +326,7 @@ export function matriksProgres(sumber: SumberAktivitas): MatriksBaris[] {
 export function buildMatriksCsv(baris: MatriksBaris[]): string {
   if (baris.length === 0) return 'Nama\n'
   const orderNums = baris[0].sel.map((s) => s.orderNum)
-  let csv = 'Nama,' + orderNums.map((n) => `Modul ${n}`).join(',') + '\n'
+  let csv = 'Nama,' + orderNums.map((n) => `Topik ${n}`).join(',') + '\n'
   for (const b of baris) {
     const nama = (b.nama || '').replace(/"/g, '""')
     csv += `"${nama}",` + b.sel.map((s) => s.status).join(',') + '\n'

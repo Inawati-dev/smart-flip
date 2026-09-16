@@ -9,19 +9,27 @@ afterEach(cleanup)
 
 const mockListModulPdfFiles = vi.hoisted(() => vi.fn())
 const mockDeleteModulPdfFile = vi.hoisted(() => vi.fn(async () => {}))
+const mockListModulVideoFiles = vi.hoisted(() => vi.fn())
+const mockDeleteModulVideoFile = vi.hoisted(() => vi.fn(async () => {}))
 
 vi.mock('../lib/manajemen', () => ({
   listModulPdfFiles: mockListModulPdfFiles,
   deleteModulPdfFile: mockDeleteModulPdfFile,
+  listModulVideoFiles: mockListModulVideoFiles,
+  deleteModulVideoFile: mockDeleteModulVideoFile,
 }))
 
 vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: true,
 }))
 
-const FILES = [
-  { name: 'modul-1-111.pdf', url: 'https://x/modul-1-111.pdf', updatedAt: '2026-09-01T00:00:00Z', usedBy: 'Modul Satu' },
+const PDF_FILES = [
+  { name: 'modul-1-111.pdf', url: 'https://x/modul-1-111.pdf', updatedAt: '2026-09-01T00:00:00Z', usedBy: 'Topik Satu' },
   { name: 'modul-2-222.pdf', url: 'https://x/modul-2-222.pdf', updatedAt: '2026-09-02T00:00:00Z', usedBy: null },
+]
+
+const VIDEO_FILES = [
+  { name: 'modul-1-333.mp4', url: 'https://x/modul-1-333.mp4', updatedAt: '2026-09-03T00:00:00Z', sizeBytes: 5_242_880, usedBy: 'Topik Satu' },
 ]
 
 function renderPage() {
@@ -36,28 +44,42 @@ function renderPage() {
 }
 
 describe('KelolaPdf', () => {
-  it('menampilkan 2 baris dari 2 berkas hasil listModulPdfFiles', async () => {
-    mockListModulPdfFiles.mockResolvedValue(FILES)
+  it('menampilkan 2 baris dari 2 berkas hasil listModulPdfFiles di tab PDF (bawaan)', async () => {
+    mockListModulPdfFiles.mockResolvedValue(PDF_FILES)
+    mockListModulVideoFiles.mockResolvedValue([])
     renderPage()
 
     expect(await screen.findByText('modul-1-111.pdf')).toBeTruthy()
     expect(screen.getByText('modul-2-222.pdf')).toBeTruthy()
-    expect(screen.getByText('Dipakai modul: Modul Satu')).toBeTruthy()
+    expect(screen.getByText('Topik Satu')).toBeTruthy()
     expect(screen.getByText('Belum terpakai')).toBeTruthy()
   })
 
   it('klik Hapus membuka modal konfirmasi sebelum memanggil deleteModulPdfFile', async () => {
-    mockListModulPdfFiles.mockResolvedValue(FILES)
+    mockListModulPdfFiles.mockResolvedValue(PDF_FILES)
+    mockListModulVideoFiles.mockResolvedValue([])
     renderPage()
 
     await screen.findByText('modul-1-111.pdf')
-    fireEvent.click(screen.getAllByText('Hapus')[0])
+    fireEvent.click(screen.getByLabelText('Hapus berkas modul-1-111.pdf'))
 
     expect(screen.getByText('Hapus berkas modul-1-111.pdf?')).toBeTruthy()
-    expect(screen.getByText('Modul Modul Satu akan kehilangan PDF-nya.')).toBeTruthy()
+    expect(screen.getByText('Topik Topik Satu akan kehilangan PDF-nya.')).toBeTruthy()
     expect(mockDeleteModulPdfFile).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByText('Ya, Hapus'))
     await waitFor(() => expect(mockDeleteModulPdfFile).toHaveBeenCalledWith('modul-1-111.pdf'))
+  })
+
+  it('klik tab "Video topik" menampilkan nama berkas video', async () => {
+    mockListModulPdfFiles.mockResolvedValue(PDF_FILES)
+    mockListModulVideoFiles.mockResolvedValue(VIDEO_FILES)
+    renderPage()
+
+    await screen.findByText('modul-1-111.pdf')
+    fireEvent.click(screen.getByText(/Video topik/))
+
+    expect(await screen.findByText('modul-1-333.mp4')).toBeTruthy()
+    expect(screen.getByText('5.0 MB')).toBeTruthy()
   })
 })

@@ -524,3 +524,64 @@ export async function getModulOrder(): Promise<number[] | null> {
   }
   return lsGet<number[]>(ORDER_KEY)
 }
+
+// ── Berkas video di bucket `modul-video` (antrean #56) ──
+// Cermin dari listModulPdfFiles/deleteModulPdfFile untuk halaman Berkas tab
+// Video. Memakai videoStorageObjectName di atas.
+export interface ModulVideoFile {
+  name: string
+  url: string
+  updatedAt: string | null
+  sizeBytes: number | null
+  /** Judul topik yang sedang memakai berkas ini, atau null bila belum terpakai. */
+  usedBy: string | null
+}
+
+export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
+  if (!isSupabaseConfigured) return []
+  const [listRes, modulesRes] = await Promise.all([
+    supabase.storage.from('modul-video').list('', {
+      limit: 200,
+      sortBy: { column: 'created_at', order: 'desc' },
+    }),
+    supabase.from('modules').select('title, video_url'),
+  ])
+  if (listRes.error) {
+    // Bucket belum dibuat (migrasi v21 belum jalan): tampilkan kosong, jangan crash.
+    if (/not found|does not exist/i.test(listRes.error.message)) return []
+    throw listRes.error
+  }
+  const usedBy = new Map<string, string>()
+  for (const m of modulesRes.data ?? []) {
+    const name = videoStorageObjectName((m as { video_url?: string }).video_url)
+    if (name) usedBy.set(name, (m as { title?: string }).title || 'Tanpa judul')
+  }
+  return (listRes.data || [])
+    .filter((f) => {
+      if (!/\.(mp4|webm)$/i.test(f.name)) return false
+      const size = (f.metadata as { size?: number } | null)?.size
+      return size == null || size > 0
+    })
+    .map((f) => ({
+      name: f.name,
+      url: supabase.storage.from('modul-video').getPublicUrl(f.name).data.publicUrl,
+      updatedAt: f.updated_at ?? null,
+      sizeBytes: (f.metadata as { size?: number } | null)?.size ?? null,
+      usedBy: usedBy.get(f.name) ?? null,
+    }))
+}
+
+export async function deleteModulVideoFile(path: string): Promise<void> {
+  if (!isSupabaseConfigured) {
+    throw new Error('deleteModulVideoFile membutuhkan koneksi Supabase, tidak tersedia di mode demo.')
+  }
+  const { data: modulesRes } = await supabase.from('modules').select('id, video_url')
+  const usedByIds = (modulesRes ?? [])
+    .filter((m) => videoStorageObjectName((m as { video_url?: string }).video_url) === path)
+    .map((m) => (m as { id: number }).id)
+  const { error } = await supabase.storage.from('modul-video').remove([path])
+  if (error) throw error
+  if (usedByIds.length) {
+    await supabase.from('modules').update({ video_url: null }).in('id', usedByIds)
+  }
+}

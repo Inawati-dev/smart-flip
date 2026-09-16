@@ -120,7 +120,7 @@ export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
     }
     const judulById = new Map<number, string>()
     for (const m of modulesRes.data ?? []) {
-      judulById.set(m.id as number, (m.title as string) || `Modul ${m.id}`)
+      judulById.set(m.id as number, (m.title as string) || `Topik ${m.id}`)
     }
 
     return attemptsRows
@@ -131,7 +131,7 @@ export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
         nama: namaById.get(r.user_id as string) ?? 'Mahasiswa',
         kelas: kelasById.get(r.user_id as string) ?? null,
         moduleId: r.module_id as number,
-        modulJudul: judulById.get(r.module_id as number) ?? `Modul ${r.module_id}`,
+        modulJudul: judulById.get(r.module_id as number) ?? `Topik ${r.module_id}`,
         score: r.score as number,
         passed: !!r.passed,
         attemptedAt: r.attempted_at as string,

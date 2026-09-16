@@ -115,7 +115,7 @@ describe('ModulList', () => {
   })
 
   // Antrean 16 Sep 2026: dosen bisa menambah dan menghapus modul dari tabel ini.
-  it('shows a "Tambah modul" button for a dosen', async () => {
+  it('shows a "Tambah topik" button for a dosen', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules'], NINE_MODULES)
@@ -124,11 +124,11 @@ describe('ModulList', () => {
     renderModulList(queryClient)
 
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
-    expect(screen.getByText(/Tambah modul/)).toBeTruthy()
+    expect(screen.getByText(/Tambah topik/)).toBeTruthy()
   })
 
-  // Antrean #43 (16 Sep 2026): modal Tambah Modul juga menawarkan unggah PDF.
-  it('shows a PDF file input in the Tambah Modul modal', async () => {
+  // Antrean #43 (16 Sep 2026): modal Tambah Topik juga menawarkan unggah PDF.
+  it('shows a PDF file input in the Tambah Topik modal', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules'], NINE_MODULES)
@@ -137,10 +137,10 @@ describe('ModulList', () => {
     renderModulList(queryClient)
 
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
-    fireEvent.click(screen.getByText(/\+ Tambah modul/))
+    fireEvent.click(screen.getByText(/\+ Tambah topik/))
 
-    expect(screen.getByText('PDF modul (opsional)')).toBeTruthy()
-    expect(document.querySelector('input[type="file"][accept="application/pdf"]')).toBeTruthy()
+    expect(screen.getByText('PDF topik (opsional)')).toBeTruthy()
+    expect(document.querySelector('input[type="file"][accept="application/pdf,.pdf"]')).toBeTruthy()
   })
 
   it('clicking Hapus on a row opens a delete confirmation modal', async () => {
@@ -152,9 +152,9 @@ describe('ModulList', () => {
     renderModulList(queryClient)
 
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
-    fireEvent.click(screen.getByLabelText('Hapus modul Modul 1'))
+    fireEvent.click(screen.getByLabelText('Hapus topik Modul 1'))
 
-    expect(screen.getByText(/Hapus modul/)).toBeTruthy()
+    expect(screen.getByText(/Hapus topik/)).toBeTruthy()
     expect(screen.getByText(/ikut terhapus/)).toBeTruthy()
     expect(screen.getByText('Ya, Hapus')).toBeTruthy()
   })

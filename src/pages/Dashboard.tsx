@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
@@ -16,6 +16,7 @@ import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
+import { PillGroup } from '../components/PillGroup'
 import { downloadCsv } from '../lib/analitik'
 import { timeAgo } from '../lib/forum'
 import {
@@ -37,7 +38,6 @@ import {
   IconChart,
   IconRefresh,
   IconTarget,
-  IconWarning,
   IconDownload,
   IconVideo,
   IconClipboard,
@@ -102,12 +102,13 @@ function StatusChip({ status }: { status: MatriksSel['status'] }) {
 // useQuery menarik 5 tabel sekaligus (fetchSumberAktivitas); 4 fungsi murni
 // di src/lib/aktivitas.ts mengubahnya jadi umpan, ringkasan, daftar
 // perhatian, dan matriks — tidak ada angka statis di halaman ini.
-function DosenHome({ dosenId }: { dosenId?: string }) {
+export function DosenHome({ dosenId }: { dosenId?: string }) {
   const { data: kelasList = [] } = useKelasByDosen(dosenId)
   const [tahun, setTahun] = useState<number | null>(null)
   const [kelas, setKelas] = useState<string | null>(null)
   const [hari, setHari] = useState<FilterAktivitas['hari']>(7)
   const [feedLimit, setFeedLimit] = useState(50)
+  const [searchParams, setSearchParams] = useSearchParams()
 
   // Kelas yang lolos filter tahun/kelas terpilih. RLS + fetchSumberAktivitas
   // hanya tahu memfilter satu class_id di server, jadi: tepat satu kelas lolos
@@ -150,6 +151,20 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
   const perhatian = useMemo(() => (sumber ? perluPerhatian(sumber) : []), [sumber])
   const matriks = useMemo(() => (sumber ? matriksProgres(sumber) : []), [sumber])
 
+  // Tab tersimpan di ?tab=. Bawaan 'aktivitas'; kalau belum ada ?tab di URL
+  // dan sudah ada baris perlu perhatian, buka 'perhatian' dulu supaya
+  // notifikasinya langsung terlihat (bukan tersembunyi di tab kedua).
+  const tabParam = searchParams.get('tab')
+  const tab: 'aktivitas' | 'perhatian' | 'progres' =
+    tabParam === 'perhatian' || tabParam === 'progres' || tabParam === 'aktivitas'
+      ? tabParam
+      : perhatian.length > 0
+        ? 'perhatian'
+        : 'aktivitas'
+  function pindahTab(t: string) {
+    setSearchParams({ tab: t })
+  }
+
   function handleKelasTahunChange(f: { tahun: number | null; kelas: string | null }) {
     setTahun(f.tahun)
     setKelas(f.kelas)
@@ -166,6 +181,20 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
 
   return (
     <div className="flex flex-col gap-5">
+      {/* Judul + lencana perlu perhatian */}
+      <div className="flex items-center gap-2 flex-wrap -mt-1 mb-1">
+        <p className="text-brown-3">Dashboard dosen</p>
+        {perhatian.length > 0 && (
+          <Link
+            to="?tab=perhatian"
+            className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-2 text-[11px] font-bold rounded-full"
+            style={{ background: 'var(--danger)', color: 'var(--btn-text)' }}
+          >
+            {perhatian.length} perlu perhatian
+          </Link>
+        )}
+      </div>
+
       {/* Filter */}
       <div className="flex flex-wrap gap-2">
         <KelasTahunFilter kelasList={kelasList} tahun={tahun} kelas={kelas} onChange={handleKelasTahunChange} />
@@ -202,117 +231,120 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Kelola soal pre/formatif/post/VARK" />
         <ShortcutCard to="/asesmen/tes" icon={IconTarget} label="Tes khusus" desc="Buat sesi tes berkode" />
-        <ShortcutCard to="/modul" icon={IconFolder} label="PDF modul" desc="Kelola PDF tiap modul" />
-        <ShortcutCard to="/video" icon={IconVideo} label="Tautan video" desc="Kelola tautan video tiap modul" />
+        <ShortcutCard to="/modul" icon={IconFolder} label="PDF modul" desc="Kelola PDF tiap topik" />
+        <ShortcutCard to="/video" icon={IconVideo} label="Tautan video" desc="Kelola video tiap topik" />
         <ShortcutCard to="/kelas" icon={IconUsers} label="Kelas" desc="Buat kelas & kode gabung" />
       </div>
 
-      {/* Umpan aktivitas */}
+      {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
+      <PillGroup
+        ariaLabel="Tab dashboard dosen"
+        value={tab}
+        onChange={pindahTab}
+        options={[
+          { value: 'aktivitas', label: 'Aktivitas', badge: kejadian.length },
+          { value: 'perhatian', label: 'Perlu perhatian', badge: perhatian.length, badgeTone: 'danger' },
+          { value: 'progres', label: 'Progres', badge: matriks.length },
+        ]}
+      />
       <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-        <div className="px-5 py-3.5 border-b" style={BORDER}>
-          <span className="text-sm font-semibold text-brown">Aktivitas kelas</span>
-        </div>
-        {isLoading ? (
-          <p className="text-brown-3 text-sm p-4">Memuat…</p>
-        ) : kejadian.length === 0 ? (
-          <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
-        ) : (
-          <>
-            <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
-              <table className="w-full text-sm border-collapse">
-                <tbody>
-                  {kejadian.slice(0, feedLimit).map((k, i) => (
-                    <tr key={i} className="border-t" style={BORDER}>
-                      <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{timeAgo(k.waktu)}</td>
-                      <td className="px-4 py-2 text-brown font-medium whitespace-nowrap">{k.nama}</td>
-                      <td className="px-4 py-2 text-brown-2">{k.keterangan}</td>
-                      <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{k.kelasNama ?? '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            {kejadian.length > feedLimit && (
-              <div className="p-3 text-center border-t" style={BORDER}>
-                <button
-                  onClick={() => setFeedLimit((n) => n + 50)}
-                  className="btn btn-ghost"
-                  style={{ color: 'var(--terra-d)' }}
+        {tab === 'aktivitas' &&
+          (isLoading ? (
+            <p className="text-brown-3 text-sm p-4">Memuat…</p>
+          ) : kejadian.length === 0 ? (
+            <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
+          ) : (
+            <>
+              <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+                <table className="w-full text-sm border-collapse">
+                  <tbody>
+                    {kejadian.slice(0, feedLimit).map((k, i) => (
+                      <tr key={i} className="row-divider">
+                        <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{timeAgo(k.waktu)}</td>
+                        <td className="px-4 py-2 text-brown font-medium whitespace-nowrap">{k.nama}</td>
+                        <td className="px-4 py-2 text-brown-2">{k.keterangan}</td>
+                        <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{k.kelasNama ?? '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {kejadian.length > feedLimit && (
+                <div className="p-3 text-center row-divider">
+                  <button
+                    onClick={() => setFeedLimit((n) => n + 50)}
+                    className="btn btn-ghost"
+                    style={{ color: 'var(--terra-d)' }}
+                  >
+                    Muat 50 berikutnya
+                  </button>
+                </div>
+              )}
+            </>
+          ))}
+
+        {tab === 'perhatian' && (
+          <div className="p-3 flex flex-col gap-2">
+            {perhatian.length === 0 ? (
+              <p className="text-brown-3 text-sm px-2 py-1">Belum ada yang perlu diperhatikan</p>
+            ) : (
+              perhatian.map((p, i) => (
+                <Link
+                  key={i}
+                  to={p.tautan}
+                  className="flex items-center justify-between gap-2 px-3 min-h-11 rounded-lg border text-sm"
+                  style={BORDER}
                 >
-                  Muat 50 berikutnya
-                </button>
+                  <span className="font-medium text-brown">{p.judul}</span>
+                  <span className="text-brown-3 text-xs">{p.keterangan}</span>
+                </Link>
+              ))
+            )}
+          </div>
+        )}
+
+        {tab === 'progres' && (
+          <>
+            <div className="px-5 py-3.5 border-b flex items-center justify-end gap-2 flex-wrap" style={BORDER}>
+              <button
+                onClick={unduhCsv}
+                disabled={matriks.length === 0}
+                className="btn btn-secondary btn-sm"
+              >
+                <IconDownload size={13} /> Unduh CSV
+              </button>
+            </div>
+            {matriks.length === 0 ? (
+              <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-bg3">
+                      <th className="text-left px-3 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Nama</th>
+                      {matriks[0].sel.map((s) => (
+                        <th key={s.moduleId} className="px-3 py-2 text-xs font-semibold text-brown-3 text-center">
+                          M{s.orderNum}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {matriks.map((b) => (
+                      <tr key={b.userId} className="row-divider">
+                        <td className="px-3 py-2 font-medium text-brown whitespace-nowrap">{b.nama}</td>
+                        {b.sel.map((s) => (
+                          <td key={s.moduleId} className="px-3 py-2 text-center">
+                            <StatusChip status={s.status} />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </>
-        )}
-      </div>
-
-      {/* Perlu perhatian */}
-      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-        <div className="px-5 py-3.5 border-b flex items-center gap-1.5" style={BORDER}>
-          <IconWarning size={15} />
-          <span className="text-sm font-semibold text-brown">Perlu perhatian</span>
-        </div>
-        <div className="p-3 flex flex-col gap-2">
-          {perhatian.length === 0 ? (
-            <p className="text-brown-3 text-sm px-2 py-1">Belum ada yang perlu diperhatikan</p>
-          ) : (
-            perhatian.map((p, i) => (
-              <Link
-                key={i}
-                to={p.tautan}
-                className="flex items-center justify-between gap-2 px-3 min-h-11 rounded-lg border text-sm"
-                style={BORDER}
-              >
-                <span className="font-medium text-brown">{p.judul}</span>
-                <span className="text-brown-3 text-xs">{p.keterangan}</span>
-              </Link>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* Progres mahasiswa x topik */}
-      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-        <div className="px-5 py-3.5 border-b flex items-center justify-between gap-2 flex-wrap" style={BORDER}>
-          <span className="text-sm font-semibold text-brown">Progres mahasiswa × topik</span>
-          <button
-            onClick={unduhCsv}
-            disabled={matriks.length === 0}
-            className="btn btn-secondary btn-sm"
-          >
-            <IconDownload size={13} /> Unduh CSV
-          </button>
-        </div>
-        {matriks.length === 0 ? (
-          <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-bg3">
-                  <th className="text-left px-3 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Nama</th>
-                  {matriks[0].sel.map((s) => (
-                    <th key={s.moduleId} className="px-3 py-2 text-xs font-semibold text-brown-3 text-center">
-                      M{s.orderNum}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {matriks.map((b) => (
-                  <tr key={b.userId} className="border-t" style={BORDER}>
-                    <td className="px-3 py-2 font-medium text-brown whitespace-nowrap">{b.nama}</td>
-                    {b.sel.map((s) => (
-                      <td key={s.moduleId} className="px-3 py-2 text-center">
-                        <StatusChip status={s.status} />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
         )}
       </div>
     </div>
@@ -323,7 +355,7 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
 // `hasil.langkah`, dua sisanya jadi tombol sekunder di kartu yang sama.
 function langkahActions(topikId: number, orderNum: number): Record<Exclude<Langkah, 'selesai-semua'>, { label: string; to: string }> {
   return {
-    baca: { label: `Baca modul ${orderNum}`, to: `/modul/${topikId}` },
+    baca: { label: `Baca topik ${orderNum}`, to: `/modul/${topikId}` },
     video: { label: `Tonton video ${orderNum}`, to: `/video/${topikId}` },
     formatif: { label: `Kerjakan tes formatif ${orderNum}`, to: `/asesmen/formatif/${topikId}` },
   }
@@ -365,11 +397,10 @@ export function Dashboard() {
             <h1 className="text-2xl font-bold text-brown mb-1">
               Halo, {profile?.full_name || 'Pengguna'}
             </h1>
-            <p className="text-brown-3 mb-6">Dashboard dosen</p>
             <DosenHome dosenId={user?.id} />
           </>
         ) : modules.length === 0 ? (
-          <p className="text-brown-3">{modulesLoading ? 'Memuat…' : 'Belum ada modul. Dosen mengunggah modul lewat menu Modul.'}</p>
+          <p className="text-brown-3">{modulesLoading ? 'Memuat…' : 'Belum ada topik. Dosen menambah topik lewat menu Modul.'}</p>
         ) : (
           <DashboardMhs modules={modules} progress={progress} attempts={attempts} />
         )}
