@@ -278,7 +278,7 @@ export function DosenModulRak() {
           }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
+            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">{creatingNew ? 'Tambah Topik' : 'Ubah Topik'}</h3>
@@ -543,7 +543,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <button onClick={() => openEdit(c)} className="btn btn-secondary btn-sm">
+                    <button onClick={() => openEdit(c)} className="btn btn-secondary min-w-[4.5rem]">
                       Ubah
                     </button>
                     <button
@@ -564,19 +564,19 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
             <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
               {editId != null ? 'Ubah mata kuliah' : 'Tambah mata kuliah'}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] gap-2 mb-2">
               <input
                 value={formKode}
                 onChange={(e) => setFormKode(e.target.value.slice(0, 20))}
                 placeholder="Kode, mis. MPP"
-                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
               <input
                 value={formNama}
                 onChange={(e) => setFormNama(e.target.value.slice(0, 100))}
                 placeholder="Nama mata kuliah"
-                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
             </div>
@@ -597,7 +597,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
               <button
                 onClick={() => void saveForm()}
                 disabled={saving || !formKode.trim() || !formNama.trim()}
-                className="btn btn-primary btn-sm min-w-[7.5rem]"
+                className="btn btn-primary min-w-[7.5rem]"
               >
                 {saving ? 'Menyimpan…' : editId != null ? 'Simpan' : 'Tambah'}
               </button>
