@@ -17,6 +17,7 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 
 - Lima menu sama untuk semua peran, urutan tetap: Dashboard, Modul, Video, Asesmen, Akun; dosen dapat item keenam "PDF" (`/akun/pdf`). Rel 80 px, label 10 px, flyout nama + keterangan saat hover, ubin ikon bergradasi. Di telepon jadi bilah bawah 52 px. (#14, #25, #34)
 - Hanya satu item aktif: awalan path terpanjang yang cocok (`activeTo` di `Layout.tsx`). (#39)
+- Ubin ikon rel memakai token per tema `navTileBg/Bg2/Fg/ActiveBg/ActiveFg/ActiveRing` (bukan ivory/cream), supaya tetap terang di Dark; item aktif = tint aksen + cincin tipis + ikon dan label berwarna aksen, bukan ubin aksen penuh. (#50)
 - Tombol Keluar hanya di rel dan bilah bawah. Kode undangan dosen hanya di Akun. (#29, #34)
 
 ## 3. Halaman dosen
