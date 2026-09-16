@@ -65,7 +65,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
       <span className="text-xs text-brown-3">Pertemuan {nomor}</span>
       <b className="text-sm font-semibold text-brown leading-snug -mt-1">{judul}</b>
       {chip && <div className="flex items-center justify-between gap-2">{chip}</div>}
-      {aksi && <div className="flex items-center gap-1.5 flex-wrap">{aksi}</div>}
+      {aksi && <div className="grid grid-cols-2 gap-1.5">{aksi}</div>}
     </div>
   )
 }
