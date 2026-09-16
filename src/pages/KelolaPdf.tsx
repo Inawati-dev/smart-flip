@@ -17,9 +17,16 @@ import { PreviewLink } from '../components/PdfPreviewLink'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
-function formatSize(bytes: number | null): string {
+// Ukuran: KB di bawah 1 MB, MB satu desimal di atasnya (spec #73).
+function formatUkuran(bytes: number | null): string {
   if (bytes == null) return '—'
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function formatTanggalUnggah(iso: string | null): string {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 // Berkas hapus target — satu bentuk untuk kedua tab (PDF dan Video), supaya
@@ -28,6 +35,91 @@ interface DeleteTarget {
   kind: 'pdf' | 'video'
   name: string
   usedBy: string | null
+}
+
+// Bentuk baris bersama — ModulPdfFile dan ModulVideoFile sama-sama punya
+// field ini (src/lib/manajemen.ts), jadi satu tabel cukup untuk kedua tab
+// (spec #73: kolomnya wajib identik).
+type BerkasRow = ModulPdfFile | ModulVideoFile
+
+// Tabel berkas bersama kedua tab — No · Nama berkas · Ukuran · Tanggal
+// unggah · Dipakai topik · Aksi.
+function BerkasTable({
+  files,
+  loading,
+  emptyText,
+  onDelete,
+}: {
+  files: BerkasRow[]
+  loading: boolean
+  emptyText: string
+  onDelete: (f: BerkasRow) => void
+}) {
+  return (
+    <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">
+          <thead>
+            <tr className="bg-bg3">
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3 w-10">No</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama berkas</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Ukuran</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal unggah</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Dipakai topik</th>
+              <th className="text-center px-4 py-2 text-xs font-semibold text-brown-3 w-36">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="text-center text-brown-3 py-6 text-sm">Memuat…</td>
+              </tr>
+            ) : files.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="text-center text-brown-3 py-6 text-sm">{emptyText}</td>
+              </tr>
+            ) : (
+              files.map((f, i) => (
+                <tr key={f.name} className="row-divider">
+                  <td className="px-4 py-2.5 text-brown-3">{i + 1}</td>
+                  <td className="px-4 py-2.5 text-brown-2 break-all">{f.name}</td>
+                  <td className="px-4 py-2.5 text-brown-2 whitespace-nowrap">{formatUkuran(f.sizeBytes)}</td>
+                  <td className="px-4 py-2.5 text-brown-2 whitespace-nowrap">
+                    {formatTanggalUnggah(f.createdAt ?? f.updatedAt)}
+                  </td>
+                  <td className="px-4 py-2.5 text-brown-2">
+                    {f.usedBy ? (
+                      <span>{f.usedBy}</span>
+                    ) : (
+                      <span
+                        className="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                        style={{ background: 'var(--bg3)', color: 'var(--brown2)' }}
+                      >
+                        Belum terpakai
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5 text-center">
+                    <div className="inline-flex items-center justify-center gap-1.5">
+                      <PreviewLink url={f.url} label="Pratinjau" />
+                      <button
+                        onClick={() => onDelete(f)}
+                        aria-label={`Hapus berkas ${f.name}`}
+                        title="Hapus berkas"
+                        className="btn btn-danger btn-icon flex-shrink-0"
+                      >
+                        <IconTrash size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
 }
 
 // /akun/pdf (WP-C, dosen saja) — kelola berkas di bucket `modul-pdf` DAN
@@ -113,109 +205,19 @@ export function KelolaPdf() {
             </div>
 
             {tab === 'pdf' ? (
-              <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
-                    <thead>
-                      <tr className="bg-bg3">
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama berkas</th>
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal</th>
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Topik</th>
-                        <th className="text-center px-4 py-2 text-xs font-semibold text-brown-3 w-36">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {pdfLoading ? (
-                        <tr>
-                          <td colSpan={4} className="text-center text-brown-3 py-6 text-sm">Memuat…</td>
-                        </tr>
-                      ) : pdfFiles.length === 0 ? (
-                        <tr>
-                          <td colSpan={4} className="text-center text-brown-3 py-6 text-sm">Belum ada berkas PDF</td>
-                        </tr>
-                      ) : (
-                        pdfFiles.map((f: ModulPdfFile) => (
-                          <tr key={f.name} className="row-divider">
-                            <td className="px-4 py-2.5 text-brown-2 break-all">{f.name}</td>
-                            <td className="px-4 py-2.5 text-brown-2 whitespace-nowrap">
-                              {f.updatedAt ? new Date(f.updatedAt).toLocaleDateString('id-ID') : '—'}
-                            </td>
-                            <td className="px-4 py-2.5 text-brown-2">
-                              {f.usedBy ? <span>{f.usedBy}</span> : <span className="text-brown-3">Belum terpakai</span>}
-                            </td>
-                            <td className="px-4 py-2.5 text-center">
-                              <div className="inline-flex items-center justify-center gap-1.5">
-                                <PreviewLink url={f.url} label="Pratinjau" />
-                                <button
-                                  onClick={() => setDeleteTarget({ kind: 'pdf', name: f.name, usedBy: f.usedBy })}
-                                  aria-label={`Hapus berkas ${f.name}`}
-                                  title="Hapus berkas"
-                                  className="btn btn-danger btn-icon flex-shrink-0"
-                                >
-                                  <IconTrash size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <BerkasTable
+                files={pdfFiles}
+                loading={pdfLoading}
+                emptyText="Belum ada berkas PDF"
+                onDelete={(f) => setDeleteTarget({ kind: 'pdf', name: f.name, usedBy: f.usedBy })}
+              />
             ) : (
-              <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm border-collapse">
-                    <thead>
-                      <tr className="bg-bg3">
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama berkas</th>
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal</th>
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Ukuran</th>
-                        <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Topik</th>
-                        <th className="text-center px-4 py-2 text-xs font-semibold text-brown-3 w-36">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {videoLoading ? (
-                        <tr>
-                          <td colSpan={5} className="text-center text-brown-3 py-6 text-sm">Memuat…</td>
-                        </tr>
-                      ) : videoFiles.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="text-center text-brown-3 py-6 text-sm">Belum ada berkas video</td>
-                        </tr>
-                      ) : (
-                        videoFiles.map((f: ModulVideoFile) => (
-                          <tr key={f.name} className="row-divider">
-                            <td className="px-4 py-2.5 text-brown-2 break-all">{f.name}</td>
-                            <td className="px-4 py-2.5 text-brown-2 whitespace-nowrap">
-                              {f.updatedAt ? new Date(f.updatedAt).toLocaleDateString('id-ID') : '—'}
-                            </td>
-                            <td className="px-4 py-2.5 text-brown-2 whitespace-nowrap">{formatSize(f.sizeBytes)}</td>
-                            <td className="px-4 py-2.5 text-brown-2">
-                              {f.usedBy ? <span>{f.usedBy}</span> : <span className="text-brown-3">Belum terpakai</span>}
-                            </td>
-                            <td className="px-4 py-2.5 text-center">
-                              <div className="inline-flex items-center justify-center gap-1.5">
-                                <PreviewLink url={f.url} label="Pratinjau" />
-                                <button
-                                  onClick={() => setDeleteTarget({ kind: 'video', name: f.name, usedBy: f.usedBy })}
-                                  aria-label={`Hapus berkas ${f.name}`}
-                                  title="Hapus berkas"
-                                  className="btn btn-danger btn-icon flex-shrink-0"
-                                >
-                                  <IconTrash size={14} />
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+              <BerkasTable
+                files={videoFiles}
+                loading={videoLoading}
+                emptyText="Belum ada berkas video"
+                onDelete={(f) => setDeleteTarget({ kind: 'video', name: f.name, usedBy: f.usedBy })}
+              />
             )}
           </>
         )}

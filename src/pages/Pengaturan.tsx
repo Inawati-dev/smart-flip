@@ -89,12 +89,12 @@ export function PengaturanSections() {
       {/* Kode undangan dosen + Notifikasi — dua kolom di >=768px (permintaan
           Johan 16 Sep 2026 "ini juga bisa jadi 2 kolom"). Mahasiswa tidak
           punya kartu kode undangan, jadi Notifikasi memenuhi lebar penuh. */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
         {/* Kode undangan dosen — hanya untuk dosen. Ini yang diminta calon
             dosen saat mendaftar di halaman Registrasi; tanpa kode yang cocok,
             pendaftaran tetap jadi (tapi turun jadi peran mahasiswa). */}
         {isDosen && (
-          <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
+          <div className="bg-ivory rounded-2xl border p-5 h-full flex flex-col" style={BORDER}>
             <div className="flex items-center gap-2.5 mb-1">
               <IconLock size={18} className="text-brown-3" />
               <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
@@ -177,7 +177,7 @@ export function PengaturanSections() {
           </div>
         )}
 
-        <div className={`bg-ivory rounded-2xl border p-5${isDosen ? '' : ' md:col-span-2'}`} style={BORDER}>
+        <div className={`bg-ivory rounded-2xl border p-5 h-full flex flex-col${isDosen ? '' : ' md:col-span-2'}`} style={BORDER}>
           <div className="flex items-center gap-2.5 mb-1">
             <IconBell size={18} className="text-brown-3" />
             <span className="text-sm font-semibold text-brown">Notifikasi</span>

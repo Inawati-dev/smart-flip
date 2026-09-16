@@ -24,12 +24,33 @@ vi.mock('../lib/supabase', () => ({
 }))
 
 const PDF_FILES = [
-  { name: 'modul-1-111.pdf', url: 'https://x/modul-1-111.pdf', updatedAt: '2026-09-01T00:00:00Z', usedBy: 'Topik Satu' },
-  { name: 'modul-2-222.pdf', url: 'https://x/modul-2-222.pdf', updatedAt: '2026-09-02T00:00:00Z', usedBy: null },
+  {
+    name: 'modul-1-111.pdf',
+    url: 'https://x/modul-1-111.pdf',
+    updatedAt: '2026-09-01T00:00:00Z',
+    createdAt: '2026-09-01T00:00:00Z',
+    sizeBytes: 512_000,
+    usedBy: 'Topik Satu',
+  },
+  {
+    name: 'modul-2-222.pdf',
+    url: 'https://x/modul-2-222.pdf',
+    updatedAt: '2026-09-02T00:00:00Z',
+    createdAt: null,
+    sizeBytes: null,
+    usedBy: null,
+  },
 ]
 
 const VIDEO_FILES = [
-  { name: 'modul-1-333.mp4', url: 'https://x/modul-1-333.mp4', updatedAt: '2026-09-03T00:00:00Z', sizeBytes: 5_242_880, usedBy: 'Topik Satu' },
+  {
+    name: 'modul-1-333.mp4',
+    url: 'https://x/modul-1-333.mp4',
+    updatedAt: '2026-09-03T00:00:00Z',
+    createdAt: '2026-09-03T00:00:00Z',
+    sizeBytes: 5_242_880,
+    usedBy: 'Topik Satu',
+  },
 ]
 
 function renderPage() {
@@ -53,6 +74,23 @@ describe('KelolaPdf', () => {
     expect(screen.getByText('modul-2-222.pdf')).toBeTruthy()
     expect(screen.getByText('Topik Satu')).toBeTruthy()
     expect(screen.getByText('Belum terpakai')).toBeTruthy()
+  })
+
+  // Kolom sama di kedua tab (spec #73): No, Nama berkas, Ukuran, Tanggal
+  // unggah, Dipakai topik, Aksi -- plus format ukuran KB di bawah 1 MB dan
+  // nomor urut 1..n.
+  it('header kolom lengkap dan Ukuran memakai KB di bawah 1 MB', async () => {
+    mockListModulPdfFiles.mockResolvedValue(PDF_FILES)
+    mockListModulVideoFiles.mockResolvedValue([])
+    renderPage()
+
+    await screen.findByText('modul-1-111.pdf')
+    expect(screen.getByText('No')).toBeTruthy()
+    expect(screen.getByText('Nama berkas')).toBeTruthy()
+    expect(screen.getByText('Ukuran')).toBeTruthy()
+    expect(screen.getByText('Tanggal unggah')).toBeTruthy()
+    expect(screen.getByText('Dipakai topik')).toBeTruthy()
+    expect(screen.getByText('500 KB')).toBeTruthy()
   })
 
   it('klik Hapus membuka modal konfirmasi sebelum memanggil deleteModulPdfFile', async () => {

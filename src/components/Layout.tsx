@@ -6,7 +6,7 @@ import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
 import { BrandMark } from './AuthShell'
 import { useTheme } from '../hooks/useTheme'
-import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument, IconMoon, IconSun } from './icons'
+import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument, IconMoon, IconSun, IconUsers } from './icons'
 
 interface NavItem {
   to: string
@@ -29,7 +29,8 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
   { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Pre-test, formatif, post-test' },
   { to: '/akun/pdf', icon: IconDocument, label: 'Berkas', desc: 'PDF dan video tiap topik', dosenOnly: true },
-  { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil, kelas, pengaturan' },
+  { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas dan kode gabung', dosenOnly: true },
+  { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil dan pengaturan' },
 ]
 
 // Satu item aktif pada satu waktu: item dengan awalan path terpanjang yang
