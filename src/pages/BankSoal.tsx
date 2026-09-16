@@ -71,7 +71,7 @@ export function BankSoal() {
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+        <div className="flex items-center gap-3 flex-wrap mb-4">
           <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
           <MataKuliahSelect size="sm" />
         </div>

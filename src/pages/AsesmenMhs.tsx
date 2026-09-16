@@ -102,7 +102,7 @@ function AsesmenDaftar() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+        <div className="flex items-center gap-3 flex-wrap mb-1">
           <h1 className="font-display text-2xl font-bold text-brown">Asesmen</h1>
           <MataKuliahSelect />
         </div>

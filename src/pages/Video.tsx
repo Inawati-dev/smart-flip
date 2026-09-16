@@ -160,7 +160,7 @@ function VideoMahasiswa() {
         <Link to="/video" className="text-terra text-xs font-semibold inline-block mb-2">
           ← Semua video
         </Link>
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <div className="flex items-center gap-3 flex-wrap mb-4">
           <h1 className="text-2xl font-bold text-brown">
             Pertemuan {idx + 1} · {modul.title}
           </h1>

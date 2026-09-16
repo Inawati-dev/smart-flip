@@ -195,11 +195,11 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
             </Link>
           )}
         </div>
-        <MataKuliahSelect />
       </div>
 
       {/* Filter */}
       <div className="flex flex-wrap gap-2">
+        <MataKuliahSelect size="sm" />
         <KelasTahunFilter kelasList={kelasList} tahun={tahun} kelas={kelas} onChange={handleKelasTahunChange} />
         <Select
           value={String(hari)}
@@ -422,7 +422,7 @@ export function DashboardMhs({
 
   return (
     <>
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+      <div className="flex items-center gap-3 flex-wrap mb-1">
         <h1 className="text-2xl font-bold text-brown">Dashboard</h1>
         <MataKuliahSelect />
       </div>
