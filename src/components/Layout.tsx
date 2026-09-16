@@ -126,9 +126,8 @@ export function Layout({ children }: { children: ReactNode }) {
                   <Icon size={19} />
                 </span>
                 <span
-                  className={`max-w-full text-center text-[10px] leading-tight tracking-tight font-semibold ${
-                    active ? 'text-brown' : 'text-brown-2'
-                  }`}
+                  className="max-w-full text-center text-[10px] leading-tight tracking-tight font-semibold"
+                  style={{ color: active ? 'var(--nav-tile-active-fg)' : 'var(--brown2)' }}
                 >
                   {item.label}
                 </span>
@@ -202,9 +201,8 @@ export function Layout({ children }: { children: ReactNode }) {
               key={item.to}
               to={item.to}
               aria-current={active ? 'page' : undefined}
-              className={`flex-1 min-w-11 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold ${
-                active ? 'text-brown' : 'text-brown-3'
-              }`}
+              className="flex-1 min-w-11 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold"
+              style={{ color: active ? 'var(--nav-tile-active-fg)' : 'var(--brown3)' }}
             >
               <span className={active ? 'nav-tile nav-tile-active' : 'nav-tile'}>
                 <Icon size={19} />
