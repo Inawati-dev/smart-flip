@@ -91,10 +91,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <BrandMark size={26} />
               <span className="font-display font-bold text-brown">Smart Flip</span>
             </Link>
-            <Link
-              to="/"
-              className="h-9 px-4 rounded-lg flex items-center text-sm font-semibold text-brown-2 hover:bg-brown/[0.06] hover:text-brown transition-colors"
-            >
+            <Link to="/" className="btn btn-secondary btn-sm">
               Masuk
             </Link>
           </div>
@@ -139,7 +136,7 @@ export function Layout({ children }: { children: ReactNode }) {
                     ini sendiri hidden di bawah itu. group-hover + group-focus-
                     within saja (tanpa state React) supaya ringan. pointer-events
                     -none supaya flyout tidak pernah menghalangi klik pada item. */}
-                <span className="nav-flyout pointer-events-none absolute left-full top-1/2 z-50 ml-2 w-max max-w-[190px] -translate-y-1/2 rounded-[10px] border border-[color:var(--border)] bg-ivory px-3 py-2 text-[13px] opacity-0 shadow-[0_4px_16px_rgba(62,54,46,.14)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
+                <span className="nav-flyout pointer-events-none absolute left-full top-1/2 z-50 ml-2 w-max max-w-[190px] -translate-y-1/2 rounded-[10px] border border-[color:var(--border)] bg-ivory px-3 py-2 text-[13px] opacity-0 shadow-[0_4px_16px_color-mix(in_srgb,var(--shadow-color)_14%,transparent)] transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100">
                   <span className="block font-semibold text-brown">{item.label}</span>
                   <span className="block text-brown-2">{item.desc}</span>
                 </span>
@@ -167,7 +164,7 @@ export function Layout({ children }: { children: ReactNode }) {
           onClick={() => setLogoutOpen(true)}
           title="Keluar"
           aria-label="Keluar"
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-red hover:bg-[rgba(192,64,32,.08)] transition-colors"
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-red hover:bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] transition-colors"
         >
           <IconLogout size={18} />
         </button>

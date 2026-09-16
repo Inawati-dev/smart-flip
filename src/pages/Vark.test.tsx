@@ -41,7 +41,7 @@ describe('Vark', () => {
     const queryClient = new QueryClient()
     queryClient.setQueryData(['vark'], null)
     renderVark(queryClient)
-    expect(screen.getByText('Asesmen Gaya Belajar VARK')).toBeTruthy()
+    expect(screen.getByText('Asesmen gaya belajar VARK')).toBeTruthy()
     expect(screen.getByText('Mulai Asesmen →')).toBeTruthy()
     expect(screen.queryByText(/sudah mengisi asesmen/)).toBeNull()
   })

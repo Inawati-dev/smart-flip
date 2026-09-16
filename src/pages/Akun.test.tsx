@@ -59,9 +59,9 @@ describe('Akun', () => {
     seedQueryCache(queryClient)
     renderAkun(queryClient)
 
-    expect(screen.queryByText('Ubah Profil')).toBeNull()
+    expect(screen.queryByText('Ubah profil')).toBeNull()
     fireEvent.click(screen.getByText('Ubah'))
-    expect(screen.getByText('Ubah Profil')).toBeTruthy()
+    expect(screen.getByText('Ubah profil')).toBeTruthy()
     expect(screen.getByDisplayValue('Ahmad Rizki')).toBeTruthy()
   })
 

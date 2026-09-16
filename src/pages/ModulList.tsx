@@ -9,7 +9,7 @@ import { moduleIdToPath } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
 import {
   saveModulCustom,
-  createModul,
+  createModulReturningId,
   deleteModul,
   uploadModulPdf,
   listModulPdfFiles,
@@ -49,6 +49,8 @@ export function DosenModulTable() {
   const [formJudul, setFormJudul] = useState('')
   const [formDeskripsi, setFormDeskripsi] = useState('')
   const [saving, setSaving] = useState(false)
+  const [savingStatus, setSavingStatus] = useState('')
+  const [createPdfFile, setCreatePdfFile] = useState<File | null>(null)
 
   function openEdit(id: number) {
     const m = modules.find((x) => x.id === id)
@@ -64,13 +66,19 @@ export function DosenModulTable() {
     setCreatingNew(true)
     setFormJudul('')
     setFormDeskripsi('')
+    setCreatePdfFile(null)
   }
 
   function closeFormModal() {
     setEditId(null)
     setCreatingNew(false)
+    setCreatePdfFile(null)
   }
 
+  // Tambah Modul + PDF (antrean #43): modul dibuat dulu (butuh id baru untuk
+  // upload), lalu kalau dosen memilih berkas, PDF diunggah ke modul itu. PDF
+  // gagal diunggah tidak membatalkan modul yang sudah tersimpan — dosen bisa
+  // unggah ulang lewat "Ganti PDF" nanti.
   async function saveEdit() {
     const judul = formJudul.trim()
     if (!judul) return
@@ -82,9 +90,22 @@ export function DosenModulTable() {
     try {
       if (creatingNew) {
         const nextOrderNum = Math.max(0, ...modules.map((m) => m.order_num)) + 1
-        await createModul({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum })
+        const newId = await createModulReturningId({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum })
         await queryClient.invalidateQueries({ queryKey: ['modules'] })
-        showToast('Modul baru ditambahkan')
+        if (createPdfFile) {
+          setSavingStatus('Mengunggah PDF…')
+          try {
+            await uploadModulPdf(newId, createPdfFile)
+            await queryClient.invalidateQueries({ queryKey: ['modules'] })
+            await queryClient.invalidateQueries({ queryKey: ['manajemen', 'modul-pdf-files'] })
+            showToast('Modul baru ditambahkan')
+          } catch (pdfErr) {
+            const msg = pdfErr instanceof Error ? pdfErr.message : 'kesalahan tidak diketahui'
+            showToast(`Modul tersimpan, PDF gagal diunggah: ${msg}`)
+          }
+        } else {
+          showToast('Modul baru ditambahkan')
+        }
       } else if (editId != null) {
         const data: ModulCustom = { ...customs[editId], judul, deskripsi: formDeskripsi.trim() }
         await saveModulCustom(editId, data)
@@ -96,6 +117,7 @@ export function DosenModulTable() {
       showToast(creatingNew ? 'Gagal menambahkan modul' : 'Gagal menyimpan modul')
     } finally {
       setSaving(false)
+      setSavingStatus('')
     }
   }
 
@@ -176,12 +198,8 @@ export function DosenModulTable() {
     <>
       <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
         <div className="flex items-center justify-between px-4 py-3 border-b flex-wrap gap-2" style={BORDER}>
-          <span className="text-sm font-semibold text-brown">Daftar Modul</span>
-          <button
-            onClick={openCreate}
-            className="h-9 px-3.5 rounded-lg text-xs font-semibold text-white"
-            style={{ background: 'var(--terra)' }}
-          >
+          <span className="text-sm font-semibold text-brown">Daftar modul</span>
+          <button onClick={openCreate} className="btn btn-primary btn-sm">
             + Tambah modul
           </button>
         </div>
@@ -227,7 +245,7 @@ export function DosenModulTable() {
                         <span
                           className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                           style={
-                            hasPdf ? { background: '#C0DD97', color: '#27500A' } : { background: '#E5E0D8', color: '#6B5D4F' }
+                            hasPdf ? { background: 'var(--success-soft)', color: 'var(--success)' } : { background: 'var(--bg3)', color: 'var(--brown2)' }
                           }
                         >
                           {hasPdf ? 'Ada PDF' : 'Belum ada'}
@@ -235,25 +253,17 @@ export function DosenModulTable() {
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="flex flex-col sm:flex-row gap-1.5">
-                          <button
-                            onClick={() => openPdfModal(m.id)}
-                            className="min-h-11 px-3 rounded-md border text-xs font-semibold text-brown-2 whitespace-nowrap"
-                            style={BORDER}
-                          >
+                          <button onClick={() => openPdfModal(m.id)} className="btn btn-secondary btn-sm whitespace-nowrap">
                             Ganti PDF
                           </button>
-                          <button
-                            onClick={() => openEdit(m.id)}
-                            className="min-h-11 px-3 rounded-md text-xs font-semibold whitespace-nowrap inline-flex items-center gap-1 justify-center"
-                            style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
-                          >
+                          <button onClick={() => openEdit(m.id)} className="btn btn-secondary btn-sm whitespace-nowrap">
                             <IconEdit size={13} /> Ubah
                           </button>
                           <button
                             onClick={() => setDeleteId(m.id)}
                             aria-label={`Hapus modul ${judul}`}
                             title="Hapus modul"
-                            className="min-h-11 w-11 rounded-md border border-red/25 bg-red/10 text-red inline-flex items-center justify-center flex-shrink-0"
+                            className="btn btn-danger btn-icon flex-shrink-0"
                           >
                             <IconTrash size={14} />
                           </button>
@@ -300,17 +310,23 @@ export function DosenModulTable() {
                 style={BORDER}
               />
             </label>
+            {creatingNew && (
+              <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
+                PDF modul (opsional)
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => setCreatePdfFile(e.target.files?.[0] ?? null)}
+                  className="text-sm text-brown-2"
+                />
+              </label>
+            )}
             <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-              <button onClick={closeFormModal} className="min-h-11 px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+              <button onClick={closeFormModal} className="btn btn-secondary">
                 Batal
               </button>
-              <button
-                onClick={saveEdit}
-                disabled={saving || !formJudul.trim()}
-                className="min-h-11 px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
-              >
-                {saving ? 'Menyimpan…' : 'Simpan'}
+              <button onClick={saveEdit} disabled={saving || !formJudul.trim()} className="btn btn-primary min-w-[7.5rem]">
+                {saving ? savingStatus || 'Menyimpan…' : 'Simpan'}
               </button>
             </div>
           </div>
@@ -333,20 +349,10 @@ export function DosenModulTable() {
               Progres, soal formatif, dan PDF yang terpasang ikut terhapus.
             </p>
             <div className="flex gap-2.5">
-              <button
-                onClick={() => setDeleteId(null)}
-                disabled={deleting}
-                className="flex-1 h-[38px] rounded-lg border text-sm text-brown-2 disabled:opacity-50"
-                style={BORDER}
-              >
+              <button onClick={() => setDeleteId(null)} disabled={deleting} className="btn btn-secondary btn-sm flex-1">
                 Batal
               </button>
-              <button
-                onClick={() => void confirmDelete()}
-                disabled={deleting}
-                className="flex-1 h-[38px] rounded-lg text-white text-sm font-semibold disabled:opacity-60"
-                style={{ background: 'var(--red)' }}
-              >
+              <button onClick={() => void confirmDelete()} disabled={deleting} className="btn btn-danger btn-sm flex-1 min-w-[7.5rem]">
                 {deleting ? 'Menghapus…' : 'Ya, Hapus'}
               </button>
             </div>
@@ -381,8 +387,7 @@ export function DosenModulTable() {
                 type="button"
                 onClick={handleUploadPdf}
                 disabled={!pdfFile || uploadingPdf}
-                className="min-h-11 px-3.5 rounded-lg text-xs font-semibold disabled:opacity-50 flex-shrink-0"
-                style={{ background: 'var(--terra)', color: 'white' }}
+                className="btn btn-primary btn-sm flex-shrink-0 min-w-[7.5rem]"
               >
                 {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
               </button>
@@ -406,8 +411,7 @@ export function DosenModulTable() {
                   type="button"
                   onClick={handleAssignPdf}
                   disabled={!pickedPdfUrl || assigningPdf}
-                  className="min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 disabled:opacity-50 flex-shrink-0"
-                  style={BORDER}
+                  className="btn btn-secondary btn-sm flex-shrink-0 min-w-[7.5rem]"
                 >
                   {assigningPdf ? 'Memasang…' : 'Gunakan'}
                 </button>
@@ -415,7 +419,7 @@ export function DosenModulTable() {
             )}
             {pdfError && <p className="text-[11px] text-red mt-2">{pdfError}</p>}
             <div className="flex justify-end pt-4">
-              <button onClick={() => setPdfModalId(null)} className="min-h-11 px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+              <button onClick={() => setPdfModalId(null)} className="btn btn-secondary">
                 Tutup
               </button>
             </div>

@@ -30,11 +30,11 @@ export default AsesmenMhs
 function StatusChip({ label }: { label: string }) {
   const style =
     label === 'Lulus'
-      ? { background: '#C0DD97', color: '#27500A' }
+      ? { background: 'var(--success-soft)', color: 'var(--success)' }
       : label === 'Remedial'
-        ? { background: '#FAD7A0', color: '#7D4E00' }
+        ? { background: 'var(--warning-soft)', color: 'var(--warning)' }
         : label === 'Terkunci'
-          ? { background: '#E5E0D8', color: '#6B5D4F' }
+          ? { background: 'var(--border2)', color: 'var(--brown2)' }
           : { background: 'var(--accent-soft)', color: 'var(--terra-d)' }
   return (
     <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap" style={style}>
@@ -116,10 +116,7 @@ function AsesmenDaftar() {
                 </div>
                 <p className="text-sm text-brown-3 mb-1">Syarat lulus: skor ≥ {PASS_SCORE}</p>
                 <p className="text-sm text-brown-3 mb-4">Skor terbaik: {bestAktif != null ? bestAktif : '—'}</p>
-                <Link
-                  to={`/asesmen/formatif/${topikAktif.id}`}
-                  className="inline-flex items-center justify-center min-h-11 px-6 rounded-full bg-terra text-white text-sm font-semibold"
-                >
+                <Link to={`/asesmen/formatif/${topikAktif.id}`} className="btn btn-primary">
                   Kerjakan
                 </Link>
               </div>
@@ -268,20 +265,14 @@ function PreTest() {
         ) : skorFinal != null ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-5">Skor pre-test {skorFinal} tersimpan.</p>
-            <button
-              onClick={() => navigate('/dashboard')}
-              className="min-h-11 px-6 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
-            >
+            <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
               Mulai belajar
             </button>
           </div>
         ) : soal.length === 0 ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-5">Dosen belum menyiapkan pre-test.</p>
-            <button
-              onClick={lanjutTanpaPreTest}
-              className="min-h-11 px-6 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
-            >
+            <button onClick={lanjutTanpaPreTest} className="btn btn-primary">
               Lanjut tanpa pre-test
             </button>
           </div>
@@ -289,10 +280,7 @@ function PreTest() {
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-1">Kerjakan pre-test dulu.</p>
             <p className="text-sm text-brown-3 mb-5">{soal.length} soal · tanpa kode, tanpa ambang lulus</p>
-            <button
-              onClick={mulai}
-              className="min-h-11 px-6 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
-            >
+            <button onClick={mulai} className="btn btn-primary">
               Mulai
             </button>
           </div>
@@ -341,7 +329,7 @@ function PostTest() {
               Skor post-test: <strong>{post.score}</strong>
             </p>
             {!pre ? (
-              <p className="text-sm text-brown-3">Skor pre-test tidak ditemukan, peningkatan skor tidak bisa dihitung.</p>
+              <p className="text-sm text-brown-3">Belum ada skor pre-test, peningkatan skor belum bisa dihitung.</p>
             ) : pre.score >= 100 ? (
               <p className="text-sm text-brown-3">Peningkatan skor dari pre-test: —</p>
             ) : (

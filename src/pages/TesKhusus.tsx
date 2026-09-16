@@ -184,11 +184,7 @@ function DosenTesKhusus() {
         </Link>
         <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
           <h1 className="font-display text-2xl font-bold text-brown">Tes khusus</h1>
-          <button
-            onClick={openCreateModal}
-            className="min-h-11 px-4 rounded-lg text-sm font-semibold"
-            style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
-          >
+          <button onClick={openCreateModal} className="btn btn-primary">
             + Buat sesi tes
           </button>
         </div>
@@ -236,8 +232,8 @@ function DosenTesKhusus() {
                           className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                           style={
                             s.is_open
-                              ? { background: '#C0DD97', color: '#27500A' }
-                              : { background: '#E5E0D8', color: '#6B5D4F' }
+                              ? { background: 'var(--success-soft)', color: 'var(--success)' }
+                              : { background: 'var(--border2)', color: 'var(--brown2)' }
                           }
                         >
                           {s.is_open ? 'Dibuka' : 'Ditutup'}
@@ -245,18 +241,10 @@ function DosenTesKhusus() {
                       </td>
                       <td className="px-3 py-2.5">
                         <div className="flex gap-1.5 flex-wrap">
-                          <button
-                            onClick={() => void toggleOpen(s)}
-                            className="min-h-11 px-3 rounded-lg border text-xs font-semibold text-brown-2"
-                            style={BORDER}
-                          >
+                          <button onClick={() => void toggleOpen(s)} className="btn btn-secondary btn-sm min-w-[7.5rem]">
                             {s.is_open ? 'Tutup sesi' : 'Buka lagi'}
                           </button>
-                          <button
-                            onClick={() => setHasilSession(s)}
-                            className="min-h-11 px-3 rounded-lg text-xs font-semibold"
-                            style={{ background: 'var(--accent-soft)', color: 'var(--terra-d)' }}
-                          >
+                          <button onClick={() => setHasilSession(s)} className="btn btn-secondary btn-sm">
                             Lihat hasil
                           </button>
                         </div>
@@ -274,14 +262,14 @@ function DosenTesKhusus() {
       {modalOpen && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setModalOpen(false)
           }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] max-h-[90vh] overflow-y-auto my-8"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
+            style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat sesi tes</h3>
 
@@ -407,21 +395,21 @@ function DosenTesKhusus() {
               <div className="font-mono text-2xl font-bold text-brown tracking-[0.3em] mb-2">{previewCode}</div>
               <button
                 onClick={() => setPreviewCode(generateCode())}
-                className="text-xs font-semibold text-terra-d"
+                className="btn btn-ghost btn-sm"
+                style={{ color: 'var(--terra-d)' }}
               >
                 Buat ulang
               </button>
             </div>
 
             <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-              <button onClick={() => setModalOpen(false)} className="h-11 px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+              <button onClick={() => setModalOpen(false)} className="btn btn-secondary">
                 Batal
               </button>
               <button
                 onClick={() => void submitCreate()}
                 disabled={saving || !name.trim() || (kind === 'campuran' && moduleIds.length === 0)}
-                className="h-11 px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
+                className="btn btn-primary min-w-[7.5rem]"
               >
                 {saving ? 'Menyimpan…' : 'Buat sesi'}
               </button>
@@ -434,14 +422,14 @@ function DosenTesKhusus() {
       {hasilSession && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setHasilSession(null)
           }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[560px] max-h-[90vh] overflow-y-auto my-8"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
+            style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between mb-1">
               <h3 className="font-display text-lg font-semibold text-brown">Hasil - {hasilSession.name}</h3>
@@ -482,12 +470,7 @@ function DosenTesKhusus() {
               </table>
             </div>
 
-            <button
-              onClick={unduhHasilCsv}
-              disabled={hasil.length === 0}
-              className="h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2 disabled:opacity-50"
-              style={BORDER}
-            >
+            <button onClick={unduhHasilCsv} disabled={hasil.length === 0} className="btn btn-secondary">
               Unduh CSV
             </button>
           </div>
@@ -496,8 +479,8 @@ function DosenTesKhusus() {
 
       {toast && (
         <div
-          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[800] px-4 py-2.5 rounded-lg text-sm font-medium text-white"
-          style={{ background: 'var(--brown)', boxShadow: '0 8px 24px rgba(44,36,32,.25)' }}
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[800] px-4 py-2.5 rounded-lg text-sm font-medium"
+          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 8px 24px color-mix(in srgb, var(--shadow-color) 25%, transparent)' }}
         >
           {toast}
         </div>
@@ -634,11 +617,7 @@ function MahasiswaTesKhusus() {
               style={BORDER}
             />
             {verifyError && <p className="text-sm text-red mb-3">{verifyError}</p>}
-            <button
-              onClick={() => void doVerify(kodeInput)}
-              disabled={verifying || !kodeInput.trim()}
-              className="min-h-11 w-full rounded-full bg-terra text-white text-sm font-semibold disabled:opacity-50"
-            >
+            <button onClick={() => void doVerify(kodeInput)} disabled={verifying || !kodeInput.trim()} className="btn btn-primary w-full">
               {verifying ? 'Memeriksa…' : 'Masuk'}
             </button>
           </div>
@@ -652,7 +631,7 @@ function MahasiswaTesKhusus() {
             <p className="text-brown-2 mb-1">Skor kamu: <strong>{hasilBaru}</strong></p>
             {session.kind === 'post' &&
               (!pre ? (
-                <p className="text-sm text-brown-3">Skor pre-test tidak ditemukan, peningkatan skor tidak bisa dihitung.</p>
+                <p className="text-sm text-brown-3">Belum ada skor pre-test, peningkatan skor belum bisa dihitung.</p>
               ) : pre.score >= 100 ? (
                 <p className="text-sm text-brown-3">Peningkatan skor dari pre-test: -</p>
               ) : (
@@ -691,11 +670,7 @@ function MahasiswaTesKhusus() {
             <p className="text-sm text-brown-3 mb-5">
               {session.shuffle ? 'Soal diacak' : 'Urutan soal tetap'} · {session.single_attempt ? 'Sekali kerja' : 'Boleh diulang'}
             </p>
-            <button
-              onClick={mulai}
-              disabled={soal.length === 0}
-              className="min-h-11 px-6 py-2.5 rounded-full bg-terra text-white text-sm font-semibold disabled:opacity-50"
-            >
+            <button onClick={mulai} disabled={soal.length === 0} className="btn btn-primary">
               Mulai
             </button>
           </div>

@@ -141,10 +141,7 @@ export default function Formatif() {
                   Skor terbaik kamu sebelumnya: <strong>{bestScore}</strong>
                 </p>
               )}
-              <button
-                onClick={mulai}
-                className="min-h-11 px-6 py-2.5 rounded-full bg-terra text-white text-sm font-semibold"
-              >
+              <button onClick={mulai} className="btn btn-primary min-w-[7.5rem]">
                 {bestScore != null ? 'Kerjakan ulang' : 'Mulai'}
               </button>
             </div>
@@ -155,11 +152,11 @@ export default function Formatif() {
       {modal && (
         <div
           className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-          style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)' }}
+          style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)' }}
         >
           <div
             className="rounded-2xl p-8 max-w-sm w-full text-center"
-            style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)' }}
+            style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)' }}
           >
             {modal.kind === 'apresiasi' ? (
               <>
@@ -170,18 +167,11 @@ export default function Formatif() {
                     : 'Semua topik selesai. Post-test dibuka dosen lewat tes khusus.'}
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
-                  <button
-                    onClick={() => setModal(null)}
-                    className="flex-1 min-h-11 rounded-lg font-medium text-sm"
-                    style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
-                  >
+                  <button onClick={() => setModal(null)} className="btn btn-secondary flex-1">
                     Tutup
                   </button>
                   {nextModul && (
-                    <button
-                      onClick={() => navigate(`/modul/${nextModul.id}`)}
-                      className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm"
-                    >
+                    <button onClick={() => navigate(`/modul/${nextModul.id}`)} className="btn btn-primary flex-1">
                       Lanjut ke topik {idx + 2}
                     </button>
                   )}
@@ -194,17 +184,10 @@ export default function Formatif() {
                   Syarat lulus {PASS_SCORE}. Kerjakan ulang; urutan soal dan opsi diacak lagi.
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
-                  <button
-                    onClick={() => navigate(`/modul/${moduleId}`)}
-                    className="flex-1 min-h-11 rounded-lg font-medium text-sm"
-                    style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
-                  >
+                  <button onClick={() => navigate(`/modul/${moduleId}`)} className="btn btn-secondary flex-1">
                     Baca modul lagi
                   </button>
-                  <button
-                    onClick={mulai}
-                    className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm"
-                  >
+                  <button onClick={mulai} className="btn btn-primary flex-1">
                     Kerjakan ulang
                   </button>
                 </div>

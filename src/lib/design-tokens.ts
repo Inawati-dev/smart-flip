@@ -16,6 +16,19 @@ export const designTokens = {
   btnBg: '#D4A373',
   btnText: '#FFFFFF',
   accentSoft: 'rgba(212,163,115,.12)',
+  // Token status semantik (antrean #42) — nilai bawaan (tema Light) di sini
+  // ditimpa oleh injectDesignTokens(THEMES[id].colors) saat boot/ganti tema;
+  // lihat src/lib/theme.ts untuk pasangan Dark-nya.
+  success: '#27500A',
+  successSoft: '#C0DD97',
+  danger: '#C04020',
+  dangerSoft: 'rgba(192,64,32,.12)',
+  warning: '#7D4E00',
+  warningSoft: '#FAD7A0',
+  info: '#2E5A78',
+  infoSoft: 'rgba(74,126,160,.15)',
+  overlay: 'rgba(62,54,46,.52)',
+  shadowColor: '#3E362E',
   shadowXs: '0 1px 4px rgba(62,54,46,.07)',
   shadowSm: '0 2px 10px rgba(62,54,46,.09)',
   shadowMd: '0 8px 28px rgba(62,54,46,.13)',
@@ -54,6 +67,16 @@ const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
   btnBg: '--btn-bg',
   btnText: '--btn-text',
   accentSoft: '--accent-soft',
+  success: '--success',
+  successSoft: '--success-soft',
+  danger: '--danger',
+  dangerSoft: '--danger-soft',
+  warning: '--warning',
+  warningSoft: '--warning-soft',
+  info: '--info',
+  infoSoft: '--info-soft',
+  overlay: '--overlay',
+  shadowColor: '--shadow-color',
   shadowXs: '--shadow-xs',
   shadowSm: '--shadow-sm',
   shadowMd: '--shadow-md',
@@ -76,6 +99,7 @@ const CSS_VAR_NAME: Record<keyof typeof designTokens, string> = {
 const TAILWIND_COLOR_KEYS: ReadonlyArray<keyof typeof designTokens> = [
   'cream', 'ivory', 'bg3', 'sage', 'sageD', 'terra', 'terraD',
   'brown', 'brown2', 'brown3', 'border', 'red', 'btnBg', 'btnText', 'accentSoft',
+  'success', 'successSoft', 'danger', 'dangerSoft', 'warning', 'warningSoft', 'info', 'infoSoft',
 ]
 const TAILWIND_VAR_NAME: Partial<Record<keyof typeof designTokens, string>> = {
   cream: '--color-cream',
@@ -93,6 +117,14 @@ const TAILWIND_VAR_NAME: Partial<Record<keyof typeof designTokens, string>> = {
   btnBg: '--color-btn-bg',
   btnText: '--color-btn-text',
   accentSoft: '--color-accent-soft',
+  success: '--color-success',
+  successSoft: '--color-success-soft',
+  danger: '--color-danger',
+  dangerSoft: '--color-danger-soft',
+  warning: '--color-warning',
+  warningSoft: '--color-warning-soft',
+  info: '--color-info',
+  infoSoft: '--color-info-soft',
 }
 
 export function injectDesignTokens(overrides?: Partial<Record<keyof typeof designTokens, string>>): void {

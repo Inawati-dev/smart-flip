@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter } from 'react-router'
 import { AuthProvider } from '../contexts/AuthContext'
@@ -70,7 +70,10 @@ describe('Feedback', () => {
       </QueryClientProvider>,
     )
     fireEvent.click(screen.getByRole('combobox'))
-    expect(screen.getByText('Modul 1: Dasar R&D')).toBeTruthy()
+    // getByText saja bentrok sejak Select.tsx #46: label opsi juga ada di
+    // span pengukur lebar tersembunyi di dalam trigger, jadi dibatasi ke
+    // listbox yang sedang terbuka (lihat Select.test.tsx).
+    expect(within(screen.getByRole('listbox')).getByText('Modul 1: Dasar R&D')).toBeTruthy()
   })
 
   it('renders without throwing when there are no modules or feedback yet', () => {

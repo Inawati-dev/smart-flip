@@ -6,11 +6,11 @@ import { PertemuanStepper } from '../components/PertemuanStepper'
 import { useModules } from '../hooks/useModules'
 import { useTopikStatus } from '../lib/topik'
 import { useAuth } from '../contexts/AuthContext'
-import { parseVideoUrl } from '../lib/video'
-import { saveVideoUrl } from '../lib/manajemen'
+import { parseVideoUrl, thumbnailUrl } from '../lib/video'
+import { saveVideoUrl, uploadModulVideo } from '../lib/manajemen'
 import { upsertVideoProgress, shouldSendTimeUpdate } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
-import { PreviewLink } from '../components/PdfPreviewLink'
+import { PreviewModal } from '../components/PdfPreviewLink'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -24,6 +24,45 @@ export default function Video() {
 
 function sortModules(modules: ModuleRow[]) {
   return [...modules].sort((a, b) => a.order_num - b.order_num)
+}
+
+function formatDuration(sec: number): string {
+  if (!isFinite(sec) || sec <= 0) return '—'
+  const m = Math.floor(sec / 60)
+  const s = Math.floor(sec % 60)
+  return `${m}:${s.toString().padStart(2, '0')}`
+}
+
+// Gambar kecil 16:9 kolom "Video" tabel dosen (antrean #44b). YouTube punya
+// thumbnail siap pakai; berkas video memuat frame pertamanya sendiri lewat
+// <video preload="metadata"> — elemen yang sama juga dipakai untuk membaca
+// durasinya lewat onLoadedMetadata, supaya tidak perlu <video> tersembunyi
+// kedua hanya untuk itu.
+function VideoThumb({
+  url,
+  moduleId,
+  onDuration,
+}: {
+  url: string
+  moduleId: number
+  onDuration?: (moduleId: number, sec: number) => void
+}) {
+  const thumb = thumbnailUrl(url)
+  const parsed = parseVideoUrl(url)
+  const cls = 'w-24 aspect-video rounded object-cover bg-bg3 flex-shrink-0'
+  if (thumb) return <img src={thumb} alt="" className={cls} />
+  if (parsed?.kind === 'file') {
+    return (
+      <video
+        src={parsed.src}
+        preload="metadata"
+        muted
+        onLoadedMetadata={(e) => onDuration?.(moduleId, e.currentTarget.duration)}
+        className={cls}
+      />
+    )
+  }
+  return <div className={cls} />
 }
 
 function VideoMahasiswa() {
@@ -165,8 +204,7 @@ function VideoPlayer({ modul }: { modul: ModuleRow }) {
         <button
           onClick={() => void handleTandaiSelesai()}
           disabled={marking || done}
-          className="mt-3 min-h-11 px-4 rounded-lg border text-sm font-semibold disabled:opacity-60"
-          style={{ borderColor: 'var(--border)' }}
+          className="btn btn-secondary mt-3 min-w-[7.5rem]"
         >
           {done ? 'Video ditandai selesai' : marking ? 'Menyimpan…' : 'Tandai selesai ditonton'}
         </button>
@@ -182,17 +220,10 @@ function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: num
       <div>
         <h2 className="font-semibold text-brown mb-2 text-sm">Setelah video ini</h2>
         <div className="flex flex-col gap-2">
-          <Link
-            to={`/modul/${current}`}
-            className="min-h-11 flex items-center px-3 rounded-lg border text-sm text-brown-2"
-            style={BORDER}
-          >
+          <Link to={`/modul/${current}`} className="btn btn-secondary">
             Baca modul {idx + 1}
           </Link>
-          <Link
-            to={`/asesmen/formatif/${current}`}
-            className="min-h-11 flex items-center px-3 rounded-lg bg-terra text-white text-sm font-semibold"
-          >
+          <Link to={`/asesmen/formatif/${current}`} className="btn btn-primary">
             Kerjakan tes formatif
           </Link>
         </div>
@@ -203,12 +234,7 @@ function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: num
           <h3 className="text-xs font-semibold text-brown-3 uppercase mb-2">Pertemuan berikutnya</h3>
           <div className="flex flex-col gap-2">
             {next.map((m) => (
-              <Link
-                key={m.id}
-                to={`/video/${m.id}`}
-                className="min-h-11 flex items-center px-3 rounded-lg border text-sm text-brown-2"
-                style={BORDER}
-              >
+              <Link key={m.id} to={`/video/${m.id}`} className="btn btn-secondary">
                 {m.title}
               </Link>
             ))}
@@ -229,6 +255,15 @@ function VideoDosen() {
   const [urlError, setUrlError] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [durations, setDurations] = useState<Record<number, number>>({})
+  const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [videoFileError, setVideoFileError] = useState('')
+  const [uploadingVideo, setUploadingVideo] = useState(false)
+
+  function handleDuration(moduleId: number, sec: number) {
+    setDurations((prev) => (prev[moduleId] === sec ? prev : { ...prev, [moduleId]: sec }))
+  }
 
   function showToast(msg: string) {
     setToast(msg)
@@ -239,11 +274,36 @@ function VideoDosen() {
     setEditModul(m)
     setUrlInput(m.video_url || '')
     setUrlError('')
+    setVideoFile(null)
+    setVideoFileError('')
   }
   function closeEdit() {
     setEditModul(null)
   }
   const parsedInput = parseVideoUrl(urlInput.trim())
+
+  const MAX_VIDEO_BYTES = 100 * 1024 * 1024
+
+  async function handleUploadVideoFile() {
+    if (!editModul || !videoFile) return
+    if (videoFile.size > MAX_VIDEO_BYTES) {
+      setVideoFileError('Ukuran berkas maksimal 100 MB.')
+      return
+    }
+    setVideoFileError('')
+    setUploadingVideo(true)
+    try {
+      const url = await uploadModulVideo(editModul.id, videoFile)
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+      setUrlInput(url)
+      setVideoFile(null)
+      showToast('Video berhasil diunggah')
+    } catch {
+      setVideoFileError('Gagal mengunggah video. Coba lagi.')
+    } finally {
+      setUploadingVideo(false)
+    }
+  }
 
   async function saveEdit() {
     if (!editModul) return
@@ -277,7 +337,7 @@ function VideoDosen() {
                 <tr className="bg-bg3">
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Judul</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Tautan</th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Video</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-20">Durasi</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Status</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-24">Aksi</th>
@@ -295,25 +355,36 @@ function VideoDosen() {
                     const url = m.video_url || ''
                     const parsed = parseVideoUrl(url)
                     const chip = !url
-                      ? { label: 'Belum ada tautan', bg: '#E5E0D8', color: '#6B5D4F' }
+                      ? { label: 'Belum ada tautan', bg: 'var(--bg3)', color: 'var(--brown2)' }
                       : parsed
-                        ? { label: 'Tayang', bg: '#C0DD97', color: '#27500A' }
-                        : { label: 'Tautan tidak dikenal', bg: '#FAD7A0', color: '#7D4E00' }
+                        ? { label: 'Tayang', bg: 'var(--success-soft)', color: 'var(--success)' }
+                        : { label: 'Tautan tidak dikenal', bg: 'var(--warning-soft)', color: 'var(--warning)' }
                     return (
                       <tr key={m.id} className="border-t" style={BORDER}>
                         <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
                         <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{m.title}</td>
-                        <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[240px]">
+                        <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[280px]">
                           {url ? (
-                            <span className="inline-flex items-center gap-2 max-w-full">
-                              <span className="truncate">{url.length > 40 ? url.slice(0, 40) + '…' : url}</span>
-                              <PreviewLink url={url} label="Pratinjau tautan video" />
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setPreviewUrl(url)}
+                              aria-label="Pratinjau video"
+                              title="Pratinjau video"
+                              className="inline-flex items-center gap-2 max-w-full text-left"
+                            >
+                              <VideoThumb url={url} moduleId={m.id} onDuration={handleDuration} />
+                              <span className="truncate">{url.length > 30 ? url.slice(0, 30) + '…' : url}</span>
+                            </button>
                           ) : (
-                            '—'
+                            <span className="inline-flex items-center gap-2">
+                              <div className="w-24 aspect-video rounded bg-bg3 flex-shrink-0" />
+                              Belum ada
+                            </span>
                           )}
                         </td>
-                        <td className="px-3 py-2.5 text-brown-3">—</td>
+                        <td className="px-3 py-2.5 text-brown-3">
+                          {parsed?.kind === 'file' ? formatDuration(durations[m.id] ?? 0) : '—'}
+                        </td>
                         <td className="px-3 py-2.5">
                           <span
                             className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
@@ -325,8 +396,7 @@ function VideoDosen() {
                         <td className="px-3 py-2.5">
                           <button
                             onClick={() => openEdit(m)}
-                            className="min-h-11 px-3 rounded-md text-xs font-semibold whitespace-nowrap"
-                            style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
+                            className="btn btn-secondary btn-sm whitespace-nowrap min-w-[7.5rem]"
                           >
                             {url ? 'Ubah' : 'Tambah tautan'}
                           </button>
@@ -349,9 +419,14 @@ function VideoDosen() {
             if (e.target === e.currentTarget) closeEdit()
           }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full" style={{ boxShadow: '0 8px 40px rgba(62,54,46,.22)' }}>
+          <div
+            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[420px] max-h-[90vh] overflow-y-auto"
+            style={{ boxShadow: '0 8px 40px rgba(62,54,46,.22)' }}
+          >
             <h3 className="font-display text-lg font-bold text-brown mb-1">Ubah tautan video</h3>
             <p className="text-xs text-brown-3 mb-3">{editModul.title}</p>
+
+            <p className="text-xs font-semibold text-brown-2 mb-1">Tempel tautan</p>
             <input
               value={urlInput}
               onChange={(e) => {
@@ -378,19 +453,37 @@ function VideoDosen() {
                 )}
               </div>
             )}
+
+            <div className="mt-3 pt-3 border-t" style={BORDER}>
+              <p className="text-xs font-semibold text-brown-2 mb-1">atau unggah berkas</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm"
+                  onChange={(e) => {
+                    setVideoFile(e.target.files?.[0] ?? null)
+                    setVideoFileError('')
+                  }}
+                  className="text-sm text-brown-2 flex-1 min-w-[140px]"
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleUploadVideoFile()}
+                  disabled={!videoFile || uploadingVideo}
+                  className="btn btn-primary btn-sm flex-shrink-0 min-w-[7.5rem]"
+                >
+                  {uploadingVideo ? 'Mengunggah…' : 'Unggah'}
+                </button>
+              </div>
+              <p className="text-[11px] text-brown-3 mt-1">Maks 100 MB, format mp4 atau webm.</p>
+              {videoFileError && <p className="text-[11px] mt-1" style={{ color: 'var(--red, #C0392B)' }}>{videoFileError}</p>}
+            </div>
+
             <div className="flex gap-3 mt-3">
-              <button
-                onClick={closeEdit}
-                className="flex-1 min-h-11 rounded-lg font-medium text-sm"
-                style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
-              >
+              <button onClick={closeEdit} className="btn btn-secondary flex-1">
                 Batal
               </button>
-              <button
-                onClick={saveEdit}
-                disabled={saving}
-                className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm disabled:opacity-50"
-              >
+              <button onClick={saveEdit} disabled={saving} className="btn btn-primary flex-1 min-w-[7.5rem]">
                 {saving ? 'Menyimpan…' : 'Simpan'}
               </button>
             </div>
@@ -406,6 +499,8 @@ function VideoDosen() {
           {toast}
         </div>
       )}
+
+      {previewUrl && <PreviewModal url={previewUrl} title="Pratinjau video" onClose={() => setPreviewUrl(null)} />}
     </Layout>
   )
 }

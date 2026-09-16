@@ -23,3 +23,19 @@ export function parseVideoUrl(url: string | null | undefined): ParsedVideo | nul
 
   return null
 }
+
+// Gambar sampul untuk tampilan tabel/modal (antrean #44b). YouTube punya
+// thumbnail publik siap pakai; berkas video tidak (butuh <video> yang
+// memuat frame pertama sendiri), jadi null di situ — pemanggil merender
+// <video preload="metadata"> sebagai gantinya.
+export function thumbnailUrl(url: string | null | undefined): string | null {
+  const trimmed = url?.trim()
+  if (!trimmed) return null
+
+  for (const pattern of YOUTUBE_ID_PATTERNS) {
+    const match = trimmed.match(pattern)
+    if (match) return `https://i.ytimg.com/vi/${match[1]}/hqdefault.jpg`
+  }
+
+  return null
+}

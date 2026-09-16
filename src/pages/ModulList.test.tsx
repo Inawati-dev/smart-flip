@@ -127,6 +127,22 @@ describe('ModulList', () => {
     expect(screen.getByText(/Tambah modul/)).toBeTruthy()
   })
 
+  // Antrean #43 (16 Sep 2026): modal Tambah Modul juga menawarkan unggah PDF.
+  it('shows a PDF file input in the Tambah Modul modal', async () => {
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
+
+    renderModulList(queryClient)
+
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    fireEvent.click(screen.getByText(/\+ Tambah modul/))
+
+    expect(screen.getByText('PDF modul (opsional)')).toBeTruthy()
+    expect(document.querySelector('input[type="file"][accept="application/pdf"]')).toBeTruthy()
+  })
+
   it('clicking Hapus on a row opens a delete confirmation modal', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()

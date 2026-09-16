@@ -114,7 +114,7 @@ export function Akun() {
         <h1 className="font-display text-2xl font-bold text-brown mb-5">Akun</h1>
 
         <div className="bg-ivory rounded-2xl border p-5 mb-4 flex items-center gap-4" style={BORDER}>
-          <div className="w-16 h-16 rounded-full bg-terra text-white flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
+          <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -131,8 +131,8 @@ export function Akun() {
                 className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold"
                 style={
                   isDosen
-                    ? { background: 'rgba(212,163,115,.15)', color: 'var(--terra-d)' }
-                    : { background: 'rgba(143,162,135,.15)', color: 'var(--sage-d)' }
+                    ? { background: 'var(--accent-soft)', color: 'var(--terra-d)' }
+                    : { background: 'color-mix(in srgb, var(--sage) 15%, transparent)', color: 'var(--sage-d)' }
                 }
               >
                 {isDosen ? (
@@ -146,11 +146,7 @@ export function Akun() {
               )}
             </div>
           </div>
-          <button
-            onClick={openEdit}
-            className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2 flex-shrink-0"
-            style={BORDER}
-          >
+          <button onClick={openEdit} className="btn btn-secondary flex-shrink-0">
             <IconEdit size={15} /> Ubah
           </button>
         </div>
@@ -200,25 +196,25 @@ export function Akun() {
       {editOpen && (
         <div
           className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-          style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setEditOpen(false)
           }}
         >
           <div
             className="bg-ivory rounded-2xl border-2 p-5 max-w-md w-full max-h-[90vh] overflow-y-auto"
-            style={{ borderColor: 'var(--terra)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
+            style={{ borderColor: 'var(--terra)', boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="text-sm font-semibold text-brown mb-4 pb-2 border-b" style={BORDER}>
-              Ubah Profil
+              Ubah profil
             </div>
 
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-16 h-16 rounded-full bg-terra text-white flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
+              <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {formAvatar ? <img src={formAvatar} alt={formNama} className="w-full h-full object-cover" /> : initialsOf(formNama)}
               </div>
               <label className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 cursor-pointer" style={BORDER}>
-                <IconEdit size={14} /> Ganti Foto
+                <IconEdit size={14} /> Ganti foto
                 <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden text-base" />
               </label>
               {formAvatar && (
@@ -230,7 +226,7 @@ export function Akun() {
 
             <div className="flex flex-col gap-3 mb-4">
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-                Nama Lengkap
+                Nama lengkap
                 <input
                   value={formNama}
                   onChange={(e) => setFormNama(e.target.value)}
@@ -251,18 +247,10 @@ export function Akun() {
             </div>
 
             <div className="flex gap-2.5">
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="min-h-11 px-5 rounded-lg bg-terra text-white text-sm font-semibold disabled:opacity-50"
-              >
+              <button onClick={handleSave} disabled={saving} className="btn btn-primary min-w-[7.5rem]">
                 {saving ? 'Menyimpan…' : 'Simpan'}
               </button>
-              <button
-                onClick={() => setEditOpen(false)}
-                className="min-h-11 px-4 rounded-lg border text-sm text-brown-2"
-                style={BORDER}
-              >
+              <button onClick={() => setEditOpen(false)} className="btn btn-secondary">
                 Batal
               </button>
             </div>
@@ -273,7 +261,7 @@ export function Akun() {
       {toast && (
         <div
           className="fixed bottom-6 right-6 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
-          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
+          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 6px 24px color-mix(in srgb, var(--shadow-color) 25%, transparent)' }}
         >
           {toast}
         </div>

@@ -260,11 +260,7 @@ export function BankSoal() {
         </Link>
         <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
           <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
-          <button
-            onClick={openAddModal}
-            className="h-11 px-4 rounded-lg text-sm font-semibold"
-            style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
-          >
+          <button onClick={openAddModal} className="btn btn-primary">
             + Tambah soal
           </button>
         </div>
@@ -363,15 +359,14 @@ export function BankSoal() {
                             <button
                               onClick={() => openEditModal(r)}
                               aria-label={`Ubah soal urutan ${r.order_num}`}
-                              className="w-11 h-11 rounded-md border text-brown-2 flex items-center justify-center flex-shrink-0"
-                              style={BORDER}
+                              className="btn btn-secondary btn-icon flex-shrink-0"
                             >
                               <IconEdit size={15} />
                             </button>
                             <button
                               onClick={() => setDeleteId(r.id)}
                               aria-label={`Hapus soal urutan ${r.order_num}`}
-                              className="w-11 h-11 rounded-md border border-red/20 bg-red/10 text-red flex items-center justify-center flex-shrink-0"
+                              className="btn btn-danger btn-icon flex-shrink-0"
                             >
                               <IconTrash size={15} />
                             </button>
@@ -391,14 +386,14 @@ export function BankSoal() {
       {modalOpen != null && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal()
           }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] max-h-[90vh] overflow-y-auto my-8"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
+            style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display text-lg font-semibold text-brown">
@@ -465,14 +460,13 @@ export function BankSoal() {
             </div>
 
             <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-              <button onClick={closeModal} className="h-11 px-5 rounded-lg border text-sm text-brown-2" style={BORDER}>
+              <button onClick={closeModal} className="btn btn-secondary">
                 Batal
               </button>
               <button
                 onClick={() => void saveQuestion()}
                 disabled={saving || !pertanyaan.trim() || opsi.some((o) => !o.trim()) || (isFormatif && modalModuleId == null)}
-                className="h-11 px-5 rounded-lg text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
+                className="btn btn-primary min-w-[7.5rem]"
               >
                 {saving ? 'Menyimpan…' : 'Simpan'}
               </button>
@@ -485,7 +479,7 @@ export function BankSoal() {
       {deleteId != null && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setDeleteId(null)
           }}
@@ -494,14 +488,10 @@ export function BankSoal() {
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus soal nomor {deleteRow?.order_num ?? ''}?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">Soal ini akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
             <div className="flex gap-2.5">
-              <button onClick={() => setDeleteId(null)} className="flex-1 h-11 rounded-lg border text-sm text-brown-2" style={BORDER}>
+              <button onClick={() => setDeleteId(null)} className="btn btn-secondary flex-1">
                 Batal
               </button>
-              <button
-                onClick={() => void confirmDelete()}
-                className="flex-1 h-11 rounded-lg text-white text-sm font-semibold"
-                style={{ background: 'var(--red)' }}
-              >
+              <button onClick={() => void confirmDelete()} className="btn btn-danger flex-1">
                 Ya, Hapus
               </button>
             </div>
@@ -511,8 +501,8 @@ export function BankSoal() {
 
       {toast && (
         <div
-          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[800] px-4 py-2.5 rounded-lg text-sm font-medium text-white"
-          style={{ background: 'var(--brown)', boxShadow: '0 8px 24px rgba(44,36,32,.25)' }}
+          className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[800] px-4 py-2.5 rounded-lg text-sm font-medium"
+          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 8px 24px color-mix(in srgb, var(--shadow-color) 25%, transparent)' }}
         >
           {toast}
         </div>

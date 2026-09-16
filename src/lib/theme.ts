@@ -1,10 +1,12 @@
 // Theme picker (Pengaturan.tsx) — swaps design tokens at runtime via
-// injectDesignTokens(). "Bawaan" is this project's existing warm parchment
-// palette. "Seline" and "Claude" reference two other theme palettes shown
-// live during development, adapted to this project's token set (colors +
-// button fill/text + soft-accent tint, not just the accent hue).
+// injectDesignTokens(). Hanya dua tema (permintaan Johan 16 Sep 2026 —
+// "selain light dan dark mode dihapus saja"): Light (parchment/netral
+// terang lama) dan Dark, pasangan gelapnya. Empat tema lain (Bawaan,
+// Claude, Soft Pill, Executive) dihapus dari daftar; nilai tersimpan lama
+// dipetakan ke 'light' oleh getTheme() di bawah supaya pengguna lama tidak
+// mendapat tema yang sudah tidak ada.
 
-export type ThemeId = 'bawaan' | 'seline' | 'dark' | 'claude' | 'soft-pill' | 'executive'
+export type ThemeId = 'light' | 'dark'
 
 export interface ThemeColors {
   cream: string
@@ -21,36 +23,28 @@ export interface ThemeColors {
   btnBg: string
   btnText: string
   accentSoft: string
+  // Token status semantik (antrean #42) — dipakai lewat kelas Tailwind
+  // bg-success-soft/text-success dsb (lihat design-tokens.ts) untuk chip
+  // status, pesan error, dan badge yang sebelumnya pakai hex mentah.
+  success: string
+  successSoft: string
+  danger: string
+  dangerSoft: string
+  warning: string
+  warningSoft: string
+  info: string
+  infoSoft: string
+  // Latar modal (overlay) dan warna dasar bayangan — dulu ditulis mentah
+  // sebagai rgba(62,54,46,...) di tiap modal, jadi kelihatan salah di Dark.
+  overlay: string
+  shadowColor: string
   fontSans: string
   fontDisplay: string
   r: string
 }
 
 export const THEMES: Record<ThemeId, { label: string; desc: string; colors: ThemeColors }> = {
-  bawaan: {
-    label: 'Bawaan',
-    desc: 'Parchment hangat, aksen terracotta — tema asli Smart Flip.',
-    colors: {
-      cream: '#F5F2E9',
-      ivory: '#FFFDF8',
-      bg3: '#FAF7F0',
-      terra: '#D4A373',
-      terraD: '#B8855A',
-      brown: '#3E362E',
-      brown2: '#6B5D4F',
-      brown3: '#9B8B7A',
-      brown4: '#C5B8AD',
-      border: 'rgba(62,54,46,.10)',
-      border2: 'rgba(62,54,46,.06)',
-      btnBg: '#D4A373',
-      btnText: '#FFFFFF',
-      accentSoft: 'rgba(212,163,115,.12)',
-      fontSans: "'DM Sans', ui-sans-serif, system-ui, sans-serif",
-      fontDisplay: "'Playfair Display', ui-serif, serif",
-      r: '12px',
-    },
-  },
-  seline: {
+  light: {
     label: 'Light',
     desc: 'Netral terang, aksen biru.',
     colors: {
@@ -77,6 +71,20 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       btnBg: '#3BA6F1',
       btnText: '#FFFFFF',
       accentSoft: '#EEF7FE',
+      // Empat pasang status: teks jenuh gelap di atas latar lembut terang —
+      // hijau/merah/amber/biru sudah dipakai di berbagai badge app (Dashboard,
+      // AsesmenMhs, RecentActivityCard) dengan nilai yang sama persis, jadi
+      // dikonsolidasi jadi token di sini alih-alih diulang per berkas.
+      success: '#27500A',
+      successSoft: '#C0DD97',
+      danger: '#C04020',
+      dangerSoft: 'rgba(192,64,32,.12)',
+      warning: '#7D4E00',
+      warningSoft: '#FAD7A0',
+      info: '#2E5A78',
+      infoSoft: 'rgba(74,126,160,.15)',
+      overlay: 'rgba(62,54,46,.52)',
+      shadowColor: '#3E362E',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',
@@ -104,99 +112,48 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       btnBg: '#3BA6F1',
       btnText: '#0B1220',
       accentSoft: 'rgba(59,166,241,.16)',
+      // Kontras terhadap latar kartu Dark (#1B2130), dihitung rumus WCAG
+      // relative-luminance saat ditulis (16 Sep 2026): success #4ADE80 =
+      // 9,22:1; danger #F87171 = 5,81:1. Keduanya di atas ambang 4,5:1.
+      success: '#4ADE80',
+      successSoft: 'rgba(74,222,128,.16)',
+      danger: '#F87171',
+      dangerSoft: 'rgba(248,113,113,.16)',
+      warning: '#FBBF24',
+      warningSoft: 'rgba(251,191,36,.16)',
+      info: '#38BDF8',
+      infoSoft: 'rgba(56,189,248,.16)',
+      overlay: 'rgba(0,0,0,.55)',
+      shadowColor: '#000000',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',
-    },
-  },
-  claude: {
-    label: 'Claude',
-    desc: 'Bone parchment, aksen terracotta jarang.',
-    colors: {
-      cream: '#F8F8F6',
-      ivory: '#FFFFFF',
-      bg3: '#F3F2EE',
-      terra: '#D97757',
-      terraD: '#C05F3F',
-      // Vivid terracotta-brown, not near-black -- same fix as Seline's blue
-      // above: a colorful hero tied to the accent hue, not a dark neutral.
-      brown: '#8B4A2E',
-      brown2: '#373734',
-      brown3: '#7B7974',
-      brown4: '#B5AFA8',
-      border: '#E7E6E1',
-      border2: '#F0EFEA',
-      btnBg: '#121212',
-      btnText: '#FFFFFF',
-      accentSoft: 'rgba(217,119,87,.12)',
-      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
-      fontDisplay: "'Inter Tight', 'Inter', ui-sans-serif, system-ui, sans-serif",
-      r: '12px',
-    },
-  },
-  'soft-pill': {
-    label: 'Soft Pill',
-    desc: 'Radius besar, aksen oranye hangat, kesan ramah.',
-    colors: {
-      cream: '#F4F4F5',
-      ivory: '#FFFFFF',
-      bg3: '#FAFAFA',
-      terra: '#EA580C',
-      terraD: '#C2410C',
-      brown: '#1C1917',
-      brown2: '#57534E',
-      brown3: '#A8A29E',
-      brown4: '#D6D3D1',
-      border: '#EBEBEC',
-      border2: '#F4F3F2',
-      btnBg: '#EA580C',
-      btnText: '#FFFFFF',
-      accentSoft: '#FFF1E6',
-      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
-      fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
-      r: '18px',
-    },
-  },
-  executive: {
-    label: 'Executive',
-    desc: 'Navy & emas, radius tajam, judul serif -- kesan formal.',
-    colors: {
-      cream: '#F7F5EE',
-      ivory: '#FFFFFF',
-      bg3: '#F3F2EA',
-      terra: '#B8860B',
-      terraD: '#8A6508',
-      // Navy (not black) doubles as text + hero/CTA/active-nav fill, same
-      // dual-purpose pattern as every other theme's `brown` token.
-      brown: '#0F1B33',
-      brown2: '#3D4A63',
-      brown3: '#8B93A3',
-      brown4: '#C7CCD6',
-      border: '#E3DDC9',
-      border2: '#EFEBDD',
-      btnBg: '#0F1B33',
-      btnText: '#F3E7C0',
-      accentSoft: '#FBF3DC',
-      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
-      // Serif headings for a formal/executive register -- Georgia is a
-      // system font (no webfont load needed), unlike the Google Fonts pairs
-      // the other themes use.
-      fontDisplay: "Georgia, 'Times New Roman', serif",
-      r: '6px',
     },
   },
 }
 
 const KEY = 'sfp_theme'
 
+// Nilai lama dari sebelum antrean #42 (tema dipangkas jadi dua) — dipetakan
+// ke pengganti terdekatnya supaya localStorage pengguna lama tidak macet di
+// tema yang sudah tidak ada di THEMES.
+const LEGACY_MAP: Record<string, ThemeId> = {
+  seline: 'light',
+  bawaan: 'light',
+  claude: 'light',
+  'soft-pill': 'light',
+  executive: 'light',
+}
+
 export function getTheme(): ThemeId {
   try {
     const v = localStorage.getItem(KEY)
     if (v && v in THEMES) return v as ThemeId
+    if (v && v in LEGACY_MAP) return LEGACY_MAP[v]
   } catch {
     // ignore — falls through to default
   }
-  return 'soft-pill'
+  return 'light'
 }
 
 export function setTheme(theme: ThemeId): void {

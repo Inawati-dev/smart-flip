@@ -43,7 +43,7 @@ describe('KelolaPdf', () => {
     expect(await screen.findByText('modul-1-111.pdf')).toBeTruthy()
     expect(screen.getByText('modul-2-222.pdf')).toBeTruthy()
     expect(screen.getByText('Dipakai modul: Modul Satu')).toBeTruthy()
-    expect(screen.getByText('Tidak dipakai')).toBeTruthy()
+    expect(screen.getByText('Belum terpakai')).toBeTruthy()
   })
 
   it('klik Hapus membuka modal konfirmasi sebelum memanggil deleteModulPdfFile', async () => {
