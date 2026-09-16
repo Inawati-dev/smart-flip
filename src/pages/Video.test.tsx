@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi, beforeEach } from 'vitest'
-import { render, screen, cleanup, waitFor } from '@testing-library/react'
+import { render, screen, cleanup, waitFor, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import Video from './Video'
@@ -108,7 +108,24 @@ describe('Video (dosen)', () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
     expect(screen.getByText('Ubah')).toBeTruthy()
-    const preview = document.querySelector('button[aria-label="Pratinjau tautan video"]')
+    const preview = document.querySelector('button[aria-label="Pratinjau video"]')
     expect(preview).toBeTruthy()
+  })
+
+  // Antrean #44b (16 Sep 2026): kolom Video menampilkan thumbnail YouTube.
+  it('shows a YouTube thumbnail image in the table for a module with a YouTube URL', async () => {
+    renderVideo(1)
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
+    const img = document.querySelector('img[src*="i.ytimg.com"]')
+    expect(img).toBeTruthy()
+  })
+
+  // Antrean #44a: modal Ubah/Tambah tautan juga menawarkan unggah berkas video.
+  it('shows a video file input in the Ubah tautan modal', async () => {
+    renderVideo(1)
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
+    fireEvent.click(screen.getByText('Ubah'))
+    const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm"]')
+    expect(input).toBeTruthy()
   })
 })

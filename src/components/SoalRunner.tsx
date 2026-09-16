@@ -73,7 +73,7 @@ export function SoalRunner({
                   ? 'bg-red text-white'
                   : 'bg-[color:var(--border)] text-brown-2'
               : selected === i
-                ? 'bg-terra text-white'
+                ? 'bg-terra text-btn-text'
                 : 'bg-[color:var(--border)] text-brown-2'
 
             return (
@@ -108,14 +108,14 @@ export function SoalRunner({
         <button
           onClick={onPrev}
           style={{ visibility: currentQ > 0 ? 'visible' : 'hidden' }}
-          className="min-h-11 flex-1 min-w-[120px] px-6 py-2.5 rounded-full border-[1.5px] border-[color:var(--border)] text-brown-2 text-sm font-semibold"
+          className="btn btn-secondary flex-1 min-w-[120px]"
         >
           ← Sebelumnya
         </button>
         <button
           onClick={isLastQ ? onFinish : onNext}
           disabled={!isSubmitted || saving}
-          className="min-h-11 flex-1 min-w-[120px] px-6 py-2.5 rounded-full bg-terra text-white text-sm font-semibold disabled:opacity-45 disabled:pointer-events-none"
+          className="btn btn-primary flex-1 min-w-[120px]"
         >
           {isLastQ ? (saving ? 'Menyimpan…' : finishLabel) : 'Selanjutnya →'}
         </button>

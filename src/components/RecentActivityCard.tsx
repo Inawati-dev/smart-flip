@@ -8,10 +8,10 @@ const BORDER = { borderColor: 'var(--border)' } as const
 type IconComp = (props: { size?: number }) => ReactElement
 
 const ACTIVITY_BADGE: Record<string, { bg: string; color: string }> = {
-  draf: { bg: '#FAE8A0', color: '#705010' },
-  kuis: { bg: '#C0DD97', color: '#27500A' },
-  forum: { bg: 'rgba(143,162,135,.2)', color: 'var(--sage-d)' },
-  modul: { bg: 'rgba(74,126,160,.15)', color: '#2E5A78' },
+  draf: { bg: 'var(--warning-soft)', color: 'var(--warning)' },
+  kuis: { bg: 'var(--success-soft)', color: 'var(--success)' },
+  forum: { bg: 'color-mix(in srgb, var(--sage) 20%, transparent)', color: 'var(--sage-d)' },
+  modul: { bg: 'var(--info-soft)', color: 'var(--info)' },
 }
 
 const ACTIVITY_ICON: Record<string, IconComp> = {
@@ -35,7 +35,7 @@ export function RecentActivityCard() {
   return (
     <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
       <div className="flex items-center justify-between gap-2 px-5 py-3.5 border-b flex-wrap" style={BORDER}>
-        <span className="text-sm font-semibold text-brown">Aktivitas Kelas Terkini</span>
+        <span className="text-sm font-semibold text-brown">Aktivitas kelas terkini</span>
         <div className="flex items-center gap-3">
           <span className="text-xs text-brown-3">
             {recentActivity?.length ? (showAll ? `${recentActivity.length} aktivitas` : `${recentActivity.length} aktivitas terakhir`) : ''}

@@ -21,7 +21,7 @@ describe('ResetPassword', () => {
       </MemoryRouter>,
     )
     expect(html).toContain('type="password"')
-    expect(html).toContain('Buat Password Baru')
+    expect(html).toContain('Buat password baru')
     expect(html).toContain('Demo Mode')
   })
 })

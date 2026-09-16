@@ -205,6 +205,21 @@ export function Select({
       className={`select-trigger${className ? ` ${className}` : ''}`}
       style={{ ...(size === 'sm' ? { minHeight: 36 } : undefined), ...style }}
     >
+      {/* Pengukur lebar tersembunyi (antrean #46) — dropdown Tahun melompat
+          lebar tiap ganti nilai ("Semua tahun" -> "2027") karena tombolnya
+          cuma selebar label yang sedang tampil. Tiap opsi dirender di sini
+          satu baris (block) tanpa terlihat (visibility:hidden, tinggi 0):
+          lebar shrink-to-fit tombol lalu dihitung dari opsi TERPANJANG,
+          bukan dari label aktif saja, jadi lebarnya tidak berubah lagi
+          sesudah render pertama. */}
+      <span aria-hidden="true" className="invisible block h-0 overflow-hidden">
+        {options.map((o) => (
+          <span key={o.value} className="block whitespace-nowrap">
+            {o.label}
+          </span>
+        ))}
+        {placeholder && <span className="block whitespace-nowrap">{placeholder}</span>}
+      </span>
       <span
         className="select-trigger-label"
         style={selectedIndex < 0 && placeholder ? { color: 'var(--brown3)', fontWeight: 400 } : undefined}

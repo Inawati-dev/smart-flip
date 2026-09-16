@@ -376,11 +376,7 @@ export function Ebook() {
         <div
           className={`w-full flex items-center gap-3 flex-wrap ${moduleId != null ? 'max-w-4xl' : ''}`}
         >
-          <Link
-            to={moduleId != null ? '/ebook' : '/dashboard'}
-            className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg text-sm font-semibold text-brown-2 border hover:bg-[rgba(62,54,46,.04)] hover:text-brown transition-colors"
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="btn btn-secondary">
             ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
           </Link>
           {currentModule?.title && (
@@ -497,10 +493,7 @@ export function Ebook() {
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center max-w-sm">
             <IconWarning size={40} className="text-red" />
             <p className="text-sm text-brown-2 whitespace-pre-line">{errorMsg}</p>
-            <Link
-              to="/ebook"
-              className="mt-2 inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-terra text-white text-sm font-semibold no-underline"
-            >
+            <Link to="/ebook" className="btn btn-primary mt-2">
               Kembali ke Katalog
             </Link>
           </div>
@@ -514,7 +507,7 @@ export function Ebook() {
               style={{ borderColor: 'var(--border)', minHeight: '60vh', maxHeight: 'calc(100vh - 200px)' }}
             >
               {effectiveStyle === 'spread' ? (
-                <div className="relative flex" style={{ boxShadow: '0 4px 24px rgba(62,54,46,.16)', perspective: '2000px' }}>
+                <div className="relative flex" style={{ boxShadow: '0 4px 24px color-mix(in srgb, var(--shadow-color) 16%, transparent)', perspective: '2000px' }}>
                   <canvas ref={canvasRef} className="max-w-full h-auto rounded-l-sm" style={{ borderRight: '1px solid var(--border)' }} />
                   <canvas ref={canvasRef2} className="max-w-full h-auto rounded-r-sm" />
                   {flipOverlay && (
@@ -543,22 +536,10 @@ export function Ebook() {
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-2.5 flex-wrap justify-center">
-              <button
-                onClick={goFirst}
-                disabled={currentPage <= 1}
-                title="Halaman pertama"
-                className="min-h-11 min-w-11 px-3 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer inline-flex items-center justify-center"
-                style={{ borderColor: 'var(--border)' }}
-              >
+              <button onClick={goFirst} disabled={currentPage <= 1} title="Halaman pertama" className="btn btn-secondary btn-icon">
                 <IconSkipBack size={16} />
               </button>
-              <button
-                onClick={goPrev}
-                disabled={prevDisabled}
-                title="Sebelumnya"
-                className="min-h-11 px-4 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
-                style={{ borderColor: 'var(--border)' }}
-              >
+              <button onClick={goPrev} disabled={prevDisabled} title="Sebelumnya" className="btn btn-secondary">
                 ‹ Sebelumnya
               </button>
               <span className="text-sm font-semibold text-brown min-w-[80px] text-center">
@@ -566,21 +547,10 @@ export function Ebook() {
                   ? `${currentPage}-${currentPage + 1} / ${totalPages}`
                   : `${currentPage} / ${totalPages}`}
               </span>
-              <button
-                onClick={goNext}
-                disabled={nextDisabled}
-                title="Berikutnya"
-                className="min-h-11 px-4 rounded-full border-none bg-terra text-white text-sm font-semibold disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
-              >
+              <button onClick={goNext} disabled={nextDisabled} title="Berikutnya" className="btn btn-primary">
                 Berikutnya ›
               </button>
-              <button
-                onClick={goLast}
-                disabled={currentPage >= totalPages}
-                title="Halaman terakhir"
-                className="min-h-11 min-w-11 px-3 rounded-full border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer inline-flex items-center justify-center"
-                style={{ borderColor: 'var(--border)' }}
-              >
+              <button onClick={goLast} disabled={currentPage >= totalPages} title="Halaman terakhir" className="btn btn-secondary btn-icon">
                 <IconSkipForward size={16} />
               </button>
             </div>

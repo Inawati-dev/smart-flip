@@ -81,8 +81,8 @@ const HARI_OPTIONS: Array<{ value: FilterAktivitas['hari']; label: string }> = [
 ]
 
 const STATUS_LABEL: Record<MatriksSel['status'], { label: string; bg: string; color: string }> = {
-  L: { label: 'L', bg: '#C0DD97', color: '#27500A' },
-  R: { label: 'R', bg: '#FAD7A0', color: '#7D4E00' },
+  L: { label: 'L', bg: 'var(--success-soft)', color: 'var(--success)' },
+  R: { label: 'R', bg: 'var(--warning-soft)', color: 'var(--warning)' },
   '-': { label: '—', bg: 'transparent', color: 'var(--brown3)' },
 }
 
@@ -192,10 +192,10 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
           label="Pre-test selesai"
           bar="var(--terra)"
         />
-        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik rata-rata kelas" bar="#4A7EA0" />
+        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik rata-rata kelas" bar="var(--info)" />
         <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata formatif" bar="var(--sage)" />
         <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" />
-        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="#4A7EA0" />
+        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="var(--info)" />
       </div>
 
       {/* Jalan pintas */}
@@ -234,7 +234,11 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
             </div>
             {kejadian.length > feedLimit && (
               <div className="p-3 text-center border-t" style={BORDER}>
-                <button onClick={() => setFeedLimit((n) => n + 50)} className="min-h-11 px-4 text-xs font-semibold text-terra-d">
+                <button
+                  onClick={() => setFeedLimit((n) => n + 50)}
+                  className="btn btn-ghost"
+                  style={{ color: 'var(--terra-d)' }}
+                >
                   Muat 50 berikutnya
                 </button>
               </div>
@@ -251,7 +255,7 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
         </div>
         <div className="p-3 flex flex-col gap-2">
           {perhatian.length === 0 ? (
-            <p className="text-brown-3 text-sm px-2 py-1">Tidak ada yang perlu diperhatikan</p>
+            <p className="text-brown-3 text-sm px-2 py-1">Belum ada yang perlu diperhatikan</p>
           ) : (
             perhatian.map((p, i) => (
               <Link
@@ -275,8 +279,7 @@ function DosenHome({ dosenId }: { dosenId?: string }) {
           <button
             onClick={unduhCsv}
             disabled={matriks.length === 0}
-            className="min-h-11 px-3 rounded-lg border text-xs font-semibold text-brown-2 inline-flex items-center gap-1.5 disabled:opacity-50"
-            style={BORDER}
+            className="btn btn-secondary btn-sm"
           >
             <IconDownload size={13} /> Unduh CSV
           </button>
@@ -362,7 +365,7 @@ export function Dashboard() {
             <h1 className="text-2xl font-bold text-brown mb-1">
               Halo, {profile?.full_name || 'Pengguna'}
             </h1>
-            <p className="text-brown-3 mb-6">Dashboard Dosen</p>
+            <p className="text-brown-3 mb-6">Dashboard dosen</p>
             <DosenHome dosenId={user?.id} />
           </>
         ) : modules.length === 0 ? (
@@ -410,20 +413,12 @@ export function DashboardMhs({
           </p>
         ) : (
           <>
-            <Link
-              to={actions[hasil.langkah].to}
-              className="inline-flex items-center justify-center min-h-11 px-5 rounded-lg bg-terra text-white text-sm font-semibold mb-3"
-            >
+            <Link to={actions[hasil.langkah].to} className="btn btn-primary mb-3">
               {actions[hasil.langkah].label}
             </Link>
             <div className="flex flex-wrap gap-2">
               {langkahLain.map((k) => (
-                <Link
-                  key={k}
-                  to={actions[k].to}
-                  className="inline-flex items-center min-h-11 px-4 rounded-lg border text-sm text-brown-2"
-                  style={BORDER}
-                >
+                <Link key={k} to={actions[k].to} className="btn btn-secondary">
                   {actions[k].label}
                 </Link>
               ))}
@@ -444,7 +439,7 @@ export function DashboardMhs({
           }
           bar="var(--terra)"
         />
-        <StatCard icon={IconFolder} val="—" label="Pre-test" bar="#4A7EA0" />
+        <StatCard icon={IconFolder} val="—" label="Pre-test" bar="var(--info)" />
       </div>
 
       <div className="bg-ivory rounded-2xl border p-4" style={BORDER}>
@@ -452,11 +447,7 @@ export function DashboardMhs({
           <IconBook size={15} /> Tes khusus dari dosen
         </div>
         <p className="text-xs text-brown-3 mb-3">Punya kode dari dosen? Masukkan di sini.</p>
-        <Link
-          to="/asesmen/tes"
-          className="inline-flex items-center justify-center min-h-11 px-4 rounded-lg border text-xs font-semibold text-brown-2"
-          style={BORDER}
-        >
+        <Link to="/asesmen/tes" className="btn btn-secondary btn-sm">
           Masukkan kode
         </Link>
       </div>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { parseVideoUrl } from './video'
+import { parseVideoUrl, thumbnailUrl } from './video'
 
 describe('parseVideoUrl', () => {
   it('parses youtube.com/watch?v=', () => {
@@ -42,5 +42,25 @@ describe('parseVideoUrl', () => {
     expect(parseVideoUrl('')).toBeNull()
     expect(parseVideoUrl(null)).toBeNull()
     expect(parseVideoUrl(undefined)).toBeNull()
+  })
+})
+
+// Antrean #44b (16 Sep 2026): thumbnail untuk kolom Video / modal Ubah tautan.
+describe('thumbnailUrl', () => {
+  it('returns the YouTube hqdefault thumbnail for a YouTube URL', () => {
+    expect(thumbnailUrl('https://www.youtube.com/watch?v=dQw4w9WgXcQ')).toBe(
+      'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+    )
+  })
+
+  it('returns null for a direct video file URL (no ready-made thumbnail)', () => {
+    expect(thumbnailUrl('https://example.com/video.mp4')).toBeNull()
+  })
+
+  it('returns null for empty/unrecognized input', () => {
+    expect(thumbnailUrl('')).toBeNull()
+    expect(thumbnailUrl(null)).toBeNull()
+    expect(thumbnailUrl(undefined)).toBeNull()
+    expect(thumbnailUrl('https://example.com/not-a-video')).toBeNull()
   })
 })

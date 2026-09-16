@@ -6,6 +6,8 @@ import {
   getModulCustomMap,
   getModulOrder,
   saveModulOrder,
+  createModulReturningId,
+  uploadModulVideo,
   type ModulCustom,
 } from './manajemen'
 
@@ -62,6 +64,34 @@ describe('getModulOrder / saveModulOrder (localStorage fallback)', () => {
     const raw = JSON.parse(localStorage.getItem('sfp_modul_order')!) as number[]
     expect(raw).toEqual([3, 1, 2])
     expect(await getModulOrder()).toEqual([3, 1, 2])
+  })
+})
+
+// Antrean #43/#44a (16 Sep 2026). isSupabaseConfigured is false here (see
+// note at top), so createModulReturningId has nowhere to persist a brand-new
+// row — same self-guard as createModul — while uploadModulVideo (unlike
+// createModul) has a genuine demo-mode fallback: no Storage backend, so it
+// keeps the override local only, exactly like uploadModulPdf's own fallback.
+describe('createModulReturningId (no Supabase in test env)', () => {
+  it('throws because there is nowhere to persist a new module in demo mode', async () => {
+    await expect(createModulReturningId({ judul: 'Baru', deskripsi: '', orderNum: 1 })).rejects.toThrow(
+      /Supabase/,
+    )
+  })
+})
+
+describe('uploadModulVideo (localStorage fallback)', () => {
+  it('stores an object URL under sfp_video_url_<id> when Supabase is not configured', async () => {
+    const originalCreate = URL.createObjectURL
+    URL.createObjectURL = vi.fn(() => 'blob:mock-video-url') as typeof URL.createObjectURL
+    try {
+      const file = new File(['x'], 'video.mp4', { type: 'video/mp4' })
+      const url = await uploadModulVideo(5, file)
+      expect(url).toBe('blob:mock-video-url')
+      expect(localStorage.getItem('sfp_video_url_5')).toBe('"blob:mock-video-url"')
+    } finally {
+      URL.createObjectURL = originalCreate
+    }
   })
 })
 

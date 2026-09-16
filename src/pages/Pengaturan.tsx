@@ -119,7 +119,7 @@ export function PengaturanSections() {
               <span className="text-sm font-semibold text-brown">Tema</span>
             </div>
             <p className="text-xs text-brown-3 mb-3">Pilih tema tampilan aplikasi. Perubahan langsung berlaku.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-2 gap-2.5">
               {(Object.keys(THEMES) as ThemeId[]).map((id) => {
                 const t = THEMES[id]
                 const selected = active === id
@@ -127,28 +127,27 @@ export function PengaturanSections() {
                   <button
                     key={id}
                     onClick={() => chooseTheme(id)}
-                    className="relative text-left rounded-xl border-2 p-3 cursor-pointer transition-colors"
-                    style={{ borderColor: selected ? t.colors.terra : 'var(--border)', background: t.colors.ivory }}
+                    className="relative text-left rounded-xl border-2 p-3 cursor-pointer transition-colors bg-ivory"
+                    style={{ borderColor: selected ? 'var(--terra)' : 'var(--border)' }}
                   >
                     {selected && (
                       <span
                         className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center"
-                        style={{ background: t.colors.terra, color: t.colors.ivory }}
+                        style={{ background: 'var(--terra)', color: 'var(--btn-text)' }}
                       >
                         <IconCheck size={10} />
                       </span>
                     )}
+                    {/* Swatch pratinjau warna tema — sengaja pakai t.colors (bukan
+                        token halaman) karena tujuannya menunjukkan warna tema
+                        yang DIPILIH, bukan tema yang sedang aktif. */}
                     <div className="flex gap-1 mb-2.5">
                       <span className="w-4 h-4 rounded-full border" style={{ background: t.colors.cream, borderColor: t.colors.border }} />
                       <span className="w-4 h-4 rounded-full" style={{ background: t.colors.terra }} />
                       <span className="w-4 h-4 rounded-full" style={{ background: t.colors.brown }} />
                     </div>
-                    <div className="text-xs font-bold mb-0.5" style={{ color: t.colors.brown }}>
-                      {t.label}
-                    </div>
-                    <div className="text-[11px] leading-snug" style={{ color: t.colors.brown3 }}>
-                      {t.desc}
-                    </div>
+                    <div className="text-xs font-bold mb-0.5 text-brown">{t.label}</div>
+                    <div className="text-[11px] leading-snug text-brown-3">{t.desc}</div>
                   </button>
                 )
               })}
@@ -162,7 +161,7 @@ export function PengaturanSections() {
             <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
               <div className="flex items-center gap-2.5 mb-1">
                 <IconLock size={18} className="text-brown-3" />
-                <span className="text-sm font-semibold text-brown">Kode Undangan Dosen</span>
+                <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
               </div>
               <p className="text-xs text-brown-3 mb-3">
                 Kode yang harus diisi calon dosen saat mendaftar. Bagikan hanya ke orang yang memang
@@ -170,12 +169,7 @@ export function PengaturanSections() {
               </p>
 
               {inviteCode === null ? (
-                <button
-                  onClick={() => void revealInviteCode()}
-                  disabled={inviteLoading}
-                  className="h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2 disabled:opacity-50"
-                  style={BORDER}
-                >
+                <button onClick={() => void revealInviteCode()} disabled={inviteLoading} className="btn btn-secondary">
                   {inviteLoading ? 'Memuat…' : 'Tampilkan kode'}
                 </button>
               ) : editingInvite ? (
@@ -193,8 +187,7 @@ export function PengaturanSections() {
                     <button
                       onClick={() => setConfirmInvite(true)}
                       disabled={!isInviteCodeLongEnough(inviteDraft)}
-                      className="h-11 px-4 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
-                      style={{ background: 'var(--brown)' }}
+                      className="btn btn-primary"
                     >
                       Simpan kode baru
                     </button>
@@ -203,8 +196,7 @@ export function PengaturanSections() {
                         setEditingInvite(false)
                         setInviteErr('')
                       }}
-                      className="h-11 px-4 rounded-lg border text-sm text-brown-2"
-                      style={BORDER}
+                      className="btn btn-secondary"
                     >
                       Batal
                     </button>
@@ -228,16 +220,11 @@ export function PengaturanSections() {
                       setInviteDraft(inviteCode || '')
                       setEditingInvite(true)
                     }}
-                    className="h-11 px-4 rounded-lg border text-sm font-semibold text-brown-2"
-                    style={BORDER}
+                    className="btn btn-secondary"
                   >
                     Ganti kode
                   </button>
-                  <button
-                    onClick={() => setInviteCode(null)}
-                    className="h-11 px-4 rounded-lg border text-sm text-brown-2"
-                    style={BORDER}
-                  >
+                  <button onClick={() => setInviteCode(null)} className="btn btn-secondary">
                     Sembunyikan
                   </button>
                 </div>
@@ -320,7 +307,7 @@ export function PengaturanSections() {
       {confirmInvite && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget && !savingInvite) setConfirmInvite(false)
           }}
@@ -335,19 +322,13 @@ export function PengaturanSections() {
               harus dikirimi kode baru ini. Akun dosen yang sudah ada tidak terpengaruh.
             </p>
             <div className="flex gap-2.5">
-              <button
-                onClick={() => setConfirmInvite(false)}
-                disabled={savingInvite}
-                className="flex-1 h-11 rounded-lg border text-sm text-brown-2 disabled:opacity-50"
-                style={BORDER}
-              >
+              <button onClick={() => setConfirmInvite(false)} disabled={savingInvite} className="btn btn-secondary flex-1">
                 Batal
               </button>
               <button
                 onClick={() => void saveInviteCode()}
                 disabled={savingInvite}
-                className="flex-1 h-11 rounded-lg text-white text-sm font-semibold disabled:opacity-60"
-                style={{ background: 'var(--brown)' }}
+                className="btn btn-primary flex-1 min-w-[7.5rem]"
               >
                 {savingInvite ? 'Menyimpan…' : 'Ya, Ganti'}
               </button>

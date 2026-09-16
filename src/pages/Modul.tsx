@@ -88,10 +88,7 @@ export default function Modul() {
                 {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
                 {modul.description && <p className="text-sm text-brown-2 leading-relaxed">{modul.description}</p>}
                 {hasPdf ? (
-                  <Link
-                    to={`/ebook?book=${modul.id}`}
-                    className="inline-flex items-center gap-1.5 mt-2 px-5 min-h-11 rounded-full bg-terra text-white text-sm font-semibold w-fit"
-                  >
+                  <Link to={`/ebook?book=${modul.id}`} className="btn btn-primary mt-2 w-fit">
                     <IconBook size={16} /> Baca modul
                   </Link>
                 ) : (
@@ -122,18 +119,10 @@ export default function Modul() {
             <div>
               <h2 className="font-bold text-brown mb-2 text-sm">Langkah berikutnya</h2>
               <div className="flex flex-col gap-2">
-                <Link
-                  to={`/video/${modul.id}`}
-                  className="min-h-11 flex items-center gap-1.5 px-4 rounded-lg border text-sm font-semibold text-brown-2"
-                  style={{ borderColor: 'var(--border)' }}
-                >
+                <Link to={`/video/${modul.id}`} className="btn btn-secondary">
                   <IconPlay size={14} /> Tonton video {modul.order_num}
                 </Link>
-                <Link
-                  to={`/asesmen/formatif/${modul.id}`}
-                  className="min-h-11 flex items-center gap-1.5 px-4 rounded-lg border text-sm font-semibold text-brown-2"
-                  style={{ borderColor: 'var(--border)' }}
-                >
+                <Link to={`/asesmen/formatif/${modul.id}`} className="btn btn-secondary">
                   <IconEdit size={14} /> Kerjakan tes formatif
                 </Link>
               </div>
@@ -158,7 +147,7 @@ export default function Modul() {
             </div>
             <div className="bg-bg3 rounded-lg p-3">
               <div className="text-lg font-bold text-brown">—</div>
-              <div className="text-xs text-brown-3 mt-0.5">Waktu Belajar</div>
+              <div className="text-xs text-brown-3 mt-0.5">Waktu belajar</div>
             </div>
           </div>
         </div>

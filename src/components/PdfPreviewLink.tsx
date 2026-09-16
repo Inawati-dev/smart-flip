@@ -16,8 +16,7 @@ export function PreviewLink({ url, label = 'Pratinjau' }: { url: string; label?:
         onClick={() => setOpen(true)}
         aria-label={label}
         title={label}
-        className="inline-flex items-center justify-center w-11 h-11 rounded-lg border text-brown-2 hover:bg-cream flex-shrink-0"
-        style={{ borderColor: 'var(--border)' }}
+        className="btn btn-secondary btn-icon flex-shrink-0"
       >
         <IconEye size={16} />
       </button>
@@ -63,22 +62,10 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
           <span className="text-sm font-semibold text-brown truncate flex-1" title={fileName}>
             {fileName}
           </span>
-          <a
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="min-h-11 inline-flex items-center px-3 rounded-lg border text-xs font-semibold text-brown-2"
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
             Buka di tab baru
           </a>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Tutup pratinjau"
-            className="inline-flex items-center justify-center w-11 h-11 rounded-lg border text-brown-2"
-            style={{ borderColor: 'var(--border)' }}
-          >
+          <button type="button" onClick={onClose} aria-label="Tutup pratinjau" className="btn btn-secondary btn-icon">
             <IconX size={16} />
           </button>
         </div>

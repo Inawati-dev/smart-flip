@@ -56,7 +56,7 @@ export function KelolaPdf() {
         </div>
         <h1 className="font-display text-2xl font-bold text-brown mb-1">PDF Modul</h1>
         <p className="text-sm text-brown-3 mb-5">
-          Semua berkas di penyimpanan modul-pdf, termasuk yang tidak lagi dipakai modul mana pun.
+          Semua berkas PDF yang tersimpan, termasuk yang belum terpakai di modul mana pun.
         </p>
 
         {!isSupabaseConfigured ? (
@@ -69,9 +69,9 @@ export function KelolaPdf() {
               <table className="w-full text-sm border-collapse">
                 <thead>
                   <tr className="bg-bg3">
-                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama Berkas</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama berkas</th>
                     <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal</th>
-                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Dipakai Modul</th>
+                    <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Dipakai modul</th>
                     <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Aksi</th>
                   </tr>
                 </thead>
@@ -100,15 +100,11 @@ export function KelolaPdf() {
                           {f.usedBy ? (
                             <span>Dipakai modul: {f.usedBy}</span>
                           ) : (
-                            <span className="text-brown-3">Tidak dipakai</span>
+                            <span className="text-brown-3">Belum terpakai</span>
                           )}
                         </td>
                         <td className="px-4 py-2.5">
-                          <button
-                            onClick={() => setDeleteTarget(f)}
-                            className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-red"
-                            style={{ borderColor: 'rgba(176,48,32,.35)' }}
-                          >
+                          <button onClick={() => setDeleteTarget(f)} className="btn btn-danger btn-sm">
                             <IconTrash size={14} /> Hapus
                           </button>
                         </td>
@@ -125,7 +121,7 @@ export function KelolaPdf() {
       {deleteTarget && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(0,0,0,.48)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget && !deleting) setDeleteTarget(null)
           }}
@@ -135,22 +131,13 @@ export function KelolaPdf() {
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.usedBy
                 ? `Modul ${deleteTarget.usedBy} akan kehilangan PDF-nya.`
-                : 'Berkas ini tidak dipakai modul mana pun.'}
+                : 'Berkas ini belum terpakai di modul mana pun.'}
             </p>
             <div className="flex gap-2.5">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                disabled={deleting}
-                className="flex-1 min-h-11 rounded-lg border text-sm text-brown-2 disabled:opacity-50"
-                style={BORDER}
-              >
+              <button onClick={() => setDeleteTarget(null)} disabled={deleting} className="btn btn-secondary flex-1">
                 Batal
               </button>
-              <button
-                onClick={() => void confirmDelete()}
-                disabled={deleting}
-                className="flex-1 min-h-11 rounded-lg bg-red text-white text-sm font-semibold disabled:opacity-60"
-              >
+              <button onClick={() => void confirmDelete()} disabled={deleting} className="btn btn-danger flex-1 min-w-[7.5rem]">
                 {deleting ? 'Menghapus…' : 'Ya, Hapus'}
               </button>
             </div>
@@ -161,7 +148,7 @@ export function KelolaPdf() {
       {toast && (
         <div
           className="fixed bottom-6 right-6 px-5 py-2.5 rounded-full text-sm font-semibold z-[999]"
-          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 6px 24px rgba(0,0,0,.25)' }}
+          style={{ background: 'var(--brown)', color: 'var(--btn-text)', boxShadow: '0 6px 24px color-mix(in srgb, var(--shadow-color) 25%, transparent)' }}
         >
           {toast}
         </div>

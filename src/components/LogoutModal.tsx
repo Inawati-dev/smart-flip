@@ -12,7 +12,7 @@ export function LogoutModal({
   return (
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-      style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+      style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onCancel()
       }}
@@ -21,7 +21,7 @@ export function LogoutModal({
         className="rounded-2xl p-8 max-w-sm w-full text-center"
         style={{
           background: 'var(--ivory)',
-          boxShadow: '0 8px 40px rgba(62,54,46,.22)',
+          boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)',
           animation: 'slideUpModal 0.22s ease',
         }}
       >
@@ -32,17 +32,10 @@ export function LogoutModal({
           Progres belajar kamu tersimpan otomatis.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 min-h-11 rounded-lg font-medium text-sm"
-            style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
-          >
+          <button onClick={onCancel} className="btn btn-secondary flex-1">
             Batal
           </button>
-          <button
-            onClick={onConfirm}
-            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm"
-          >
+          <button onClick={onConfirm} className="btn btn-primary flex-1">
             Ya, Keluar
           </button>
         </div>

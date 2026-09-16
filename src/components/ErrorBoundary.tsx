@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       return (
         <div className="min-h-screen bg-cream flex items-center justify-center p-6">
           <div className="max-w-sm w-full bg-ivory rounded-2xl border p-6 text-center" style={{ borderColor: 'var(--border)' }}>
-            <div className="w-11 h-11 rounded-xl bg-[rgba(212,163,115,.15)] text-terra-d flex items-center justify-center mx-auto mb-4">
+            <div className="w-11 h-11 rounded-xl bg-[color:var(--accent-soft)] text-terra-d flex items-center justify-center mx-auto mb-4">
               <IconGear size={20} />
             </div>
             <h1 className="font-display text-xl font-bold text-brown mb-1.5">Terjadi kesalahan</h1>

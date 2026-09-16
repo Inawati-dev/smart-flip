@@ -57,7 +57,8 @@ export function FlipPanel({
 // since the grid cell itself grows to fit the content (see FlipPanel).
 const CARD_STYLE = {
   background: 'var(--ivory)',
-  boxShadow: '0 0.5px 2px rgba(62,54,46,.06), 0 8px 28px rgba(62,54,46,.09)',
+  boxShadow:
+    '0 0.5px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent), 0 8px 28px color-mix(in srgb, var(--shadow-color) 9%, transparent)',
 } as const
 
 const FACE_CLASS = 'rounded-2xl p-6 sm:p-8 flex flex-col gap-5 max-h-[92vh] overflow-y-auto'

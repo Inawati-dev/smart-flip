@@ -122,25 +122,13 @@ export default function Asesmen() {
             <p className="text-sm text-brown-3 leading-relaxed">Hasil kelas</p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Link
-              to="/asesmen/bank"
-              className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border-[1.5px] bg-[var(--bg3)] text-brown-2 text-sm font-semibold"
-              style={BORDER}
-            >
+            <Link to="/asesmen/bank" className="btn btn-secondary">
               Bank soal
             </Link>
-            <Link
-              to="/asesmen/tes"
-              className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg border-[1.5px] bg-[var(--bg3)] text-brown-2 text-sm font-semibold"
-              style={BORDER}
-            >
+            <Link to="/asesmen/tes" className="btn btn-secondary">
               Tes khusus
             </Link>
-            <button
-              onClick={exportCsv}
-              className="inline-flex items-center gap-1.5 min-h-11 px-4 rounded-lg text-sm font-semibold"
-              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
-            >
+            <button onClick={exportCsv} className="btn btn-primary">
               <IconDownload size={16} /> Unduh CSV
             </button>
           </div>
@@ -189,7 +177,7 @@ export default function Asesmen() {
 
         {/* SEBARAN PENINGKATAN */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
-          <div className="font-display text-base font-semibold text-brown mb-3">Sebaran Peningkatan</div>
+          <div className="font-display text-base font-semibold text-brown mb-3">Sebaran peningkatan</div>
           <div className="h-3 rounded-full overflow-hidden flex" style={{ background: 'var(--border)' }}>
             {totalKategori === 0 ? null : (
               <>

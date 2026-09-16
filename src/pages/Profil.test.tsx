@@ -75,7 +75,7 @@ describe('Profil', () => {
     expect(html).toContain('Gaya Belajar VARK')
     expect(html).toContain('Riwayat Kuis')
     // dosen-only sections must not leak into the mahasiswa view
-    expect(html).not.toContain('Aktivitas Kelas Terkini')
+    expect(html).not.toContain('Aktivitas kelas terkini')
     expect(html).not.toContain('Statistik Mengajar')
   })
 
@@ -91,7 +91,7 @@ describe('Profil', () => {
     expect(html).toContain('Dr. Ahmad Fauzi, M.Pd.')
     expect(html).toContain('NIDN')
     expect(html).toContain('Statistik Mengajar')
-    expect(html).toContain('Aktivitas Kelas Terkini')
+    expect(html).toContain('Aktivitas kelas terkini')
     // mahasiswa-only VARK card must not leak into the dosen view
     expect(html).not.toContain('Gaya Belajar VARK')
   })

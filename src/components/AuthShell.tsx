@@ -58,7 +58,11 @@ export function AuthShell({ children }: { children: ReactNode }) {
     <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
       <div
         className="w-full max-w-[860px] rounded-2xl p-5 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-9"
-        style={{ background: 'var(--ivory)', boxShadow: '0 0.5px 2px rgba(62,54,46,.06), 0 8px 28px rgba(62,54,46,.09)' }}
+        style={{
+          background: 'var(--ivory)',
+          boxShadow:
+            '0 0.5px 2px color-mix(in srgb, var(--shadow-color) 6%, transparent), 0 8px 28px color-mix(in srgb, var(--shadow-color) 9%, transparent)',
+        }}
       >
         {/* Mobile-only compact header — icon mark + wordmark, replaces the
             big serif column (hidden below lg) so the login card can come

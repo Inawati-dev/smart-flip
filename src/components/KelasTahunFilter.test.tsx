@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { useState } from 'react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { KelasTahunFilter } from './KelasTahunFilter'
 import type { FilterTahunKelas } from '../lib/kelas'
 
@@ -48,7 +48,10 @@ describe('KelasTahunFilter', () => {
     render(<Controlled />)
     const [tahunTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(tahunTrigger)
-    fireEvent.click(screen.getByText('2026'))
+    // getByText saja bentrok sejak #46: label opsi juga ada di span pengukur
+    // lebar tersembunyi di dalam trigger (lihat Select.test.tsx), jadi query
+    // dibatasi ke listbox yang sedang terbuka.
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('2026'))
 
     const [, kelasTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(kelasTrigger)
@@ -63,17 +66,17 @@ describe('KelasTahunFilter', () => {
     // Pilih tahun 2024 dulu, lalu kelas "Kelas A" (satu-satunya opsi selain "Semua kelas").
     const [tahunTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(tahunTrigger)
-    fireEvent.click(screen.getByText('2024'))
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('2024'))
 
     const [, kelasTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(kelasTrigger)
-    fireEvent.click(screen.getByText('Kelas A'))
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('Kelas A'))
     expect(onChange).toHaveBeenLastCalledWith({ tahun: 2024, kelas: 'Kelas A' })
 
     // Ganti tahun ke 2026, di mana "Kelas A" tidak ada -> kelas kembali null.
     const [tahunTrigger2] = screen.getAllByRole('combobox')
     fireEvent.click(tahunTrigger2)
-    fireEvent.click(screen.getByText('2026'))
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('2026'))
     expect(onChange).toHaveBeenLastCalledWith({ tahun: 2026, kelas: null })
   })
 
@@ -84,15 +87,15 @@ describe('KelasTahunFilter', () => {
     // "Kelas A" exists in both 2024 and 2025 (see KELAS above).
     const [tahunTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(tahunTrigger)
-    fireEvent.click(screen.getByText('2024'))
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('2024'))
     const [, kelasTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(kelasTrigger)
-    fireEvent.click(screen.getByText('Kelas A'))
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('Kelas A'))
     expect(onChange).toHaveBeenLastCalledWith({ tahun: 2024, kelas: 'Kelas A' })
 
     const [tahunTrigger2] = screen.getAllByRole('combobox')
     fireEvent.click(tahunTrigger2)
-    fireEvent.click(screen.getByText('2025'))
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('2025'))
     expect(onChange).toHaveBeenLastCalledWith({ tahun: 2025, kelas: 'Kelas A' })
   })
 })

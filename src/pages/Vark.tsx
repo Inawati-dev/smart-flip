@@ -146,14 +146,14 @@ export function Vark() {
               <div className="flex justify-center mb-3 text-terra">
                 <IconTarget size={40} />
               </div>
-              <h1 className="font-display text-xl md:text-2xl font-bold text-white mb-2">
-                Asesmen Gaya Belajar VARK
+              <h1 className="font-display text-xl md:text-2xl font-bold text-btn-text mb-2">
+                Asesmen gaya belajar VARK
               </h1>
-              <p className="text-sm text-white/55 leading-relaxed max-w-[400px] mx-auto mb-3">
+              <p className="text-sm text-btn-text/55 leading-relaxed max-w-[400px] mx-auto mb-3">
                 Temukan cara belajar yang paling cocok untukmu (Visual, Auditory, Read/Write, atau Kinesthetic) agar
                 pengalaman belajar di SMART-FLIP lebih personal dan efektif.
               </p>
-              <div className="inline-flex flex-wrap items-center justify-center gap-3 md:gap-4 bg-white/[.06] rounded-lg px-4 py-2 text-xs text-white/45 mb-5">
+              <div className="inline-flex flex-wrap items-center justify-center gap-3 md:gap-4 bg-btn-text/[.06] rounded-lg px-4 py-2 text-xs text-btn-text/45 mb-5">
                 <span className="inline-flex items-center gap-1">
                   <IconClipboard size={13} /> 12 pertanyaan
                 </span>
@@ -165,16 +165,13 @@ export function Vark() {
                 </span>
               </div>
               <div>
-                <button
-                  onClick={startQuiz}
-                  className="inline-flex items-center gap-1.5 bg-terra text-white rounded-[10px] text-sm font-semibold px-7 min-h-11 cursor-pointer"
-                >
+                <button onClick={startQuiz} className="btn btn-primary">
                   Mulai Asesmen →
                 </button>
               </div>
 
               {existing && (
-                <p className="text-xs text-white/40 mt-3">
+                <p className="text-xs text-btn-text/40 mt-3">
                   Kamu sudah mengisi asesmen ini.{' '}
                   <button onClick={() => void handleRetake()} className="text-terra underline cursor-pointer">
                     Isi ulang
@@ -182,7 +179,7 @@ export function Vark() {
                 </p>
               )}
               {existingDom && (
-                <div className="mt-2 inline-flex items-center gap-1.5 bg-[rgba(212,163,115,.15)] rounded-lg px-3 py-1.5 text-xs text-terra">
+                <div className="mt-2 inline-flex items-center gap-1.5 bg-[color:var(--accent-soft)] rounded-lg px-3 py-1.5 text-xs text-terra">
                   Gaya belajarmu saat ini: <VarkIcon k={existingDom} size={14} /> {VARK_LABELS[existingDom]}
                 </div>
               )}
@@ -229,13 +226,13 @@ export function Vark() {
                       type="button"
                       onClick={() => selectAnswer(i)}
                       className={`flex items-start gap-3 p-3 rounded-[11px] border-[1.5px] text-left w-full min-h-11 cursor-pointer transition-colors ${
-                        selected ? 'bg-[rgba(212,163,115,.07)]' : 'bg-[color:var(--bg3)]'
+                        selected ? 'bg-[color-mix(in_srgb,var(--terra)_7%,transparent)]' : 'bg-[color:var(--bg3)]'
                       }`}
                       style={{ borderColor: selected ? 'var(--terra)' : 'var(--border)' }}
                     >
                       <span
                         className={`w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center text-xs font-bold mt-0.5 ${
-                          selected ? 'text-white' : 'text-brown-3'
+                          selected ? 'text-btn-text' : 'text-brown-3'
                         }`}
                         style={{ background: selected ? 'var(--terra)' : 'var(--border2)' }}
                       >
@@ -250,20 +247,10 @@ export function Vark() {
 
             {/* Nav */}
             <div className="flex gap-2.5">
-              <button
-                onClick={goBack}
-                disabled={currentQ === 0}
-                className="h-11 px-4 rounded-[10px] border-[1.5px] text-sm font-semibold text-brown-2 disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
-                style={BORDER}
-              >
+              <button onClick={goBack} disabled={currentQ === 0} className="btn btn-secondary">
                 ← Sebelumnya
               </button>
-              <button
-                onClick={goNext}
-                disabled={!hasAnswer}
-                className="flex-1 h-11 rounded-[10px] border-none text-white text-sm font-semibold disabled:opacity-35 disabled:cursor-not-allowed cursor-pointer"
-                style={{ background: 'var(--brown)' }}
-              >
+              <button onClick={goNext} disabled={!hasAnswer} className="btn btn-primary flex-1">
                 {isLast ? 'Selesai ✓' : 'Berikutnya →'}
               </button>
             </div>
@@ -284,7 +271,7 @@ export function Vark() {
           <div>
             <div className="text-center mb-6">
               <div className="font-display text-xl md:text-2xl font-bold text-brown mb-2">
-                Hasil Asesmen VARK
+                Hasil asesmen VARK
               </div>
               <div
                 className="inline-flex items-center gap-2 rounded-[10px] px-5 py-2 mb-3 font-display text-base md:text-lg font-semibold"
@@ -318,7 +305,7 @@ export function Vark() {
                                 height: `${heightPct}%`,
                                 minHeight: 6,
                                 background: color,
-                                boxShadow: isDom ? '0 4px 16px rgba(0,0,0,.15)' : undefined,
+                                boxShadow: isDom ? '0 4px 16px color-mix(in srgb, var(--shadow-color) 15%, transparent)' : undefined,
                               }}
                             >
                               <span
@@ -351,7 +338,7 @@ export function Vark() {
                     className="bg-ivory rounded-[11px] border p-3.5 flex gap-3 items-start"
                     style={{
                       borderColor: isDom ? 'var(--terra)' : 'var(--border)',
-                      background: isDom ? 'rgba(212,163,115,.04)' : 'var(--ivory)',
+                      background: isDom ? 'color-mix(in srgb, var(--terra) 4%, var(--ivory))' : 'var(--ivory)',
                     }}
                   >
                     <span
@@ -370,11 +357,7 @@ export function Vark() {
               })}
             </div>
 
-            <Link
-              to="/dashboard"
-              className="flex items-center justify-center gap-1.5 w-full h-[50px] rounded-xl text-white text-[15px] font-semibold no-underline"
-              style={{ background: 'var(--brown)', boxShadow: '0 4px 16px rgba(44,36,32,.18)' }}
-            >
+            <Link to="/dashboard" className="btn btn-primary w-full">
               Mulai Belajar →
             </Link>
           </div>

@@ -22,7 +22,7 @@ export function ResetPassword() {
   // Demo mode skips token verification entirely and shows the form right away.
   const [view, setView] = useState<View>(isSupabaseConfigured ? 'loading' : 'form')
   const [errorDetail, setErrorDetail] = useState('')
-  const [errorTitle, setErrorTitle] = useState('Link Tidak Valid')
+  const [errorTitle, setErrorTitle] = useState('Link tidak valid')
   const [errorSub, setErrorSub] = useState(
     'Link reset password sudah kedaluwarsa atau tidak valid. Silakan minta link baru.',
   )
@@ -46,7 +46,7 @@ export function ResetPassword() {
     const type = hash.get('type')
 
     if (!accessToken || type !== 'recovery') {
-      setErrorTitle('Link Tidak Valid')
+      setErrorTitle('Link tidak valid')
       setErrorSub('')
       const errDesc = hash.get('error_description')
       if (errDesc) setErrorDetail(decodeURIComponent(errDesc.replace(/\+/g, ' ')))
@@ -145,7 +145,7 @@ export function ResetPassword() {
     <AuthShell>
       <div className="page-fadein">
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight mb-1">
-          {view === 'error' ? errorTitle : 'Buat Password Baru'}
+          {view === 'error' ? errorTitle : 'Buat password baru'}
         </h1>
         {view === 'form' && (
           <p className="text-brown-3 text-sm mb-4">
@@ -179,7 +179,7 @@ export function ResetPassword() {
 
             {submitError && <div className="text-red mb-3 text-sm">{submitError}</div>}
 
-            <label htmlFor="pw1">Password Baru</label>
+            <label htmlFor="pw1">Password baru</label>
             <div className="relative">
               <input
                 id="pw1"
@@ -213,7 +213,7 @@ export function ResetPassword() {
             {pw1Error && <div className="text-red text-[13px] mb-2">{pw1Error}</div>}
 
             <label htmlFor="pw2" className="mt-2 block">
-              Konfirmasi Password
+              Konfirmasi password
             </label>
             <div className="relative">
               <input
@@ -237,11 +237,7 @@ export function ResetPassword() {
             </div>
             {pw2Error && <div className="text-red text-[13px] mb-2">{pw2Error}</div>}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-terra text-white rounded-full py-2 font-semibold mt-3"
-            >
+            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-3">
               {loading ? 'Memproses…' : 'Simpan Password'}
             </button>
 
@@ -259,14 +255,11 @@ export function ResetPassword() {
             <div className="w-14 h-14 rounded-full bg-sage/20 border-2 border-sage flex items-center justify-center text-sage-d">
               <IconCheck size={28} />
             </div>
-            <p className="font-bold text-brown">Password Berhasil Diperbarui!</p>
+            <p className="font-bold text-brown">Password berhasil diperbarui!</p>
             <p className="text-sm text-brown-3">
-              Password baru Anda sudah aktif. Silakan masuk dengan password yang baru.
+              Password baru sudah aktif. Masuk dengan password yang baru.
             </p>
-            <Link
-              to="/"
-              className="w-full bg-terra text-white rounded-full py-2 font-semibold text-center mt-2"
-            >
+            <Link to="/" className="btn btn-primary w-full mt-2">
               Kembali ke Login
             </Link>
           </div>
@@ -282,10 +275,7 @@ export function ResetPassword() {
                 {errorDetail}
               </div>
             )}
-            <Link
-              to="/"
-              className="w-full bg-terra text-white rounded-full py-2 font-semibold text-center mt-2"
-            >
+            <Link to="/" className="btn btn-primary w-full mt-2">
               Kembali ke Login
             </Link>
             <p className="text-sm text-brown-3 mt-1">

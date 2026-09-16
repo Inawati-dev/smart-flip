@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { useState } from 'react'
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, within } from '@testing-library/react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { Select, type SelectOption } from './Select'
 
@@ -56,7 +56,10 @@ describe('Select', () => {
     const onChange = vi.fn()
     render(<ControlledSelect onChange={onChange} />)
     fireEvent.click(screen.getByRole('combobox'))
-    fireEvent.click(screen.getByText('Terkunci'))
+    // getByText saja bentrok sejak #46: label "Terkunci" sekarang juga ada di
+    // span pengukur lebar tersembunyi di dalam trigger (lihat tes di bawah),
+    // jadi query dibatasi ke listbox supaya cuma opsi yang diklik.
+    fireEvent.click(within(screen.getByRole('listbox')).getByText('Terkunci'))
 
     expect(onChange).toHaveBeenCalledWith('terkunci')
     expect(screen.queryByRole('listbox')).toBeNull()
@@ -130,5 +133,28 @@ describe('Select', () => {
     render(<Select value="aktif" onChange={() => {}} options={OPTIONS} size="sm" />)
     const trigger = screen.getByRole('combobox') as HTMLButtonElement
     expect(trigger.style.minHeight).toBe('36px')
+  })
+
+  // Antrean #46 (16 Sep 2026): dropdown Tahun berubah lebar tiap kali nilai
+  // berganti ("Semua tahun" -> "2027") karena tombol cuma selebar label yang
+  // sedang tampil. Fix-nya span pengukur tersembunyi berisi SEMUA label
+  // opsi (satu per baris) di dalam trigger, supaya lebar shrink-to-fit
+  // tombol dihitung dari opsi terpanjang, bukan cuma yang aktif.
+  it('renders a hidden width-measurer holding every option label, not just the selected one', () => {
+    render(<ControlledSelect initial="draf" />)
+    const trigger = screen.getByRole('combobox')
+    const measurer = trigger.querySelector('[aria-hidden="true"]')
+    expect(measurer).toBeTruthy()
+    expect(measurer!.textContent).toBe('AktifDrafTerkunci')
+    // Bukan role=option (aria-hidden menyembunyikannya dari a11y tree) —
+    // getAllByRole('option') di tes lain tetap cuma menghitung listbox.
+    expect(measurer!.getAttribute('aria-hidden')).toBe('true')
+  })
+
+  it('width-measurer also includes the placeholder when one is given', () => {
+    render(<Select value="" onChange={() => {}} options={OPTIONS} placeholder="Pilih status" />)
+    const trigger = screen.getByRole('combobox')
+    const measurer = trigger.querySelector('[aria-hidden="true"]')
+    expect(measurer!.textContent).toContain('Pilih status')
   })
 })

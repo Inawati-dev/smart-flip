@@ -79,7 +79,7 @@ export function WelcomeModal({
   return (
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-      style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+      style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
@@ -88,13 +88,13 @@ export function WelcomeModal({
         className="rounded-2xl p-7 md:p-8 max-w-md w-full text-center relative"
         style={{
           background: 'var(--ivory)',
-          boxShadow: '0 8px 40px rgba(62,54,46,.22)',
+          boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)',
           animation: 'slideUpModal 0.22s ease',
         }}
       >
         <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-terra"
-          style={{ background: 'var(--brown)' }}
+          className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
+          style={{ background: 'var(--accent-soft)', color: 'var(--terra)' }}
         >
           <Icon size={30} />
         </div>
@@ -125,7 +125,7 @@ export function WelcomeModal({
                 className="h-1.5 rounded-full transition-all"
                 style={{
                   width: i === step ? '20px' : '6px',
-                  background: i === step ? 'var(--terra)' : 'var(--border2, rgba(62,54,46,.15))',
+                  background: i === step ? 'var(--terra)' : 'var(--border2)',
                 }}
               />
             </button>
@@ -134,24 +134,20 @@ export function WelcomeModal({
 
         <div className="flex gap-3">
           {step > 0 && (
-            <button
-              onClick={() => setStep((s) => s - 1)}
-              className="flex-1 min-h-11 rounded-lg font-medium text-sm cursor-pointer"
-              style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
-            >
+            <button onClick={() => setStep((s) => s - 1)} className="btn btn-secondary flex-1">
               Kembali
             </button>
           )}
           <button
             onClick={() => (isLast ? onClose() : setStep((s) => s + 1))}
-            className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1"
+            className="btn btn-primary flex-1"
           >
             {isLast ? (role === 'dosen' ? 'Mulai Mengajar' : 'Mulai Belajar') : 'Lanjut'}
             {!isLast && <IconChevronRight size={15} />}
           </button>
         </div>
 
-        <div className="h-1 rounded-full overflow-hidden mt-2.5" style={{ background: 'var(--border2, rgba(62,54,46,.12))' }}>
+        <div className="h-1 rounded-full overflow-hidden mt-2.5" style={{ background: 'var(--border2)' }}>
           <div
             key={step}
             className="h-full rounded-full"

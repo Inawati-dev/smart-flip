@@ -136,6 +136,39 @@ export async function createModul(data: {
   }
 }
 
+// Sama seperti createModul di atas, tapi mengembalikan id baris baru —
+// dipakai alur Tambah Modul + PDF (ModulList.tsx, antrean #43) yang perlu id
+// modul sebelum bisa memanggil uploadModulPdf. createModul lama tidak diubah
+// supaya pemanggil existing tidak kena efek samping.
+export async function createModulReturningId(data: {
+  judul: string
+  deskripsi: string
+  orderNum: number
+  status?: ModulStatus
+  durasi?: string
+  catatan?: string
+}): Promise<number> {
+  if (!isSupabaseConfigured) {
+    throw new Error('createModulReturningId membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
+  }
+  const { data: inserted, error } = await supabase
+    .from('modules')
+    .insert({
+      title: data.judul,
+      description: data.deskripsi,
+      order_num: data.orderNum,
+      is_active: data.status !== 'nonaktif',
+    })
+    .select('id')
+    .single()
+  if (error) throw error
+  const id = inserted.id as number
+  if (data.durasi || data.catatan) {
+    lsSet(customKey(id), { durasi: data.durasi, catatan: data.catatan })
+  }
+  return id
+}
+
 // Nama file Storage dari sebuah public URL `modul-pdf`. Mengembalikan null
 // untuk URL di luar bucket ini (mis. blob: dari mode demo, atau path statis
 // /books/... bawaan repo) supaya pemanggil tidak pernah salah menghapus.
@@ -254,6 +287,70 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
   const objectUrl = URL.createObjectURL(file)
   const existing = lsGet<ModulCustom>(customKey(moduleId)) ?? {}
   lsSet(customKey(moduleId), { ...existing, pdfPath: objectUrl })
+  return objectUrl
+}
+
+// Nama file Storage dari sebuah public URL `modul-video`. Sama pola dengan
+// storageObjectName di atas, bucket berbeda — dipertahankan terpisah alih-alih
+// menambah parameter bucket ke fungsi lama supaya uploadModulPdf tidak ikut
+// tersentuh (spec: berkas ini tidak boleh mengubah fungsi yang sudah ada).
+function videoStorageObjectName(publicUrl: string | null | undefined): string | null {
+  if (!publicUrl) return null
+  const marker = '/storage/v1/object/public/modul-video/'
+  const i = publicUrl.indexOf(marker)
+  if (i === -1) return null
+  const name = publicUrl.slice(i + marker.length).split('?')[0]
+  return name ? decodeURIComponent(name) : null
+}
+
+// Upload a dosen-provided video file to the public `modul-video` Storage
+// bucket (see database/migration_v21_modul_video_storage.sql) and point the
+// module's video_url at the resulting public URL. Mirrors uploadModulPdf's
+// shape exactly (old-file cleanup, orphan cleanup on DB-update failure,
+// demo-mode local-only fallback), just against modules.video_url instead of
+// pdf_path, and keyed under the same videoUrlKey() localStorage slot that
+// saveVideoUrl's demo-mode fallback already uses.
+export async function uploadModulVideo(moduleId: number, file: File): Promise<string> {
+  if (isSupabaseConfigured) {
+    const { data: prevRow } = await supabase
+      .from('modules')
+      .select('video_url')
+      .eq('id', moduleId)
+      .maybeSingle()
+    const prevObject = videoStorageObjectName(prevRow?.video_url as string | undefined)
+
+    const ext = file.type === 'video/webm' ? 'webm' : 'mp4'
+    const path = `modul-${moduleId}-${Date.now()}.${ext}`
+    const { error: uploadError } = await supabase.storage
+      .from('modul-video')
+      .upload(path, file, { upsert: true, contentType: file.type || 'video/mp4' })
+    if (uploadError) throw uploadError
+    const { data } = supabase.storage.from('modul-video').getPublicUrl(path)
+    const { error: updateError } = await supabase
+      .from('modules')
+      .update({ video_url: data.publicUrl })
+      .eq('id', moduleId)
+    if (updateError) {
+      try {
+        await supabase.storage.from('modul-video').remove([path])
+      } catch (cleanupError) {
+        console.warn('[manajemen] uploadModulVideo → gagal membersihkan file orphan setelah update DB gagal:', cleanupError)
+      }
+      throw updateError
+    }
+    if (prevObject && prevObject !== path) {
+      try {
+        await supabase.storage.from('modul-video').remove([prevObject])
+      } catch (cleanupError) {
+        console.warn('[manajemen] uploadModulVideo → gagal menghapus video lama:', cleanupError)
+      }
+    }
+    return data.publicUrl
+  }
+  // Demo mode: no Storage backend — keep the override local only, under the
+  // same key saveVideoUrl's demo-mode fallback reads.
+  const objectUrl = URL.createObjectURL(file)
+  lsSet(videoUrlKey(moduleId), objectUrl)
   return objectUrl
 }
 

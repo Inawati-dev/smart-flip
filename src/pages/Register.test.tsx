@@ -28,7 +28,7 @@ describe('Register', () => {
     expect(html).toContain('type="text"')
     expect(html).toContain('type="email"')
     expect(html).toContain('type="password"')
-    expect(html).toContain('Buat Akun Baru')
+    expect(html).toContain('Buat akun baru')
   })
 
   it('does not render the Dosen invite code field for the default "mahasiswa" role', () => {
@@ -37,7 +37,7 @@ describe('Register', () => {
         <Register />
       </MemoryRouter>,
     )
-    expect(html).not.toContain('Kode Undangan Dosen')
+    expect(html).not.toContain('Kode undangan dosen')
   })
 })
 
@@ -69,13 +69,13 @@ describe('Register — Dosen invite code field (interactive)', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.queryByLabelText('Kode Undangan Dosen')).toBeNull()
+    expect(screen.queryByLabelText('Kode undangan dosen')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Dosen' }))
-    expect(screen.getByLabelText('Kode Undangan Dosen')).toBeTruthy()
+    expect(screen.getByLabelText('Kode undangan dosen')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Mahasiswa' }))
-    expect(screen.queryByLabelText('Kode Undangan Dosen')).toBeNull()
+    expect(screen.queryByLabelText('Kode undangan dosen')).toBeNull()
   })
 })
 

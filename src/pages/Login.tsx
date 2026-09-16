@@ -143,7 +143,7 @@ export function Login() {
 
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight">
-          Lupa Kata Sandi
+          Lupa kata sandi
         </h1>
         <p className="text-sm text-brown-3">Masukkan email untuk menerima link reset password</p>
       </div>
@@ -172,12 +172,7 @@ export function Login() {
           />
         </div>
 
-        <button
-          type="submit"
-          disabled={forgotLoading}
-          className="w-full h-[50px] rounded-xl text-white font-semibold text-[0.95rem] disabled:opacity-50"
-          style={{ background: 'var(--brown)', boxShadow: '0 4px 16px rgba(44,36,32,.25)' }}
-        >
+        <button type="submit" disabled={forgotLoading} className="btn btn-primary w-full">
           {forgotLoading ? 'Mengirim…' : 'Kirim Link Reset'}
         </button>
       </form>
@@ -252,7 +247,7 @@ export function Login() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="password" className="text-[0.78rem] font-semibold text-brown-2">
-            Kata Sandi
+            Kata sandi
           </label>
           <input
             id="password"
@@ -277,12 +272,7 @@ export function Login() {
           </button>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full h-[50px] rounded-xl text-white font-semibold text-[0.95rem] disabled:opacity-50"
-          style={{ background: 'var(--brown)', boxShadow: '0 4px 16px rgba(44,36,32,.25)' }}
-        >
+        <button type="submit" disabled={loading} className="btn btn-primary w-full">
           {loading ? 'Memproses…' : 'Masuk'}
         </button>
       </form>
@@ -336,8 +326,8 @@ export function Login() {
         <button
           type="button"
           onClick={() => setFlipped(true)}
-          className="self-start h-[46px] px-6 rounded-xl font-semibold text-[0.92rem] mt-6 text-brown"
-          style={{ background: 'var(--terra)', boxShadow: '0 4px 16px rgba(0,0,0,.28)' }}
+          className="btn btn-primary self-start mt-6"
+          style={{ color: 'var(--brown)' }}
         >
           Buka Buku →
         </button>
@@ -392,12 +382,7 @@ export function Login() {
                   <li>Sinkron lintas perangkat</li>
                 </ul>
               </div>
-              <button
-                type="button"
-                onClick={() => setFlipped(true)}
-                className="w-full h-[50px] rounded-xl text-white font-semibold text-[0.95rem] mt-6"
-                style={{ background: 'var(--brown)', boxShadow: '0 4px 16px rgba(44,36,32,.25)' }}
-              >
+              <button type="button" onClick={() => setFlipped(true)} className="btn btn-primary w-full mt-6">
                 Masuk →
               </button>
             </div>
