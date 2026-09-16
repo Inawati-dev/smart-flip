@@ -129,10 +129,11 @@ describe('Select', () => {
     expect(screen.getByText('Status')).toBeTruthy()
   })
 
-  it('size="sm" shrinks the trigger to a 36px min-height', () => {
+  it('size="sm" memasang kelas select-trigger-sm (36 px di layar sm ke atas, 44 px di telepon lewat CSS)', () => {
     render(<Select value="aktif" onChange={() => {}} options={OPTIONS} size="sm" />)
     const trigger = screen.getByRole('combobox') as HTMLButtonElement
-    expect(trigger.style.minHeight).toBe('36px')
+    expect(trigger.className).toContain('select-trigger-sm')
+    expect(trigger.style.minHeight).toBe('')
   })
 
   // Antrean #46 (16 Sep 2026): dropdown Tahun berubah lebar tiap kali nilai

@@ -202,8 +202,8 @@ export function Select({
       disabled={disabled}
       onClick={() => (open ? closePopup(false) : openPopup())}
       onKeyDown={handleTriggerKeyDown}
-      className={`select-trigger${className ? ` ${className}` : ''}`}
-      style={{ ...(size === 'sm' ? { minHeight: 36 } : undefined), ...style }}
+      className={`select-trigger${size === 'sm' ? ' select-trigger-sm' : ''}${className ? ` ${className}` : ''}`}
+      style={style}
     >
       {/* Pengukur lebar tersembunyi (antrean #46) — dropdown Tahun melompat
           lebar tiap ganti nilai ("Semua tahun" -> "2027") karena tombolnya

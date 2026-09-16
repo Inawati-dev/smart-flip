@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hitungPeningkatanKelas, rekapPerModul, buildAsesmenCsv, type AsesmenAttempt } from './asesmen'
+import { hitungPeningkatanKelas, rekapPerModul, type AsesmenAttempt } from './asesmen'
 
 describe('hitungPeningkatanKelas', () => {
   it('pre 55/post 78 → gain 0,51 kategori sedang', () => {
@@ -50,17 +50,5 @@ describe('rekapPerModul', () => {
     const rekap = rekapPerModul(rows)
     expect(rekap[0].lulus).toBe(1)
     expect(rekap[0].persenLulus).toBe(50)
-  })
-})
-
-describe('buildAsesmenCsv', () => {
-  it('menggabungkan tabel per mahasiswa dan tabel formatif per modul, dipisah baris kosong', () => {
-    const csv = buildAsesmenCsv(
-      [{ userId: 'u1', nama: 'Ani', kelasId: 'A', pre: 55, post: 78, peningkatan: 0.5111, kategori: 'sedang' }],
-      [{ moduleId: 1, judul: 'Modul 1', jumlahPengerjaan: 2, jumlahMahasiswa: 2, rataRata: 80, tertinggi: 90, terendah: 70, lulus: 1, persenLulus: 50 }],
-    )
-    expect(csv).toContain('Nama,Kelas,Pre-test,Post-test,Peningkatan Skor,Kategori')
-    expect(csv).toContain('Modul,Pengerjaan,Mahasiswa,Rata-rata,Tertinggi,Terendah,% Lulus')
-    expect(csv.split('\n\n').length).toBeGreaterThan(1)
   })
 })

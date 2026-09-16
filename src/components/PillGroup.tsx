@@ -17,7 +17,8 @@ interface PillGroupProps {
 // used to live in each page (BankSoal's jenis filter, TesKhusus's sumber
 // soal), so every pill group in the app looks identical.
 export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: PillGroupProps) {
-  const minH = size === 'sm' ? 36 : 44
+  // Tinggi 44 px di telepon (tap target), 36 px untuk ukuran sm di layar sm ke atas.
+  const tinggi = size === 'sm' ? 'min-h-11 sm:min-h-9' : 'min-h-11'
   return (
     <div role="group" aria-label={ariaLabel} className="flex flex-wrap gap-1.5">
       {options.map((opt) => {
@@ -30,9 +31,8 @@ export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: 
             type="button"
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
-            className={`min-w-[5.5rem] rounded-[var(--radius-control)] px-3.5 text-xs font-semibold whitespace-nowrap border transition-colors inline-flex items-center justify-center gap-1.5 ${active ? '' : 'bg-ivory hover:bg-bg3'}`}
+            className={`${tinggi} min-w-[5.5rem] rounded-[var(--radius-control)] px-3.5 text-xs font-semibold whitespace-nowrap border transition-colors inline-flex items-center justify-center gap-1.5 ${active ? '' : 'bg-ivory hover:bg-bg3'}`}
             style={{
-              minHeight: minH,
               borderColor: active ? 'var(--brown)' : 'var(--border)',
               background: active ? 'var(--brown)' : undefined,
               color: active ? 'var(--cream)' : 'var(--brown2)',

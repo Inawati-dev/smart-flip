@@ -152,6 +152,12 @@ select:disabled {
   cursor: pointer;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
+/* Ukuran sm hanya berlaku di layar sm ke atas; di telepon tetap 44 px
+   (aturan tap target, antrean #83). Pola sama dipakai .btn-sm di bawah. */
+@media (min-width: 640px) {
+  .select-trigger-sm { min-height: 36px; }
+}
+
 .select-trigger:hover:not(:disabled) {
   border-color: var(--brown3);
   background-color: var(--bg3);
@@ -255,9 +261,12 @@ select:disabled {
   background: var(--danger-soft);
 }
 .btn-sm {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 12px;
   font-size: 0.8125rem;
+}
+@media (min-width: 640px) {
+  .btn-sm { min-height: 36px; }
 }
 .btn-icon {
   width: 44px;

@@ -189,7 +189,7 @@ describe('Ebook', () => {
     await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
     const group = screen.getByRole('group', { name: 'Gaya baca' })
     expect(group).toBeTruthy()
-    const spreadPill = screen.getByRole('button', { name: 'Buka Buku' })
+    const spreadPill = screen.getByRole('button', { name: 'Buka buku' })
     fireEvent.click(spreadPill)
     expect(spreadPill.getAttribute('aria-pressed')).toBe('true')
   })
