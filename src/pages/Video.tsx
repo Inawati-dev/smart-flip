@@ -453,20 +453,22 @@ function VideoDosen() {
 
       {editModul && (
         <div
-          className="fixed inset-0 z-[600] flex items-center justify-center p-4"
-          style={{ background: 'rgba(62,54,46,.52)' }}
+          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) closeEdit()
           }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[420px] max-h-[90vh] overflow-y-auto"
-            style={{ boxShadow: '0 8px 40px rgba(62,54,46,.22)' }}
+            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
+            style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-bold text-brown mb-1">Ubah tautan video</h3>
-            <p className="text-xs text-brown-3 mb-3">{editModul.title}</p>
+            <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url ? 'Ubah video' : 'Tambah video'}</h3>
+            <p className="text-xs text-brown-3 mb-4">{editModul.title}</p>
 
-            <p className="text-xs font-semibold text-brown-2 mb-1">Tempel tautan</p>
+            {/* Bagian 1: tautan. Pola sama dengan modal Ganti PDF (antrean #67):
+                subjudul kecil, isi di kiri, aksi di kanan, tanpa flex-wrap. */}
+            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Tempel tautan</p>
             <input
               value={urlInput}
               onChange={(e) => {
@@ -474,26 +476,29 @@ function VideoDosen() {
                 setUrlError('')
               }}
               placeholder="https://youtube.com/watch?v=... atau .mp4"
-              className="w-full h-11 rounded-[var(--radius-control)] border px-3 mb-2"
-              style={{ ...BORDER, fontSize: '16px' }}
+              className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown mb-2"
+              style={BORDER}
             />
             {urlError && <p className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{urlError}</p>}
-            <label className="flex items-center gap-2 text-xs font-semibold text-brown-2 mb-2">
-              Durasi (menit)
+            <div className="grid grid-cols-[auto_6rem_minmax(0,1fr)] items-center gap-2 mb-3">
+              <label htmlFor="durasi-menit" className="text-xs font-semibold text-brown-2 whitespace-nowrap">
+                Durasi (menit)
+              </label>
               <input
+                id="durasi-menit"
                 type="number"
                 min={0}
                 inputMode="numeric"
                 value={durasiMenit}
                 onChange={(e) => setDurasiMenit(e.target.value)}
-                placeholder="mis. 12"
-                className="w-24 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                placeholder="12"
+                className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
-              <span className="font-normal text-brown-3">tautan YouTube diisi manual</span>
-            </label>
+              <span className="text-xs text-brown-3">Tautan YouTube diisi manual, berkas unggahan terisi otomatis.</span>
+            </div>
             {parsedInput && (
-              <div className="mb-2 rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
+              <div className="mb-3 rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
                 {parsedInput.kind === 'youtube' ? (
                   <iframe
                     src={parsedInput.embedUrl}
@@ -515,9 +520,10 @@ function VideoDosen() {
               </div>
             )}
 
-            <div className="mt-3 pt-3 border-t" style={BORDER}>
-              <p className="text-xs font-semibold text-brown-2 mb-1">atau unggah berkas</p>
-              <div className="flex items-end gap-2 flex-wrap">
+            {/* Bagian 2: unggah berkas */}
+            <div className="pt-4 mt-1 border-t" style={BORDER}>
+              <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Atau unggah berkas</p>
+              <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <FileInput
                   accept="video/mp4,video/webm,.mp4,.webm"
                   label="Pilih video"
@@ -533,19 +539,19 @@ function VideoDosen() {
                   type="button"
                   onClick={() => void handleUploadVideoFile()}
                   disabled={!videoFile || uploadingVideo}
-                  className="btn btn-primary btn-sm flex-shrink-0 min-w-[7.5rem]"
+                  className="btn btn-primary btn-sm min-w-[8rem]"
                 >
                   {uploadingVideo ? 'Mengunggah…' : 'Unggah'}
                 </button>
               </div>
-              {videoFileError && <p className="text-[11px] mt-1" style={{ color: 'var(--danger)' }}>{videoFileError}</p>}
+              {videoFileError && <p className="text-xs mt-2" style={{ color: 'var(--danger)' }}>{videoFileError}</p>}
             </div>
 
-            <div className="flex gap-3 mt-3">
-              <button onClick={closeEdit} className="btn btn-secondary flex-1">
+            <div className="flex gap-2.5 justify-end pt-4 mt-4 border-t" style={BORDER}>
+              <button onClick={closeEdit} className="btn btn-secondary">
                 Batal
               </button>
-              <button onClick={saveEdit} disabled={saving} className="btn btn-primary flex-1 min-w-[7.5rem]">
+              <button onClick={saveEdit} disabled={saving} className="btn btn-primary min-w-[7.5rem]">
                 {saving ? 'Menyimpan…' : 'Simpan'}
               </button>
             </div>
