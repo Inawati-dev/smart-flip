@@ -90,7 +90,9 @@ describe('ModulList', () => {
     mockAuth.loading = false
   })
 
-  it('redirects a mahasiswa to the first module whose progress is below 100%, ordered by order_num', async () => {
+  // Antrean #85 (16 Sep 2026): /modul jadi rak sampul, mahasiswa tidak lagi
+  // dialihkan otomatis ke topik aktifnya.
+  it('shows a mahasiswa the topic shelf without redirecting', async () => {
     mockAuth.role = 'mahasiswa'
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
@@ -101,21 +103,12 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/modul/2', { replace: true }))
+    await waitFor(() => expect(screen.getByText('Topik 01')).toBeTruthy())
+    expect(screen.getByText('Topik 09')).toBeTruthy()
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 
-  it('falls back to the first module when every module is either complete or untouched', async () => {
-    mockAuth.role = 'mahasiswa'
-    const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
-    queryClient.setQueryData(['progress', 'all'], {})
-
-    renderModulList(queryClient)
-
-    await waitFor(() => expect(navigateMock).toHaveBeenCalledWith('/modul/1', { replace: true }))
-  })
-
-  it('shows a management table with 9 rows for a dosen, without redirecting', async () => {
+  it('shows a rak of 9 topic cards for a dosen, without redirecting', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
@@ -126,7 +119,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10)) // header + 9 modules
+    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
@@ -139,7 +132,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     expect(screen.getByText(/Tambah topik/)).toBeTruthy()
   })
 
@@ -152,7 +145,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     fireEvent.click(screen.getByText(/\+ Tambah topik/))
 
     expect(screen.getByText('PDF topik (opsional)')).toBeTruthy()
@@ -167,7 +160,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     fireEvent.click(screen.getByLabelText('Hapus topik Modul 1'))
 
     expect(screen.getByText(/Hapus topik/)).toBeTruthy()
@@ -185,7 +178,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     expect(screen.getByLabelText('Pilih mata kuliah')).toBeTruthy()
     expect(screen.getByText('Kelola mata kuliah')).toBeTruthy()
   })

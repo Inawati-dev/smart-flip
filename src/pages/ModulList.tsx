@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
@@ -25,6 +25,15 @@ import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconTrash, IconDocument } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
+import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
+
+// Nama berkas PDF dipendekkan untuk sampul kartu, mis. "modul-1-final.pdf" ->
+// "modul-1-f…pdf" (spec antrean #85 mencontohkan "modul-1-…pdf").
+function ringkasNamaPdf(fileName: string): string {
+  if (fileName.length <= 16) return fileName
+  const ext = fileName.split('.').pop() ?? ''
+  return `${fileName.slice(0, 10)}…${ext}`
+}
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -200,100 +209,68 @@ export function DosenModulTable() {
   }
 
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  const jumlahPdf = sorted.filter((m) => m.pdf_path).length
 
   return (
     <>
-      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-        <div className="flex items-center justify-between px-4 py-3 border-b flex-wrap gap-2" style={BORDER}>
-          <span className="text-sm font-semibold text-brown">Daftar topik</span>
-          <button onClick={openCreate} className="btn btn-primary btn-sm">
-            + Tambah topik
-          </button>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm border-collapse">
-            <thead>
-              <tr className="bg-bg3">
-                <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
-                <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Judul</th>
-                <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Berkas PDF</th>
-                <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Status</th>
-                <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-64">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sorted.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="text-center py-8 text-brown-3 text-sm">
-                    Belum ada topik.
-                  </td>
-                </tr>
-              ) : (
-                sorted.map((m, idx) => {
-                  const custom = customs[m.id]
-                  const judul = custom?.judul || m.title
-                  const fileName = m.pdf_path ? m.pdf_path.split('/').pop()?.split('?')[0] : null
-                  const hasPdf = !!m.pdf_path
-                  return (
-                    <tr key={m.id} className="row-divider">
-                      <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
-                      <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{judul}</td>
-                      <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[260px]">
-                        {m.pdf_path ? (
-                          <span className="inline-flex items-center gap-2 max-w-full">
-                            <span className="truncate">{fileName}</span>
-                            <PdfPreviewLink url={m.pdf_path} />
-                          </span>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                      <td className="px-3 py-2.5">
-                        <span
-                          className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-                          style={
-                            hasPdf ? { background: 'var(--success-soft)', color: 'var(--success)' } : { background: 'var(--bg3)', color: 'var(--brown2)' }
-                          }
-                        >
-                          {hasPdf ? 'Ada PDF' : 'Belum ada'}
-                        </span>
-                      </td>
-                      <td className="px-3 py-2.5 text-center">
-                        <div className="inline-flex items-center justify-center gap-1.5">
-                          <button
-                            onClick={() => openPdfModal(m.id)}
-                            aria-label="Ganti PDF"
-                            title="Ganti PDF"
-                            className="btn btn-secondary whitespace-nowrap"
-                          >
-                            <IconDocument size={13} /> <span className="hidden sm:inline">Ganti PDF</span>
-                          </button>
-                          <button
-                            onClick={() => openEdit(m.id)}
-                            aria-label="Ubah topik"
-                            title="Ubah topik"
-                            className="btn btn-secondary whitespace-nowrap"
-                          >
-                            <IconEdit size={13} /> <span className="hidden sm:inline">Ubah topik</span>
-                          </button>
-                          <button
-                            onClick={() => setDeleteId(m.id)}
-                            aria-label={`Hapus topik ${judul}`}
-                            title="Hapus topik"
-                            className="btn btn-danger btn-icon flex-shrink-0"
-                          >
-                            <IconTrash size={14} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
+        <p className="text-sm text-brown-3">
+          {sorted.length} topik · {jumlahPdf} punya PDF
+        </p>
+        <button onClick={openCreate} className="btn btn-primary btn-sm">
+          + Tambah topik
+        </button>
       </div>
+      {sorted.length === 0 ? (
+        <p className="text-brown-3">Belum ada topik. Tambah topik pertama.</p>
+      ) : (
+        <Rak>
+          {sorted.map((m) => {
+            const custom = customs[m.id]
+            const judul = custom?.judul || m.title
+            const fileName = m.pdf_path ? m.pdf_path.split('/').pop()?.split('?')[0] : null
+            const hasPdf = !!m.pdf_path
+            return (
+              <KartuTopik
+                key={m.id}
+                nomor={m.order_num}
+                judul={judul}
+                keterangan={fileName ? ringkasNamaPdf(fileName) : 'Belum ada PDF'}
+                chip={hasPdf ? <ChipRak jenis="ok" label="Ada PDF" /> : <ChipRak jenis="todo" label="Belum ada" />}
+                aksi={
+                  <>
+                    {m.pdf_path && <PdfPreviewLink url={m.pdf_path} />}
+                    <button
+                      onClick={() => openPdfModal(m.id)}
+                      aria-label="Ganti PDF"
+                      title="Ganti PDF"
+                      className="btn btn-secondary btn-sm whitespace-nowrap"
+                    >
+                      <IconDocument size={13} /> <span className="hidden sm:inline">Ganti PDF</span>
+                    </button>
+                    <button
+                      onClick={() => openEdit(m.id)}
+                      aria-label="Ubah topik"
+                      title="Ubah topik"
+                      className="btn btn-secondary btn-sm whitespace-nowrap"
+                    >
+                      <IconEdit size={13} /> <span className="hidden sm:inline">Ubah topik</span>
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(m.id)}
+                      aria-label={`Hapus topik ${judul}`}
+                      title="Hapus topik"
+                      className="btn btn-danger btn-icon flex-shrink-0"
+                    >
+                      <IconTrash size={14} />
+                    </button>
+                  </>
+                }
+              />
+            )
+          })}
+        </Rak>
+      )}
 
       {(editId != null || creatingNew) && (
         <div
@@ -674,24 +651,21 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
   )
 }
 
-// /modul (spec §8.0, §9 WP5). Mahasiswa: dialihkan otomatis ke modul aktifnya
-// (progres <100% & tidak locked, urut order_num; fallback modul pertama).
-// Dosen: tabel kelola PDF (§5.2), sama seperti di /modul/:id (lihat Modul.tsx).
+// /modul (spec §8.0, §9 WP5, rak sampul antrean #85 opsi B). Mahasiswa: rak
+// semua topik, kartu terkunci pudar (§4.2 lib/topik). Dosen: rak kelola PDF
+// (§5.2), sama seperti di /modul/:id (lihat Modul.tsx).
 export function ModulList() {
-  const { role, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
+  const { role } = useAuth()
   const { data: modules = [] } = useModules()
   const { data: progress = {} } = useAllProgress()
   const { statusOf } = useTopikStatus()
   const [kelolaOpen, setKelolaOpen] = useState(false)
 
-  useEffect(() => {
-    if (authLoading || role === 'dosen' || modules.length === 0) return
-    const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
-    const target =
-      sorted.find((m) => statusOf(m.id) !== 'locked' && (progress[moduleIdToPath(m.id)]?.pct ?? 0) < 100) ?? sorted[0]
-    if (target) navigate(`/modul/${target.id}`, { replace: true })
-  }, [authLoading, role, modules, progress, statusOf, navigate])
+  const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
+  const lanjut = useMemo(
+    () => sorted.find((m) => statusOf(m.id) !== 'locked' && (progress[moduleIdToPath(m.id)]?.pct ?? 0) < 100) ?? sorted[0],
+    [sorted, statusOf, progress],
+  )
 
   return (
     <Layout>
@@ -707,7 +681,53 @@ export function ModulList() {
             <MataKuliahSelect />
           </div>
         </div>
-        {role === 'dosen' ? <DosenModulTable /> : <p className="text-brown-3">Memuat modul…</p>}
+        {role === 'dosen' ? (
+          <DosenModulTable />
+        ) : (
+          <>
+            <p className="text-sm text-brown-3 mb-4">{sorted.length} topik · dibaca sebagai flipbook</p>
+            {lanjut && statusOf(lanjut.id) !== 'locked' && (
+              <Link to={`/modul/${lanjut.id}`} className="btn btn-primary btn-sm inline-block mb-4">
+                Lanjutkan membaca
+              </Link>
+            )}
+            {sorted.length === 0 ? (
+              <p className="text-brown-3">Belum ada topik di mata kuliah ini.</p>
+            ) : (
+              <Rak>
+                {sorted.map((m) => {
+                  const status = statusOf(m.id)
+                  const entry = progress[moduleIdToPath(m.id)]
+                  const pct = entry?.pct ?? 0
+                  const kaki =
+                    pct >= 100 ? 'Selesai dibaca' : pct > 0 && entry?.currentPage > 0 ? `Halaman ${entry.currentPage}` : 'Belum dibaca'
+                  const chip =
+                    status === 'done' ? (
+                      <ChipRak jenis="ok" label="Selesai" />
+                    ) : status === 'locked' ? (
+                      <ChipRak jenis="todo" label="Terkunci" />
+                    ) : (
+                      <ChipRak jenis="now" label={pct > 0 ? 'Sedang dibaca' : 'Siap dibaca'} />
+                    )
+                  return (
+                    <KartuTopik
+                      key={m.id}
+                      nomor={m.order_num}
+                      judul={m.title}
+                      keterangan={m.pdf_path ? 'PDF' : 'Belum ada PDF'}
+                      persen={pct}
+                      kaki={kaki}
+                      chip={chip}
+                      terkunci={status === 'locked'}
+                      judulKunci="Selesaikan tes formatif topik sebelumnya (skor 80) dulu"
+                      to={`/modul/${m.id}`}
+                    />
+                  )
+                })}
+              </Rak>
+            )}
+          </>
+        )}
         {kelolaOpen && <KelolaMataKuliahModal onClose={() => setKelolaOpen(false)} />}
       </div>
     </Layout>

@@ -27,6 +27,11 @@
   --nav-tile-active-bg: rgba(59,166,241,.14);
   --nav-tile-active-fg: #1D5FA8;
   --nav-tile-active-ring: rgba(59,166,241,.55);
+  --cover-1: #26324A;
+  --cover-2: #5E6F57;
+  --cover-3: #8A5F3C;
+  --cover-ink: #F5EFE2;
+  --gold: #C8993A;
 }
 
 @theme {

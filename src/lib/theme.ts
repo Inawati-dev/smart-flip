@@ -46,6 +46,11 @@ export interface ThemeColors {
   navTileActiveBg: string
   navTileActiveFg: string
   navTileActiveRing: string
+  /** Warna sampul buku di rak (Modul, Video) dan tinta di atasnya. */
+  cover1: string
+  cover2: string
+  cover3: string
+  coverInk: string
   fontSans: string
   fontDisplay: string
   r: string
@@ -99,6 +104,10 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       navTileActiveBg: 'rgba(59,166,241,.14)',
       navTileActiveFg: '#1D5FA8',
       navTileActiveRing: 'rgba(59,166,241,.55)',
+      cover1: '#26324A',
+      cover2: '#5E6F57',
+      cover3: '#8A5F3C',
+      coverInk: '#F5EFE2',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',
@@ -145,6 +154,10 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       navTileActiveBg: 'rgba(59,166,241,.20)',
       navTileActiveFg: '#7CC4F6',
       navTileActiveRing: 'rgba(59,166,241,.50)',
+      cover1: '#2E3B56',
+      cover2: '#4E5E48',
+      cover3: '#7A5436',
+      coverInk: '#F5EFE2',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',

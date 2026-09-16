@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useNavigate, Link } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
+import { useParams, Link } from 'react-router'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { useModules } from '../hooks/useModules'
 import { useTopikStatus } from '../lib/topik'
 import { useAuth } from '../contexts/AuthContext'
-import { parseVideoUrl, thumbnailUrl } from '../lib/video'
+import { parseVideoUrl } from '../lib/video'
 import { saveVideoUrl, uploadModulVideo } from '../lib/manajemen'
-import { upsertVideoProgress, shouldSendTimeUpdate } from '../lib/videoProgress'
+import { upsertVideoProgress, shouldSendTimeUpdate, fetchVideoProgressMap } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
 import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit } from '../components/icons'
+import { KartuVideo } from '../components/KartuVideo'
+import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -36,57 +38,104 @@ function formatDuration(sec: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-// Gambar kecil 16:9 kolom "Video" tabel dosen (antrean #44b). YouTube punya
-// thumbnail siap pakai; berkas video memuat frame pertamanya sendiri lewat
-// <video preload="metadata"> — elemen yang sama juga dipakai untuk membaca
-// durasinya lewat onLoadedMetadata, supaya tidak perlu <video> tersembunyi
-// kedua hanya untuk itu.
-function VideoThumb({
-  url,
-  moduleId,
-  onDuration,
-}: {
-  url: string
-  moduleId: number
-  onDuration?: (moduleId: number, sec: number) => void
-}) {
-  const thumb = thumbnailUrl(url)
-  const parsed = parseVideoUrl(url)
-  const cls = 'w-24 aspect-video rounded object-cover bg-bg3 flex-shrink-0'
-  if (thumb) return <img src={thumb} alt="" className={cls} />
-  if (parsed?.kind === 'file') {
-    return (
-      <video
-        src={parsed.src}
-        preload="metadata"
-        muted
-        onLoadedMetadata={(e) => onDuration?.(moduleId, e.currentTarget.duration)}
-        className={cls}
-      />
-    )
-  }
-  return <div className={cls} />
+// Rak /video mahasiswa (antrean #85 opsi B): topik dengan video berkas
+// (bukan YouTube) belum tahu durasinya sampai <video preload="metadata">
+// dibaca — probe tersembunyi ini merekam durasinya ke state lokal lewat
+// onLoadedMetadata, sekali per topik, lalu lenyap dari DOM. Tidak dirender
+// terlihat karena KartuVideo sudah menampilkan sampul gradasi sendiri.
+function DurationProbe({ src, onDuration }: { src: string; onDuration: (sec: number) => void }) {
+  return (
+    <video
+      src={src}
+      preload="metadata"
+      muted
+      style={{ display: 'none' }}
+      onLoadedMetadata={(e) => onDuration(e.currentTarget.duration)}
+    />
+  )
+}
+
+type ChipJenis = 'ok' | 'now' | 'todo' | 'warn'
+
+function chipMahasiswa(
+  status: ReturnType<ReturnType<typeof useTopikStatus>['statusOf']>,
+  hasVideo: boolean,
+  seconds: number,
+  done: boolean,
+): { jenis: ChipJenis; label: string } {
+  if (!hasVideo) return { jenis: 'todo', label: 'Belum ada video' }
+  if (status === 'locked') return { jenis: 'todo', label: 'Terkunci' }
+  if (done) return { jenis: 'ok', label: 'Selesai' }
+  if (seconds > 0) return { jenis: 'now', label: 'Sedang ditonton' }
+  return { jenis: 'now', label: 'Siap ditonton' }
 }
 
 function VideoMahasiswa() {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { data: modules = [], isLoading: modulesLoading } = useModules()
   const { statusOf } = useTopikStatus()
+  const { data: progressMap = {} } = useQuery({ queryKey: ['video-progress'], queryFn: fetchVideoProgressMap })
   const sorted = useMemo(() => sortModules(modules), [modules])
   const current = id ? parseInt(id, 10) : null
+  const [durations, setDurations] = useState<Record<number, number>>({})
 
-  // /video tanpa id → alihkan ke modul pertama yang belum terkunci (spec §9 WP4).
-  useEffect(() => {
-    if (current != null || sorted.length === 0) return
-    const firstOpen = sorted.find((m) => statusOf(m.id) !== 'locked') ?? sorted[0]
-    navigate(`/video/${firstOpen.id}`, { replace: true })
-  }, [current, sorted, statusOf, navigate])
+  function handleDuration(moduleId: number, sec: number) {
+    setDurations((prev) => (prev[moduleId] === sec ? prev : { ...prev, [moduleId]: sec }))
+  }
 
+  // /video tanpa id → rak semua topik (antrean #85 opsi B, mengganti alihkan
+  // otomatis WP4 lama).
   if (current == null) {
+    const semuaDurasiTahu = sorted.length > 0 && sorted.every((m) => durations[m.id] != null)
+    const totalMenit = Math.round(sorted.reduce((s, m) => s + (durations[m.id] ?? 0), 0) / 60)
     return (
       <Layout>
-        <div className="p-6 text-brown-3 text-sm">Memuat…</div>
+        <div className="p-4 md:p-6">
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+            <h1 className="text-2xl font-bold text-brown">Video</h1>
+            <MataKuliahSelect />
+          </div>
+          {modulesLoading ? (
+            <p className="text-brown-3 text-sm p-6">Memuat…</p>
+          ) : sorted.length === 0 ? (
+            <div className="mt-4 p-6 rounded-xl bg-ivory border text-center text-brown-3 text-sm" style={BORDER}>
+              Belum ada topik di mata kuliah ini.
+            </div>
+          ) : (
+            <>
+              <p className="text-xs text-brown-3 mb-4">
+                {semuaDurasiTahu ? `${sorted.length} pertemuan · ${totalMenit} menit` : `${sorted.length} pertemuan`}
+              </p>
+              <Rak>
+                {sorted.map((m) => {
+                  const parsed = parseVideoUrl(m.video_url)
+                  const status = statusOf(m.id)
+                  const prog = progressMap[m.id]
+                  const hasVideo = !!m.video_url
+                  const chip = chipMahasiswa(status, hasVideo, prog?.seconds ?? 0, prog?.done ?? false)
+                  return (
+                    <div key={m.id}>
+                      {parsed?.kind === 'file' && durations[m.id] == null && (
+                        <DurationProbe src={parsed.src} onDuration={(sec) => handleDuration(m.id, sec)} />
+                      )}
+                      <KartuVideo
+                        nomor={m.order_num}
+                        judul={m.title}
+                        url={m.video_url}
+                        durasi={parsed?.kind === 'file' && durations[m.id] ? formatDuration(durations[m.id]) : undefined}
+                        chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
+                        terkunci={status === 'locked'}
+                        judulKunci="Selesaikan tes formatif topik sebelumnya (skor 80) dulu"
+                        to={hasVideo ? `/video/${m.id}` : undefined}
+                        warna={warnaSampul(m.order_num)}
+                      />
+                    </div>
+                  )
+                })}
+              </Rak>
+            </>
+          )}
+        </div>
       </Layout>
     )
   }
@@ -107,6 +156,9 @@ function VideoMahasiswa() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
+        <Link to="/video" className="text-terra text-xs font-semibold inline-block mb-2">
+          ← Semua video
+        </Link>
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
           <h1 className="text-2xl font-bold text-brown">
             Pertemuan {idx + 1} · {modul.title}
@@ -262,14 +314,9 @@ function VideoDosen() {
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-  const [durations, setDurations] = useState<Record<number, number>>({})
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoFileError, setVideoFileError] = useState('')
   const [uploadingVideo, setUploadingVideo] = useState(false)
-
-  function handleDuration(moduleId: number, sec: number) {
-    setDurations((prev) => (prev[moduleId] === sec ? prev : { ...prev, [moduleId]: sec }))
-  }
 
   function showToast(msg: string) {
     setToast(msg)
@@ -331,95 +378,57 @@ function VideoDosen() {
     }
   }
 
+  const punyaVideo = sorted.filter((m) => m.video_url).length
+
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
           <h1 className="font-display text-2xl font-bold text-brown">Video</h1>
           <MataKuliahSelect />
         </div>
+        <p className="text-xs text-brown-3 mb-4">
+          {sorted.length} pertemuan · {punyaVideo} punya video
+        </p>
 
-        <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="bg-bg3">
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Judul</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Video</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-20">Durasi</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Status</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sorted.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-8 text-brown-3 text-sm">
-                      Belum ada topik.
-                    </td>
-                  </tr>
-                ) : (
-                  sorted.map((m, idx) => {
-                    const url = m.video_url || ''
-                    const parsed = parseVideoUrl(url)
-                    const chip = !url
-                      ? { label: 'Belum ada tautan', bg: 'var(--bg3)', color: 'var(--brown2)' }
-                      : parsed
-                        ? { label: 'Tayang', bg: 'var(--success-soft)', color: 'var(--success)' }
-                        : { label: 'Tautan tidak dikenal', bg: 'var(--warning-soft)', color: 'var(--warning)' }
-                    return (
-                      <tr key={m.id} className="row-divider">
-                        <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
-                        <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{m.title}</td>
-                        <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[280px]">
-                          {url ? (
-                            <button
-                              type="button"
-                              onClick={() => setPreviewUrl(url)}
-                              aria-label="Pratinjau video"
-                              title="Pratinjau video"
-                              className="inline-flex items-center gap-2 max-w-full text-left"
-                            >
-                              <VideoThumb url={url} moduleId={m.id} onDuration={handleDuration} />
-                              <span className="truncate">{url.length > 30 ? url.slice(0, 30) + '…' : url}</span>
-                            </button>
-                          ) : (
-                            <span className="inline-flex items-center gap-2">
-                              <div className="w-24 aspect-video rounded bg-bg3 flex-shrink-0" />
-                              Belum ada
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-3 py-2.5 text-brown-3">
-                          {parsed?.kind === 'file' ? formatDuration(durations[m.id] ?? 0) : '—'}
-                        </td>
-                        <td className="px-3 py-2.5">
-                          <span
-                            className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-                            style={{ background: chip.bg, color: chip.color }}
-                          >
-                            {chip.label}
-                          </span>
-                        </td>
-                        <td className="px-3 py-2.5 text-center">
-                          <button
-                            onClick={() => openEdit(m)}
-                            aria-label={url ? 'Ubah video' : 'Tambah video'}
-                            title={url ? 'Ubah video' : 'Tambah video'}
-                            className="btn btn-secondary whitespace-nowrap"
-                          >
-                            <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah video' : 'Tambah video'}</span>
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
+        {sorted.length === 0 ? (
+          <div className="p-6 rounded-xl bg-ivory border text-center text-brown-3 text-sm" style={BORDER}>
+            Belum ada topik.
           </div>
-        </div>
+        ) : (
+          <Rak>
+            {sorted.map((m) => {
+              const url = m.video_url || ''
+              const parsed = parseVideoUrl(url)
+              const chip: { jenis: ChipJenis; label: string } = !url
+                ? { jenis: 'todo', label: 'Belum ada video' }
+                : parsed
+                  ? { jenis: 'ok', label: 'Tayang' }
+                  : { jenis: 'warn', label: 'Tautan tidak dikenal' }
+              return (
+                <KartuVideo
+                  key={m.id}
+                  nomor={m.order_num}
+                  judul={m.title}
+                  url={m.video_url}
+                  chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
+                  onClick={url ? () => setPreviewUrl(url) : undefined}
+                  warna={warnaSampul(m.order_num)}
+                  aksi={
+                    <button
+                      onClick={() => openEdit(m)}
+                      aria-label={url ? 'Ubah video' : 'Tambah video'}
+                      title={url ? 'Ubah video' : 'Tambah video'}
+                      className="btn btn-secondary btn-sm whitespace-nowrap"
+                    >
+                      <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah video' : 'Tambah video'}</span>
+                    </button>
+                  }
+                />
+              )
+            })}
+          </Rak>
+        )}
       </div>
 
       {editModul && (
