@@ -22,7 +22,8 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 
 ## 3. Halaman dosen
 
-- Akun tanpa tab: tiga kartu angka di atas, kartu profil, lalu Kode undangan dan Notifikasi dua kolom sama tinggi. `/pengaturan` mengalihkan ke `/akun`; `/akun?tab=kelas` mengalihkan ke `/kelas`. (#28, #33, papan #40, #56)
+- Halaman lama (Forum, Draf, Feedback, Observasi, ProjekAkhir, Validasi, Analitik, Manajemen, Profil, Changelog, Diagnostik, Workshop, Ngain, Vark) sudah dihapus dari kode sejak commit `0ef7797`; rute lamanya mengalihkan. Warna galat memakai `danger`, bukan `red`. (papan #58, #61)
+- Akun tanpa tab: tiga kartu angka di atas, kartu profil (mahasiswa: plus baris kelas), lalu Kode undangan dan Notifikasi dua kolom sama tinggi. `/pengaturan` mengalihkan ke `/akun`; `/akun?tab=kelas` mengalihkan ke `/kelas`. (#28, #33, papan #40, #56)
 - Kelas adalah item rel sendiri (`/kelas`, dosen), bukan tab Akun; rel dosen 7 item. (papan #55)
 - Berkas: kedua tab memakai kolom No · Nama berkas · Ukuran · Tanggal unggah · Dipakai topik (mata kuliah · topik) · Aksi lewat satu komponen tabel. (papan #54)
 - Tema diganti lewat tombol ikon bulan/matahari di rel (di atas Keluar) dan topbar telepon, bukan kartu di Akun. Hook `useTheme` di `src/hooks/useTheme.ts`. (papan #42)
