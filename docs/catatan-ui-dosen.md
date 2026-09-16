@@ -23,10 +23,15 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 ## 3. Halaman dosen
 
 - Akun memuat profil (modal ubah), kelas, progres mengajar, Tema, Kode undangan, Notifikasi; `/pengaturan` mengalihkan ke `/akun`. (#28, #33)
-- Modul: tabel 9 modul, Tambah modul (dengan unggah PDF opsional), Ganti PDF, Ubah, Hapus dengan modal konfirmasi, ikon pratinjau. (#35, #43)
+- Satuan per pertemuan disebut "topik" di semua teks pengguna; nama menu Modul dan Video tetap. Tambah topik, Ubah topik, Hapus topik. (papan #35)
+- Modul: tabel 9 topik, Tambah topik (dengan unggah PDF opsional), Ganti PDF, Ubah topik, Hapus dengan modal konfirmasi, ikon pratinjau. (#35, #43)
+- Unggah berkas selalu lewat `FileInput` (`src/components/FileInput.tsx`): tombol "Pilih ...", nama dan ukuran berkas, batas ukuran. Tidak ada `<input type="file">` polos di halaman yang tampil. (papan #36)
+- Kolom Aksi tabel: header dan sel `text-center`, tombol berlabel plus ikon (`.btn .btn-secondary`, tinggi 44 px), hapus ikon saja (`.btn-danger .btn-icon`) dengan `aria-label`; di telepon label disembunyikan (`hidden sm:inline`). (papan #37)
+- Pemisah baris tabel dan daftar memakai `.row-divider` (0,5 px); kepala halaman, kepala modal, dan footer aksi modal tetap 1 px. (papan #33)
 - Video: Tambah tautan atau unggah berkas (bucket `modul-video`, mp4/webm ≤ 100 MB); thumbnail muncul saat tautan ditempel; kolom Video bergambar dan bisa diputar lewat modal. (#36, #44)
 - Asesmen: hasil kelas (pre, post, peningkatan skor), Bank soal 5 jenis bermodal, Tes khusus berkode. Kata "N-Gain" tidak dipakai di layar; istilahnya "peningkatan skor". (#4, #7, #13)
-- PDF Modul (`/akun/pdf`): daftar berkas bucket, hapus dengan modal, pratinjau. (#27)
+- Berkas (`/akun/pdf`, rel "Berkas"): dua tab `PillGroup` berlencana, PDF topik dan Video topik; daftar berkas bucket, pratinjau, hapus dengan modal. (#27, papan #38)
+- Dashboard dosen: Aktivitas, Perlu perhatian, Progres jadi tab `PillGroup` berlencana; tab tersimpan di `?tab=`. (papan #34)
 
 ## 4. Tema dan warna
 
