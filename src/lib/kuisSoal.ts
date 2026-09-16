@@ -12,7 +12,7 @@ import { supabase, isSupabaseConfigured } from './supabase'
 // widens the same table into one bank for pre-test, formatif, post-test and
 // VARK via the `kind` column — see fetchBankSoal below.
 
-export type SoalKind = 'pre' | 'formatif' | 'post' | 'vark'
+export type SoalKind = 'pre' | 'formatif' | 'post' | 'vark' | 'kelompok'
 
 export interface KuisSoal {
   id: number

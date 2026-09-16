@@ -102,12 +102,21 @@ describe('BankSoal', () => {
     expect(screen.getByText(/Hapus soal nomor/)).toBeTruthy()
   })
 
-  it('the VARK add modal has no "correct answer" radio (VARK has no single right answer)', async () => {
+  it('shows the "Tes kelompok" tab and clicking it calls fetchBankSoal with kind "kelompok"', async () => {
     mockFetchBankSoal.mockResolvedValue([])
-    renderBankSoal('/asesmen/bank?jenis=vark')
-    const addBtn = await screen.findByText('+ Tambah soal')
-    fireEvent.click(addBtn)
-    expect(await screen.findByText(/Tambah Soal: VARK/)).toBeTruthy()
-    expect(document.querySelectorAll('input[type="radio"]').length).toBe(0)
+    renderBankSoal('/asesmen/bank?jenis=pre')
+    const tab = await screen.findByText('Tes kelompok')
+    fireEvent.click(tab)
+    await waitFor(() => {
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('kelompok', undefined)
+    })
+  })
+
+  it('falls back to "pre" for old ?jenis=diagnostik / ?jenis=vark links', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?jenis=diagnostik')
+    await waitFor(() => {
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('pre', undefined)
+    })
   })
 })

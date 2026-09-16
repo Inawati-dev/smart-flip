@@ -24,6 +24,8 @@ const Formatif = lazy(() => import('./pages/Formatif'))
 const Workshop = lazy(() => import('./pages/Workshop'))
 const Ebook = lazy(() => import('./pages/Ebook'))
 const Vark = lazy(() => import('./pages/Vark'))
+const TugasAkhir = lazy(() => import('./pages/TugasAkhir'))
+const TesKelompok = lazy(() => import('./pages/TesKelompok'))
 const Forum = lazy(() => import('./pages/Forum'))
 const Draf = lazy(() => import('./pages/Draf'))
 const Feedback = lazy(() => import('./pages/Feedback'))
@@ -123,6 +125,12 @@ export default function App() {
                   kode. */}
               <Route path="/asesmen/tes" element={<ProtectedRoute><TesKhusus /></ProtectedRoute>} />
               <Route path="/asesmen/tes/:code" element={<ProtectedRoute><TesKhusus /></ProtectedRoute>} />
+              {/* Tugas akhir (antrean #57): dosen menulis brief dan menilai di sini;
+                  mahasiswa mengirim dari kartu di /asesmen. */}
+              <Route path="/asesmen/tugas-akhir" element={<ProtectedRoute roles={['dosen']}><TugasAkhir /></ProtectedRoute>} />
+              {/* Tes kelompok (antrean #65): bercabang per peran seperti TesKhusus. */}
+              <Route path="/asesmen/kelompok" element={<ProtectedRoute><TesKelompok /></ProtectedRoute>} />
+              <Route path="/asesmen/kelompok/:code" element={<ProtectedRoute><TesKelompok /></ProtectedRoute>} />
               {/* /ngain dipertahankan sebagai alias — tautan/bookmark lama ke
                   halaman ini masih ada sebelum namanya berubah jadi Asesmen. */}
               <Route path="/ngain" element={<ProtectedRoute roles={['dosen']}><Asesmen /></ProtectedRoute>} />

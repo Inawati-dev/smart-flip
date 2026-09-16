@@ -3,41 +3,30 @@ import { Link, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { fetchBankSoal, createKuisSoal, updateKuisSoal, deleteKuisSoal, type SoalKind } from '../lib/kuisSoal'
-import {
-  fetchDiagnosticQuestions,
-  createDiagnosticQuestion,
-  updateDiagnosticQuestion,
-  deleteDiagnosticQuestion,
-} from '../lib/diagnostic'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { PillGroup } from '../components/PillGroup'
 import { IconEdit, IconTrash, IconGrip } from '../components/icons'
 
-// Bank soal terpadu — dosen mengelola 5 jenis soal (pre/formatif/post/vark
-// via quiz_questions, diagnostik via diagnostic_questions) dari satu layar.
-// Spec: docs/superpowers/specs/2026-09-15-tiga-menu-asesmen-design.md §6, §9 WP3.
-// Pola tabel/modal/drag-reorder ditiru dari Manajemen.tsx:119-219, 886-995
-// (Soal Diagnostik/Soal Kuis blocks) — bukan pola baru.
+// Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post/kelompok
+// dari satu layar (quiz_questions, kolom kind). Dua jenis lama dicabut dari
+// tab ini (antrean #65, keputusan Johan 16 Sep 2026): datanya dibiarkan di
+// DB, hanya tidak ditampilkan lagi di sini. Pola tabel/modal/drag-reorder
+// ditiru dari Manajemen.tsx:119-219, 886-995.
 
-type FilterKind = SoalKind | 'diagnostik'
+type FilterKind = Exclude<SoalKind, 'vark'>
 
-const KIND_ORDER: FilterKind[] = ['pre', 'formatif', 'post', 'diagnostik', 'vark']
+const KIND_ORDER: FilterKind[] = ['pre', 'formatif', 'post', 'kelompok']
 const KIND_LABELS: Record<FilterKind, string> = {
   pre: 'Pre-test',
   formatif: 'Formatif',
   post: 'Post-test',
-  diagnostik: 'Diagnostik',
-  vark: 'VARK',
+  kelompok: 'Tes kelompok',
 }
 const LETTERS = ['A', 'B', 'C', 'D'] as const
-const VARK_LETTER_LABELS = ['A=V', 'B=A', 'C=R', 'D=K'] as const // opsi index 0..3 → V,A,R,K, sama seperti lib/vark.ts computeVarkDominant
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
-// Baris tabel dinormalisasi dari dua sumber berbeda (quiz_questions vs
-// diagnostic_questions) supaya tabel/modal/drag di bawah tidak perlu tahu
-// jenis tabel aslinya.
 interface Row {
   id: number
   question: string
@@ -52,42 +41,31 @@ export function BankSoal() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: modules = [] } = useModules()
 
-  const jenis = (searchParams.get('jenis') as FilterKind | null) ?? 'pre'
+  // Tautan lama ke jenis yang sudah dicabut (atau jenis tak dikenal apa pun)
+  // jatuh ke 'pre', bukan cuma dua nama tertentu.
+  const jenisParam = searchParams.get('jenis') as FilterKind | null
+  const jenis: FilterKind = jenisParam != null && KIND_ORDER.includes(jenisParam) ? jenisParam : 'pre'
   const modulParam = searchParams.get('modul')
   const modulId = modulParam ? parseInt(modulParam, 10) : (modules[0]?.id ?? null)
 
   const bankQuery = useQuery({
     queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null],
     queryFn: () => fetchBankSoal(jenis as SoalKind, jenis === 'formatif' ? (modulId ?? undefined) : undefined),
-    enabled: jenis !== 'diagnostik' && (jenis !== 'formatif' || modulId != null),
-  })
-  const diagQuery = useQuery({
-    queryKey: ['diagnostic-questions'],
-    queryFn: fetchDiagnosticQuestions,
-    enabled: jenis === 'diagnostik',
+    enabled: jenis !== 'formatif' || modulId != null,
   })
 
   const rows: Row[] = useMemo(() => {
-    const list =
-      jenis === 'diagnostik'
-        ? (diagQuery.data ?? []).map((q) => ({
-            id: q.id,
-            question: q.pertanyaan,
-            options: q.opsi,
-            answer_idx: q.jawaban,
-            order_num: q.order_num,
-            module_id: null,
-          }))
-        : (bankQuery.data ?? []).map((q) => ({
-            id: q.id,
-            question: q.question,
-            options: q.options,
-            answer_idx: q.answer_idx,
-            order_num: q.order_num,
-            module_id: q.module_id,
-          }))
-    return list.sort((a, b) => a.order_num - b.order_num)
-  }, [jenis, diagQuery.data, bankQuery.data])
+    return (bankQuery.data ?? [])
+      .map((q) => ({
+        id: q.id,
+        question: q.question,
+        options: q.options,
+        answer_idx: q.answer_idx,
+        order_num: q.order_num,
+        module_id: q.module_id,
+      }))
+      .sort((a, b) => a.order_num - b.order_num)
+  }, [bankQuery.data])
 
   const [toast, setToast] = useState<string | null>(null)
   function showToast(msg: string) {
@@ -96,11 +74,7 @@ export function BankSoal() {
   }
 
   async function invalidate() {
-    if (jenis === 'diagnostik') {
-      await queryClient.invalidateQueries({ queryKey: ['diagnostic-questions'] })
-    } else {
-      await queryClient.invalidateQueries({ queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null] })
-    }
+    await queryClient.invalidateQueries({ queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null] })
   }
 
   function selectJenis(k: FilterKind) {
@@ -151,7 +125,6 @@ export function BankSoal() {
     setOpsi((prev) => prev.map((o, i) => (i === idx ? value : o)))
   }
 
-  const isVark = jenis === 'vark'
   const isFormatif = jenis === 'formatif'
 
   async function saveQuestion() {
@@ -161,20 +134,11 @@ export function BankSoal() {
     if (isFormatif && modalModuleId == null) return
     setSaving(true)
     try {
-      if (jenis === 'diagnostik') {
-        if (modalOpen === 'new') {
-          await createDiagnosticQuestion({ pertanyaan: question, opsi: options, jawaban, order_num: nextOrderNum })
-        } else if (modalOpen != null) {
-          await updateDiagnosticQuestion(modalOpen, { pertanyaan: question, opsi: options, jawaban })
-        }
-      } else {
-        const answer_idx = isVark ? null : jawaban
-        const module_id = isFormatif ? modalModuleId : null
-        if (modalOpen === 'new') {
-          await createKuisSoal({ kind: jenis, module_id, question, options, answer_idx, explanation: null, order_num: nextOrderNum })
-        } else if (modalOpen != null) {
-          await updateKuisSoal(modalOpen, { kind: jenis, module_id, question, options, answer_idx })
-        }
+      const module_id = isFormatif ? modalModuleId : null
+      if (modalOpen === 'new') {
+        await createKuisSoal({ kind: jenis, module_id, question, options, answer_idx: jawaban, explanation: null, order_num: nextOrderNum })
+      } else if (modalOpen != null) {
+        await updateKuisSoal(modalOpen, { kind: jenis, module_id, question, options, answer_idx: jawaban })
       }
       await invalidate()
       showToast(modalOpen === 'new' ? 'Soal ditambahkan' : 'Soal disimpan')
@@ -193,11 +157,7 @@ export function BankSoal() {
   async function confirmDelete() {
     if (deleteId == null) return
     try {
-      if (jenis === 'diagnostik') {
-        await deleteDiagnosticQuestion(deleteId)
-      } else {
-        await deleteKuisSoal(deleteId, isFormatif ? modulId : null, jenis)
-      }
+      await deleteKuisSoal(deleteId, isFormatif ? modulId : null, jenis)
       await invalidate()
       showToast('Soal dihapus')
     } catch {
@@ -215,11 +175,7 @@ export function BankSoal() {
     const changed = next.map((r, i) => ({ r, orderNum: i + 1 })).filter(({ r, orderNum }) => r.order_num !== orderNum)
     if (!changed.length) return
     try {
-      if (jenis === 'diagnostik') {
-        await Promise.all(changed.map(({ r, orderNum }) => updateDiagnosticQuestion(r.id, { order_num: orderNum })))
-      } else {
-        await Promise.all(changed.map(({ r, orderNum }) => updateKuisSoal(r.id, { order_num: orderNum })))
-      }
+      await Promise.all(changed.map(({ r, orderNum }) => updateKuisSoal(r.id, { order_num: orderNum })))
       showToast('Urutan soal disimpan')
     } catch {
       showToast('Gagal menyimpan urutan soal')
@@ -266,7 +222,7 @@ export function BankSoal() {
         </div>
 
         {/* Filter jenis */}
-        <div className="flex items-center gap-2 flex-wrap mb-5">
+        <div className="flex items-center gap-2 flex-wrap mb-2">
           <PillGroup
             options={KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k] }))}
             value={jenis}
@@ -283,6 +239,9 @@ export function BankSoal() {
             />
           )}
         </div>
+        <p className="text-sm text-brown-3 mb-3">
+          {jenis === 'kelompok' ? 'Soal untuk tes kelompok. Semua anggota kelompok mengerjakan soal yang sama.' : ' '}
+        </p>
 
         <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
           <div className="overflow-x-auto">
@@ -292,9 +251,7 @@ export function BankSoal() {
                   <th className="w-11" aria-label="Urutan (seret)" />
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">
-                    {isVark ? 'Gaya belajar per opsi' : 'Kunci'}
-                  </th>
+                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kunci</th>
                   <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Aksi</th>
                 </tr>
               </thead>
@@ -333,26 +290,12 @@ export function BankSoal() {
                         <td className="px-3 py-2.5 font-semibold text-brown">{r.order_num}</td>
                         <td className="px-3 py-2.5 text-brown min-w-[200px]">{trunc}</td>
                         <td className="px-3 py-2.5">
-                          {isVark ? (
-                            <div className="flex gap-1 flex-wrap">
-                              {VARK_LETTER_LABELS.map((label) => (
-                                <span
-                                  key={label}
-                                  className="text-[11px] font-semibold px-1.5 py-0.5 rounded"
-                                  style={{ background: 'var(--bg3)', color: 'var(--brown2)' }}
-                                >
-                                  {label}
-                                </span>
-                              ))}
-                            </div>
-                          ) : (
-                            <span
-                              className="w-7 h-7 inline-flex items-center justify-center rounded-full text-xs font-bold"
-                              style={{ background: 'var(--accent-soft)', color: 'var(--terra-d)' }}
-                            >
-                              {LETTERS[r.answer_idx ?? 0]}
-                            </span>
-                          )}
+                          <span
+                            className="w-7 h-7 inline-flex items-center justify-center rounded-full text-xs font-bold"
+                            style={{ background: 'var(--accent-soft)', color: 'var(--terra-d)' }}
+                          >
+                            {LETTERS[r.answer_idx ?? 0]}
+                          </span>
                         </td>
                         <td className="px-3 py-2.5 text-center">
                           <div className="inline-flex items-center justify-center gap-1.5">
@@ -431,25 +374,19 @@ export function BankSoal() {
 
             <div className="flex flex-col gap-2 mb-4">
               <span className="text-xs font-semibold text-brown-2">
-                4 Opsi Jawaban
-                {!isVark && <span className="font-normal text-brown-3">, pilih radio di sebelah opsi yang benar</span>}
+                4 Opsi Jawaban<span className="font-normal text-brown-3">, pilih radio di sebelah opsi yang benar</span>
               </span>
               {opsi.map((o, idx) => (
                 <label key={idx} className="flex items-center gap-2.5">
-                  {!isVark && (
-                    <input
-                      type="radio"
-                      name="jawabanBenar"
-                      checked={jawaban === idx}
-                      onChange={() => setJawaban(idx)}
-                      aria-label={`Tandai opsi ${idx + 1} sebagai jawaban benar`}
-                      className="w-4 h-4 accent-terra cursor-pointer flex-shrink-0"
-                    />
-                  )}
-                  <span className="w-6 text-xs font-bold text-brown-3 flex-shrink-0">
-                    {LETTERS[idx]}
-                    {isVark && ` (${VARK_LETTER_LABELS[idx].split('=')[1]})`}
-                  </span>
+                  <input
+                    type="radio"
+                    name="jawabanBenar"
+                    checked={jawaban === idx}
+                    onChange={() => setJawaban(idx)}
+                    aria-label={`Tandai opsi ${idx + 1} sebagai jawaban benar`}
+                    className="w-4 h-4 accent-terra cursor-pointer flex-shrink-0"
+                  />
+                  <span className="w-6 text-xs font-bold text-brown-3 flex-shrink-0">{LETTERS[idx]}</span>
                   <input
                     value={o}
                     onChange={(e) => updateOpsi(idx, e.target.value)}

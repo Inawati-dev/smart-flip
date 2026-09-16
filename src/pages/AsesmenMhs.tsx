@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchBankSoal } from '../lib/kuisSoal'
@@ -12,6 +11,7 @@ import { computeNGain } from '../lib/ngain'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner } from '../components/SoalRunner'
+import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 
 // Asesmen sisi mahasiswa (spec §4, §9 WP6): satu komponen, tiga tampilan
 // dipilih dari path — App.tsx sudah memasang route /asesmen, /asesmen/pre,
@@ -68,9 +68,10 @@ function PanelCard({
 }
 
 // §5a — /asesmen mahasiswa: kartu tes formatif topik aktif + panel
-// pre-test/VARK/post-test + daftar 9 topik.
+// pre-test/post-test/tes kelompok/tugas akhir + daftar 9 topik. Panel gaya
+// belajar (antrean #57 opsi A) diganti tugas akhir — rute lamanya dibiarkan
+// ada, tidak ditautkan lagi dari sini.
 function AsesmenDaftar() {
-  const { profile } = useAuth()
   const { data: modules = [] } = useModules()
   const { statusOf } = useTopikStatus()
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
@@ -99,7 +100,7 @@ function AsesmenDaftar() {
     <Layout>
       <div className="p-4 md:p-6">
         <h1 className="font-display text-2xl font-bold text-brown mb-1">Asesmen</h1>
-        <p className="text-brown-3 mb-4">Pre-test, VARK, tes formatif tiap topik, dan post-test.</p>
+        <p className="text-brown-3 mb-4">Pre-test, tes formatif tiap topik, post-test, tes kelompok, dan tugas akhir.</p>
         <PertemuanStepper
           current={topikAktif?.id ?? sorted[0]?.id ?? 0}
           basePath="/asesmen/formatif"
@@ -149,12 +150,6 @@ function AsesmenDaftar() {
 
           <div className="flex flex-col gap-3">
             <PanelCard title="Pre-test" value={preSkor != null ? `Skor ${preSkor}` : 'Belum'} />
-            <PanelCard
-              title="VARK"
-              value={profile?.learning_style ?? undefined}
-              linkTo={profile?.learning_style ? undefined : '/asesmen/vark'}
-              linkLabel={profile?.learning_style ? undefined : 'Kerjakan VARK'}
-            />
             {/* /asesmen/tes diisi WP6b (spec §9); untuk sekarang tautan saja. */}
             <PanelCard
               title="Post-test"
@@ -162,6 +157,13 @@ function AsesmenDaftar() {
               linkTo="/asesmen/tes"
               linkLabel="Masukkan kode"
             />
+            <PanelCard
+              title="Tes kelompok"
+              value="Kode dari dosen, dikerjakan per kelompok"
+              linkTo="/asesmen/kelompok"
+              linkLabel="Masukkan kode"
+            />
+            <TugasAkhirMhsCard />
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Navigate } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
@@ -83,27 +83,6 @@ export function PengaturanSections() {
   // pemicu notifikasi nyata yang memakainya. Tetap dipindahkan (bukan
   // dihapus) supaya preferensi yang sudah tersimpan di perangkat dosen tidak
   // hilang begitu Profil.tsx berhenti dirender.
-  const [notifDraf, setNotifDraf] = useState(true)
-  const [notifForum, setNotifForum] = useState(true)
-
-  useEffect(() => {
-    const draf = localStorage.getItem('sfp_dos_notif_draf')
-    const forum = localStorage.getItem('sfp_dos_notif_forum')
-    if (draf !== null) setNotifDraf(draf === 'true')
-    if (forum !== null) setNotifForum(forum === 'true')
-  }, [])
-
-  function toggleNotif(key: 'draf' | 'forum') {
-    if (key === 'draf') {
-      const next = !notifDraf
-      setNotifDraf(next)
-      localStorage.setItem('sfp_dos_notif_draf', String(next))
-    } else {
-      const next = !notifForum
-      setNotifForum(next)
-      localStorage.setItem('sfp_dos_notif_forum', String(next))
-    }
-  }
 
   return (
     <>
@@ -203,22 +182,6 @@ export function PengaturanSections() {
             <IconBell size={18} className="text-brown-3" />
             <span className="text-sm font-semibold text-brown">Notifikasi</span>
           </div>
-          {isDosen && (
-            <div className="flex flex-col gap-0.5 mb-3">
-              <PengaturanToggleRow
-                label="Notifikasi draf masuk"
-                sub="Terima notifikasi saat mahasiswa mengumpulkan draf baru"
-                checked={notifDraf}
-                onChange={() => toggleNotif('draf')}
-              />
-              <PengaturanToggleRow
-                label="Notifikasi forum baru"
-                sub="Terima notifikasi saat ada postingan forum baru dari mahasiswa"
-                checked={notifForum}
-                onChange={() => toggleNotif('forum')}
-              />
-            </div>
-          )}
           {!isDosen ? (
             <p className="text-xs text-brown-3">Segera hadir: atur notifikasi email &amp; in-app di sini.</p>
           ) : needsAttention.length === 0 ? (
@@ -305,35 +268,3 @@ export default function Pengaturan() {
 
 // Duplikat kecil dari ToggleRow milik Profil.tsx (tidak diekspor dari sana) —
 // dinamai beda supaya jelas ini salinan lokal, bukan komponen bersama.
-function PengaturanToggleRow({
-  label,
-  sub,
-  checked,
-  onChange,
-}: {
-  label: string
-  sub: string
-  checked: boolean
-  onChange: () => void
-}) {
-  return (
-    <div className="flex items-center justify-between py-2.5 row-divider-b" style={{ borderColor: 'var(--border2, var(--border))' }}>
-      <div>
-        <div className="text-sm text-brown-2">{label}</div>
-        <div className="text-xs text-brown-3 mt-0.5">{sub}</div>
-      </div>
-      <label className="relative inline-flex items-center justify-center min-w-11 min-h-11 w-11 h-11 flex-shrink-0 cursor-pointer">
-        <input type="checkbox" checked={checked} onChange={onChange} className="opacity-0 w-0 h-0 peer absolute" />
-        <span
-          className="relative inline-block w-10 h-[22px] rounded-full transition-colors peer-checked:bg-sage pointer-events-none"
-          style={{ background: checked ? 'var(--sage)' : 'var(--border)' }}
-        >
-          <span
-            className="absolute left-[3px] bottom-[3px] w-4 h-4 rounded-full bg-white transition-transform"
-            style={{ transform: checked ? 'translateX(18px)' : 'translateX(0)' }}
-          />
-        </span>
-      </label>
-    </div>
-  )
-}
