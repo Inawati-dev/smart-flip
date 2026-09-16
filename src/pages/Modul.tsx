@@ -7,7 +7,7 @@ import { moduleIdToPath } from '../lib/progress'
 import { useTopikStatus } from '../lib/topik'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
-import { DosenModulTable } from './ModulList'
+import { DosenModulRak } from './ModulList'
 import { IconBook, IconDocument, IconChart, IconPlay, IconEdit } from '../components/icons'
 
 // progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
@@ -39,7 +39,7 @@ export default function Modul() {
       <Layout>
         <div className="p-4 md:p-6">
           <h1 className="text-2xl font-bold text-brown mb-4">Modul</h1>
-          <DosenModulTable />
+          <DosenModulRak />
         </div>
       </Layout>
     )

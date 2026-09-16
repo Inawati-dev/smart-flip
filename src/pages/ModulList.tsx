@@ -40,7 +40,7 @@ const BORDER = { borderColor: 'var(--border)' } as const
 // Tabel kelola modul dosen — dipakai di /modul (daftar) dan /modul/:id (spec
 // §5.2, §9 WP5). Pola upload/ubah metadata ditiru dari Manajemen.tsx,
 // disederhanakan (tanpa reorder/bulk/hapus/tambah — itu tetap di sana).
-export function DosenModulTable() {
+export function DosenModulRak() {
   const queryClient = useQueryClient()
   const { courseId } = useCourse()
   const { data: modules = [] } = useModules()
@@ -682,7 +682,7 @@ export function ModulList() {
           </div>
         </div>
         {role === 'dosen' ? (
-          <DosenModulTable />
+          <DosenModulRak />
         ) : (
           <>
             <p className="text-sm text-brown-3 mb-4">{sorted.length} topik · dibaca sebagai flipbook</p>
@@ -699,8 +699,13 @@ export function ModulList() {
                   const status = statusOf(m.id)
                   const entry = progress[moduleIdToPath(m.id)]
                   const pct = entry?.pct ?? 0
+                  const total = entry?.totalPages ?? null
                   const kaki =
-                    pct >= 100 ? 'Selesai dibaca' : pct > 0 && entry?.currentPage > 0 ? `Halaman ${entry.currentPage}` : 'Belum dibaca'
+                    pct >= 100
+                      ? total ? `${total}/${total} hal` : 'Selesai dibaca'
+                      : pct > 0 && entry?.currentPage > 0
+                        ? total ? `${entry.currentPage}/${total} hal` : `Halaman ${entry.currentPage}`
+                        : total ? `0/${total} hal` : 'Belum dibaca'
                   const chip =
                     status === 'done' ? (
                       <ChipRak jenis="ok" label="Selesai" />
@@ -714,7 +719,7 @@ export function ModulList() {
                       key={m.id}
                       nomor={m.order_num}
                       judul={m.title}
-                      keterangan={m.pdf_path ? 'PDF' : 'Belum ada PDF'}
+                      keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum ada PDF'}
                       persen={pct}
                       kaki={kaki}
                       chip={chip}

@@ -311,7 +311,7 @@ export function Ebook() {
   useEffect(() => {
     if (status !== 'ready' || totalPages <= 0 || moduleId == null) return
     const pct = Math.min(100, Math.round((currentPage / totalPages) * 100))
-    saveProgress(moduleIdToPath(moduleId), { pct, currentPage, lastOpened: new Date().toISOString() }).catch(() => {})
+    saveProgress(moduleIdToPath(moduleId), { pct, currentPage, totalPages, lastOpened: new Date().toISOString() }).catch(() => {})
   }, [status, currentPage, totalPages, moduleId])
 
   const stepSize = effectiveStyle === 'spread' ? 2 : 1

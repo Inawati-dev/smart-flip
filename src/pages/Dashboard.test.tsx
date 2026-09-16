@@ -53,6 +53,7 @@ function fakeModule(id: number): ModuleRow {
     title: `Modul ${id}`,
     description: null,
     video_url: null,
+  duration_sec: null,
     pdf_path: null,
     is_active: true,
     path: '',
