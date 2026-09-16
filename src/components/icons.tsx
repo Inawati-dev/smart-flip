@@ -431,6 +431,25 @@ export function IconSkipForward({ size = 18, ...p }: IconProps) {
   )
 }
 
+// Tema toggle (Layout.tsx rail) — bulan = "ganti ke gelap" (ditampilkan saat
+// tema light aktif), matahari = "ganti ke terang" (ditampilkan saat dark).
+export function IconMoon({ size = 18, ...p }: IconProps) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5Z" />
+    </svg>
+  )
+}
+
+export function IconSun({ size = 18, ...p }: IconProps) {
+  return (
+    <svg {...base(size, p)}>
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 3v2.2M12 18.8V21M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M3 12h2.2M18.8 12H21M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6" />
+    </svg>
+  )
+}
+
 export function IconGrip({ size = 18, ...p }: IconProps) {
   const { className, ...rest } = p
   return (

@@ -102,7 +102,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
 // text-base (16px) — anything smaller triggers iOS Safari's auto-zoom-on-focus
 // on form inputs (CLAUDE.md mobile rules: 16px minimum for inputs).
 export const authInputClass =
-  'w-full h-[46px] rounded-[10px] border px-3.5 bg-transparent text-base outline-none transition-colors'
+  'w-full h-[46px] rounded-[var(--radius-control)] border px-3.5 bg-transparent text-base outline-none transition-colors'
 
 export const authInputStyle = {
   borderColor: 'var(--border)',

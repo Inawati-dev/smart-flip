@@ -84,7 +84,7 @@ export function SoalRunner({
               <div
                 key={i}
                 onClick={() => onSelect(i)}
-                className={`flex items-center gap-3 px-4 py-3 border-[1.5px] rounded-lg select-none transition-colors ${cls}`}
+                className={`flex items-center gap-3 px-4 py-3 border-[1.5px] rounded-[var(--radius-control)] select-none transition-colors ${cls}`}
               >
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${letterCls}`}

@@ -12,7 +12,7 @@ const STEPS_MAHASISWA: Step[] = [
   {
     icon: IconBook,
     title: 'Selamat Datang di Smart Flip!',
-    desc: 'E-modul adaptif untuk mata kuliah Metode Penelitian & Pengembangan. Sembilan modul, dari konsep dasar R&D sampai diseminasi hasil, semuanya di satu tempat.',
+    desc: 'E-modul adaptif untuk mata kuliah Metode Penelitian & Pengembangan. Sembilan topik, dari konsep dasar R&D sampai diseminasi hasil, semuanya di satu tempat.',
   },
   {
     icon: IconTarget,

@@ -307,7 +307,7 @@ export function DosenModulTable() {
               <input
                 value={formJudul}
                 onChange={(e) => setFormJudul(e.target.value.slice(0, 100))}
-                className="h-11 rounded-lg border px-3 text-base text-brown"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
             </label>
@@ -317,7 +317,7 @@ export function DosenModulTable() {
                 value={formDeskripsi}
                 onChange={(e) => setFormDeskripsi(e.target.value.slice(0, 200))}
                 rows={3}
-                className="rounded-lg border px-3 py-2 text-base text-brown resize-y"
+                className="rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y"
                 style={BORDER}
               />
             </label>

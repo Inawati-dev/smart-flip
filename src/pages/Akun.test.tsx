@@ -29,10 +29,17 @@ vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: false,
 }))
 
-function renderAkun(queryClient: QueryClient) {
+// Tab Kelas (KelasPanel, dari Kelas.tsx) memanggil hook nyata ini lewat
+// react-query -- dimock di sini biar tes tab tidak bergantung pada
+// getKelasByDosen/Supabase sungguhan (lihat CLAUDE.md worktree ini §A.3).
+vi.mock('../hooks/useKelas', () => ({
+  useKelasByDosen: () => ({ data: [], isLoading: false }),
+}))
+
+function renderAkun(queryClient: QueryClient, initialEntries: string[] = ['/akun']) {
   return render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <MemoryRouter initialEntries={initialEntries}>
         <Akun />
       </MemoryRouter>
     </QueryClientProvider>,
@@ -84,15 +91,36 @@ describe('Akun', () => {
     expect(screen.queryByText('Kelola PDF')).toBeNull()
   })
 
-  // Pengaturan.tsx dilebur ke sini (PengaturanSections) — bagian Tema harus
-  // muncul, dan tidak ada lagi tautan terpisah ke /pengaturan atau tombol
-  // Keluar sendiri (Keluar sudah ada di rel/bilah bawah Layout).
-  it('memuat bagian Tema dari Pengaturan, tanpa tautan Pengaturan atau tombol Keluar', () => {
+  // Pengaturan.tsx dilebur ke sini (PengaturanSections), sekarang di balik
+  // tab "Pengaturan" (koreksi Johan 16 Sep 2026 — Kelas & Pengaturan jadi
+  // tab, bukan kartu tautan) — tidak ada lagi tautan terpisah ke /pengaturan
+  // atau tombol Keluar sendiri (Keluar sudah ada di rel/bilah bawah Layout).
+  it('tab Pengaturan memuat Notifikasi, tanpa tautan Pengaturan atau tombol Keluar', () => {
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
-    const { container } = renderAkun(queryClient)
-    expect(screen.getByText('Tema')).toBeTruthy()
+    const { container } = renderAkun(queryClient, ['/akun?tab=pengaturan'])
+    expect(screen.getByText('Notifikasi')).toBeTruthy()
     expect(container.querySelector('a[href="/pengaturan"]')).toBeNull()
     expect(screen.queryByText('Keluar')).toBeNull()
+  })
+
+  // Kelas jadi tab di Akun (koreksi Johan 16 Sep 2026 "jadikan tab saja biar
+  // gak buka menu baru lagi") — dosen di /akun?tab=kelas melihat KelasPanel.
+  it('dosen di /akun?tab=kelas melihat isi KelasPanel', () => {
+    mockAuth.profile = { full_name: 'Dr. Ahmad Fauzi', role: 'dosen', nim_nidn: '0012345678', avatar_url: null }
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient, ['/akun?tab=kelas'])
+    expect(screen.getByText(/Buat kelas, bagikan kode kelas/)).toBeTruthy()
+  })
+
+  // Mahasiswa tidak punya tab Kelas — memaksa ?tab=kelas harus jatuh ke profil.
+  it('mahasiswa memaksa ?tab=kelas jatuh ke tab profil', () => {
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient, ['/akun?tab=kelas'])
+    expect(screen.queryByText(/Buat kelas, bagikan kode kelas/)).toBeNull()
+    expect(screen.getByText('Ahmad Rizki')).toBeTruthy()
   })
 })

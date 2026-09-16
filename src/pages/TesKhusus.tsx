@@ -289,7 +289,7 @@ function DosenTesKhusus() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="mis. Post-test Kelas A - 20 Sep"
-                className="h-11 rounded-lg border px-3 text-base text-brown"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
             </label>
@@ -368,7 +368,7 @@ function DosenTesKhusus() {
                   type="datetime-local"
                   value={openFrom}
                   onChange={(e) => setOpenFrom(e.target.value)}
-                  className="h-11 rounded-lg border px-3 text-base text-brown"
+                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                   style={BORDER}
                 />
               </label>
@@ -378,7 +378,7 @@ function DosenTesKhusus() {
                   type="datetime-local"
                   value={openUntil}
                   onChange={(e) => setOpenUntil(e.target.value)}
-                  className="h-11 rounded-lg border px-3 text-base text-brown"
+                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                   style={BORDER}
                 />
               </label>
@@ -623,7 +623,7 @@ function MahasiswaTesKhusus() {
               onKeyDown={(e) => e.key === 'Enter' && void doVerify(kodeInput)}
               placeholder="mis. 7K3MQ2"
               maxLength={6}
-              className="h-12 w-full rounded-lg border px-3 text-lg font-mono tracking-[0.3em] text-center text-brown mb-3"
+              className="h-12 w-full rounded-[var(--radius-control)] border px-3 text-lg font-mono tracking-[0.3em] text-center text-brown mb-3"
               style={BORDER}
             />
             {verifyError && <p className="text-sm text-red mb-3">{verifyError}</p>}

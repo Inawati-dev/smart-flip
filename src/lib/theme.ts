@@ -1,10 +1,12 @@
-// Theme picker (Pengaturan.tsx) — swaps design tokens at runtime via
-// injectDesignTokens(). Hanya dua tema (permintaan Johan 16 Sep 2026 —
-// "selain light dan dark mode dihapus saja"): Light (parchment/netral
-// terang lama) dan Dark, pasangan gelapnya. Empat tema lain (Bawaan,
-// Claude, Soft Pill, Executive) dihapus dari daftar; nilai tersimpan lama
-// dipetakan ke 'light' oleh getTheme() di bawah supaya pengguna lama tidak
-// mendapat tema yang sudah tidak ada.
+// Theme toggle (Layout.tsx rail, lihat src/hooks/useTheme.ts) — swaps design
+// tokens at runtime via injectDesignTokens(). Hanya dua tema (permintaan
+// Johan 16 Sep 2026 — "selain light dan dark mode dihapus saja"): Light
+// (parchment/netral terang lama) dan Dark, pasangan gelapnya. Empat tema
+// lain (Bawaan, Claude, Soft Pill, Executive) dihapus dari daftar; nilai
+// tersimpan lama dipetakan ke 'light' oleh getTheme() di bawah supaya
+// pengguna lama tidak mendapat tema yang sudah tidak ada.
+
+import { injectDesignTokens } from './design-tokens'
 
 export type ThemeId = 'light' | 'dark'
 
@@ -180,4 +182,11 @@ export function setTheme(theme: ThemeId): void {
   } catch {
     // ignore — worst case the choice doesn't persist across visits
   }
+}
+
+// Persist + repaint in one call — dipakai useTheme() (src/hooks/useTheme.ts)
+// supaya tombol toggle di Layout.tsx tidak perlu tahu detail injectDesignTokens.
+export function applyTheme(id: ThemeId): void {
+  setTheme(id)
+  injectDesignTokens(THEMES[id].colors)
 }

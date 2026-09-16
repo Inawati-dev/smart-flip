@@ -3,9 +3,7 @@ import { Navigate } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
 import { computeNeedsAttentionStudents } from '../lib/analitik'
-import { IconCompass, IconBell, IconCheck, IconLock } from '../components/icons'
-import { injectDesignTokens } from '../lib/design-tokens'
-import { THEMES, getTheme, setTheme, type ThemeId } from '../lib/theme'
+import { IconBell, IconLock } from '../components/icons'
 import {
   MIN_INVITE_CODE_LENGTH,
   getDosenInviteCode,
@@ -21,10 +19,13 @@ const BORDER = { borderColor: 'var(--border)' } as const
 // halaman sendiri) dan dirender langsung di Akun.tsx. Default export di
 // bawah cuma pengalih supaya /pengaturan (kalau masih ada tautan lama) tidak
 // 404.
+//
+// Kartu pemilih tema dihapus dari sini 16 Sep 2026 (koreksi Johan — jadi
+// toggle di sidebar saja) — penggantinya tombol toggle terang/gelap di
+// Layout.tsx (rel kiri desktop + topbar mobile), lihat src/hooks/useTheme.ts.
 export function PengaturanSections() {
   const { role } = useAuth()
   const isDosen = role === 'dosen'
-  const [active, setActive] = useState<ThemeId>(() => getTheme())
   const { data: students } = useStudentStats()
   const needsAttention = isDosen && students ? computeNeedsAttentionStudents(students) : []
 
@@ -76,12 +77,6 @@ export function PengaturanSections() {
     }
   }
 
-  function chooseTheme(id: ThemeId) {
-    setActive(id)
-    setTheme(id)
-    injectDesignTokens(THEMES[id].colors)
-  }
-
   // ── Dua toggle notifikasi dosen — dipindah dari Profil.tsx lama (WP-C
   // tugas 3). Catatan kejujuran: dua kunci localStorage ini tidak pernah
   // dibaca di luar halaman ini (grep dikonfirmasi 16 Sep 2026) — belum ada
@@ -112,194 +107,156 @@ export function PengaturanSections() {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      {/* Kode undangan dosen + Notifikasi — dua kolom di >=768px (permintaan
+          Johan 16 Sep 2026 "ini juga bisa jadi 2 kolom"). Mahasiswa tidak
+          punya kartu kode undangan, jadi Notifikasi memenuhi lebar penuh. */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+        {/* Kode undangan dosen — hanya untuk dosen. Ini yang diminta calon
+            dosen saat mendaftar di halaman Registrasi; tanpa kode yang cocok,
+            pendaftaran tetap jadi (tapi turun jadi peran mahasiswa). */}
+        {isDosen && (
           <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
-            <div className="flex items-center gap-2.5 mb-3">
-              <IconCompass size={18} className="text-brown-3" />
-              <span className="text-sm font-semibold text-brown">Tema</span>
+            <div className="flex items-center gap-2.5 mb-1">
+              <IconLock size={18} className="text-brown-3" />
+              <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
             </div>
-            <p className="text-xs text-brown-3 mb-3">Pilih tema tampilan aplikasi. Perubahan langsung berlaku.</p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {(Object.keys(THEMES) as ThemeId[]).map((id) => {
-                const t = THEMES[id]
-                const selected = active === id
-                return (
+            <p className="text-xs text-brown-3 mb-3">
+              Kode yang harus diisi calon dosen saat mendaftar. Bagikan hanya ke orang yang memang
+              berhak dapat akses dosen: siapa pun yang punya kode ini bisa membuat akun dosen.
+            </p>
+
+            {inviteCode === null ? (
+              <button onClick={() => void revealInviteCode()} disabled={inviteLoading} className="btn btn-secondary">
+                {inviteLoading ? 'Memuat…' : 'Tampilkan kode'}
+              </button>
+            ) : editingInvite ? (
+              <div className="flex flex-col gap-2">
+                <input
+                  type="text"
+                  value={inviteDraft}
+                  onChange={(e) => setInviteDraft(e.target.value)}
+                  placeholder={`Minimal ${MIN_INVITE_CODE_LENGTH} karakter`}
+                  autoComplete="off"
+                  className="w-full h-11 px-3 rounded-[var(--radius-control)] border-[1.5px] bg-[var(--bg3)] text-base text-brown outline-none focus:border-terra font-mono"
+                  style={BORDER}
+                />
+                <div className="flex gap-2 flex-wrap">
                   <button
-                    key={id}
-                    onClick={() => chooseTheme(id)}
-                    className="relative text-left rounded-xl border-2 p-3 cursor-pointer transition-colors bg-ivory"
-                    style={{ borderColor: selected ? 'var(--terra)' : 'var(--border)' }}
+                    onClick={() => setConfirmInvite(true)}
+                    disabled={!isInviteCodeLongEnough(inviteDraft)}
+                    className="btn btn-primary"
                   >
-                    {selected && (
-                      <span
-                        className="absolute top-2 right-2 w-4 h-4 rounded-full flex items-center justify-center"
-                        style={{ background: 'var(--terra)', color: 'var(--btn-text)' }}
-                      >
-                        <IconCheck size={10} />
-                      </span>
-                    )}
-                    {/* Swatch pratinjau warna tema — sengaja pakai t.colors (bukan
-                        token halaman) karena tujuannya menunjukkan warna tema
-                        yang DIPILIH, bukan tema yang sedang aktif. */}
-                    <div className="flex gap-1 mb-2.5">
-                      <span className="w-4 h-4 rounded-full border" style={{ background: t.colors.cream, borderColor: t.colors.border }} />
-                      <span className="w-4 h-4 rounded-full" style={{ background: t.colors.terra }} />
-                      <span className="w-4 h-4 rounded-full" style={{ background: t.colors.brown }} />
-                    </div>
-                    <div className="text-xs font-bold mb-0.5 text-brown">{t.label}</div>
-                    <div className="text-[11px] leading-snug text-brown-3">{t.desc}</div>
+                    Simpan kode baru
                   </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Kode undangan dosen — hanya untuk dosen. Ini yang diminta calon
-              dosen saat mendaftar di halaman Registrasi; tanpa kode yang cocok,
-              pendaftaran tetap jadi (tapi turun jadi peran mahasiswa). */}
-          {isDosen && (
-            <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
-              <div className="flex items-center gap-2.5 mb-1">
-                <IconLock size={18} className="text-brown-3" />
-                <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
-              </div>
-              <p className="text-xs text-brown-3 mb-3">
-                Kode yang harus diisi calon dosen saat mendaftar. Bagikan hanya ke orang yang memang
-                berhak dapat akses dosen: siapa pun yang punya kode ini bisa membuat akun dosen.
-              </p>
-
-              {inviteCode === null ? (
-                <button onClick={() => void revealInviteCode()} disabled={inviteLoading} className="btn btn-secondary">
-                  {inviteLoading ? 'Memuat…' : 'Tampilkan kode'}
-                </button>
-              ) : editingInvite ? (
-                <div className="flex flex-col gap-2">
-                  <input
-                    type="text"
-                    value={inviteDraft}
-                    onChange={(e) => setInviteDraft(e.target.value)}
-                    placeholder={`Minimal ${MIN_INVITE_CODE_LENGTH} karakter`}
-                    autoComplete="off"
-                    className="w-full h-11 px-3 rounded-lg border-[1.5px] bg-[var(--bg3)] text-base text-brown outline-none focus:border-terra font-mono"
-                    style={BORDER}
-                  />
-                  <div className="flex gap-2 flex-wrap">
-                    <button
-                      onClick={() => setConfirmInvite(true)}
-                      disabled={!isInviteCodeLongEnough(inviteDraft)}
-                      className="btn btn-primary"
-                    >
-                      Simpan kode baru
-                    </button>
-                    <button
-                      onClick={() => {
-                        setEditingInvite(false)
-                        setInviteErr('')
-                      }}
-                      className="btn btn-secondary"
-                    >
-                      Batal
-                    </button>
-                  </div>
-                  {!isInviteCodeLongEnough(inviteDraft) && inviteDraft.length > 0 && (
-                    <span className="text-[11px] text-brown-3">
-                      Kurang panjang: minimal {MIN_INVITE_CODE_LENGTH} karakter.
-                    </span>
-                  )}
-                </div>
-              ) : (
-                <div className="flex gap-2 flex-wrap items-center">
-                  <code
-                    className="px-3 h-11 inline-flex items-center rounded-lg text-sm text-brown font-mono break-all"
-                    style={{ background: 'var(--bg3)' }}
-                  >
-                    {inviteCode || '(belum diatur)'}
-                  </code>
                   <button
                     onClick={() => {
-                      setInviteDraft(inviteCode || '')
-                      setEditingInvite(true)
+                      setEditingInvite(false)
+                      setInviteErr('')
                     }}
                     className="btn btn-secondary"
                   >
-                    Ganti kode
-                  </button>
-                  <button onClick={() => setInviteCode(null)} className="btn btn-secondary">
-                    Sembunyikan
+                    Batal
                   </button>
                 </div>
-              )}
-
-              {inviteCode === 'GANTI_KODE_INI_SEKARANG' && (
-                <p className="text-xs text-red mt-2.5">
-                  Ini masih kode bawaan contoh. Ganti sekarang: kode ini ada di berkas migration yang
-                  ikut tersimpan di repositori.
-                </p>
-              )}
-              {inviteErr && <p className="text-xs text-red mt-2.5">{inviteErr}</p>}
-              {inviteMsg && <p className="text-xs text-sage-d mt-2.5">{inviteMsg}</p>}
-            </div>
-          )}
-
-          <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
-            <div className="flex items-center gap-2.5 mb-1">
-              <IconBell size={18} className="text-brown-3" />
-              <span className="text-sm font-semibold text-brown">Notifikasi</span>
-            </div>
-            {isDosen && (
-              <div className="flex flex-col gap-0.5 mb-3">
-                <PengaturanToggleRow
-                  label="Notifikasi draf masuk"
-                  sub="Terima notifikasi saat mahasiswa mengumpulkan draf baru"
-                  checked={notifDraf}
-                  onChange={() => toggleNotif('draf')}
-                />
-                <PengaturanToggleRow
-                  label="Notifikasi forum baru"
-                  sub="Terima notifikasi saat ada postingan forum baru dari mahasiswa"
-                  checked={notifForum}
-                  onChange={() => toggleNotif('forum')}
-                />
+                {!isInviteCodeLongEnough(inviteDraft) && inviteDraft.length > 0 && (
+                  <span className="text-[11px] text-brown-3">
+                    Kurang panjang: minimal {MIN_INVITE_CODE_LENGTH} karakter.
+                  </span>
+                )}
+              </div>
+            ) : (
+              <div className="flex gap-2 flex-wrap items-center">
+                <code
+                  className="px-3 h-11 inline-flex items-center rounded-lg text-sm text-brown font-mono break-all"
+                  style={{ background: 'var(--bg3)' }}
+                >
+                  {inviteCode || '(belum diatur)'}
+                </code>
+                <button
+                  onClick={() => {
+                    setInviteDraft(inviteCode || '')
+                    setEditingInvite(true)
+                  }}
+                  className="btn btn-secondary"
+                >
+                  Ganti kode
+                </button>
+                <button onClick={() => setInviteCode(null)} className="btn btn-secondary">
+                  Sembunyikan
+                </button>
               </div>
             )}
-            {!isDosen ? (
-              <p className="text-xs text-brown-3">Segera hadir: atur notifikasi email &amp; in-app di sini.</p>
-            ) : needsAttention.length === 0 ? (
-              <p className="text-xs text-brown-3 mt-1">
-                Semua mahasiswa sudah mulai modul &amp; tes diagnostik. Tidak ada yang perlu ditindaklanjuti.
+
+            {inviteCode === 'GANTI_KODE_INI_SEKARANG' && (
+              <p className="text-xs text-red mt-2.5">
+                Ini masih kode bawaan contoh. Ganti sekarang: kode ini ada di berkas migration yang
+                ikut tersimpan di repositori.
               </p>
-            ) : (
-              <>
-                <p className="text-xs text-brown-3 mb-3 mt-1">
-                  {needsAttention.length} mahasiswa belum mulai modul atau belum tes diagnostik.
-                </p>
-                <div className="flex flex-col gap-1.5">
-                  {needsAttention.map((s) => (
-                    <div
-                      key={s.id}
-                      className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg flex-wrap"
-                      style={{ background: 'var(--bg3)' }}
-                    >
-                      <span className="text-sm text-brown-2">{s.nama}</span>
-                      <div className="flex gap-1.5">
-                        {s.belumDiagnostik && (
-                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-terra/20 text-terra-d whitespace-nowrap">
-                            Belum tes diagnostik
-                          </span>
-                        )}
-                        {s.belumModul && (
-                          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sage/20 text-sage-d whitespace-nowrap">
-                            Belum mulai modul
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </>
             )}
+            {inviteErr && <p className="text-xs text-red mt-2.5">{inviteErr}</p>}
+            {inviteMsg && <p className="text-xs text-sage-d mt-2.5">{inviteMsg}</p>}
           </div>
+        )}
+
+        <div className={`bg-ivory rounded-2xl border p-5${isDosen ? '' : ' md:col-span-2'}`} style={BORDER}>
+          <div className="flex items-center gap-2.5 mb-1">
+            <IconBell size={18} className="text-brown-3" />
+            <span className="text-sm font-semibold text-brown">Notifikasi</span>
+          </div>
+          {isDosen && (
+            <div className="flex flex-col gap-0.5 mb-3">
+              <PengaturanToggleRow
+                label="Notifikasi draf masuk"
+                sub="Terima notifikasi saat mahasiswa mengumpulkan draf baru"
+                checked={notifDraf}
+                onChange={() => toggleNotif('draf')}
+              />
+              <PengaturanToggleRow
+                label="Notifikasi forum baru"
+                sub="Terima notifikasi saat ada postingan forum baru dari mahasiswa"
+                checked={notifForum}
+                onChange={() => toggleNotif('forum')}
+              />
+            </div>
+          )}
+          {!isDosen ? (
+            <p className="text-xs text-brown-3">Segera hadir: atur notifikasi email &amp; in-app di sini.</p>
+          ) : needsAttention.length === 0 ? (
+            <p className="text-xs text-brown-3 mt-1">
+              Semua mahasiswa sudah mulai modul &amp; tes diagnostik. Tidak ada yang perlu ditindaklanjuti.
+            </p>
+          ) : (
+            <>
+              <p className="text-xs text-brown-3 mb-3 mt-1">
+                {needsAttention.length} mahasiswa belum mulai modul atau belum tes diagnostik.
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {needsAttention.map((s) => (
+                  <div
+                    key={s.id}
+                    className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg flex-wrap"
+                    style={{ background: 'var(--bg3)' }}
+                  >
+                    <span className="text-sm text-brown-2">{s.nama}</span>
+                    <div className="flex gap-1.5">
+                      {s.belumDiagnostik && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-terra/20 text-terra-d whitespace-nowrap">
+                          Belum tes diagnostik
+                        </span>
+                      )}
+                      {s.belumModul && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sage/20 text-sage-d whitespace-nowrap">
+                          Belum mulai modul
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
+      </div>
 
       {/* Konfirmasi ganti kode — sekali diganti, kode lama langsung mati dan
           siapa pun yang sudah terlanjur dikirimi kode lama tidak bisa lagi

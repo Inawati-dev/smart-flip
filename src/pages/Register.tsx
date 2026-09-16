@@ -120,7 +120,7 @@ export function Register() {
         <button
           type="button"
           onClick={() => setRole('mahasiswa')}
-          className="flex-1 h-11 rounded-[9px] border-[1.5px] text-sm font-semibold transition-colors"
+          className="flex-1 h-11 rounded-[var(--radius-control)] border-[1.5px] text-sm font-semibold transition-colors"
           style={
             role === 'mahasiswa'
               ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--btn-text)' }
@@ -132,7 +132,7 @@ export function Register() {
         <button
           type="button"
           onClick={() => setRole('dosen')}
-          className="flex-1 h-11 rounded-[9px] border-[1.5px] text-sm font-semibold transition-colors"
+          className="flex-1 h-11 rounded-[var(--radius-control)] border-[1.5px] text-sm font-semibold transition-colors"
           style={
             role === 'dosen'
               ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--btn-text)' }

@@ -30,7 +30,7 @@ export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: 
             type="button"
             onClick={() => onChange(opt.value)}
             aria-pressed={active}
-            className={`min-w-[5.5rem] rounded-full px-3.5 text-xs font-semibold whitespace-nowrap border transition-colors inline-flex items-center justify-center gap-1.5 ${active ? '' : 'bg-ivory hover:bg-bg3'}`}
+            className={`min-w-[5.5rem] rounded-[var(--radius-control)] px-3.5 text-xs font-semibold whitespace-nowrap border transition-colors inline-flex items-center justify-center gap-1.5 ${active ? '' : 'bg-ivory hover:bg-bg3'}`}
             style={{
               minHeight: minH,
               borderColor: active ? 'var(--brown)' : 'var(--border)',

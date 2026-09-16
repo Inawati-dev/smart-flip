@@ -5,7 +5,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
 import { BrandMark } from './AuthShell'
-import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument } from './icons'
+import { useTheme } from '../hooks/useTheme'
+import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument, IconMoon, IconSun } from './icons'
 
 interface NavItem {
   to: string
@@ -61,6 +62,8 @@ export function Layout({ children }: { children: ReactNode }) {
   const [logoutOpen, setLogoutOpen] = useState(false)
   const navItems = NAV_ITEMS.filter((item) => !item.dosenOnly || role === 'dosen')
   const currentActive = activeTo(location.pathname, navItems)
+  const { theme, toggle: toggleTheme } = useTheme()
+  const themeToggleLabel = theme === 'light' ? 'Ganti ke tema gelap' : 'Ganti ke tema terang'
 
   async function doLogout() {
     // Onboarding is "seen" per-browser (localStorage), not per-session — reset
@@ -160,10 +163,18 @@ export function Layout({ children }: { children: ReactNode }) {
           )}
         </Link>
         <button
+          onClick={toggleTheme}
+          title={themeToggleLabel}
+          aria-label={themeToggleLabel}
+          className="w-10 h-10 rounded-[var(--radius-control)] flex items-center justify-center text-brown-2 hover:bg-bg3 transition-colors"
+        >
+          {theme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
+        </button>
+        <button
           onClick={() => setLogoutOpen(true)}
           title="Keluar"
           aria-label="Keluar"
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-red hover:bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] transition-colors"
+          className="w-10 h-10 rounded-[var(--radius-control)] flex items-center justify-center text-red hover:bg-[color-mix(in_srgb,var(--danger)_8%,transparent)] transition-colors"
         >
           <IconLogout size={18} />
         </button>
@@ -176,13 +187,23 @@ export function Layout({ children }: { children: ReactNode }) {
             <BrandMark size={26} />
             <span className="font-display font-bold text-brown">Smart Flip</span>
           </Link>
-          <button
-            onClick={() => setLogoutOpen(true)}
-            aria-label="Keluar"
-            className="w-11 h-11 rounded-full border border-[color:var(--border)] flex items-center justify-center text-red"
-          >
-            <IconLogout size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={toggleTheme}
+              title={themeToggleLabel}
+              aria-label={themeToggleLabel}
+              className="w-11 h-11 rounded-full border border-[color:var(--border)] flex items-center justify-center text-brown-2"
+            >
+              {theme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
+            </button>
+            <button
+              onClick={() => setLogoutOpen(true)}
+              aria-label="Keluar"
+              className="w-11 h-11 rounded-full border border-[color:var(--border)] flex items-center justify-center text-red"
+            >
+              <IconLogout size={18} />
+            </button>
+          </div>
         </div>
       </header>
 
