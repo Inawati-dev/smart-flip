@@ -76,7 +76,7 @@ export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terku
           {chip}
         </div>
       )}
-      {aksi && <div className="flex items-center gap-1.5 flex-wrap">{aksi}</div>}
+      {aksi && <div className="grid grid-cols-2 gap-1.5">{aksi}</div>}
     </div>
   )
 }

@@ -23,17 +23,9 @@ import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { IconEdit, IconTrash, IconDocument } from '../components/icons'
+import { IconEdit, IconTrash, IconDocument, IconGear, IconEye } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
-
-// Nama berkas PDF dipendekkan untuk sampul kartu, mis. "modul-1-final.pdf" ->
-// "modul-1-f…pdf" (spec antrean #85 mencontohkan "modul-1-…pdf").
-function ringkasNamaPdf(fileName: string): string {
-  if (fileName.length <= 16) return fileName
-  const ext = fileName.split('.').pop() ?? ''
-  return `${fileName.slice(0, 10)}…${ext}`
-}
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -235,34 +227,39 @@ export function DosenModulRak() {
                 key={m.id}
                 nomor={m.order_num}
                 judul={judul}
-                keterangan={fileName ? ringkasNamaPdf(fileName) : 'Belum ada PDF'}
-                chip={hasPdf ? <ChipRak jenis="ok" label="Ada PDF" /> : <ChipRak jenis="todo" label="Belum ada" />}
+                keterangan={fileName ? 'PDF' : 'Belum ada PDF'}
                 aksi={
                   <>
-                    {m.pdf_path && <PdfPreviewLink url={m.pdf_path} />}
                     <button
                       onClick={() => openPdfModal(m.id)}
                       aria-label="Ganti PDF"
                       title="Ganti PDF"
-                      className="btn btn-secondary btn-sm whitespace-nowrap"
+                      className="btn btn-secondary btn-sm w-full whitespace-nowrap"
                     >
-                      <IconDocument size={13} /> <span className="hidden sm:inline">Ganti PDF</span>
+                      <IconDocument size={13} /> <span className="hidden sm:inline">{hasPdf ? 'Ganti PDF' : 'Unggah PDF'}</span>
                     </button>
                     <button
                       onClick={() => openEdit(m.id)}
                       aria-label="Ubah topik"
                       title="Ubah topik"
-                      className="btn btn-secondary btn-sm whitespace-nowrap"
+                      className="btn btn-secondary btn-sm w-full whitespace-nowrap"
                     >
                       <IconEdit size={13} /> <span className="hidden sm:inline">Ubah topik</span>
                     </button>
+                    {m.pdf_path ? (
+                      <PdfPreviewLink url={m.pdf_path} label="Pratinjau" compact />
+                    ) : (
+                      <button type="button" disabled aria-label="Pratinjau" title="Belum ada PDF" className="btn btn-secondary btn-sm w-full whitespace-nowrap">
+                        <IconEye size={13} /> <span className="hidden sm:inline">Pratinjau</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => setDeleteId(m.id)}
                       aria-label={`Hapus topik ${judul}`}
                       title="Hapus topik"
-                      className="btn btn-danger btn-icon flex-shrink-0"
+                      className="btn btn-danger btn-sm w-full whitespace-nowrap"
                     >
-                      <IconTrash size={14} />
+                      <IconTrash size={13} /> <span className="hidden sm:inline">Hapus</span>
                     </button>
                   </>
                 }
@@ -671,15 +668,15 @@ export function ModulList() {
     <Layout>
       <div className="p-4 md:p-6">
         <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <h1 className="text-2xl font-bold text-brown">Modul</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-bold text-brown">Modul</h1>
             {role === 'dosen' && (
-              <button onClick={() => setKelolaOpen(true)} className="btn btn-ghost btn-sm">
-                Kelola mata kuliah
+              <button onClick={() => setKelolaOpen(true)} className="btn btn-secondary btn-sm" title="Tambah, ubah, atau hapus mata kuliah">
+                <IconGear size={14} /> Kelola mata kuliah
               </button>
             )}
-            <MataKuliahSelect />
           </div>
+          <MataKuliahSelect />
         </div>
         {role === 'dosen' ? (
           <DosenModulRak />

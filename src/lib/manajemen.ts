@@ -260,7 +260,9 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
       .maybeSingle()
     const prevObject = storageObjectName(prevRow?.pdf_path as string | undefined)
 
-    const path = `modul-${moduleId}-${Date.now()}.pdf`
+    // Pola nama `topik-` (antrean #90): satuan pertemuan disebut topik, dan nama
+    // berkas ini bisa tampil di halaman Berkas.
+    const path = `topik-${moduleId}-${Date.now()}.pdf`
     const { error: uploadError } = await supabase.storage
       .from('modul-pdf')
       .upload(path, file, { upsert: true, contentType: 'application/pdf' })
@@ -332,7 +334,7 @@ export async function uploadModulVideo(moduleId: number, file: File): Promise<st
     const prevObject = videoStorageObjectName(prevRow?.video_url as string | undefined)
 
     const ext = file.type === 'video/webm' ? 'webm' : 'mp4'
-    const path = `modul-${moduleId}-${Date.now()}.${ext}`
+    const path = `topik-${moduleId}-${Date.now()}.${ext}`
     const { error: uploadError } = await supabase.storage
       .from('modul-video')
       .upload(path, file, { upsert: true, contentType: file.type || 'video/mp4' })

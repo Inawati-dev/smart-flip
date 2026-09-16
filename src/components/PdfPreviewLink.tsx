@@ -7,7 +7,9 @@ import { parseVideoUrl } from '../lib/video'
 // modal Ganti PDF, dan tabel Video dosen supaya bentuknya sama
 // (antrean #31, #32, #39). Tautan "Buka di tab baru" tetap disediakan di
 // kepala modal untuk yang ingin unduh atau cetak.
-export function PreviewLink({ url, label = 'Pratinjau' }: { url: string; label?: string }) {
+// `compact` (antrean #92): tombol berlabel 36 px selebar sel kisi aksi kartu,
+// label tersembunyi di telepon; bawaan tetap tombol ikon 44 px.
+export function PreviewLink({ url, label = 'Pratinjau', compact = false }: { url: string; label?: string; compact?: boolean }) {
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -16,9 +18,10 @@ export function PreviewLink({ url, label = 'Pratinjau' }: { url: string; label?:
         onClick={() => setOpen(true)}
         aria-label={label}
         title={label}
-        className="btn btn-secondary btn-icon flex-shrink-0"
+        className={compact ? 'btn btn-secondary btn-sm w-full whitespace-nowrap' : 'btn btn-secondary btn-icon flex-shrink-0'}
       >
-        <IconEye size={16} />
+        <IconEye size={compact ? 13 : 16} />
+        {compact && <span className="hidden sm:inline">{label}</span>}
       </button>
       {open && <PreviewModal url={url} title={label} onClose={() => setOpen(false)} />}
     </>
@@ -91,6 +94,6 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
 
 // Nama lama, dipertahankan supaya pemakai existing (KelolaPdf.tsx,
 // ModulList.tsx) tidak perlu berubah — sekadar label default beda.
-export function PdfPreviewLink({ url, label = 'Pratinjau PDF' }: { url: string; label?: string }) {
-  return <PreviewLink url={url} label={label} />
+export function PdfPreviewLink({ url, label = 'Pratinjau PDF', compact = false }: { url: string; label?: string; compact?: boolean }) {
+  return <PreviewLink url={url} label={label} compact={compact} />
 }
