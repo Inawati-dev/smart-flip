@@ -41,6 +41,7 @@ import {
   IconDownload,
   IconVideo,
   IconClipboard,
+  IconUpload,
 } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -231,12 +232,13 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
       </div>
 
       {/* Jalan pintas */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal pre, formatif, post, VARK" />
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal pre, formatif, post, kelompok" />
         <ShortcutCard to="/asesmen/tes" icon={IconTarget} label="Tes khusus" desc="Sesi post-test berkode" />
+        <ShortcutCard to="/asesmen/kelompok" icon={IconUsers} label="Tes kelompok" desc="Kelompok berkode" />
+        <ShortcutCard to="/asesmen/tugas-akhir" icon={IconUpload} label="Tugas akhir" desc="Brief proyek dan penilaian" />
         <ShortcutCard to="/modul" icon={IconFolder} label="PDF topik" desc="PDF tiap topik" />
         <ShortcutCard to="/video" icon={IconVideo} label="Video topik" desc="Video tiap topik" />
-        <ShortcutCard to="/akun?tab=kelas" icon={IconUsers} label="Kelas" desc="Kelas dan kode gabung" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}

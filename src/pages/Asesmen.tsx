@@ -18,6 +18,7 @@ import {
 import { downloadCsv } from '../lib/analitik'
 import type { NGainCategory } from '../lib/ngain'
 import { PASS_SCORE } from '../lib/quizAttempts'
+import { fetchProjectsDosen, fetchSubmissionsDosen } from '../lib/tugasAkhir'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -62,6 +63,21 @@ export default function Asesmen() {
     queryKey: ['asesmen-formatif'],
     queryFn: fetchAsesmenAttempts,
   })
+  // Kolom "Tugas akhir" di tabel bawah: nilai total kiriman untuk brief
+  // TERBARU dosen ini saja (antrean #57 opsi A) — dosen dengan beberapa
+  // brief lama tetap hanya melihat kolom untuk yang paling baru dibuat.
+  const { data: latestProject } = useQuery({ queryKey: ['final-projects'], queryFn: fetchProjectsDosen })
+  const brief = latestProject?.[0] ?? null
+  const { data: briefSubmissions = [] } = useQuery({
+    queryKey: ['final-submissions', brief?.id],
+    queryFn: () => fetchSubmissionsDosen(brief!.id),
+    enabled: brief != null,
+  })
+  const tugasAkhirByUser = useMemo(() => {
+    const m = new Map<string, number | null>()
+    for (const s of briefSubmissions) m.set(s.user_id, s.total)
+    return m
+  }, [briefSubmissions])
 
   // `null` di KEDUA query = Supabase belum dikonfigurasi / gagal (mode
   // demo), beda maknanya dari array kosong (terhubung, memang belum ada
@@ -127,6 +143,12 @@ export default function Asesmen() {
             </Link>
             <Link to="/asesmen/tes" className="btn btn-secondary">
               Tes khusus
+            </Link>
+            <Link to="/asesmen/kelompok" className="btn btn-secondary">
+              Tes kelompok
+            </Link>
+            <Link to="/asesmen/tugas-akhir" className="btn btn-secondary">
+              Tugas akhir
             </Link>
             <button onClick={exportCsv} className="btn btn-primary">
               <IconDownload size={16} /> Unduh CSV
@@ -197,17 +219,17 @@ export default function Asesmen() {
         {/* TABEL PER MAHASISWA */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
           <div className="font-display text-base font-semibold text-brown mb-4 flex items-center gap-2">
-            <IconUsers size={18} /> Hasil per Mahasiswa
+            <IconUsers size={18} /> Hasil per mahasiswa
             {loading && <span className="text-xs font-normal text-brown-3">Memuat…</span>}
           </div>
           {peningkatan.perMahasiswa.length === 0 ? (
             emptyState('pengerjaan pre-test atau post-test yang tercatat')
           ) : (
             <div className="overflow-x-auto rounded-lg border" style={BORDER}>
-              <table className="w-full border-collapse min-w-[620px]">
+              <table className="w-full border-collapse min-w-[720px]">
                 <thead className="bg-cream">
                   <tr>
-                    {['Nama', 'Kelas', 'Pre', 'Post', 'Peningkatan', 'Kategori'].map((h, i) => (
+                    {['Nama', 'Kelas', 'Pre', 'Post', 'Peningkatan', 'Kategori', 'Tugas akhir'].map((h, i) => (
                       <th
                         key={h}
                         className={`px-3 py-2.5 text-xs font-semibold text-brown-2 tracking-wide uppercase ${
@@ -241,6 +263,9 @@ export default function Asesmen() {
                         ) : (
                           <span className="text-brown-3 text-xs">—</span>
                         )}
+                      </td>
+                      <td className="px-3 py-2.5 text-sm text-center font-semibold tabular-nums text-brown">
+                        {tugasAkhirByUser.get(m.userId) ?? '—'}
                       </td>
                     </tr>
                   ))}
