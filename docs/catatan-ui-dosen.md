@@ -32,7 +32,8 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 - Kolom Aksi tabel: header dan sel `text-center`, tombol berlabel plus ikon (`.btn .btn-secondary`, tinggi 44 px), hapus ikon saja (`.btn-danger .btn-icon`) dengan `aria-label`; di telepon label disembunyikan (`hidden sm:inline`). (papan #37)
 - Pemisah baris tabel dan daftar memakai `.row-divider` (0,5 px); kepala halaman, kepala modal, dan footer aksi modal tetap 1 px. (papan #33)
 - Video: Tambah tautan atau unggah berkas (bucket `modul-video`, mp4/webm ≤ 100 MB); thumbnail muncul saat tautan ditempel; kolom Video bergambar dan bisa diputar lewat modal. (#36, #44)
-- Asesmen: hasil kelas (pre, post, peningkatan skor), Bank soal 5 jenis bermodal, Tes khusus berkode. Kata "N-Gain" tidak dipakai di layar; istilahnya "peningkatan skor". (#4, #7, #13)
+- Asesmen: hasil kelas (pre, post, peningkatan skor, kolom Tugas akhir), Bank soal 4 jenis (Pre-test, Formatif, Post-test, Tes kelompok), Tes khusus berkode, Tes kelompok berkode per kelompok (`/asesmen/kelompok`), Tugas akhir (`/asesmen/tugas-akhir`: brief, rubrik, kiriman, nilai). VARK dan Diagnostik tidak ditautkan lagi. Kata "N-Gain" tidak dipakai di layar; istilahnya "peningkatan skor". (#4, #7, #13, papan #45, #46)
+- Berkas mahasiswa (tugas akhir) ada di bucket privat `tugas-akhir`; dibuka lewat signed URL, bukan URL publik.
 - Berkas (`/akun/pdf`, rel "Berkas"): dua tab `PillGroup` berlencana, PDF topik dan Video topik; daftar berkas bucket, pratinjau, hapus dengan modal. (#27, papan #38)
 - Dashboard dosen: Aktivitas, Perlu perhatian, Progres jadi tab `PillGroup` berlencana; tab tersimpan di `?tab=`. (papan #34)
 
