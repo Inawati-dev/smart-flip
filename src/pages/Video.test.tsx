@@ -75,6 +75,20 @@ function renderVideo(moduleId: number) {
   )
 }
 
+function renderVideoRak() {
+  const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
+  return render(
+    <QueryClientProvider client={queryClient}>
+      <MemoryRouter initialEntries={['/video']}>
+        <Routes>
+          <Route path="/video" element={<Video />} />
+          <Route path="/video/:id" element={<Video />} />
+        </Routes>
+      </MemoryRouter>
+    </QueryClientProvider>,
+  )
+}
+
 describe('Video (mahasiswa)', () => {
   beforeEach(() => {
     mockAuth.role = 'mahasiswa'
@@ -89,6 +103,13 @@ describe('Video (mahasiswa)', () => {
     renderVideo(2)
     await waitFor(() => expect(screen.getByText(/belum memasang video/)).toBeTruthy())
   })
+
+  it('shows the rak at /video with "Pertemuan 1" and does not redirect to a single video', async () => {
+    renderVideoRak()
+    await waitFor(() => expect(screen.getByText('Pertemuan 1')).toBeTruthy())
+    expect(screen.getByText('Modul 1')).toBeTruthy()
+    expect(screen.getByText('Modul 2')).toBeTruthy()
+  })
 })
 
 // Antrean 16 Sep 2026: label tombol dosen berubah sesuai ada/tidaknya
@@ -100,22 +121,22 @@ describe('Video (dosen)', () => {
 
   it('shows "Tambah video" for a module without a URL', async () => {
     renderVideo(2)
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3)) // header + 2 modules
+    await waitFor(() => expect(screen.getByText('Modul 2')).toBeTruthy())
     expect(screen.getByText('Tambah video')).toBeTruthy()
   })
 
   it('shows a preview button for a module with a URL', async () => {
     renderVideo(1)
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
+    await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
     expect(screen.getByText('Ubah video')).toBeTruthy()
-    const preview = document.querySelector('button[aria-label="Pratinjau video"]')
+    const preview = document.querySelector('button[aria-label*="Putar video"]')
     expect(preview).toBeTruthy()
   })
 
-  // Antrean #44b (16 Sep 2026): kolom Video menampilkan thumbnail YouTube.
-  it('shows a YouTube thumbnail image in the table for a module with a YouTube URL', async () => {
+  // Antrean #44b (16 Sep 2026): kartu video menampilkan thumbnail YouTube.
+  it('shows a YouTube thumbnail image on the card for a module with a YouTube URL', async () => {
     renderVideo(1)
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
+    await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
     const img = document.querySelector('img[src*="i.ytimg.com"]')
     expect(img).toBeTruthy()
   })
@@ -123,9 +144,18 @@ describe('Video (dosen)', () => {
   // Antrean #44a: modal Ubah/Tambah tautan juga menawarkan unggah berkas video.
   it('shows a video file input in the Ubah tautan modal', async () => {
     renderVideo(1)
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
+    await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
     fireEvent.click(screen.getByText('Ubah video'))
     const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm,.mp4,.webm"]')
     expect(input).toBeTruthy()
+  })
+
+  // Antrean #85: kartu Rak per topik punya tombol Ubah/Tambah video sendiri
+  // (bukan tabel).
+  it('shows "Ubah video"/"Tambah video" buttons per card', async () => {
+    renderVideoRak()
+    await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
+    expect(screen.getByText('Ubah video')).toBeTruthy()
+    expect(screen.getByText('Tambah video')).toBeTruthy()
   })
 })
