@@ -53,7 +53,7 @@ export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terku
   const bisaKlik = !terkunci && (to || onClick)
   const label = `Buka topik ${nomor}: ${judul}`
   return (
-    <div className={`flex flex-col gap-2 ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
+    <div className={`flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
       {bisaKlik && to ? (
         <Link to={to} className="block rounded-[4px_10px_10px_4px] transition-transform hover:-translate-y-0.5" aria-label={label}>
           {sampul}
@@ -76,7 +76,7 @@ export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terku
           {chip}
         </div>
       )}
-      {aksi && <div className="grid grid-cols-2 gap-1.5">{aksi}</div>}
+      {aksi && <div className="grid grid-cols-2 gap-1.5 mt-auto">{aksi}</div>}
     </div>
   )
 }

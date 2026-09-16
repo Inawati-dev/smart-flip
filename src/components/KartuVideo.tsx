@@ -50,7 +50,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
   const bisaKlik = !terkunci && (to || onClick)
   const label = `Putar video pertemuan ${nomor}: ${judul}`
   return (
-    <div className={`flex flex-col gap-2 ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
+    <div className={`flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
       {bisaKlik && to ? (
         <Link to={to} className="block rounded-[10px] transition-transform hover:-translate-y-0.5" aria-label={label}>
           {kotak}
@@ -63,9 +63,9 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
         kotak
       )}
       <span className="text-xs text-brown-3">Pertemuan {nomor}</span>
-      <b className="text-sm font-semibold text-brown leading-snug -mt-1">{judul}</b>
+      <b className="text-sm font-semibold text-brown leading-snug -mt-1 line-clamp-2 min-h-[2.5rem]" title={judul}>{judul}</b>
       {chip && <div className="flex items-center justify-between gap-2">{chip}</div>}
-      {aksi && <div className="grid grid-cols-2 gap-1.5">{aksi}</div>}
+      {aksi && <div className="grid grid-cols-2 gap-1.5 mt-auto">{aksi}</div>}
     </div>
   )
 }
