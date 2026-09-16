@@ -44,9 +44,12 @@ function renderPage() {
 }
 
 describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
-  it('hanya menampilkan tombol Bank soal, tanpa Tes khusus/Tes kelompok/Tugas akhir/Unduh CSV', async () => {
+  it('header tanpa tombol Bank soal (sudah jadi item rel), tanpa Tes khusus/Tes kelompok/Tugas akhir/Unduh CSV', async () => {
     renderPage()
-    expect(await screen.findByText('Bank soal')).toBeTruthy()
+    expect(await screen.findByText('Hasil kelas')).toBeTruthy()
+    // Tautan Bank soal hanya boleh ada di rel navigasi, bukan di header halaman.
+    const main = document.querySelector('main')!
+    expect(main.querySelector('a[href="/asesmen/bank"]')).toBeNull()
     expect(screen.queryByText('Tes khusus')).toBeFalsy()
     expect(screen.queryByText('Tes kelompok')).toBeFalsy()
     expect(screen.queryByText('Tugas akhir')).toBeFalsy()

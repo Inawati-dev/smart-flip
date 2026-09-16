@@ -1,5 +1,5 @@
 import { useMemo, useState, type DragEvent } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useCourse } from '../contexts/CourseContext'
@@ -71,9 +71,6 @@ export function BankSoal() {
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <Link to="/asesmen" className="text-brown-3 text-sm mb-4 inline-block inline-flex items-center min-h-11">
-          ← Hasil asesmen
-        </Link>
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
           <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
           <MataKuliahSelect size="sm" />
