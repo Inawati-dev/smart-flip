@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  fetchProjectMhs,
+  fetchProjectsMhs,
+  type FinalProject,
   fetchMySubmission,
   submitTugasAkhir,
   signedFileUrl,
@@ -27,16 +28,38 @@ function formatTanggal(iso: string): string {
 }
 
 export function TugasAkhirMhsCard() {
-  const queryClient = useQueryClient()
   const { courseId } = useCourse()
-  const { data: project, isLoading } = useQuery({
-    queryKey: ['final-project-mhs', courseId],
-    queryFn: () => fetchProjectMhs(courseId),
+  const { data: projects = [], isLoading } = useQuery({
+    queryKey: ['final-projects-mhs', courseId],
+    queryFn: () => fetchProjectsMhs(courseId),
   })
+  return (
+    <div className="bg-ivory rounded-xl border p-4" style={BORDER}>
+      <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Tugas akhir</div>
+      {isLoading ? (
+        <p className="text-sm text-brown-3">Memuat…</p>
+      ) : projects.length === 0 ? (
+        <p className="text-sm text-brown-3">Belum ada brief dari dosen.</p>
+      ) : (
+        <div className="flex flex-col">
+          {projects.map((p, i) => (
+            <div key={p.id} className={i > 0 ? 'row-divider pt-3 mt-3' : ''}>
+              <BriefItem project={p} />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Satu brief: status kiriman, tombol kirim, modal. Dipisah supaya tiap brief
+// punya query kiriman dan state modalnya sendiri.
+function BriefItem({ project }: { project: FinalProject }) {
+  const queryClient = useQueryClient()
   const { data: submission } = useQuery({
-    queryKey: ['final-submission-mhs', project?.id],
-    queryFn: () => fetchMySubmission(project!.id),
-    enabled: project != null,
+    queryKey: ['final-submission-mhs', project.id],
+    queryFn: () => fetchMySubmission(project.id),
   })
 
   const [expand, setExpand] = useState(false)
@@ -63,7 +86,6 @@ export function TugasAkhirMhsCard() {
   }
 
   async function handleSubmit() {
-    if (!project) return
     if (!file && !link.trim() && !submission?.file_path) {
       setError('Pilih berkas atau isi tautan.')
       return
@@ -93,14 +115,8 @@ export function TugasAkhirMhsCard() {
   }
 
   return (
-    <div className="bg-ivory rounded-xl border p-4" style={BORDER}>
-      <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Tugas akhir</div>
-
-      {isLoading ? (
-        <p className="text-sm text-brown-3">Memuat…</p>
-      ) : !project ? (
-        <p className="text-sm text-brown-3">Belum ada brief dari dosen.</p>
-      ) : (
+    <div>
+      {(
         <>
           <h3 className="text-sm font-semibold text-brown mb-1">{project.title}</h3>
           <p className="text-xs text-brown-3 mb-2 flex items-center gap-1.5 flex-wrap">
@@ -178,7 +194,7 @@ export function TugasAkhirMhsCard() {
         </>
       )}
 
-      {modalOpen && project && (
+      {modalOpen && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}

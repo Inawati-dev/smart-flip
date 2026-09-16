@@ -27,12 +27,12 @@ const KATEGORI_LABEL: Record<NGainCategory, string> = { tinggi: 'Tinggi', sedang
 const KATEGORI_CLASS: Record<NGainCategory, string> = {
   tinggi: 'bg-sage/20 text-sage-d',
   sedang: 'bg-terra/20 text-terra-d',
-  rendah: 'bg-red/10 text-red',
+  rendah: 'bg-danger/10 text-danger',
 }
 const KATEGORI_BAR: Record<NGainCategory, string> = {
   tinggi: 'var(--sage)',
   sedang: 'var(--terra)',
-  rendah: 'var(--red)',
+  rendah: 'var(--danger)',
 }
 
 function formatSkor(v: number | null): string {
@@ -47,7 +47,7 @@ function formatGain(v: number | null): string {
 // tiga warna lama yang tengahnya masih menyimpan ambang 60 yang sudah tidak
 // dipakai (lihat src/lib/quizAttempts.ts).
 function scoreClass(score: number): string {
-  return score >= PASS_SCORE ? 'text-sage-d' : 'text-red'
+  return score >= PASS_SCORE ? 'text-sage-d' : 'text-danger'
 }
 
 export default function Asesmen() {

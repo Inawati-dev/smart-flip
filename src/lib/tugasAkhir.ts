@@ -221,23 +221,29 @@ export async function gradeSubmission(
 
 // ── Mahasiswa ──
 
-/** Brief yang terbuka untuk mahasiswa ini (RLS menyaring kelas). Yang terbaru bila lebih dari satu. */
-export async function fetchProjectMhs(courseId?: number): Promise<FinalProject | null> {
-  if (!isSupabaseConfigured) return null
+/** Semua brief terbuka untuk mahasiswa ini di mata kuliah terpilih (RLS menyaring kelas), terbaru dulu. */
+export async function fetchProjectsMhs(courseId?: number): Promise<FinalProject[]> {
+  if (!isSupabaseConfigured) return []
   try {
-    let query = supabase.from('tugas_akhir_briefs').select('*').eq('is_open', true).order('created_at', { ascending: false }).limit(1)
+    let query = supabase.from('tugas_akhir_briefs').select('*').eq('is_open', true).order('created_at', { ascending: false })
     if (courseId != null) query = query.eq('course_id', courseId)
-    let { data, error } = await query.maybeSingle()
+    let { data, error } = await query
     if (error && courseId != null && (error.code === '42703' || /course_id/.test(error.message))) {
-      ;({ data, error } = await supabase.from('tugas_akhir_briefs').select('*').eq('is_open', true).order('created_at', { ascending: false }).limit(1).maybeSingle())
+      ;({ data, error } = await supabase.from('tugas_akhir_briefs').select('*').eq('is_open', true).order('created_at', { ascending: false }))
     }
     if (error) throw error
-    return data ? parseProject(data as Record<string, unknown>) : null
+    return (data ?? []).map((r) => parseProject(r as Record<string, unknown>))
   } catch (e) {
-    if (isMissingSchema(e)) warnOnce('fetchProjectMhs', e)
-    else console.warn('[tugasAkhir] fetchProjectMhs gagal:', e)
-    return null
+    if (isMissingSchema(e)) warnOnce('fetchProjectsMhs', e)
+    else console.warn('[tugasAkhir] fetchProjectsMhs gagal:', e)
+    return []
   }
+}
+
+/** Brief terbaru saja; dipertahankan untuk pemanggil lama. */
+export async function fetchProjectMhs(courseId?: number): Promise<FinalProject | null> {
+  const all = await fetchProjectsMhs(courseId)
+  return all[0] ?? null
 }
 
 export async function fetchMySubmission(projectId: string): Promise<FinalSubmission | null> {

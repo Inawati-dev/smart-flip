@@ -336,7 +336,7 @@ export function KelasPanel() {
               </button>
             </div>
             {formError && (
-              <div className="text-red text-sm rounded-lg px-3 py-2.5 border border-red/30 bg-red/10">{formError}</div>
+              <div className="text-danger text-sm rounded-lg px-3 py-2.5 border border-danger/30 bg-danger/10">{formError}</div>
             )}
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
               Nama Kelas
@@ -451,7 +451,7 @@ export function KelasPanel() {
             </div>
 
             {importError && (
-              <div className="text-red text-sm rounded-lg px-3 py-2.5 border border-red/30 bg-red/10 mb-3.5">
+              <div className="text-danger text-sm rounded-lg px-3 py-2.5 border border-danger/30 bg-danger/10 mb-3.5">
                 {importError}
               </div>
             )}
@@ -512,7 +512,7 @@ export function KelasPanel() {
                               {r.valid ? (
                                 <span style={{ color: 'var(--success)' }}>Valid</span>
                               ) : (
-                                <span className="text-red" title={r.reason}>
+                                <span className="text-danger" title={r.reason}>
                                   {r.reason}
                                 </span>
                               )}
@@ -592,7 +592,7 @@ export function KelasPanel() {
                     </span>
                   )}
                   {importSummary.error > 0 && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-red/10 text-red">
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-danger/10 text-danger">
                       {importSummary.error} gagal
                     </span>
                   )}
@@ -623,7 +623,7 @@ export function KelasPanel() {
                               {r.status === 'berhasil' && <span style={{ color: 'var(--success)' }}>Berhasil</span>}
                               {r.status === 'kelas_penuh' && <span style={{ color: 'var(--warning)' }}>Kelas Penuh</span>}
                               {r.status === 'error' && (
-                                <span className="text-red" title={r.error}>
+                                <span className="text-danger" title={r.error}>
                                   Gagal
                                 </span>
                               )}
