@@ -38,6 +38,12 @@ export interface ThemeColors {
   // sebagai rgba(62,54,46,...) di tiap modal, jadi kelihatan salah di Dark.
   overlay: string
   shadowColor: string
+  navTileBg: string
+  navTileBg2: string
+  navTileFg: string
+  navTileActiveBg: string
+  navTileActiveFg: string
+  navTileActiveRing: string
   fontSans: string
   fontDisplay: string
   r: string
@@ -85,6 +91,12 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       infoSoft: 'rgba(74,126,160,.15)',
       overlay: 'rgba(62,54,46,.52)',
       shadowColor: '#3E362E',
+      navTileBg: '#FFFFFF',
+      navTileBg2: '#F1F1F0',
+      navTileFg: '#57534E',
+      navTileActiveBg: 'rgba(59,166,241,.14)',
+      navTileActiveFg: '#1D5FA8',
+      navTileActiveRing: 'rgba(59,166,241,.55)',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',
@@ -125,6 +137,12 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       infoSoft: 'rgba(56,189,248,.16)',
       overlay: 'rgba(0,0,0,.55)',
       shadowColor: '#000000',
+      navTileBg: '#2C3447',
+      navTileBg2: '#232B3B',
+      navTileFg: '#C9D1E0',
+      navTileActiveBg: 'rgba(59,166,241,.20)',
+      navTileActiveFg: '#7CC4F6',
+      navTileActiveRing: 'rgba(59,166,241,.50)',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',
