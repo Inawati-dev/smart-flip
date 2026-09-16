@@ -12,6 +12,7 @@ import { upsertVideoProgress, shouldSendTimeUpdate } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
 import { FileInput } from '../components/FileInput'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -106,9 +107,12 @@ function VideoMahasiswa() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <h1 className="text-2xl font-bold text-brown mb-4">
-          Pertemuan {idx + 1} · {modul.title}
-        </h1>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <h1 className="text-2xl font-bold text-brown">
+            Pertemuan {idx + 1} · {modul.title}
+          </h1>
+          <MataKuliahSelect />
+        </div>
         <PertemuanStepper current={current} basePath="/video" statusOf={statusOf} />
 
         {status === 'locked' ? (
@@ -330,7 +334,10 @@ function VideoDosen() {
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <h1 className="font-display text-2xl font-bold text-brown mb-4">Video</h1>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <h1 className="font-display text-2xl font-bold text-brown">Video</h1>
+          <MataKuliahSelect />
+        </div>
 
         <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
           <div className="overflow-x-auto">

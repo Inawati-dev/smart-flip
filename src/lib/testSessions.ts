@@ -11,6 +11,7 @@ export type SessionKind = 'post' | 'campuran'
 
 export interface TestSession {
   id: string
+  course_id?: number
   name: string
   kind: SessionKind
   module_ids: number[]
@@ -35,6 +36,8 @@ export interface CreateSessionInput {
   shuffle: boolean
   singleAttempt: boolean
   dosenId: string
+  /** Mata kuliah (v23). */
+  courseId?: number
 }
 
 export interface VerifiedSession {
@@ -86,17 +89,18 @@ function warnOnceMissingSchema(context: string, e: unknown): void {
   console.warn(`[testSessions] ${context} - migration_v18 belum jalan?`, e)
 }
 
-export async function fetchSessionsByDosen(): Promise<TestSession[]> {
+export async function fetchSessionsByDosen(courseId?: number): Promise<TestSession[]> {
   if (!isSupabaseConfigured) return []
   try {
     const { data: userData } = await supabase.auth.getUser()
     const uid = userData.user?.id
     if (!uid) return []
-    const { data, error } = await supabase
-      .from('test_sessions')
-      .select('*')
-      .eq('dosen_id', uid)
-      .order('created_at', { ascending: false })
+    let query = supabase.from('test_sessions').select('*').eq('dosen_id', uid).order('created_at', { ascending: false })
+    if (courseId != null) query = query.eq('course_id', courseId)
+    let { data, error } = await query
+    if (error && courseId != null && (error.code === '42703' || /course_id/.test(error.message))) {
+      ;({ data, error } = await supabase.from('test_sessions').select('*').eq('dosen_id', uid).order('created_at', { ascending: false }))
+    }
     if (error) throw error
     return (data as TestSession[]) ?? []
   } catch (e) {
@@ -125,6 +129,7 @@ export async function createSession(data: CreateSessionInput): Promise<TestSessi
     shuffle: data.shuffle,
     single_attempt: data.singleAttempt,
     dosen_id: data.dosenId,
+    ...(data.courseId != null ? { course_id: data.courseId } : {}),
   }
   for (let attempt = 0; attempt < 2; attempt++) {
     const { data: inserted, error } = await supabase

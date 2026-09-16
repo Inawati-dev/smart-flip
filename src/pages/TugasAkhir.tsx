@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
 import { useKelasByDosen } from '../hooks/useKelas'
 import { labelKelas, tahunUnik } from '../lib/kelas'
 import { isSupabaseConfigured } from '../lib/supabase'
@@ -19,7 +20,6 @@ import {
   type RubrikKriteria,
   type SubmissionDosenRow,
 } from '../lib/tugasAkhir'
-import { Layout } from '../components/Layout'
 import { IconEdit, IconTrash, IconLock, IconLink, IconDocument } from '../components/icons'
 
 // Tugas akhir sisi dosen (antrean #57 opsi A). Pola daftar + modal ditiru
@@ -39,15 +39,20 @@ function formatTanggal(iso: string): string {
 }
 
 export function TugasAkhir() {
+  return <Navigate to="/asesmen/bank?tab=tugas" replace />
+}
+
+export function TugasAkhirPanel() {
   const { user } = useAuth()
+  const { courseId } = useCourse()
   const queryClient = useQueryClient()
   const { data: kelasList = [] } = useKelasByDosen(user?.id)
   const [searchParams, setSearchParams] = useSearchParams()
   const briefId = searchParams.get('brief')
 
   const { data: projects = [], isLoading } = useQuery({
-    queryKey: ['final-projects'],
-    queryFn: fetchProjectsDosen,
+    queryKey: ['final-projects', courseId],
+    queryFn: () => fetchProjectsDosen(courseId),
   })
   const selectedProject = projects.find((p) => p.id === briefId) ?? null
 
@@ -58,7 +63,7 @@ export function TugasAkhir() {
   }
 
   async function invalidateProjects() {
-    await queryClient.invalidateQueries({ queryKey: ['final-projects'] })
+    await queryClient.invalidateQueries({ queryKey: ['final-projects', courseId] })
   }
 
   function namaKelas(id: string | null): string {
@@ -124,6 +129,7 @@ export function TugasAkhir() {
         deadline: deadline ? new Date(deadline).toISOString() : null,
         rubric,
         classIds: semuaKelas ? [] : classIds,
+        courseId,
       }
       if (editing) await updateProject(editing.id, input)
       else await createProject(input, user.id)
@@ -223,18 +229,13 @@ export function TugasAkhir() {
   }
 
   return (
-    <Layout>
-      <div className="p-4 md:p-6 pb-16">
-        <Link to="/asesmen" className="text-brown-3 text-sm mb-4 inline-block inline-flex items-center min-h-11">
-          ← Hasil asesmen
-        </Link>
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-          <h1 className="font-display text-2xl font-bold text-brown">Tugas akhir</h1>
-          <button onClick={openCreate} className="btn btn-primary btn-sm">
-            + Buat brief
-          </button>
-        </div>
-        <p className="text-brown-3 text-sm mb-5">Brief proyek untuk mahasiswa dan penilaian rubrik.</p>
+    <>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+        <p className="text-brown-3 text-sm">Brief proyek untuk mahasiswa dan penilaian rubrik.</p>
+        <button onClick={openCreate} className="btn btn-primary btn-sm">
+          + Buat brief
+        </button>
+      </div>
 
         {!isSupabaseConfigured ? (
           <div className="bg-ivory rounded-2xl border p-5 text-sm text-brown-3" style={BORDER}>
@@ -395,7 +396,6 @@ export function TugasAkhir() {
             )}
           </>
         )}
-      </div>
 
       {/* Modal buat/ubah brief */}
       {modalOpen && (
@@ -641,7 +641,7 @@ export function TugasAkhir() {
           {toast}
         </div>
       )}
-    </Layout>
+    </>
   )
 }
 export default TugasAkhir

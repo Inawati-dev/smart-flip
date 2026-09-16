@@ -29,6 +29,22 @@ vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: false,
 }))
 
+// Dua mata kuliah tetap (antrean #68) — cocok dengan query key
+// ['modules', 'course', 1] yang dipakai tes di bawah (courseId bawaan 1).
+const TWO_COURSES = [
+  { id: 1, code: 'MPP', name: 'Metode Penelitian dan Pengembangan', description: '', dosen_id: null, order_num: 1, is_active: true },
+  { id: 2, code: 'PD', name: 'Perpustakaan Digital', description: '', dosen_id: null, order_num: 2, is_active: true },
+]
+vi.mock('../contexts/CourseContext', () => ({
+  useCourse: () => ({
+    courses: TWO_COURSES,
+    courseId: 1,
+    course: TWO_COURSES[0],
+    setCourseId: () => {},
+    isLoading: false,
+  }),
+}))
+
 const navigateMock = vi.hoisted(() => vi.fn())
 vi.mock('react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router')>()
@@ -77,7 +93,7 @@ describe('ModulList', () => {
   it('redirects a mahasiswa to the first module whose progress is below 100%, ordered by order_num', async () => {
     mockAuth.role = 'mahasiswa'
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
     queryClient.setQueryData(['progress', 'all'], {
       'books/modul-01.pdf': { pct: 100, currentPage: 5, lastOpened: null },
       'books/modul-02.pdf': { pct: 40, currentPage: 2, lastOpened: null },
@@ -91,7 +107,7 @@ describe('ModulList', () => {
   it('falls back to the first module when every module is either complete or untouched', async () => {
     mockAuth.role = 'mahasiswa'
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
     queryClient.setQueryData(['progress', 'all'], {})
 
     renderModulList(queryClient)
@@ -102,7 +118,7 @@ describe('ModulList', () => {
   it('shows a management table with 9 rows for a dosen, without redirecting', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
     queryClient.setQueryData(
       ['manajemen', 'customs', NINE_MODULES.map((m) => m.id)],
       {},
@@ -118,7 +134,7 @@ describe('ModulList', () => {
   it('shows a "Tambah topik" button for a dosen', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
     queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
 
     renderModulList(queryClient)
@@ -131,7 +147,7 @@ describe('ModulList', () => {
   it('shows a PDF file input in the Tambah Topik modal', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
     queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
 
     renderModulList(queryClient)
@@ -146,7 +162,7 @@ describe('ModulList', () => {
   it('clicking Hapus on a row opens a delete confirmation modal', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], NINE_MODULES)
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
     queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
 
     renderModulList(queryClient)
@@ -157,5 +173,20 @@ describe('ModulList', () => {
     expect(screen.getByText(/Hapus topik/)).toBeTruthy()
     expect(screen.getByText(/ikut terhapus/)).toBeTruthy()
     expect(screen.getByText('Ya, Hapus')).toBeTruthy()
+  })
+
+  // Antrean #68 (16 Sep 2026): pemilih mata kuliah tampil di judul saat
+  // context punya lebih dari satu mata kuliah.
+  it('shows the mata kuliah select when there are two courses', async () => {
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
+    queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
+
+    renderModulList(queryClient)
+
+    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(10))
+    expect(screen.getByLabelText('Pilih mata kuliah')).toBeTruthy()
+    expect(screen.getByText('Kelola mata kuliah')).toBeTruthy()
   })
 })

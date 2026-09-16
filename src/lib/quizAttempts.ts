@@ -71,18 +71,30 @@ export async function fetchQuizAttempts(moduleId: number): Promise<QuizAttempt[]
 // dan halaman post-test (§4.5). Toleran terhadap deploy yang lebih baru dari
 // migrasi v17: kalau kolom `kind` belum ada di DB, tidak ada cara membedakan
 // pre/post dari data lama, jadi kembalikan array kosong.
-export async function fetchAttemptsByKind(kind: 'pre' | 'post'): Promise<QuizAttempt[]> {
+// courseId (v23): pre/post per mata kuliah. Tanpa courseId = semua (dipakai
+// halaman lama). Kolom belum ada di DB (42703) -> ulang tanpa saringan.
+export async function fetchAttemptsByKind(kind: 'pre' | 'post', courseId?: number): Promise<QuizAttempt[]> {
   if (!isSupabaseConfigured) return []
   try {
     const { data: userData } = await supabase.auth.getUser()
     const uid = userData.user?.id
     if (!uid) return []
-    const { data, error } = await supabase
+    let query = supabase
       .from('quiz_attempts')
       .select('score, answers, attempted_at, kind, question_order')
       .eq('user_id', uid)
       .eq('kind', kind)
       .order('attempted_at', { ascending: true })
+    if (courseId != null) query = query.eq('course_id', courseId)
+    let { data, error } = await query
+    if (error && courseId != null && (error.code === '42703' || /course_id/.test(error.message))) {
+      ;({ data, error } = await supabase
+        .from('quiz_attempts')
+        .select('score, answers, attempted_at, kind, question_order')
+        .eq('user_id', uid)
+        .eq('kind', kind)
+        .order('attempted_at', { ascending: true }))
+    }
     if (error) throw error
     if (data) {
       return data.map((r) => ({
@@ -204,6 +216,8 @@ export async function saveQuizAttempt(
     kind?: 'pre' | 'formatif' | 'post'
     questionOrder?: unknown
     sessionId?: string
+    /** Mata kuliah (v23). Wajib diisi untuk pre/post; formatif boleh ikut topiknya. */
+    courseId?: number
   },
 ): Promise<void> {
   if (isSupabaseConfigured) {
@@ -221,7 +235,12 @@ export async function saveQuizAttempt(
         if (attempt.kind && attempt.kind !== 'formatif') row.kind = attempt.kind
         if (attempt.questionOrder !== undefined) row.question_order = attempt.questionOrder
         if (attempt.sessionId !== undefined) row.session_id = attempt.sessionId
-        const { error } = await supabase.from('quiz_attempts').insert(row)
+        if (attempt.courseId !== undefined) row.course_id = attempt.courseId
+        let { error } = await supabase.from('quiz_attempts').insert(row)
+        if (error && attempt.courseId !== undefined && (error.code === '42703' || /course_id/.test(error.message))) {
+          delete row.course_id
+          ;({ error } = await supabase.from('quiz_attempts').insert(row))
+        }
         if (error) throw error
         return
       }

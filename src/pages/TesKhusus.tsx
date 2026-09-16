@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Navigate, useParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
 import { useModules } from '../hooks/useModules'
 import { useKelasByDosen } from '../hooks/useKelas'
 import { labelKelas, tahunUnik } from '../lib/kelas'
@@ -35,7 +36,8 @@ const BORDER = { borderColor: 'var(--border)' } as const
 
 export function TesKhusus() {
   const { role } = useAuth()
-  return role === 'dosen' ? <DosenTesKhusus /> : <MahasiswaTesKhusus />
+  if (role === 'dosen') return <Navigate to="/asesmen/bank?tab=khusus" replace />
+  return <MahasiswaTesKhusus />
 }
 
 export default TesKhusus
@@ -52,14 +54,15 @@ function formatWaktu(from: string | null, until: string | null): string {
   return `Sampai ${fmt(until as string)}`
 }
 
-function DosenTesKhusus() {
+export function DosenTesKhususPanel() {
   const { user } = useAuth()
+  const { courseId } = useCourse()
   const queryClient = useQueryClient()
   const { data: modules = [] } = useModules()
   const { data: kelasList = [] } = useKelasByDosen(user?.id)
   const { data: sessions = [], isLoading } = useQuery({
-    queryKey: ['test-sessions', user?.id],
-    queryFn: fetchSessionsByDosen,
+    queryKey: ['test-sessions', user?.id, courseId],
+    queryFn: () => fetchSessionsByDosen(courseId),
     enabled: Boolean(user?.id),
   })
 
@@ -70,7 +73,7 @@ function DosenTesKhusus() {
   }
 
   async function invalidate() {
-    await queryClient.invalidateQueries({ queryKey: ['test-sessions', user?.id] })
+    await queryClient.invalidateQueries({ queryKey: ['test-sessions', user?.id, courseId] })
   }
 
   // == Modal buat sesi ==
@@ -126,6 +129,7 @@ function DosenTesKhusus() {
         shuffle,
         singleAttempt,
         dosenId: user.id,
+        courseId,
       })
       await invalidate()
       showToast('Sesi tes dibuat')
@@ -177,20 +181,15 @@ function DosenTesKhusus() {
   }
 
   return (
-    <Layout>
-      <div className="p-4 md:p-6 pb-16">
-        <Link to="/asesmen" className="text-brown-3 text-sm mb-4 inline-block inline-flex items-center min-h-11">
-          ← Hasil asesmen
-        </Link>
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-          <h1 className="font-display text-2xl font-bold text-brown">Tes khusus</h1>
-          <button onClick={openCreateModal} className="btn btn-primary">
-            + Buat sesi tes
-          </button>
-        </div>
-        <p className="text-brown-3 text-sm mb-5">
+    <>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+        <p className="text-brown-3 text-sm">
           Hanya tes khusus yang memakai kode. Pre-test dan tes formatif tanpa kode.
         </p>
+        <button onClick={openCreateModal} className="btn btn-primary btn-sm">
+          + Buat sesi tes
+        </button>
+      </div>
 
         <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
           <div className="overflow-x-auto">
@@ -266,7 +265,6 @@ function DosenTesKhusus() {
             </table>
           </div>
         </div>
-      </div>
 
       {/* Modal buat sesi tes */}
       {modalOpen && (
@@ -495,7 +493,7 @@ function DosenTesKhusus() {
           {toast}
         </div>
       )}
-    </Layout>
+    </>
   )
 }
 
@@ -516,6 +514,7 @@ function urutanTanpaAcak(soal: KuisSoal[]): AcakSoalResult {
 }
 
 function MahasiswaTesKhusus() {
+  const { courseId } = useCourse()
   const { code: codeParam } = useParams()
   const [kodeInput, setKodeInput] = useState(codeParam ?? '')
   const [verifying, setVerifying] = useState(false)
@@ -531,10 +530,10 @@ function MahasiswaTesKhusus() {
   const [hasilBaru, setHasilBaru] = useState<number | null>(null)
 
   const { data: soal = [] } = useQuery({
-    queryKey: ['test-session-soal', session?.session_id],
+    queryKey: ['test-session-soal', session?.session_id, courseId],
     queryFn: async () => {
       if (!session) return []
-      if (session.kind === 'post') return fetchBankSoal('post')
+      if (session.kind === 'post') return fetchBankSoal('post', undefined, courseId)
       const lists = await Promise.all(session.module_ids.map((id) => fetchBankSoal('formatif', id)))
       return lists.flat()
     },
@@ -542,8 +541,8 @@ function MahasiswaTesKhusus() {
   })
 
   const { data: preAttempts = [] } = useQuery({
-    queryKey: ['attempts-by-kind', 'pre'],
-    queryFn: () => fetchAttemptsByKind('pre'),
+    queryKey: ['attempts-by-kind', 'pre', courseId],
+    queryFn: () => fetchAttemptsByKind('pre', courseId),
     enabled: session?.kind === 'post' && hasilBaru != null,
   })
 
@@ -595,6 +594,7 @@ function MahasiswaTesKhusus() {
         kind: session.kind === 'post' ? 'post' : 'formatif',
         questionOrder: acak.urut,
         sessionId: session.session_id,
+        courseId,
       })
     } catch (e) {
       console.warn('[tes-khusus] saveQuizAttempt gagal:', e)

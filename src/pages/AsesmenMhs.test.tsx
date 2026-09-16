@@ -40,8 +40,9 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
 
   it('bank soal pre-test kosong menampilkan tombol "Lanjut tanpa pre-test"', async () => {
     const queryClient = newQueryClient()
-    queryClient.setQueryData(['bank-soal', 'pre'], [])
-    queryClient.setQueryData(['attempts-by-kind', 'pre'], [])
+    // courseId bawaan (tanpa CourseProvider) = 1, lihat CourseContext.tsx.
+    queryClient.setQueryData(['bank-soal', 'pre', 1], [])
+    queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
     renderAt('/asesmen/pre', queryClient)
 
     expect(await screen.findByText('Lanjut tanpa pre-test')).toBeTruthy()
@@ -50,8 +51,8 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
 
   it('pre-test yang sudah dikerjakan langsung menampilkan skor tersimpan', async () => {
     const queryClient = newQueryClient()
-    queryClient.setQueryData(['bank-soal', 'pre'], [])
-    queryClient.setQueryData(['attempts-by-kind', 'pre'], [
+    queryClient.setQueryData(['bank-soal', 'pre', 1], [])
+    queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [
       { score: 70, answers: [], completedAt: '2026-01-01', date: '01 Jan 2026', kind: 'pre' },
     ])
     renderAt('/asesmen/pre', queryClient)
@@ -64,8 +65,8 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
 describe('AsesmenMhs — post-test (spec §9 WP6 poin 5c)', () => {
   it('belum ada sesi post-test menampilkan pesan menunggu dosen', async () => {
     const queryClient = newQueryClient()
-    queryClient.setQueryData(['attempts-by-kind', 'post'], [])
-    queryClient.setQueryData(['attempts-by-kind', 'pre'], [])
+    queryClient.setQueryData(['attempts-by-kind', 'post', 1], [])
+    queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
     renderAt('/asesmen/post', queryClient)
 
     expect(await screen.findByText('Post-test dibuka dosen lewat tes khusus.')).toBeTruthy()

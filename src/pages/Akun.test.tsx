@@ -47,7 +47,7 @@ function renderAkun(queryClient: QueryClient, initialEntries: string[] = ['/akun
 }
 
 function seedQueryCache(queryClient: QueryClient) {
-  queryClient.setQueryData(['modules'], [])
+  queryClient.setQueryData(['modules', 'course', 1], [])
   queryClient.setQueryData(['progress', 'all'], {})
   queryClient.setQueryData(['quizAttempts', 'all'], [])
   queryClient.setQueryData(['analitik', 'studentStats'], [])

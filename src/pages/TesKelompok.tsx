@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearchParams } from 'react-router'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { fetchBankSoal, type KuisSoal } from '../lib/kuisSoal'
 import { acakSoal, nilai, type AcakSoalResult, type AcakUrutSoal, type SoalTampil } from '../lib/acak'
@@ -34,7 +35,8 @@ const BORDER = { borderColor: 'var(--border)' } as const
 
 export function TesKelompok() {
   const { role } = useAuth()
-  return role === 'dosen' ? <DosenTesKelompok /> : <MahasiswaTesKelompok />
+  if (role === 'dosen') return <Navigate to="/asesmen/bank?tab=kelompok" replace />
+  return <MahasiswaTesKelompok />
 }
 
 export default TesKelompok
@@ -47,19 +49,20 @@ function formatTanggal(iso: string): string {
   return new Date(iso).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
-function DosenTesKelompok() {
+export function DosenTesKelompokPanel() {
   const { user } = useAuth()
+  const { courseId } = useCourse()
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
 
   const { data: sessions = [], isLoading } = useQuery({
-    queryKey: ['group-sessions'],
-    queryFn: fetchGroupSessions,
+    queryKey: ['group-sessions', courseId],
+    queryFn: () => fetchGroupSessions(courseId),
     enabled: isSupabaseConfigured,
   })
   const { data: soalKelompok = [] } = useQuery({
-    queryKey: ['bank-soal', 'kelompok', null],
-    queryFn: () => fetchBankSoal('kelompok'),
+    queryKey: ['bank-soal', 'kelompok', null, courseId],
+    queryFn: () => fetchBankSoal('kelompok', undefined, courseId),
     enabled: isSupabaseConfigured,
   })
 
@@ -70,7 +73,7 @@ function DosenTesKelompok() {
   }
 
   async function invalidateSessions() {
-    await queryClient.invalidateQueries({ queryKey: ['group-sessions'] })
+    await queryClient.invalidateQueries({ queryKey: ['group-sessions', courseId] })
   }
 
   // == Modal buat sesi ==
@@ -93,7 +96,7 @@ function DosenTesKelompok() {
     if (!user?.id || !name.trim() || soalKelompok.length === 0) return
     setSaving(true)
     try {
-      await createGroupSession({ name: name.trim(), groupCount, groupSize, shuffle, dosenId: user.id })
+      await createGroupSession({ name: name.trim(), groupCount, groupSize, shuffle, dosenId: user.id, courseId })
       await invalidateSessions()
       showToast('Sesi tes kelompok dibuat')
       setModalOpen(false)
@@ -176,23 +179,18 @@ function DosenTesKelompok() {
   }
 
   return (
-    <Layout>
-      <div className="p-4 md:p-6 pb-16">
-        <Link to="/asesmen" className="text-brown-3 text-sm mb-4 inline-block inline-flex items-center min-h-11">
-          ← Hasil asesmen
-        </Link>
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
-          <h1 className="font-display text-2xl font-bold text-brown">Tes kelompok</h1>
-          <button onClick={openCreateModal} className="btn btn-primary btn-sm">
-            + Buat sesi
-          </button>
-        </div>
-        <p className="text-brown-3 text-sm mb-1">
+    <>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-1">
+        <p className="text-brown-3 text-sm">
           Buat sesi, bagikan kode tiap kelompok, lihat skor per orang dan rata-rata kelompok.
         </p>
-        <Link to="/asesmen/bank?jenis=kelompok" className="text-xs inline-block mb-5" style={{ color: 'var(--terra-d)' }}>
-          Kelola soal
-        </Link>
+        <button onClick={openCreateModal} className="btn btn-primary btn-sm">
+          + Buat sesi
+        </button>
+      </div>
+      <Link to="/asesmen/bank?tab=soal&jenis=kelompok" className="text-xs inline-block mb-5" style={{ color: 'var(--terra-d)' }}>
+        Kelola soal
+      </Link>
 
         {!isSupabaseConfigured ? (
           <div className="bg-ivory rounded-2xl border p-5 text-sm text-brown-3" style={BORDER}>
@@ -265,7 +263,6 @@ function DosenTesKelompok() {
             ))}
           </div>
         )}
-      </div>
 
       {/* Modal buat sesi */}
       {modalOpen && (
@@ -455,7 +452,7 @@ function DosenTesKelompok() {
           {toast}
         </div>
       )}
-    </Layout>
+    </>
   )
 }
 
@@ -478,6 +475,7 @@ function urutanTanpaAcak(soal: KuisSoal[]): AcakSoalResult {
 
 function MahasiswaTesKelompok() {
   const { user } = useAuth()
+  const { courseId } = useCourse()
   const queryClient = useQueryClient()
   const { code: codeParam } = useParams()
   const [kodeInput, setKodeInput] = useState(codeParam ?? '')
@@ -497,8 +495,8 @@ function MahasiswaTesKelompok() {
   const [saving, setSaving] = useState(false)
 
   const { data: soal = [] } = useQuery({
-    queryKey: ['group-soal', group?.team_id],
-    queryFn: () => fetchBankSoal('kelompok'),
+    queryKey: ['group-soal', group?.team_id, courseId],
+    queryFn: () => fetchBankSoal('kelompok', undefined, courseId),
     enabled: group != null && joined && !done,
   })
 

@@ -11,6 +11,7 @@ import { generateCode } from './testSessions'
 
 export interface GroupSession {
   id: string
+  course_id?: number
   name: string
   dosen_id: string
   group_size: number
@@ -97,13 +98,21 @@ function warnOnce(context: string, e: unknown): void {
 
 // ── Dosen ──
 
-export async function fetchGroupSessions(): Promise<GroupSessionWithTeams[]> {
+export async function fetchGroupSessions(courseId?: number): Promise<GroupSessionWithTeams[]> {
   if (!isSupabaseConfigured) return []
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('group_sessions')
       .select('*, group_teams(id, session_id, number, code)')
       .order('created_at', { ascending: false })
+    if (courseId != null) query = query.eq('course_id', courseId)
+    let { data, error } = await query
+    if (error && courseId != null && (error.code === '42703' || /course_id/.test(error.message))) {
+      ;({ data, error } = await supabase
+        .from('group_sessions')
+        .select('*, group_teams(id, session_id, number, code)')
+        .order('created_at', { ascending: false }))
+    }
     if (error) throw error
     return (data ?? []).map((r) => {
       const row = r as GroupSession & { group_teams?: GroupTeam[] }
@@ -129,6 +138,8 @@ export async function createGroupSession(input: {
   groupSize: number
   shuffle: boolean
   dosenId: string
+  /** Mata kuliah (v23). */
+  courseId?: number
 }): Promise<GroupSessionWithTeams> {
   if (!isSupabaseConfigured) throw new Error('Membuat tes kelompok butuh koneksi Supabase, tidak tersedia di mode demo.')
   const { data: sess, error } = await supabase
@@ -139,6 +150,7 @@ export async function createGroupSession(input: {
       group_size: input.groupSize,
       shuffle: input.shuffle,
       is_open: true,
+      ...(input.courseId != null ? { course_id: input.courseId } : {}),
     })
     .select('*')
     .single()

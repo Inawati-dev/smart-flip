@@ -339,6 +339,8 @@ export function buildMatriksCsv(baris: MatriksBaris[]): string {
 export interface FilterAktivitas {
   kelasId?: string | 'semua'
   hari: 7 | 30 | 'semester'
+  /** Mata kuliah (v23). Tanpa ini = semua topik. */
+  courseId?: number
 }
 
 const SEMESTER_HARI = 180
@@ -367,7 +369,7 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       supabase.from('quiz_attempts').select('user_id, module_id, score, kind, attempted_at, session_id').gte('attempted_at', since),
       supabase.from('user_progress').select('user_id, module_id, current_page, last_opened').gte('last_opened', since),
       supabase.from('video_progress').select('user_id, module_id, seconds, done, updated_at').gte('updated_at', since),
-      supabase.from('modules').select('id, order_num, title').order('order_num'),
+      supabase.from('modules').select('id, order_num, title, course_id').order('order_num'),
     ])
     if (profilesRes.error) throw profilesRes.error
 
@@ -423,13 +425,21 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       updated_at: string
     }>).map((v) => ({ userId: v.user_id, moduleId: v.module_id, seconds: v.seconds, done: v.done, updatedAt: v.updated_at }))
 
-    const modules: ModuleLite[] = ((modulesRes.data ?? []) as Array<{ id: number; order_num: number; title: string }>).map((m) => ({
-      id: m.id,
-      orderNum: m.order_num,
-      title: m.title,
-    }))
+    const modules: ModuleLite[] = ((modulesRes.data ?? []) as Array<{ id: number; order_num: number; title: string; course_id?: number }>)
+      .filter((m) => filter.courseId == null || (m.course_id ?? 1) === filter.courseId)
+      .map((m) => ({
+        id: m.id,
+        orderNum: m.order_num,
+        title: m.title,
+      }))
+    // Kejadian di topik mata kuliah lain dibuang; pre/post tanpa module_id
+    // dipertahankan (jumlahnya kecil, course_id-nya tidak dibaca di sini).
+    const idTopik = new Set(modules.map((m) => m.id))
+    const attemptsMk = filter.courseId == null ? attempts : attempts.filter((a) => a.moduleId == null || idTopik.has(a.moduleId))
+    const progressMk = filter.courseId == null ? progress : progress.filter((p) => idTopik.has(p.moduleId))
+    const videoMk = filter.courseId == null ? video : video.filter((v) => idTopik.has(v.moduleId))
 
-    return { attempts, progress, video, profiles, modules, passScore: PASS_SCORE }
+    return { attempts: attemptsMk, progress: progressMk, video: videoMk, profiles, modules, passScore: PASS_SCORE }
   } catch (e) {
     console.warn('[aktivitas] fetchSumberAktivitas gagal:', e)
     return SUMBER_KOSONG

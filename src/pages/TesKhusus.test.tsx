@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import TesKhusus from './TesKhusus'
+import TesKhusus, { DosenTesKhususPanel } from './TesKhusus'
 
 afterEach(cleanup)
 
@@ -32,6 +32,7 @@ vi.mock('../lib/testSessions', () => ({
   verifyTestCode: (code: string) => testSessionsMock.verifyTestCode(code),
   fetchSessionResults: async () => [],
   fetchMyAttemptForSession: async () => null,
+  generateCode: () => 'ABCDEF',
 }))
 
 function newQueryClient() {
@@ -45,16 +46,35 @@ function renderAt(path: string) {
         <Routes>
           <Route path="/asesmen/tes" element={<TesKhusus />} />
           <Route path="/asesmen/tes/:code" element={<TesKhusus />} />
+          <Route path="/asesmen/bank" element={<div>cangkang bank soal</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
-describe('TesKhusus — dosen (spec §9 WP6b)', () => {
-  it('menampilkan tombol "Buat sesi tes"', () => {
+// TesKhusus.tsx sekarang jadi cangkang tab di BankSoal.tsx (v23, permintaan
+// Johan 16 Sep 2026: "bank soal, test khusus, tes kelompok dan tugas
+// akhirnya jadikan 1 page"). Dosen yang membuka /asesmen/tes dialihkan ke
+// /asesmen/bank?tab=khusus; isi lamanya sekarang DosenTesKhususPanel,
+// dirender langsung dari BankSoal.tsx tanpa Layout/h1 sendiri.
+describe('TesKhusus — dosen dialihkan ke tab bank soal', () => {
+  it('membuka /asesmen/tes sebagai dosen mengalihkan ke /asesmen/bank?tab=khusus', () => {
     authMock.role = 'dosen'
     renderAt('/asesmen/tes')
+    expect(screen.getByText('cangkang bank soal')).toBeTruthy()
+  })
+})
+
+describe('DosenTesKhususPanel', () => {
+  it('menampilkan tombol "+ Buat sesi tes"', () => {
+    render(
+      <QueryClientProvider client={newQueryClient()}>
+        <MemoryRouter initialEntries={['/asesmen/bank?tab=khusus']}>
+          <DosenTesKhususPanel />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
     expect(screen.getByText('+ Buat sesi tes')).toBeTruthy()
   })
 })

@@ -25,7 +25,7 @@ const MODULES = [1, 2, 3].map((n) => ({
 
 function renderStepper(statusOf?: (id: number) => 'done' | 'open' | 'locked') {
   const queryClient = new QueryClient()
-  queryClient.setQueryData(['modules'], MODULES)
+  queryClient.setQueryData(['modules', 'course', 1], MODULES)
   return renderToStaticMarkup(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>

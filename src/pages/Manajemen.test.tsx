@@ -64,7 +64,7 @@ function renderManajemen(queryClient: QueryClient) {
 }
 
 function seedQueryClient(queryClient: QueryClient) {
-  queryClient.setQueryData(['modules'], MODULES)
+  queryClient.setQueryData(['modules', 'course', 1], MODULES)
   queryClient.setQueryData(['manajemen', 'order'], null)
   queryClient.setQueryData(['manajemen', 'customs', [1, 2, 3]], {})
 }

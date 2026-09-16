@@ -73,7 +73,7 @@ function limaSoal() {
 
 function seedBase(queryClient: QueryClient, soal: ReturnType<typeof limaSoal>) {
   queryClient.setQueryData(['modules', 1], MODULE_BASE)
-  queryClient.setQueryData(['modules'], [MODULE_BASE])
+  queryClient.setQueryData(['modules', 'course', 1], [MODULE_BASE])
   queryClient.setQueryData(['bank-soal', 'formatif', 1], soal)
   queryClient.setQueryData(['quizAttempts', 1], [])
 }

@@ -48,7 +48,8 @@ vi.mock('../lib/aktivitas', async () => {
 function fakeModule(id: number): ModuleRow {
   return {
     id,
-    order_num: id,
+    course_id: 1,
+  order_num: id,
     title: `Modul ${id}`,
     description: null,
     video_url: null,
