@@ -3,6 +3,8 @@ import { supabase, isSupabaseConfigured } from './supabase'
 export interface ProgressEntry {
   pct: number
   currentPage: number
+  /** Jumlah halaman PDF (v26), null bila belum pernah dibuka. */
+  totalPages?: number | null
   lastOpened: string | null
 }
 
@@ -17,16 +19,24 @@ export async function fetchAllProgress(): Promise<ProgressMap> {
     const { data: userData } = await supabase.auth.getUser()
     const uid = userData.user?.id
     if (uid) {
-      const { data, error } = await supabase
+      type Baris = { module_id: number; pct: number | null; current_page: number | null; last_opened: string | null; total_pages?: number | null }
+      let { data, error }: { data: Baris[] | null; error: { code?: string; message: string } | null } = await supabase
         .from('user_progress')
-        .select('module_id, pct, current_page, last_opened')
+        .select('module_id, pct, current_page, last_opened, total_pages')
         .eq('user_id', uid)
+      // Sebelum v26 kolom total_pages belum ada: ulang tanpa kolom itu.
+      if (error && (error.code === '42703' || /total_pages/.test(error.message))) {
+        const r2 = await supabase.from('user_progress').select('module_id, pct, current_page, last_opened').eq('user_id', uid)
+        data = r2.data as Baris[] | null
+        error = r2.error
+      }
       if (!error && data) {
         const result: ProgressMap = {}
         for (const r of data) {
           result[moduleIdToPath(r.module_id)] = {
             pct: r.pct || 0,
             currentPage: r.current_page || 0,
+            totalPages: (r as { total_pages?: number | null }).total_pages ?? null,
             lastOpened: r.last_opened,
           }
         }
@@ -65,6 +75,8 @@ export interface SaveProgressInput {
   pct: number
   currentPage: number
   lastOpened?: string
+  /** Jumlah halaman PDF (v26). */
+  totalPages?: number
 }
 
 // Ported from legacy/data-layer.js's DataLayer.saveProgress(): upsert into
@@ -81,19 +93,22 @@ export async function saveProgress(modulePath: string, data: SaveProgressInput):
       const uid = userData.user?.id
       const moduleId = pathToModuleId(modulePath)
       if (uid && moduleId) {
-        const { error } = await supabase.from('user_progress').upsert(
-          {
-            user_id: uid,
-            module_id: moduleId,
-            pct: data.pct,
-            current_page: data.currentPage,
-            last_opened: lastOpened,
-            status: data.pct >= 100 ? 'completed' : data.pct > 0 ? 'in_progress' : 'not_started',
-            started_at: new Date().toISOString(),
-            completed_at: data.pct >= 100 ? new Date().toISOString() : null,
-          },
-          { onConflict: 'user_id,module_id' },
-        )
+        const row: Record<string, unknown> = {
+          user_id: uid,
+          module_id: moduleId,
+          pct: data.pct,
+          current_page: data.currentPage,
+          last_opened: lastOpened,
+          status: data.pct >= 100 ? 'completed' : data.pct > 0 ? 'in_progress' : 'not_started',
+          started_at: new Date().toISOString(),
+          completed_at: data.pct >= 100 ? new Date().toISOString() : null,
+        }
+        if (data.totalPages != null) row.total_pages = data.totalPages
+        let { error } = await supabase.from('user_progress').upsert(row, { onConflict: 'user_id,module_id' })
+        if (error && data.totalPages != null && (error.code === '42703' || /total_pages/.test(error.message))) {
+          delete row.total_pages
+          ;({ error } = await supabase.from('user_progress').upsert(row, { onConflict: 'user_id,module_id' }))
+        }
         if (error) throw error
         return
       }

@@ -7,6 +7,8 @@ export interface ModuleRow {
   title: string
   description: string | null
   video_url: string | null
+  /** Durasi video dalam detik (v26), null bila belum diisi. */
+  duration_sec: number | null
   pdf_path: string | null
   is_active: boolean
   path: string
@@ -28,6 +30,7 @@ export function normalizeModuleRow(row: Record<string, unknown>): ModuleRow {
     title: row.title as string,
     description: (row.description as string) ?? null,
     video_url: (row.video_url as string) ?? null,
+    duration_sec: (row.duration_sec as number) ?? null,
     pdf_path: (row.pdf_path as string) ?? null,
     is_active: (row.is_active as boolean) ?? true,
     path: (row.path as string) || (row.pdf_path as string) || '',

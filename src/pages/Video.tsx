@@ -86,8 +86,9 @@ function VideoMahasiswa() {
   // /video tanpa id → rak semua topik (antrean #85 opsi B, mengganti alihkan
   // otomatis WP4 lama).
   if (current == null) {
-    const semuaDurasiTahu = sorted.length > 0 && sorted.every((m) => durations[m.id] != null)
-    const totalMenit = Math.round(sorted.reduce((s, m) => s + (durations[m.id] ?? 0), 0) / 60)
+    const detik = (m: ModuleRow) => m.duration_sec ?? durations[m.id] ?? null
+    const semuaDurasiTahu = sorted.length > 0 && sorted.every((m) => detik(m) != null)
+    const totalMenit = Math.round(sorted.reduce((s, m) => s + (detik(m) ?? 0), 0) / 60)
     return (
       <Layout>
         <div className="p-4 md:p-6">
@@ -122,7 +123,7 @@ function VideoMahasiswa() {
                         nomor={m.order_num}
                         judul={m.title}
                         url={m.video_url}
-                        durasi={parsed?.kind === 'file' && durations[m.id] ? formatDuration(durations[m.id]) : undefined}
+                        durasi={detik(m) ? formatDuration(detik(m)!) : undefined}
                         chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
                         terkunci={status === 'locked'}
                         judulKunci="Selesaikan tes formatif topik sebelumnya (skor 80) dulu"
@@ -317,6 +318,9 @@ function VideoDosen() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoFileError, setVideoFileError] = useState('')
   const [uploadingVideo, setUploadingVideo] = useState(false)
+  // Durasi dalam menit (v26). YouTube tidak bisa dibaca klien, jadi dosen mengisi
+  // manual; berkas unggahan terisi otomatis dari metadata.
+  const [durasiMenit, setDurasiMenit] = useState('')
 
   function showToast(msg: string) {
     setToast(msg)
@@ -325,6 +329,7 @@ function VideoDosen() {
 
   function openEdit(m: ModuleRow) {
     setEditModul(m)
+    setDurasiMenit(m.duration_sec ? String(Math.round(m.duration_sec / 60)) : '')
     setUrlInput(m.video_url || '')
     setUrlError('')
     setVideoFile(null)
@@ -367,7 +372,8 @@ function VideoDosen() {
     }
     setSaving(true)
     try {
-      await saveVideoUrl(editModul.id, trimmed)
+      const menit = durasiMenit.trim() === '' ? null : Math.max(0, Math.round(Number(durasiMenit)))
+      await saveVideoUrl(editModul.id, trimmed, menit == null || Number.isNaN(menit) ? null : menit * 60)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       setEditModul(null)
       showToast('Tautan video disimpan')
@@ -411,6 +417,7 @@ function VideoDosen() {
                   nomor={m.order_num}
                   judul={m.title}
                   url={m.video_url}
+                  durasi={m.duration_sec ? formatDuration(m.duration_sec) : undefined}
                   chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
                   onClick={url ? () => setPreviewUrl(url) : undefined}
                   warna={warnaSampul(m.order_num)}
@@ -458,6 +465,20 @@ function VideoDosen() {
               style={{ ...BORDER, fontSize: '16px' }}
             />
             {urlError && <p className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{urlError}</p>}
+            <label className="flex items-center gap-2 text-xs font-semibold text-brown-2 mb-2">
+              Durasi (menit)
+              <input
+                type="number"
+                min={0}
+                inputMode="numeric"
+                value={durasiMenit}
+                onChange={(e) => setDurasiMenit(e.target.value)}
+                placeholder="mis. 12"
+                className="w-24 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                style={BORDER}
+              />
+              <span className="font-normal text-brown-3">tautan YouTube diisi manual</span>
+            </label>
             {parsedInput && (
               <div className="mb-2 rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
                 {parsedInput.kind === 'youtube' ? (
@@ -469,7 +490,14 @@ function VideoDosen() {
                     allowFullScreen
                   />
                 ) : (
-                  <video controls src={parsedInput.src} className="w-full h-full" />
+                  <video
+                    controls
+                    src={parsedInput.src}
+                    className="w-full h-full"
+                    onLoadedMetadata={(e) => {
+                      if (durasiMenit.trim() === '' && Number.isFinite(e.currentTarget.duration)) setDurasiMenit(String(Math.round(e.currentTarget.duration / 60)))
+                    }}
+                  />
                 )}
               </div>
             )}

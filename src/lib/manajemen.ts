@@ -75,10 +75,16 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
 // else localStorage keyed by module id so the "Ubah" modal still works in
 // demo mode even though (like saveModulCustom's other localStorage-only
 // fields) it won't be read back into fetchModules() there.
-export async function saveVideoUrl(moduleId: number, url: string): Promise<void> {
+// durationSec (v26): durasi video dalam detik; undefined = jangan ubah, null = kosongkan.
+export async function saveVideoUrl(moduleId: number, url: string, durationSec?: number | null): Promise<void> {
   if (isSupabaseConfigured) {
     try {
-      const { error } = await supabase.from('modules').update({ video_url: url }).eq('id', moduleId)
+      const patch: Record<string, unknown> = { video_url: url }
+      if (durationSec !== undefined) patch.duration_sec = durationSec
+      let { error } = await supabase.from('modules').update(patch).eq('id', moduleId)
+      if (error && durationSec !== undefined && (error.code === '42703' || /duration_sec/.test(error.message))) {
+        ;({ error } = await supabase.from('modules').update({ video_url: url }).eq('id', moduleId))
+      }
       if (error) throw error
       return
     } catch (e) {
