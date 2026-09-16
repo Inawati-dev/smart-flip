@@ -22,7 +22,9 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 
 ## 3. Halaman dosen
 
-- Akun bertab `PillGroup` di `?tab=`: Profil (kartu profil dan progres), Kelas (dosen, isi lama `/kelas`), Pengaturan (Kode undangan dan Notifikasi dua kolom). `/kelas` dan `/pengaturan` mengalihkan ke `/akun`. (#28, #33, papan #40, #41)
+- Akun tanpa tab: tiga kartu angka di atas, kartu profil, lalu Kode undangan dan Notifikasi dua kolom sama tinggi. `/pengaturan` mengalihkan ke `/akun`; `/akun?tab=kelas` mengalihkan ke `/kelas`. (#28, #33, papan #40, #56)
+- Kelas adalah item rel sendiri (`/kelas`, dosen), bukan tab Akun; rel dosen 7 item. (papan #55)
+- Berkas: kedua tab memakai kolom No · Nama berkas · Ukuran · Tanggal unggah · Dipakai topik (mata kuliah · topik) · Aksi lewat satu komponen tabel. (papan #54)
 - Tema diganti lewat tombol ikon bulan/matahari di rel (di atas Keluar) dan topbar telepon, bukan kartu di Akun. Hook `useTheme` di `src/hooks/useTheme.ts`. (papan #42)
 - Radius kontrol satu token `--radius-control` (10 px) untuk `.btn`, dropdown, pil, input, textarea. Lencana, avatar, toggle, ubin ikon, dan lingkaran stepper tetap bulat. (papan #44)
 - Dashboard dosen: kartu angka ringkas 6 dalam satu baris di laptop (`xl:grid-cols-6`), jalan pintas 5 kolom; mahasiswa 3 kartu angka 3 kolom. (papan #39)
