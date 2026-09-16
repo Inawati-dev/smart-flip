@@ -9,6 +9,7 @@
   --bg3: #FAF7F0;
   --terra: #D4A373;
   --terra-d: #B8855A;
+  --radius-control: 10px;
   --brown: #3E362E;
   --brown2: #6B5D4F;
   --brown3: #9B8B7A;
@@ -96,7 +97,7 @@ select {
   background-position: right 12px center;
   background-size: 15px;
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 0 34px 0 12px;
   min-height: 44px;
   font-family: inherit;
@@ -140,7 +141,7 @@ select:disabled {
   appearance: none;
   background-color: var(--ivory);
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   padding: 0 34px 0 12px;
   min-height: 44px;
   font-family: inherit;
@@ -193,7 +194,7 @@ select:disabled {
   gap: 0.375rem;
   min-height: 44px;
   padding: 0 16px;
-  border-radius: 10px;
+  border-radius: var(--radius-control);
   border: 1.5px solid transparent;
   font-weight: 600;
   font-size: 0.875rem;

@@ -1,4 +1,5 @@
-import { useState, type ChangeEvent, type FormEvent } from 'react'
+import { useState, type FormEvent } from 'react'
+import { Navigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useKelasByDosen } from '../hooks/useKelas'
@@ -13,7 +14,7 @@ import {
   type ImportResult,
 } from '../lib/kelas'
 import { downloadCsv } from '../lib/analitik'
-import { Layout } from '../components/Layout'
+import { FileInput } from '../components/FileInput'
 import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -34,14 +35,19 @@ function buildCredentialsCsv(results: ImportResult[]): string {
   return csv
 }
 
-// Dosen-only "Kelola Kelas" page — Tahap 1 of the kelas/rombongan-belajar
+// Dosen-only "Kelola Kelas" panel — Tahap 1 of the kelas/rombongan-belajar
 // feature (see database/migration_v7_kelas.sql for the full context). Dosen
 // create a kelas (name + angkatan + capacity, code auto-generated), share
 // the code with mahasiswa, and mahasiswa self-register with it
-// (Register.tsx's optional "Kode Kelas" field). This page only reads/writes
+// (Register.tsx's optional "Kode Kelas" field). This panel only reads/writes
 // through src/lib/kelas.ts — same DataLayer-abstraction convention as every
 // other dosen-only management page (see Manajemen.tsx).
-export function Kelas() {
+//
+// Sejak 16 Sep 2026 (koreksi Johan "jadikan tab saja") panel ini dirender
+// sebagai tab "Kelas" di Akun.tsx, bukan halaman /kelas sendiri — jadi TIDAK
+// membungkus <Layout> maupun judul h1 (judul tab di Akun.tsx sudah cukup).
+// Rute /kelas lama dipertahankan sebagai alias (lihat Kelas() di bawah).
+export function KelasPanel() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const { data: classes = [], isLoading } = useKelasByDosen(user?.id)
@@ -61,6 +67,7 @@ export function Kelas() {
   const [importTarget, setImportTarget] = useState<KelasWithCount | null>(null)
   const [importStep, setImportStep] = useState<ImportStep>('pilih')
   const [csvRows, setCsvRows] = useState<ParsedImportRow[]>([])
+  const [csvFile, setCsvFile] = useState<File | null>(null)
   const [csvFileName, setCsvFileName] = useState('')
   const [importError, setImportError] = useState('')
   const [importResults, setImportResults] = useState<ImportResult[]>([])
@@ -75,6 +82,7 @@ export function Kelas() {
     setImportTarget(kelas)
     setImportStep('pilih')
     setCsvRows([])
+    setCsvFile(null)
     setCsvFileName('')
     setImportError('')
     setImportResults([])
@@ -87,8 +95,8 @@ export function Kelas() {
     setImportTarget(null)
   }
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
+  function handleFileChange(file: File | null) {
+    setCsvFile(file)
     if (!file) return
     setImportError('')
     setCsvFileName(file.name)
@@ -105,9 +113,6 @@ export function Kelas() {
     }
     reader.onerror = () => setImportError('Gagal membaca file. Pastikan formatnya CSV.')
     reader.readAsText(file)
-    // Reset the input value so choosing the SAME file again (e.g. after
-    // fixing it and re-exporting under the same name) still fires onChange.
-    e.target.value = ''
   }
 
   const validRows = csvRows.filter((r) => r.valid)
@@ -190,126 +195,116 @@ export function Kelas() {
   }
 
   return (
-    <Layout>
-      <div className="p-4 md:p-6 pb-16">
-        <div className="mb-5">
-          <h1 className="font-['Playfair_Display',serif] text-2xl font-bold text-brown">Kelola Kelas</h1>
-          <p className="text-sm text-brown-3 mt-1">
-            Buat kelas, bagikan kode kelas ke mahasiswa, dan pantau jumlah pendaftar per kelas.
-          </p>
+    <>
+      <p className="text-sm text-brown-3 mb-4">
+        Buat kelas, bagikan kode kelas ke mahasiswa, dan pantau jumlah pendaftar per kelas.
+      </p>
+
+      {/* Ringkasan agregat — total mahasiswa lintas semua kelas + breakdown per angkatan.
+          auto-fit (bukan grid-cols tetap) supaya kartu angkatan yang jumlahnya
+          berubah-ubah (tergantung berapa angkatan aktif) gak nyisain baris
+          terakhir yang cuma keisi 1-2 kartu ganjil. */}
+      <div className="grid grid-cols-2 sm:[grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] gap-3 mb-5">
+        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" />
+        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" />
+        {summary.byAngkatan.map((a) => (
+          <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} />
+        ))}
+      </div>
+
+      {/* Daftar kelas, dikelompokkan per angkatan (tahun) */}
+      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+        <div className="flex items-center justify-between px-4 py-3.5 border-b" style={BORDER}>
+          <span className="text-sm font-semibold text-brown">Daftar kelas</span>
+          <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
+            + Buat kelas baru
+          </button>
         </div>
 
-        {/* Ringkasan agregat — total mahasiswa lintas semua kelas + breakdown per angkatan.
-            auto-fit (bukan grid-cols tetap) supaya kartu angkatan yang jumlahnya
-            berubah-ubah (tergantung berapa angkatan aktif) gak nyisain baris
-            terakhir yang cuma keisi 1-2 kartu ganjil. */}
-        <div className="grid grid-cols-2 sm:[grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] gap-3 mb-5">
-          <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" />
-          <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" />
-          {summary.byAngkatan.map((a) => (
-            <StatCard key={a.angkatan} bar="#8B7EC8" val={String(a.total)} label={`Angkatan ${a.angkatan}`} />
-          ))}
-        </div>
-
-        {/* Daftar kelas, dikelompokkan per angkatan (tahun) */}
-        <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
-          <div className="flex items-center justify-between px-4 py-3.5 border-b" style={BORDER}>
-            <span className="text-sm font-semibold text-brown">Daftar Kelas</span>
-            <button
-              onClick={() => setCreateOpen(true)}
-              className="h-9 px-3.5 rounded-lg text-xs font-semibold whitespace-nowrap"
-              style={{ background: 'var(--brown)', color: 'var(--btn-text)' }}
-            >
-              + Buat Kelas Baru
-            </button>
+        {isLoading ? (
+          <div className="text-center py-8 text-brown-3 text-sm">Memuat…</div>
+        ) : classes.length === 0 ? (
+          <div className="text-center py-8 text-brown-3 text-sm">
+            Belum ada kelas. Klik "+ Buat kelas baru" di atas.
           </div>
-
-          {isLoading ? (
-            <div className="text-center py-8 text-brown-3 text-sm">Memuat…</div>
-          ) : classes.length === 0 ? (
-            <div className="text-center py-8 text-brown-3 text-sm">
-              Belum ada kelas. Klik "+ Buat Kelas Baru" di atas.
-            </div>
-          ) : (
-            Array.from(new Set(classes.map((k) => k.angkatan)))
-              .sort((a, b) => b - a)
-              .map((year) => {
-                const rows = classes.filter((k) => k.angkatan === year)
-                return (
-                  <div key={year} className="border-t" style={BORDER}>
-                    <div className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-brown-3 bg-bg3">
-                      Angkatan {year} <span className="font-normal normal-case">({rows.length} kelas)</span>
-                    </div>
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-sm border-collapse">
-                        <thead>
-                          <tr className="bg-bg3">
-                            <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Nama Kelas</th>
-                            <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kode Kelas</th>
-                            <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Mahasiswa</th>
-                            <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-24">Aksi</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {rows.map((k) => {
-                            const full = k.studentCount >= k.max_students
-                            return (
-                              <tr key={k.id} className="border-t" style={BORDER}>
-                                <td className="px-3 py-2.5 font-medium text-brown min-w-[140px]">{k.name}</td>
-                                <td className="px-3 py-2.5">
-                                  <button
-                                    onClick={() => void copyCode(k.code)}
-                                    title="Salin kode kelas"
-                                    aria-label={`Salin kode kelas ${k.code}`}
-                                    className="inline-flex items-center gap-1.5 h-11 px-2.5 rounded-md border font-mono text-xs font-semibold text-brown-2 whitespace-nowrap"
-                                    style={BORDER}
-                                  >
-                                    {k.code} <IconLink size={13} />
-                                  </button>
-                                </td>
-                                <td className="px-3 py-2.5">
-                                  <span
-                                    className="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
-                                    style={
-                                      full
-                                        ? { background: '#FAD7A0', color: '#7D4E00' }
-                                        : { background: '#C0DD97', color: '#27500A' }
-                                    }
-                                  >
-                                    {k.studentCount}/{k.max_students}
-                                  </span>
-                                </td>
-                                <td className="px-3 py-2.5">
-                                  <div className="flex items-center gap-1.5">
-                                    <button
-                                      onClick={() => openImport(k)}
-                                      title="Import CSV mahasiswa"
-                                      aria-label={`Import CSV mahasiswa ke kelas ${k.name}`}
-                                      className="w-11 h-11 rounded-md border text-brown-2 flex items-center justify-center flex-shrink-0"
-                                      style={BORDER}
-                                    >
-                                      <IconDocument size={15} />
-                                    </button>
-                                    <button
-                                      onClick={() => setDeleteTarget(k)}
-                                      aria-label={`Hapus kelas ${k.name}`}
-                                      className="w-11 h-11 rounded-md border border-red/20 bg-red/10 text-red flex items-center justify-center flex-shrink-0"
-                                    >
-                                      <IconTrash size={15} />
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            )
-                          })}
-                        </tbody>
-                      </table>
-                    </div>
+        ) : (
+          Array.from(new Set(classes.map((k) => k.angkatan)))
+            .sort((a, b) => b - a)
+            .map((year) => {
+              const rows = classes.filter((k) => k.angkatan === year)
+              return (
+                <div key={year} className="row-divider">
+                  <div className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-brown-3 bg-bg3">
+                    Angkatan {year} <span className="font-normal normal-case">({rows.length} kelas)</span>
                   </div>
-                )
-              })
-          )}
-        </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm border-collapse">
+                      <thead>
+                        <tr className="bg-bg3">
+                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Nama Kelas</th>
+                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kode Kelas</th>
+                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Mahasiswa</th>
+                          <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((k) => {
+                          const full = k.studentCount >= k.max_students
+                          return (
+                            <tr key={k.id} className="row-divider">
+                              <td className="px-3 py-2.5 font-medium text-brown min-w-[140px]">{k.name}</td>
+                              <td className="px-3 py-2.5">
+                                <button
+                                  onClick={() => void copyCode(k.code)}
+                                  title="Salin kode kelas"
+                                  aria-label={`Salin kode kelas ${k.code}`}
+                                  className="btn btn-secondary whitespace-nowrap font-mono"
+                                >
+                                  {k.code} <IconLink size={13} />
+                                </button>
+                              </td>
+                              <td className="px-3 py-2.5">
+                                <span
+                                  className="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
+                                  style={
+                                    full
+                                      ? { background: 'var(--warning-soft)', color: 'var(--warning)' }
+                                      : { background: 'var(--success-soft)', color: 'var(--success)' }
+                                  }
+                                >
+                                  {k.studentCount}/{k.max_students}
+                                </span>
+                              </td>
+                              <td className="px-3 py-2.5 text-center">
+                                <div className="inline-flex items-center justify-center gap-1.5">
+                                  <button
+                                    onClick={() => openImport(k)}
+                                    title="Import CSV mahasiswa"
+                                    aria-label={`Import CSV mahasiswa ke kelas ${k.name}`}
+                                    className="btn btn-secondary btn-icon flex-shrink-0"
+                                  >
+                                    <IconDocument size={15} />
+                                  </button>
+                                  <button
+                                    onClick={() => setDeleteTarget(k)}
+                                    aria-label={`Hapus kelas ${k.name}`}
+                                    title="Hapus kelas"
+                                    className="btn btn-danger btn-icon flex-shrink-0"
+                                  >
+                                    <IconTrash size={15} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )
+            })
+        )}
       </div>
 
       {/* Buat kelas baru — modal (dipindah dari section inline biar halaman
@@ -317,7 +312,7 @@ export function Kelas() {
       {createOpen && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setCreateOpen(false)
           }}
@@ -329,13 +324,13 @@ export function Kelas() {
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-brown inline-flex items-center gap-1.5">
-                <IconUsers size={16} /> Buat Kelas Baru
+                <IconUsers size={16} /> Buat kelas baru
               </span>
               <button
                 type="button"
                 onClick={() => setCreateOpen(false)}
                 aria-label="Tutup"
-                className="w-9 h-9 -mr-1.5 rounded-md flex items-center justify-center text-brown-3"
+                className="w-9 h-9 -mr-1.5 rounded-[var(--radius-control)] flex items-center justify-center text-brown-3"
               >
                 <IconX size={16} />
               </button>
@@ -352,7 +347,7 @@ export function Kelas() {
                 required
                 maxLength={80}
                 autoFocus
-                className="h-11 rounded-lg border px-3 text-base text-brown"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
             </label>
@@ -366,7 +361,7 @@ export function Kelas() {
                   min={2000}
                   max={2100}
                   required
-                  className="h-11 rounded-lg border px-3 text-base text-brown"
+                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                   style={BORDER}
                 />
               </label>
@@ -378,7 +373,7 @@ export function Kelas() {
                   onChange={(e) => setMaxStudents(parseInt(e.target.value, 10) || 1)}
                   min={1}
                   required
-                  className="h-11 rounded-lg border px-3 text-base text-brown"
+                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                   style={BORDER}
                 />
               </label>
@@ -387,20 +382,10 @@ export function Kelas() {
               Kode kelas dibuat otomatis secara acak setelah kelas disimpan: tidak bisa diisi manual.
             </p>
             <div className="flex gap-2.5">
-              <button
-                type="submit"
-                disabled={creating || !name.trim()}
-                className="flex-1 h-11 rounded-lg text-sm font-semibold text-white disabled:opacity-50"
-                style={{ background: 'var(--terra)' }}
-              >
+              <button type="submit" disabled={creating || !name.trim()} className="btn btn-primary flex-1">
                 {creating ? 'Membuat…' : 'Buat Kelas'}
               </button>
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                className="h-11 px-4 rounded-lg border text-sm text-brown-2"
-                style={BORDER}
-              >
+              <button type="button" onClick={() => setCreateOpen(false)} className="btn btn-secondary">
                 Batal
               </button>
             </div>
@@ -412,7 +397,7 @@ export function Kelas() {
       {deleteTarget && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setDeleteTarget(null)
           }}
@@ -425,19 +410,10 @@ export function Kelas() {
                 : 'Tindakan ini tidak dapat dibatalkan.'}
             </p>
             <div className="flex gap-2.5">
-              <button
-                onClick={() => setDeleteTarget(null)}
-                className="flex-1 h-11 rounded-lg border text-sm text-brown-2"
-                style={BORDER}
-              >
+              <button onClick={() => setDeleteTarget(null)} className="btn btn-secondary flex-1">
                 Batal
               </button>
-              <button
-                onClick={() => void confirmDelete()}
-                disabled={deleting}
-                className="flex-1 h-11 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
-                style={{ background: 'var(--red)' }}
-              >
+              <button onClick={() => void confirmDelete()} disabled={deleting} className="btn btn-danger flex-1">
                 {deleting ? 'Menghapus…' : 'Ya, Hapus'}
               </button>
             </div>
@@ -450,7 +426,7 @@ export function Kelas() {
       {importTarget && (
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) closeImport()
           }}
@@ -467,7 +443,7 @@ export function Kelas() {
                 <button
                   onClick={closeImport}
                   aria-label="Tutup"
-                  className="w-11 h-11 -mr-2 rounded-md flex items-center justify-center text-brown-3 flex-shrink-0"
+                  className="w-11 h-11 -mr-2 rounded-[var(--radius-control)] flex items-center justify-center text-brown-3 flex-shrink-0"
                 >
                   <IconX size={16} />
                 </button>
@@ -488,12 +464,13 @@ export function Kelas() {
                   pertama = header, dilewati otomatis). Tiap baris akan dibuatkan satu akun mahasiswa dengan password
                   otomatis.
                 </p>
-                <input
-                  type="file"
-                  accept=".csv"
+                <FileInput
+                  accept=".csv,text/csv"
+                  label="Pilih CSV"
+                  hint="CSV, maks 2 MB"
+                  maxSizeMb={2}
+                  file={csvFile}
                   onChange={handleFileChange}
-                  aria-label="Pilih file CSV mahasiswa"
-                  className="text-sm text-brown-2 file:mr-3 file:h-11 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:text-white file:bg-[var(--terra)] cursor-pointer"
                 />
               </div>
             )}
@@ -503,11 +480,11 @@ export function Kelas() {
               <div className="flex flex-col gap-3.5">
                 <p className="text-xs text-brown-3 truncate">File: {csvFileName}</p>
                 <div className="flex gap-2.5 flex-wrap">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#C0DD97', color: '#27500A' }}>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
                     {validRows.length} baris valid
                   </span>
                   {invalidRows.length > 0 && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#FAD7A0', color: '#7D4E00' }}>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
                       {invalidRows.length} baris tidak valid (dilewati)
                     </span>
                   )}
@@ -526,14 +503,14 @@ export function Kelas() {
                       </thead>
                       <tbody>
                         {csvRows.slice(0, 20).map((r, i) => (
-                          <tr key={i} className="border-t" style={BORDER}>
+                          <tr key={i} className="row-divider">
                             <td className="px-2.5 py-1.5 text-brown-3">{r.line}</td>
                             <td className="px-2.5 py-1.5 text-brown">{r.nama || '—'}</td>
                             <td className="px-2.5 py-1.5 text-brown-2">{r.nim || '—'}</td>
                             <td className="px-2.5 py-1.5 text-brown-2 truncate max-w-[140px]">{r.email || '—'}</td>
                             <td className="px-2.5 py-1.5">
                               {r.valid ? (
-                                <span style={{ color: '#27500A' }}>Valid</span>
+                                <span style={{ color: 'var(--success)' }}>Valid</span>
                               ) : (
                                 <span className="text-red" title={r.reason}>
                                   {r.reason}
@@ -546,25 +523,16 @@ export function Kelas() {
                     </table>
                   </div>
                   {csvRows.length > 20 && (
-                    <div className="px-2.5 py-2 text-[11px] text-brown-3 border-t" style={BORDER}>
+                    <div className="px-2.5 py-2 text-[11px] text-brown-3 row-divider">
                       +{csvRows.length - 20} baris lainnya tidak ditampilkan di pratinjau ini.
                     </div>
                   )}
                 </div>
                 <div className="flex gap-2.5">
-                  <button
-                    onClick={() => setImportStep('pilih')}
-                    className="flex-1 h-11 rounded-lg border text-sm text-brown-2"
-                    style={BORDER}
-                  >
+                  <button onClick={() => setImportStep('pilih')} className="btn btn-secondary flex-1">
                     Pilih File Lain
                   </button>
-                  <button
-                    onClick={() => setImportStep('konfirmasi')}
-                    disabled={validRows.length === 0}
-                    className="flex-1 h-11 rounded-lg text-white text-sm font-semibold disabled:opacity-50"
-                    style={{ background: 'var(--terra)' }}
-                  >
+                  <button onClick={() => setImportStep('konfirmasi')} disabled={validRows.length === 0} className="btn btn-primary flex-1">
                     Lanjutkan ({validRows.length})
                   </button>
                 </div>
@@ -587,18 +555,10 @@ export function Kelas() {
                   </p>
                 </div>
                 <div className="flex gap-2.5">
-                  <button
-                    onClick={() => setImportStep('pratinjau')}
-                    className="flex-1 h-11 rounded-lg border text-sm text-brown-2"
-                    style={BORDER}
-                  >
+                  <button onClick={() => setImportStep('pratinjau')} className="btn btn-secondary flex-1">
                     Batal
                   </button>
-                  <button
-                    onClick={() => void handleImport()}
-                    className="flex-1 h-11 rounded-lg text-white text-sm font-semibold"
-                    style={{ background: 'var(--color-red)' }}
-                  >
+                  <button onClick={() => void handleImport()} className="btn btn-primary flex-1">
                     Ya, Impor Sekarang
                   </button>
                 </div>
@@ -623,11 +583,11 @@ export function Kelas() {
             {importStep === 'hasil' && (
               <div className="flex flex-col gap-3.5">
                 <div className="flex gap-2 flex-wrap">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#C0DD97', color: '#27500A' }}>
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
                     {importSummary.berhasil} berhasil
                   </span>
                   {importSummary.kelasPenuh > 0 && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: '#FAD7A0', color: '#7D4E00' }}>
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
                       {importSummary.kelasPenuh} kelas penuh
                     </span>
                   )}
@@ -656,12 +616,12 @@ export function Kelas() {
                       </thead>
                       <tbody>
                         {importResults.map((r, i) => (
-                          <tr key={i} className="border-t" style={BORDER}>
+                          <tr key={i} className="row-divider">
                             <td className="px-2.5 py-1.5 text-brown">{r.nama}</td>
                             <td className="px-2.5 py-1.5 text-brown-2 truncate max-w-[140px]">{r.email}</td>
                             <td className="px-2.5 py-1.5">
-                              {r.status === 'berhasil' && <span style={{ color: '#27500A' }}>Berhasil</span>}
-                              {r.status === 'kelas_penuh' && <span style={{ color: '#7D4E00' }}>Kelas Penuh</span>}
+                              {r.status === 'berhasil' && <span style={{ color: 'var(--success)' }}>Berhasil</span>}
+                              {r.status === 'kelas_penuh' && <span style={{ color: 'var(--warning)' }}>Kelas Penuh</span>}
                               {r.status === 'error' && (
                                 <span className="text-red" title={r.error}>
                                   Gagal
@@ -677,19 +637,10 @@ export function Kelas() {
                 </div>
 
                 <div className="flex gap-2.5">
-                  <button
-                    onClick={closeImport}
-                    className="flex-1 h-11 rounded-lg border text-sm text-brown-2"
-                    style={BORDER}
-                  >
+                  <button onClick={closeImport} className="btn btn-secondary flex-1">
                     Selesai
                   </button>
-                  <button
-                    onClick={() => setDownloadConfirmOpen(true)}
-                    disabled={importSummary.berhasil === 0}
-                    className="flex-1 h-11 rounded-lg text-white text-sm font-semibold disabled:opacity-50 inline-flex items-center justify-center gap-1.5"
-                    style={{ background: 'var(--terra)' }}
-                  >
+                  <button onClick={() => setDownloadConfirmOpen(true)} disabled={importSummary.berhasil === 0} className="btn btn-primary flex-1">
                     <IconDownload size={15} /> Unduh Kredensial
                   </button>
                 </div>
@@ -704,7 +655,7 @@ export function Kelas() {
       {downloadConfirmOpen && (
         <div
           className="fixed inset-0 z-[800] flex items-center justify-center p-4"
-          style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+          style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
             if (e.target === e.currentTarget) setDownloadConfirmOpen(false)
           }}
@@ -713,23 +664,16 @@ export function Kelas() {
             className="rounded-2xl p-6 max-w-sm w-full text-center"
             style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-['Playfair_Display',serif] text-lg font-bold text-brown mb-2">Unduh Kredensial?</h3>
+            <h3 className="font-display text-lg font-bold text-brown mb-2">Unduh Kredensial?</h3>
             <p className="text-sm text-brown-2 mb-6 opacity-80">
               File berisi email &amp; password {importSummary.berhasil} akun mahasiswa akan diunduh ke perangkatmu.
               Simpan dan distribusikan dengan hati-hati.
             </p>
             <div className="flex gap-3">
-              <button
-                onClick={() => setDownloadConfirmOpen(false)}
-                className="flex-1 min-h-11 rounded-lg font-medium text-sm cursor-pointer"
-                style={{ border: '1.5px solid var(--border)', background: 'transparent' }}
-              >
+              <button onClick={() => setDownloadConfirmOpen(false)} className="btn btn-secondary flex-1">
                 Batal
               </button>
-              <button
-                onClick={confirmDownloadCredentials}
-                className="flex-1 min-h-11 rounded-lg bg-terra text-white font-semibold text-sm cursor-pointer inline-flex items-center justify-center gap-1.5"
-              >
+              <button onClick={confirmDownloadCredentials} className="btn btn-primary flex-1">
                 <IconDownload size={15} /> Unduh
               </button>
             </div>
@@ -745,18 +689,29 @@ export function Kelas() {
           {toast}
         </div>
       )}
-    </Layout>
+    </>
   )
 }
 
+// Bentuk disamakan dengan StatCard di Dashboard.tsx (rounded-2xl, p-3.5,
+// mt-1.5) — tanpa slot ikon karena pemanggilnya di sini tidak mengirim ikon
+// per kartu dan menambah ikon berarti memilih ikon baru di luar lingkup tugas.
 function StatCard({ bar, val, label }: { bar: string; val: string; label: string }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border bg-ivory px-4 py-3.5" style={BORDER}>
+    <div className="bg-ivory rounded-2xl border p-3.5 relative overflow-hidden" style={BORDER}>
       <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
-      <div className="text-xl font-bold text-brown leading-none">{val}</div>
-      <div className="text-[11px] text-brown-3 mt-1">{label}</div>
+      <div className="text-xl font-bold text-brown">{val}</div>
+      <div className="text-[11px] text-brown-3 mt-1.5">{label}</div>
     </div>
   )
+}
+
+// /kelas lama — cuma pengalih sekarang, isinya sudah pindah ke KelasPanel di
+// atas (dirender sebagai tab di Akun.tsx). Dipertahankan supaya tautan lama
+// ke /kelas tidak 404 (koreksi Johan 16 Sep 2026: "jadikan tab saja biar gak
+// buka menu baru lagi").
+export function Kelas() {
+  return <Navigate to="/akun?tab=kelas" replace />
 }
 
 export default Kelas

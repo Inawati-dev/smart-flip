@@ -47,11 +47,15 @@ const BORDER = { borderColor: 'var(--border)' } as const
 
 function StatCard({ icon: Icon, val, label, bar }: { icon: typeof IconUsers; val: string; label: string; bar: string }) {
   return (
-    <div className="bg-ivory rounded-2xl border p-4 relative overflow-hidden" style={BORDER}>
+    <div className="bg-ivory rounded-2xl border p-3.5 relative overflow-hidden" style={BORDER}>
       <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
-      <Icon size={18} />
-      <div className="text-2xl font-bold text-brown mt-2">{val}</div>
-      <div className="text-xs text-brown-3 mt-0.5">{label}</div>
+      <div className="flex items-center gap-2.5">
+        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-terra" style={{ background: 'var(--accent-soft)' }}>
+          <Icon size={16} />
+        </div>
+        <div className="text-xl font-bold text-brown">{val}</div>
+      </div>
+      <div className="text-[11px] text-brown-3 mt-1.5">{label}</div>
     </div>
   )
 }
@@ -60,15 +64,14 @@ function ShortcutCard({ to, icon: Icon, label, desc }: { to: string; icon: typeo
   return (
     <Link
       to={to}
-      className="bg-ivory rounded-2xl border p-4 flex items-center gap-3 hover:shadow-sm transition-shadow"
-      style={BORDER}
+      className="bg-ivory rounded-2xl border border-[color:var(--border)] p-3.5 flex flex-col items-start gap-2 hover:shadow-sm hover:border-terra transition-colors"
     >
-      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-terra" style={{ background: 'var(--accent-soft)' }}>
-        <Icon size={19} />
+      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-terra" style={{ background: 'var(--accent-soft)' }}>
+        <Icon size={18} />
       </div>
       <div>
         <div className="text-sm font-semibold text-brown">{label}</div>
-        <div className="text-xs text-brown-3">{desc}</div>
+        <div className="text-[11px] text-brown-3">{desc}</div>
       </div>
     </Link>
   )
@@ -208,7 +211,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
       </div>
 
       {/* 6 angka ringkas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <StatCard
           icon={IconUsers}
           val={ringkas ? `${ringkas.aktif7Hari}/${ringkas.totalMhs}` : '—'}
@@ -228,12 +231,12 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
       </div>
 
       {/* Jalan pintas */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Kelola soal pre/formatif/post/VARK" />
-        <ShortcutCard to="/asesmen/tes" icon={IconTarget} label="Tes khusus" desc="Buat sesi tes berkode" />
-        <ShortcutCard to="/modul" icon={IconFolder} label="PDF modul" desc="Kelola PDF tiap topik" />
-        <ShortcutCard to="/video" icon={IconVideo} label="Tautan video" desc="Kelola video tiap topik" />
-        <ShortcutCard to="/kelas" icon={IconUsers} label="Kelas" desc="Buat kelas & kode gabung" />
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal pre, formatif, post, VARK" />
+        <ShortcutCard to="/asesmen/tes" icon={IconTarget} label="Tes khusus" desc="Sesi post-test berkode" />
+        <ShortcutCard to="/modul" icon={IconFolder} label="PDF topik" desc="PDF tiap topik" />
+        <ShortcutCard to="/video" icon={IconVideo} label="Video topik" desc="Video tiap topik" />
+        <ShortcutCard to="/akun?tab=kelas" icon={IconUsers} label="Kelas" desc="Kelas dan kode gabung" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
@@ -458,7 +461,7 @@ export function DashboardMhs({
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-3 gap-3 mb-4">
         <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik selesai" bar="var(--sage)" />
         <StatCard
           icon={IconTrendingUp}

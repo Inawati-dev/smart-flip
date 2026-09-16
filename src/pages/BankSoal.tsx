@@ -424,7 +424,7 @@ export function BankSoal() {
                 value={pertanyaan}
                 onChange={(e) => setPertanyaan(e.target.value)}
                 rows={3}
-                className="rounded-lg border px-3 py-2 text-base text-brown resize-y min-h-[70px]"
+                className="rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y min-h-[70px]"
                 style={BORDER}
               />
             </label>
@@ -454,7 +454,7 @@ export function BankSoal() {
                     value={o}
                     onChange={(e) => updateOpsi(idx, e.target.value)}
                     placeholder={`Opsi ${idx + 1}`}
-                    className="h-10 flex-1 min-w-0 rounded-lg border px-3 text-base text-brown"
+                    className="h-10 flex-1 min-w-0 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                     style={BORDER}
                   />
                 </label>

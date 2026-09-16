@@ -231,7 +231,7 @@ export function Vark() {
                       key={i}
                       type="button"
                       onClick={() => selectAnswer(i)}
-                      className={`flex items-start gap-3 p-3 rounded-[11px] border-[1.5px] text-left w-full min-h-11 cursor-pointer transition-colors ${
+                      className={`flex items-start gap-3 p-3 rounded-[var(--radius-control)] border-[1.5px] text-left w-full min-h-11 cursor-pointer transition-colors ${
                         selected ? 'bg-[color-mix(in_srgb,var(--terra)_7%,transparent)]' : 'bg-[color:var(--bg3)]'
                       }`}
                       style={{ borderColor: selected ? 'var(--terra)' : 'var(--border)' }}

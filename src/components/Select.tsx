@@ -262,7 +262,7 @@ export function Select({
             zIndex: 650,
             background: 'var(--ivory)',
             border: '1.5px solid var(--border)',
-            borderRadius: 'var(--r)',
+            borderRadius: 'calc(var(--radius-control) + 2px)',
             boxShadow: 'var(--shadow-md)',
             animation: 'selectPopIn 0.14s ease',
           }}

@@ -1,7 +1,11 @@
-import { describe, it, expect, vi } from 'vitest'
+// @vitest-environment jsdom
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { Layout, activeTo } from './Layout'
+
+afterEach(cleanup)
 
 const mockIsSupabaseConfigured = vi.hoisted(() => ({ value: false }))
 const mockAuth = vi.hoisted(() => ({
@@ -113,5 +117,35 @@ describe('Layout active item', () => {
     expect(typeof activeTo).toBe('function')
     expect(activeTo('/akun/pdf', [{ to: '/akun' }, { to: '/akun/pdf' }, { to: '/modul' }])).toBe('/akun/pdf')
     expect(activeTo('/akun', [{ to: '/akun' }, { to: '/akun/pdf' }])).toBe('/akun')
+  })
+})
+
+// Tema jadi toggle di rel/topbar (koreksi Johan 16 Sep 2026 "Tema jadi toggle
+// di sidebar saja", menggantikan kartu Tema di Pengaturan.tsx). Rail
+// (desktop) dan topbar (mobile) keduanya dirender di markup sekaligus -- CSS
+// (hidden/sm:hidden) yang memutuskan mana yang tampak, bukan jsdom -- jadi
+// tiap label toggle muncul dua kali di DOM.
+describe('Layout theme toggle', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    mockIsSupabaseConfigured.value = false
+    mockAuth.user = { id: 'u1', email: 'mhs@test.local' }
+    mockAuth.role = 'mahasiswa'
+    mockAuth.profile = { full_name: 'Mahasiswa Test', avatar_url: null }
+  })
+
+  it('klik toggle mengganti label dan menyimpan tema ke localStorage', () => {
+    render(
+      <MemoryRouter>
+        <Layout>
+          <p>page content</p>
+        </Layout>
+      </MemoryRouter>,
+    )
+    const buttons = screen.getAllByLabelText('Ganti ke tema gelap')
+    expect(buttons.length).toBeGreaterThan(0)
+    fireEvent.click(buttons[0])
+    expect(screen.getAllByLabelText('Ganti ke tema terang').length).toBeGreaterThan(0)
+    expect(localStorage.getItem('sfp_theme')).toBe('dark')
   })
 })

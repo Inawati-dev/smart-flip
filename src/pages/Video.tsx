@@ -438,7 +438,7 @@ function VideoDosen() {
                 setUrlError('')
               }}
               placeholder="https://youtube.com/watch?v=... atau .mp4"
-              className="w-full h-11 rounded-lg border px-3 mb-2"
+              className="w-full h-11 rounded-[var(--radius-control)] border px-3 mb-2"
               style={{ ...BORDER, fontSize: '16px' }}
             />
             {urlError && <p className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{urlError}</p>}
