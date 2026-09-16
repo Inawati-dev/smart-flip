@@ -7,7 +7,8 @@
 --
 -- Isi:
 --   1. quiz_questions.kind menerima 'kelompok' (soal tes kelompok di bank soal)
---   2. Tugas akhir: final_projects, final_submissions, bucket privat tugas-akhir,
+--   2. Tugas akhir: tugas_akhir_briefs, tugas_akhir_submissions (nama dipilih supaya
+--      tidak bertabrakan dengan final_projects milik Projek Akhir lama, v15), bucket privat tugas-akhir,
 --      RPC grade_submission (dosen menilai)
 --   3. Tes kelompok: group_sessions, group_teams, group_members, group_attempts,
 --      RPC verify_group_code, join_group, group_team_view, submit_group_attempt,
@@ -44,8 +45,8 @@ ALTER TABLE quiz_questions ADD CONSTRAINT quiz_questions_kind_check
 -- yang is_open dan cocok kelasnya). rubric = JSON array
 -- [{"nama":"Kelengkapan laporan","bobot":40}, ...]; nilai per kriteria
 -- 0..100, total = rata-rata berbobot (dihitung di klien, disimpan di
--- final_submissions.total oleh RPC grade_submission).
-CREATE TABLE IF NOT EXISTS final_projects (
+-- tugas_akhir_submissions.total oleh RPC grade_submission).
+CREATE TABLE IF NOT EXISTS tugas_akhir_briefs (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   dosen_id    UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   title       TEXT NOT NULL,
@@ -56,17 +57,17 @@ CREATE TABLE IF NOT EXISTS final_projects (
   is_open     BOOLEAN NOT NULL DEFAULT true,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-ALTER TABLE final_projects ENABLE ROW LEVEL SECURITY;
-GRANT SELECT, INSERT, UPDATE, DELETE ON final_projects TO authenticated;
+ALTER TABLE tugas_akhir_briefs ENABLE ROW LEVEL SECURITY;
+GRANT SELECT, INSERT, UPDATE, DELETE ON tugas_akhir_briefs TO authenticated;
 
-DROP POLICY IF EXISTS "dosen manage own projects" ON final_projects;
-CREATE POLICY "dosen manage own projects" ON final_projects
+DROP POLICY IF EXISTS "dosen manage own projects" ON tugas_akhir_briefs;
+CREATE POLICY "dosen manage own projects" ON tugas_akhir_briefs
   FOR ALL USING (dosen_id = auth.uid()) WITH CHECK (dosen_id = auth.uid());
 
 -- Mahasiswa hanya membaca brief yang terbuka dan (kalau dibatasi kelas)
 -- kelasnya termasuk. class_ids '{}' = semua kelas (pola v18).
-DROP POLICY IF EXISTS "mahasiswa read open projects" ON final_projects;
-CREATE POLICY "mahasiswa read open projects" ON final_projects
+DROP POLICY IF EXISTS "mahasiswa read open projects" ON tugas_akhir_briefs;
+CREATE POLICY "mahasiswa read open projects" ON tugas_akhir_briefs
   FOR SELECT USING (
     is_open AND (
       class_ids = '{}'
@@ -74,9 +75,9 @@ CREATE POLICY "mahasiswa read open projects" ON final_projects
     )
   );
 
-CREATE TABLE IF NOT EXISTS final_submissions (
+CREATE TABLE IF NOT EXISTS tugas_akhir_submissions (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  project_id   UUID NOT NULL REFERENCES final_projects(id) ON DELETE CASCADE,
+  project_id   UUID NOT NULL REFERENCES tugas_akhir_briefs(id) ON DELETE CASCADE,
   user_id      UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   file_path    TEXT,
   file_name    TEXT,
@@ -89,25 +90,25 @@ CREATE TABLE IF NOT EXISTS final_submissions (
   graded_at    TIMESTAMPTZ,
   UNIQUE (project_id, user_id)
 );
-ALTER TABLE final_submissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE tugas_akhir_submissions ENABLE ROW LEVEL SECURITY;
 -- Kolom nilai (scores, total, feedback, graded_at) TIDAK diberikan ke
 -- authenticated untuk UPDATE: satu-satunya jalan mengisinya adalah RPC
 -- grade_submission di bawah (SECURITY DEFINER, cek dosen pemilik brief).
-GRANT SELECT, INSERT, DELETE ON final_submissions TO authenticated;
+GRANT SELECT, INSERT, DELETE ON tugas_akhir_submissions TO authenticated;
 -- project_id dan user_id ikut di daftar UPDATE karena upsert klien
 -- (INSERT ... ON CONFLICT DO UPDATE) menyetel semua kolom yang dikirim;
 -- RLS WITH CHECK di bawah tetap mengunci user_id = auth.uid().
-GRANT UPDATE (project_id, user_id, file_path, file_name, link, note, submitted_at) ON final_submissions TO authenticated;
+GRANT UPDATE (project_id, user_id, file_path, file_name, link, note, submitted_at) ON tugas_akhir_submissions TO authenticated;
 
-DROP POLICY IF EXISTS "mahasiswa own submissions" ON final_submissions;
-CREATE POLICY "mahasiswa own submissions" ON final_submissions
+DROP POLICY IF EXISTS "mahasiswa own submissions" ON tugas_akhir_submissions;
+CREATE POLICY "mahasiswa own submissions" ON tugas_akhir_submissions
   FOR ALL USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid() AND scores IS NULL AND total IS NULL AND graded_at IS NULL);
 
-DROP POLICY IF EXISTS "dosen read submissions of own projects" ON final_submissions;
-CREATE POLICY "dosen read submissions of own projects" ON final_submissions
+DROP POLICY IF EXISTS "dosen read submissions of own projects" ON tugas_akhir_submissions;
+CREATE POLICY "dosen read submissions of own projects" ON tugas_akhir_submissions
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM final_projects fp WHERE fp.id = project_id AND fp.dosen_id = auth.uid())
+    EXISTS (SELECT 1 FROM tugas_akhir_briefs fp WHERE fp.id = project_id AND fp.dosen_id = auth.uid())
   );
 
 CREATE OR REPLACE FUNCTION grade_submission(
@@ -115,13 +116,13 @@ CREATE OR REPLACE FUNCTION grade_submission(
 ) RETURNS VOID AS $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM final_submissions fs
-    JOIN final_projects fp ON fp.id = fs.project_id
+    SELECT 1 FROM tugas_akhir_submissions fs
+    JOIN tugas_akhir_briefs fp ON fp.id = fs.project_id
     WHERE fs.id = p_submission AND fp.dosen_id = auth.uid()
   ) THEN
     RAISE EXCEPTION 'Bukan pemilik brief tugas akhir ini';
   END IF;
-  UPDATE final_submissions
+  UPDATE tugas_akhir_submissions
   SET scores = p_scores, total = p_total, feedback = p_feedback, graded_at = now()
   WHERE id = p_submission;
 END;
@@ -358,7 +359,7 @@ WHERE NOT EXISTS (SELECT 1 FROM quiz_questions WHERE kind = 'kelompok');
 -- ════════════════════════════════════════════
 -- select pg_get_constraintdef(oid) from pg_constraint where conname = 'quiz_questions_kind_check';
 --   -> CHECK (kind = ANY (ARRAY['pre','formatif','post','vark','kelompok']))
--- select count(*) as proyek from final_projects;
+-- select count(*) as proyek from tugas_akhir_briefs;
 -- select count(*) as sesi_kelompok from group_sessions;
 -- select kind, count(*) from quiz_questions group by kind;
 --   -> ada baris kelompok 10

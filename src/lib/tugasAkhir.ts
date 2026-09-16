@@ -122,7 +122,7 @@ export async function fetchProjectsDosen(): Promise<FinalProject[]> {
     // Difilter dosen_id: policy baca "brief terbuka" juga berlaku untuk dosen,
     // jadi tanpa filter ini brief dosen lain yang terbuka ikut muncul.
     const { data, error } = await supabase
-      .from('final_projects')
+      .from('tugas_akhir_briefs')
       .select('*')
       .eq('dosen_id', uid)
       .order('created_at', { ascending: false })
@@ -138,7 +138,7 @@ export async function fetchProjectsDosen(): Promise<FinalProject[]> {
 export async function createProject(input: ProjectInput, dosenId: string): Promise<FinalProject> {
   if (!isSupabaseConfigured) throw new Error('Membuat tugas akhir butuh koneksi Supabase, tidak tersedia di mode demo.')
   const { data, error } = await supabase
-    .from('final_projects')
+    .from('tugas_akhir_briefs')
     .insert({
       dosen_id: dosenId,
       title: input.title,
@@ -163,13 +163,13 @@ export async function updateProject(id: string, patch: Partial<ProjectInput> & {
   if (patch.rubric !== undefined) row.rubric = patch.rubric
   if (patch.classIds !== undefined) row.class_ids = patch.classIds
   if (patch.isOpen !== undefined) row.is_open = patch.isOpen
-  const { error } = await supabase.from('final_projects').update(row).eq('id', id)
+  const { error } = await supabase.from('tugas_akhir_briefs').update(row).eq('id', id)
   if (error) throw error
 }
 
 export async function deleteProject(id: string): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Menghapus tugas akhir butuh koneksi Supabase.')
-  const { error } = await supabase.from('final_projects').delete().eq('id', id)
+  const { error } = await supabase.from('tugas_akhir_briefs').delete().eq('id', id)
   if (error) throw error
 }
 
@@ -177,8 +177,8 @@ export async function fetchSubmissionsDosen(projectId: string): Promise<Submissi
   if (!isSupabaseConfigured) return []
   try {
     const { data, error } = await supabase
-      .from('final_submissions')
-      .select('*, profiles!final_submissions_user_id_fkey(full_name, class_id)')
+      .from('tugas_akhir_submissions')
+      .select('*, profiles!tugas_akhir_submissions_user_id_fkey(full_name, class_id)')
       .eq('project_id', projectId)
       .order('submitted_at', { ascending: false })
     if (error) throw error
@@ -221,7 +221,7 @@ export async function fetchProjectMhs(): Promise<FinalProject | null> {
   if (!isSupabaseConfigured) return null
   try {
     const { data, error } = await supabase
-      .from('final_projects')
+      .from('tugas_akhir_briefs')
       .select('*')
       .eq('is_open', true)
       .order('created_at', { ascending: false })
@@ -242,7 +242,7 @@ export async function fetchMySubmission(projectId: string): Promise<FinalSubmiss
   const uid = userData.user?.id
   if (!uid) return null
   const { data, error } = await supabase
-    .from('final_submissions')
+    .from('tugas_akhir_submissions')
     .select('*')
     .eq('project_id', projectId)
     .eq('user_id', uid)
@@ -307,7 +307,7 @@ export async function submitTugasAkhir(input: {
     submitted_at: new Date().toISOString(),
   }
   const { data, error } = await supabase
-    .from('final_submissions')
+    .from('tugas_akhir_submissions')
     .upsert(row, { onConflict: 'project_id,user_id' })
     .select('*')
     .single()
