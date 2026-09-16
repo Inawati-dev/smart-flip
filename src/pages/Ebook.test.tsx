@@ -183,4 +183,14 @@ describe('Ebook', () => {
     renderEbook(2)
     await waitFor(() => expect(screen.getByText(/belum tersedia/)).toBeTruthy())
   })
+
+  it('shows the reading-style picker as a PillGroup and switches style on click', async () => {
+    renderEbook(1)
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    const group = screen.getByRole('group', { name: 'Gaya baca' })
+    expect(group).toBeTruthy()
+    const spreadPill = screen.getByRole('button', { name: 'Buka Buku' })
+    fireEvent.click(spreadPill)
+    expect(spreadPill.getAttribute('aria-pressed')).toBe('true')
+  })
 })

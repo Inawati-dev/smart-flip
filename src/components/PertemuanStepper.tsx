@@ -34,7 +34,7 @@ export function PertemuanStepper({
             title={locked ? 'Selesaikan topik n-1 dulu' : `Pertemuan ${i + 1}`}
             onClick={() => navigate(`${basePath}/${m.id}`)}
             aria-current={active ? 'page' : undefined}
-            className="shrink-0 w-11 h-11 rounded-full border flex items-center justify-center text-sm font-semibold"
+            className="step-pill shrink-0 w-11 h-11 rounded-full border flex items-center justify-center text-sm font-semibold"
             style={{
               background: active ? 'var(--brown)' : status === 'done' ? 'var(--sage)' : 'var(--ivory)',
               color: active || status === 'done' ? 'var(--cream)' : 'var(--brown)',

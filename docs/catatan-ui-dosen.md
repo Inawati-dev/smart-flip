@@ -38,15 +38,16 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 - Tanpa tanda pisah panjang (—) di teks yang tampil; pakai titik, koma, titik dua, atau kurung. Simbol "—" hanya sebagai pengganti nilai kosong. (#17)
 - Modal wajib untuk aksi hapus, keluar, dan simpan yang tidak bisa dibatalkan. Input di modal 16 px. Tap target 44 px. (aturan proyek, dipakai ulang)
 
-## 6. Belum diterapkan di halaman mahasiswa (ceklist sapuan berikutnya)
+## 6. Sudah diterapkan di halaman mahasiswa (16 Sep 2026)
 
-Halaman mahasiswa yang tampil di menu: Dashboard (`DashboardMhs`), Modul (`Modul.tsx`, `Ebook.tsx`), Video (`Video.tsx` sisi mahasiswa), Asesmen (`AsesmenMhs.tsx`, `Formatif.tsx`, `SoalRunner.tsx`, `Vark.tsx`, `TesKhusus.tsx` sisi mahasiswa), Akun, Login/Register/Reset.
+Halaman mahasiswa yang tampil di menu: Dashboard (`DashboardMhs`), Modul (`Modul.tsx`, `Ebook.tsx`), Video (`Video.tsx` sisi mahasiswa), Asesmen (`AsesmenMhs.tsx`, `Formatif.tsx`, `SoalRunner.tsx`, `Vark.tsx`, `TesKhusus.tsx` sisi mahasiswa), Akun.
 
-- [ ] Tombol memakai kelas `.btn-*` bersama dengan hover dan lebar tetap (#45, #46)
-- [ ] Dropdown dan pil memakai `Select` / `PillGroup` (sudah sebagian; cek `Ebook.tsx` pil mode baca)
-- [ ] Warna literal diganti token (sapuan #41 baru menyentuh berkas yang juga dipakai dosen)
-- [ ] Modal pratinjau untuk berkas di sisi mahasiswa bila ada tautan berkas
-- [ ] Cek Dark di dua ukuran layar untuk tiap halaman mahasiswa
-- [ ] Teks tanpa tanda pisah (sudah disapu 16 Sep; ulangi bila ada teks baru)
+- [x] Tombol memakai kelas `.btn-*` bersama dengan hover dan lebar tetap (#45, #46). Diubah: pil mode baca dan tombol zoom di `Ebook.tsx`, label "Ganti foto" di `Akun.tsx`. `PertemuanStepper` tetap bulat 44x44 (bukan `.btn`), fokusnya disamakan lewat kelas baru `.step-pill` di `index.css`. Bukti: `grep -rn "min-h-11 px-\|min-h-\[44px\] px-" src/pages/{Modul,Ebook,AsesmenMhs,Formatif,Vark}.tsx src/components/{SoalRunner,PertemuanStepper}.tsx` = 0 hasil.
+- [x] Dropdown dan pil memakai `Select` / `PillGroup`. Pil mode baca `Ebook.tsx` (Flip 3D / Buka Buku / Geser) diganti `PillGroup` size `sm`. Tidak ada dropdown lain di jalur mahasiswa yang perlu diganti.
+- [x] Warna literal diganti token. `ModuleCard.tsx` (`text-white` -> `text-btn-text`), `SoalRunner.tsx` (`bg-sage-d`/`bg-red` + `text-white` -> `bg-success`/`bg-danger` + `text-btn-text`, kontras dihitung WCAG: 5,26-10,76:1). VARK (`Vark.tsx`) tetap 4 warna identitas V/A/R/K mentah (tidak ada token yang cocok, lihat komentar di kode) tapi titik pakai yang duduk di atas latar bereaksi tema (label dimensi, angka batang rendah) dipindah ke `color-mix()` supaya terbaca di Dark (diverifikasi live: kontras naik dari ~3,7:1 jadi ~5,0:1 untuk R/K). `Video.tsx` masih punya 5 warna literal tapi semuanya di bagian `VideoDosen` (modal edit tautan + toast), di luar cakupan berkas ini (tugas ini dibatasi ke sisi mahasiswa saja), sengaja tidak diubah.
+- [x] Modal aksi mahasiswa (apresiasi/remedial di `Formatif.tsx`, `LogoutModal.tsx`) diverifikasi memakai `var(--overlay)`, `var(--ivory)`, `.btn-*`, input 16px, sudah sesuai sejak sapuan dosen, tidak perlu diubah. `TesKhusus.tsx` sisi mahasiswa tidak punya modal (kode dimasukkan di kartu halaman, bukan overlay), tidak berlaku.
+- [x] Dark dan Light dicek di 1536x960 dan 412x915 untuk semua 9 halaman/alur mahasiswa (lihat papan pekerjaan untuk detail temuan dan perbaikan).
+- [x] Teks tanpa tanda pisah panjang: disapu ulang, 0 pelanggaran baru ditemukan di teks UI (label tombol, judul, pesan) di 9 berkas mahasiswa. Semua sudah memakai "belum", kalimat pendek, tanpa Title Case sejak sapuan 16 Sep sebelumnya.
+- [ ] Modal pratinjau untuk berkas di sisi mahasiswa bila ada tautan berkas, tidak berlaku untuk halaman yang disapu sesi ini: `Ebook.tsx` dan `Video.tsx` (mahasiswa) ADALAH pembaca/pemutarnya sendiri, bukan tautan yang perlu modal pratinjau terpisah seperti di tabel dosen. Belum dicek untuk halaman tersembunyi (Forum, Draf, dst).
 
 Halaman tersembunyi (Forum, Draf, Feedback, Observasi, Projek Akhir, Validasi, Analitik, Manajemen, Kelas, Changelog, Diagnostik, Workshop, Ngain, Profil) sengaja tidak disapu; masih memakai gaya lama.

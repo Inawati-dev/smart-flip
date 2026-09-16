@@ -258,6 +258,16 @@ select:disabled {
   min-height: 44px;
   padding: 0;
 }
+
+/* Tombol P1..Pn (PertemuanStepper.tsx, sapuan mahasiswa 16 Sep 2026) tetap
+   bulat 44x44, bukan .btn. Hover sudah didapat gratis dari aturan
+   `button:not(:disabled):hover` di bawah (app-wide); yang belum ada cuma
+   cincin fokus, jadi disamakan dengan pola `.btn:focus-visible`. */
+.step-pill:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .btn,
   .btn-primary,

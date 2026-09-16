@@ -60,17 +60,21 @@ export function SoalRunner({
           {q.options.map((opt, i) => {
             let cls = 'border-[color:var(--border)] bg-bg3 hover:border-terra cursor-pointer'
             if (isSubmitted) {
-              if (i === q.kunciTampil) cls = 'border-sage-d bg-sage/10 pointer-events-none'
-              else if (i === selected) cls = 'border-red bg-red/10 pointer-events-none'
+              // Token status (bukan bg-sage-d/bg-red mentah, antrean sapuan mahasiswa 16
+              // Sep 2026), kontras dihitung rumus WCAG relative-luminance: bg-success +
+              // text-btn-text = 9,38:1 (Light) / 10,76:1 (Dark); bg-danger + text-btn-text
+              // = 5,26:1 (Light) / 6,77:1 (Dark). Semua di atas ambang 4,5:1.
+              if (i === q.kunciTampil) cls = 'border-success bg-success-soft pointer-events-none'
+              else if (i === selected) cls = 'border-danger bg-danger-soft pointer-events-none'
               else cls = 'border-[color:var(--border)] bg-bg3 opacity-60 pointer-events-none'
             } else if (selected === i) {
               cls = 'border-terra bg-terra/10 cursor-pointer'
             }
             const letterCls = isSubmitted
               ? i === q.kunciTampil
-                ? 'bg-sage-d text-white'
+                ? 'bg-success text-btn-text'
                 : i === selected
-                  ? 'bg-red text-white'
+                  ? 'bg-danger text-btn-text'
                   : 'bg-[color:var(--border)] text-brown-2'
               : selected === i
                 ? 'bg-terra text-btn-text'
@@ -96,7 +100,7 @@ export function SoalRunner({
         {isSubmitted && q.kunciTampil != null && (
           <div
             className={`mt-3.5 px-3.5 py-2.5 rounded-lg text-[13px] font-semibold ${
-              isCorrect ? 'bg-sage/15 text-sage-d' : 'bg-red/10 text-red'
+              isCorrect ? 'bg-success-soft text-success' : 'bg-danger-soft text-danger'
             }`}
           >
             {isCorrect ? '✓ Jawaban kamu benar!' : '✗ Jawaban kamu kurang tepat.'}
