@@ -20,7 +20,7 @@ export function ModuleCard({
   return (
     <div className="flex items-center gap-4 bg-ivory rounded-xl p-4 shadow-sm">
       <div
-        className="w-12 h-12 rounded-lg flex items-center justify-center text-white flex-shrink-0"
+        className="w-12 h-12 rounded-lg flex items-center justify-center text-btn-text flex-shrink-0"
         style={{ background: module.color }}
       >
         {module.order_num}

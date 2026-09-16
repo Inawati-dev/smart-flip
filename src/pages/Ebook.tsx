@@ -8,7 +8,14 @@ import { saveProgress, moduleIdToPath } from '../lib/progress'
 import { useModules } from '../hooks/useModules'
 import { getReaderStyle, setReaderStyle, type ReaderStyle } from '../lib/readerStyle'
 import { Layout } from '../components/Layout'
+import { PillGroup } from '../components/PillGroup'
 import { IconWarning, IconSkipBack, IconSkipForward, IconBook } from '../components/icons'
+
+const READER_STYLE_OPTIONS: Array<{ value: ReaderStyle; label: string }> = [
+  { value: 'flip3d', label: 'Flip 3D' },
+  { value: 'spread', label: 'Buka Buku' },
+  { value: 'slide', label: 'Geser' },
+]
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
 
@@ -386,35 +393,20 @@ export function Ebook() {
 
         {moduleId != null && status === 'ready' && (
           <div className="w-full max-w-4xl flex items-center justify-between gap-2 flex-wrap">
-            <div className="flex gap-1 p-1 rounded-full" style={{ background: 'var(--bg3)' }}>
-              {(
-                [
-                  { key: 'flip3d', label: 'Flip 3D' },
-                  { key: 'spread', label: 'Buka Buku' },
-                  { key: 'slide', label: 'Geser' },
-                ] as const
-              ).map((opt) => (
-                <button
-                  key={opt.key}
-                  onClick={() => chooseStyle(opt.key)}
-                  className="min-h-11 px-3 rounded-full text-xs font-semibold whitespace-nowrap"
-                  style={
-                    readerStyleState === opt.key
-                      ? { background: 'var(--brown)', color: 'var(--btn-text)' }
-                      : { color: 'var(--brown3)' }
-                  }
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
+            <PillGroup
+              options={READER_STYLE_OPTIONS}
+              value={readerStyleState}
+              onChange={(v) => chooseStyle(v as ReaderStyle)}
+              size="sm"
+              ariaLabel="Gaya baca"
+            />
 
             <div className="flex items-center gap-1 p-1 rounded-full" style={{ background: 'var(--bg3)' }}>
               <button
                 onClick={zoomOut}
                 disabled={zoom <= ZOOM_MIN}
                 title="Perkecil"
-                className="w-11 h-11 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
+                className="btn btn-ghost btn-icon !rounded-full"
               >
                 −
               </button>
@@ -423,7 +415,7 @@ export function Ebook() {
                 onClick={zoomIn}
                 disabled={zoom >= ZOOM_MAX}
                 title="Perbesar"
-                className="w-11 h-11 rounded-full text-brown-2 font-bold disabled:opacity-35 disabled:cursor-not-allowed inline-flex items-center justify-center"
+                className="btn btn-ghost btn-icon !rounded-full"
               >
                 +
               </button>

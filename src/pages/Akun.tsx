@@ -213,7 +213,7 @@ export function Akun() {
               <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {formAvatar ? <img src={formAvatar} alt={formNama} className="w-full h-full object-cover" /> : initialsOf(formNama)}
               </div>
-              <label className="inline-flex items-center gap-1.5 min-h-11 px-3.5 rounded-lg border text-xs font-semibold text-brown-2 cursor-pointer" style={BORDER}>
+              <label className="btn btn-secondary btn-sm">
                 <IconEdit size={14} /> Ganti foto
                 <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden text-base" />
               </label>

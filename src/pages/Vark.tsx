@@ -35,6 +35,12 @@ function VarkIcon({ k, size = 14, className }: { k: VarkKey; size?: number; clas
   const Icon = VARK_ICONS[k]
   return <Icon size={size} className={className} />
 }
+// Empat warna identitas V/A/R/K (bukan token status, dipertahankan sebagai
+// identitas per keputusan sapuan mahasiswa 16 Sep 2026). Dipakai lewat
+// color-mix() di titik pakai yang duduk di atas latar bereaksi tema (label
+// dimensi di bawah tiap batang), supaya tetap terbaca di Dark; dipakai
+// langsung (tanpa color-mix) untuk isian batang dan titik warna karena
+// latarnya sendiri (bukan warna tema) yang jadi acuan kontras di situ.
 const VARK_COLORS: Record<VarkKey, string> = { V: '#8FA287', A: '#D4A373', R: '#4A7EA0', K: '#8B6BA0' }
 const VARK_NAMES: Record<VarkKey, string> = { V: 'Visual', A: 'Auditory', R: 'Read/Write', K: 'Kinestetik' }
 const VARK_DESCS: Record<VarkKey, string> = {
@@ -308,15 +314,34 @@ export function Vark() {
                                 boxShadow: isDom ? '0 4px 16px color-mix(in srgb, var(--shadow-color) 15%, transparent)' : undefined,
                               }}
                             >
+                              {/* Angka di dalam batang: latarnya warna identitas VARK
+                                  sendiri (bukan token tema), jadi kontrasnya sama di
+                                  Light/Dark. text-btn-text dipakai supaya konsisten
+                                  dengan pola teks di atas warna aksen di tempat lain,
+                                  bukan warna terang mentah. Batang rendah (di bawah 25%)
+                                  menaruh angkanya di luar batang, di atas kartu ivory,
+                                  jadi dicampur ke var(--brown) sama seperti label
+                                  dimensi di bawah supaya tetap terbaca di Dark. */}
                               <span
-                                className="text-xs font-bold text-white"
-                                style={heightPct < 25 ? { color, position: 'absolute', marginTop: '-1.2rem' } : undefined}
+                                className="text-xs font-bold"
+                                style={
+                                  heightPct < 25
+                                    ? {
+                                        color: `color-mix(in srgb, ${color} 78%, var(--brown) 22%)`,
+                                        position: 'absolute',
+                                        marginTop: '-1.2rem',
+                                      }
+                                    : { color: 'var(--btn-text)' }
+                                }
                               >
                                 {val}
                               </span>
                             </div>
                           </div>
-                          <div className="text-xs font-semibold text-center" style={{ color, fontWeight: isDom ? 700 : 500 }}>
+                          <div
+                            className="text-xs font-semibold text-center"
+                            style={{ color: `color-mix(in srgb, ${color} 78%, var(--brown) 22%)`, fontWeight: isDom ? 700 : 500 }}
+                          >
                             {k}
                           </div>
                           <div className="text-[11px] text-brown-3 text-center">{VARK_NAMES[k]}</div>
