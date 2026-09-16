@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Link } from 'react-router'
 import { Layout } from '../components/Layout'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
@@ -140,11 +139,6 @@ export default function Asesmen() {
           <div>
             <h1 className="font-display text-xl sm:text-2xl font-bold text-brown mb-1">Asesmen</h1>
             <p className="text-sm text-brown-3 leading-relaxed">Hasil kelas</p>
-          </div>
-          <div className="flex gap-2 flex-wrap">
-            <Link to="/asesmen/bank" className="btn btn-secondary">
-              Bank soal
-            </Link>
           </div>
         </div>
 

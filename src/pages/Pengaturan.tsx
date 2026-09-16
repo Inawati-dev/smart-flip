@@ -22,7 +22,10 @@ const BORDER = { borderColor: 'var(--border)' } as const
 // Kartu pemilih tema dihapus dari sini 16 Sep 2026 (koreksi Johan — jadi
 // toggle di sidebar saja) — penggantinya tombol toggle terang/gelap di
 // Layout.tsx (rel kiri desktop + topbar mobile), lihat src/hooks/useTheme.ts.
+const BATAS_DAFTAR = 8
+
 export function PengaturanSections() {
+  const [tampilSemua, setTampilSemua] = useState(false)
   const { role } = useAuth()
   const isDosen = role === 'dosen'
   const { data: students } = useStudentStats()
@@ -88,12 +91,14 @@ export function PengaturanSections() {
       {/* Kode undangan dosen + Notifikasi — dua kolom di >=768px (permintaan
           Johan 16 Sep 2026 "ini juga bisa jadi 2 kolom"). Mahasiswa tidak
           punya kartu kode undangan, jadi Notifikasi memenuhi lebar penuh. */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-stretch">
+      {/* Dua baris penuh lebar (antrean #95): Kode undangan pendek, Notifikasi
+          bisa panjang, jadi tidak lagi dipaksa sama tinggi berdampingan. */}
+      <div className="flex flex-col gap-4">
         {/* Kode undangan dosen — hanya untuk dosen. Ini yang diminta calon
             dosen saat mendaftar di halaman Registrasi; tanpa kode yang cocok,
             pendaftaran tetap jadi (tapi turun jadi peran mahasiswa). */}
         {isDosen && (
-          <div className="bg-ivory rounded-2xl border p-5 h-full flex flex-col" style={BORDER}>
+          <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
             <div className="flex items-center gap-2.5 mb-1">
               <IconLock size={18} className="text-brown-3" />
               <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
@@ -176,7 +181,7 @@ export function PengaturanSections() {
           </div>
         )}
 
-        <div className={`bg-ivory rounded-2xl border p-5 h-full flex flex-col${isDosen ? '' : ' md:col-span-2'}`} style={BORDER}>
+        <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
           <div className="flex items-center gap-2.5 mb-1">
             <IconBell size={18} className="text-brown-3" />
             <span className="text-sm font-semibold text-brown">Notifikasi</span>
@@ -193,7 +198,7 @@ export function PengaturanSections() {
                 {needsAttention.length} mahasiswa belum mulai modul atau belum tes diagnostik.
               </p>
               <div className="flex flex-col gap-1.5">
-                {needsAttention.map((s) => (
+                {(tampilSemua ? needsAttention : needsAttention.slice(0, BATAS_DAFTAR)).map((s) => (
                   <div
                     key={s.id}
                     className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg flex-wrap"
@@ -215,6 +220,11 @@ export function PengaturanSections() {
                   </div>
                 ))}
               </div>
+              {needsAttention.length > BATAS_DAFTAR && (
+                <button type="button" onClick={() => setTampilSemua((v) => !v)} className="btn btn-ghost btn-sm self-start mt-2">
+                  {tampilSemua ? 'Tampilkan lebih sedikit' : `Tampilkan semua (${needsAttention.length})`}
+                </button>
+              )}
             </>
           )}
         </div>

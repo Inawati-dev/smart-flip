@@ -6,7 +6,7 @@ import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
 import { BrandMark } from './AuthShell'
 import { useTheme } from '../hooks/useTheme'
-import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument, IconMoon, IconSun, IconUsers } from './icons'
+import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconDocument, IconMoon, IconSun, IconUsers, IconClipboard } from './icons'
 
 interface NavItem {
   to: string
@@ -28,6 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
   { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Pre-test, formatif, post-test' },
+  { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank soal', desc: 'Soal, tes khusus, tes kelompok, tugas akhir', dosenOnly: true },
   { to: '/akun/pdf', icon: IconDocument, label: 'Berkas', desc: 'PDF dan video tiap topik', dosenOnly: true },
   { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas dan kode gabung', dosenOnly: true },
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil dan pengaturan' },

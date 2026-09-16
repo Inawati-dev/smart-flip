@@ -19,7 +19,6 @@ import { Select } from '../components/Select'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { PillGroup } from '../components/PillGroup'
-import { downloadCsv } from '../lib/analitik'
 import { timeAgo } from '../lib/forum'
 import {
   fetchSumberAktivitas,
@@ -27,7 +26,6 @@ import {
   ringkasKelas,
   perluPerhatian,
   matriksProgres,
-  buildMatriksCsv,
   type FilterAktivitas,
   type MatriksSel,
 } from '../lib/aktivitas'
@@ -40,7 +38,6 @@ import {
   IconChart,
   IconRefresh,
   IconTarget,
-  IconDownload,
   IconVideo,
   IconClipboard,
   IconGraduationCap,
@@ -182,10 +179,6 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
     setFeedLimit(50)
   }
 
-  function unduhCsv() {
-    downloadCsv(`progres-kelas-${new Date().toISOString().slice(0, 10)}.csv`, buildMatriksCsv(matriks))
-  }
-
   return (
     <div className="flex flex-col gap-5">
       {/* Judul + lencana perlu perhatian */}
@@ -264,7 +257,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
             <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
           ) : (
             <>
-              <div className="overflow-x-auto max-h-[420px] overflow-y-auto">
+              <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <tbody>
                     {kejadian.slice(0, feedLimit).map((k, i) => (
@@ -314,15 +307,6 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
 
         {tab === 'progres' && (
           <>
-            <div className="px-5 py-3.5 border-b flex items-center justify-end gap-2 flex-wrap" style={BORDER}>
-              <button
-                onClick={unduhCsv}
-                disabled={matriks.length === 0}
-                className="btn btn-secondary btn-sm"
-              >
-                <IconDownload size={13} /> Unduh CSV
-              </button>
-            </div>
             {matriks.length === 0 ? (
               <p className="text-brown-3 text-sm p-4">Belum ada aktivitas di rentang ini</p>
             ) : (

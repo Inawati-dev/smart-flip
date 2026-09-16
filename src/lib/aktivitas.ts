@@ -322,18 +322,6 @@ export function matriksProgres(sumber: SumberAktivitas): MatriksBaris[] {
   }))
 }
 
-// CSV tabel mahasiswa × modul — dipakai tombol "Unduh CSV" di Dashboard
-// dosen. downloadCsv (pemicu Blob + anchor) dipakai apa adanya dari analitik.ts.
-export function buildMatriksCsv(baris: MatriksBaris[]): string {
-  if (baris.length === 0) return 'Nama\n'
-  const orderNums = baris[0].sel.map((s) => s.orderNum)
-  let csv = 'Nama,' + orderNums.map((n) => `Topik ${n}`).join(',') + '\n'
-  for (const b of baris) {
-    const nama = (b.nama || '').replace(/"/g, '""')
-    csv += `"${nama}",` + b.sel.map((s) => s.status).join(',') + '\n'
-  }
-  return csv
-}
 
 // ── Data access — 5 query Supabase digabung jadi satu SumberAktivitas ──
 
