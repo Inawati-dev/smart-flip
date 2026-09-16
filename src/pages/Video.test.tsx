@@ -104,11 +104,11 @@ describe('Video (dosen)', () => {
     expect(screen.getByText('Tambah tautan')).toBeTruthy()
   })
 
-  it('shows a preview link opening in a new tab for a module with a URL', async () => {
+  it('shows a preview button for a module with a URL', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3))
     expect(screen.getByText('Ubah')).toBeTruthy()
-    const preview = document.querySelector('a[target="_blank"]')
+    const preview = document.querySelector('button[aria-label="Pratinjau tautan video"]')
     expect(preview).toBeTruthy()
   })
 })

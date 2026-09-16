@@ -31,8 +31,17 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil, kelas, pengaturan' },
 ]
 
-function isActive(pathname: string, to: string): boolean {
-  return pathname === to || pathname.startsWith(`${to}/`)
+// Satu item aktif pada satu waktu: item dengan awalan path terpanjang yang
+// cocok. Tanpa ini, /akun/pdf menyalakan "PDF" DAN "Akun" bersamaan
+// (temuan Johan 16 Sep 2026).
+export function activeTo(pathname: string, items: ReadonlyArray<{ to: string }>): string | null {
+  let best: string | null = null
+  for (const { to } of items) {
+    if (pathname === to || pathname.startsWith(`${to}/`)) {
+      if (best === null || to.length > best.length) best = to
+    }
+  }
+  return best
 }
 
 function initialsOf(name: string | undefined): string {
@@ -51,6 +60,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const { user, role, profile } = useAuth()
   const [logoutOpen, setLogoutOpen] = useState(false)
   const navItems = NAV_ITEMS.filter((item) => !item.dosenOnly || role === 'dosen')
+  const currentActive = activeTo(location.pathname, navItems)
 
   async function doLogout() {
     // Onboarding is "seen" per-browser (localStorage), not per-session — reset
@@ -106,7 +116,7 @@ export function Layout({ children }: { children: ReactNode }) {
 
         <nav className="flex-1 flex flex-col items-center gap-1.5 w-full px-2">
           {navItems.map((item) => {
-            const active = isActive(location.pathname, item.to)
+            const active = item.to === currentActive
             const Icon = item.icon
             return (
               <Link
@@ -188,7 +198,7 @@ export function Layout({ children }: { children: ReactNode }) {
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         {navItems.map((item) => {
-          const active = isActive(location.pathname, item.to)
+          const active = item.to === currentActive
           const Icon = item.icon
           return (
             <Link

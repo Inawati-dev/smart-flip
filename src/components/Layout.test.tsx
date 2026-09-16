@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { MemoryRouter } from 'react-router'
-import { Layout } from './Layout'
+import { Layout, activeTo } from './Layout'
 
 const mockIsSupabaseConfigured = vi.hoisted(() => ({ value: false }))
 const mockAuth = vi.hoisted(() => ({
@@ -104,5 +104,14 @@ describe('Layout', () => {
     expect(html).not.toContain('href="/forum"')
     expect(html).not.toContain('href="/draf"')
     expect(html).toContain('href="/"')
+  })
+})
+
+// /akun/pdf harus menyalakan PDF saja, bukan PDF dan Akun bersamaan.
+describe('Layout active item', () => {
+  it('hanya satu item aktif di /akun/pdf untuk dosen', () => {
+    expect(typeof activeTo).toBe('function')
+    expect(activeTo('/akun/pdf', [{ to: '/akun' }, { to: '/akun/pdf' }, { to: '/modul' }])).toBe('/akun/pdf')
+    expect(activeTo('/akun', [{ to: '/akun' }, { to: '/akun/pdf' }])).toBe('/akun')
   })
 })
