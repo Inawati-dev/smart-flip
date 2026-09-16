@@ -9,11 +9,11 @@ import { useModules } from '../hooks/useModules'
 import { getReaderStyle, setReaderStyle, type ReaderStyle } from '../lib/readerStyle'
 import { Layout } from '../components/Layout'
 import { PillGroup } from '../components/PillGroup'
-import { IconWarning, IconSkipBack, IconSkipForward, IconBook } from '../components/icons'
+import { IconWarning, IconSkipBack, IconSkipForward, IconBook, IconChevronRight } from '../components/icons'
 
 const READER_STYLE_OPTIONS: Array<{ value: ReaderStyle; label: string }> = [
   { value: 'flip3d', label: 'Flip 3D' },
-  { value: 'spread', label: 'Buka Buku' },
+  { value: 'spread', label: 'Buka buku' },
   { value: 'slide', label: 'Geser' },
 ]
 
@@ -209,7 +209,7 @@ export function Ebook() {
       // Modules are still loading, or this module genuinely has no PDF yet —
       // useModules() resolves async, so don't flash an error before it settles.
       if (modules.length > 0) {
-        setErrorMsg('PDF modul ini belum tersedia.\nFile akan ditambahkan segera.')
+        setErrorMsg('PDF topik ini belum tersedia.\nFile akan ditambahkan segera.')
         setStatus('error')
       }
       return
@@ -234,7 +234,7 @@ export function Ebook() {
         // Same 404/fetch-failure heuristic as legacy/script.js's openBook() catch.
         setErrorMsg(
           /404|fetch|Missing/i.test(message)
-            ? 'PDF modul ini belum tersedia.\nFile akan ditambahkan segera.'
+            ? 'PDF topik ini belum tersedia.\nFile akan ditambahkan segera.'
             : 'Gagal memuat buku: ' + message,
         )
         setStatus('error')
@@ -380,15 +380,28 @@ export function Ebook() {
             (grid banyak kolom), reader memakai max-w-4xl. Kalau header selalu
             max-w-4xl, di mode katalog dia jadi tersendiri ke tengah sementara
             grid membentang penuh — tombol "Kembali" terlihat mencong ke kanan. */}
-        <div
-          className={`w-full flex items-center gap-3 flex-wrap ${moduleId != null ? 'max-w-4xl' : ''}`}
-        >
-          <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="btn btn-secondary">
-            ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
-          </Link>
-          {currentModule?.title && (
-            <span className="text-sm font-semibold text-brown truncate ml-auto text-right">{currentModule.title}</span>
-          )}
+        <div className={`w-full flex flex-col gap-1 ${moduleId != null ? 'max-w-4xl' : ''}`}>
+          <div className="flex items-center gap-1.5 text-xs text-brown-3">
+            <Link to="/modul" className="hover:underline">Modul</Link>
+            {moduleId != null && currentModule?.title && (
+              <>
+                <IconChevronRight size={12} />
+                <Link to={`/modul/${moduleId}`} className="hover:underline truncate max-w-[160px]">
+                  {currentModule.title}
+                </Link>
+              </>
+            )}
+            <IconChevronRight size={12} />
+            <span>Ebook</span>
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="btn btn-secondary">
+              ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
+            </Link>
+            <h1 className="text-sm font-semibold text-brown truncate ml-auto text-right">
+              {moduleId != null ? currentModule?.title || 'Ebook' : 'Ebook'}
+            </h1>
+          </div>
         </div>
 
         {moduleId != null && status === 'ready' && (
@@ -401,11 +414,12 @@ export function Ebook() {
               ariaLabel="Gaya baca"
             />
 
-            <div className="flex items-center gap-1 p-1 rounded-full" style={{ background: 'var(--bg3)' }}>
+            <div className="flex items-center gap-1 p-1 rounded-full bg-bg3">
               <button
                 onClick={zoomOut}
                 disabled={zoom <= ZOOM_MIN}
                 title="Perkecil"
+                aria-label="Perkecil"
                 className="btn btn-ghost btn-icon !rounded-full"
               >
                 −
@@ -415,6 +429,7 @@ export function Ebook() {
                 onClick={zoomIn}
                 disabled={zoom >= ZOOM_MAX}
                 title="Perbesar"
+                aria-label="Perbesar"
                 className="btn btn-ghost btn-icon !rounded-full"
               >
                 +
@@ -440,13 +455,13 @@ export function Ebook() {
                 <div className="text-lg font-bold text-brown leading-tight">
                   {catalog.length}/{modules.length}
                 </div>
-                <div className="text-xs text-brown-3">Modul sudah diunggah</div>
+                <div className="text-xs text-brown-3">Topik sudah diunggah</div>
               </div>
             </div>
             {catalog.length === 0 ? (
               <div className="flex flex-col items-center gap-3 py-16 text-center">
                 <IconBook size={36} className="text-brown-3" />
-                <p className="text-sm text-brown-3">Belum ada PDF modul yang terpasang.</p>
+                <p className="text-sm text-brown-3">Belum ada PDF topik yang terpasang.</p>
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
@@ -454,7 +469,7 @@ export function Ebook() {
                   <button
                     key={m.id}
                     onClick={() => setSearchParams({ book: String(m.id) })}
-                    className="flex flex-col items-center gap-2 p-3 rounded-xl border bg-ivory text-center transition-shadow hover:shadow-md"
+                    className="flex flex-col items-center gap-2 p-3 rounded-2xl border bg-ivory text-center transition-shadow hover:shadow-md"
                     style={{ borderColor: 'var(--border)' }}
                   >
                     <div
@@ -483,7 +498,7 @@ export function Ebook() {
 
         {moduleId != null && status === 'error' && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center max-w-sm">
-            <IconWarning size={40} className="text-red" />
+            <IconWarning size={40} className="text-danger" />
             <p className="text-sm text-brown-2 whitespace-pre-line">{errorMsg}</p>
             <Link to="/ebook" className="btn btn-primary mt-2">
               Kembali ke Katalog
@@ -528,7 +543,13 @@ export function Ebook() {
             </div>
 
             <div className="flex items-center gap-1.5 md:gap-2.5 flex-wrap justify-center">
-              <button onClick={goFirst} disabled={currentPage <= 1} title="Halaman pertama" className="btn btn-secondary btn-icon">
+              <button
+                onClick={goFirst}
+                disabled={currentPage <= 1}
+                title="Halaman pertama"
+                aria-label="Halaman pertama"
+                className="btn btn-secondary btn-icon"
+              >
                 <IconSkipBack size={16} />
               </button>
               <button onClick={goPrev} disabled={prevDisabled} title="Sebelumnya" className="btn btn-secondary">
@@ -542,7 +563,13 @@ export function Ebook() {
               <button onClick={goNext} disabled={nextDisabled} title="Berikutnya" className="btn btn-primary">
                 Berikutnya ›
               </button>
-              <button onClick={goLast} disabled={currentPage >= totalPages} title="Halaman terakhir" className="btn btn-secondary btn-icon">
+              <button
+                onClick={goLast}
+                disabled={currentPage >= totalPages}
+                title="Halaman terakhir"
+                aria-label="Halaman terakhir"
+                className="btn btn-secondary btn-icon"
+              >
                 <IconSkipForward size={16} />
               </button>
             </div>

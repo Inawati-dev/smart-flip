@@ -272,35 +272,3 @@ export async function fetchAttemptsPrePost(courseId?: number): Promise<AttemptPr
     return null
   }
 }
-
-// ── CSV gabungan: tabel per mahasiswa + tabel formatif per modul ───────
-export function buildAsesmenCsv(perMahasiswa: PeningkatanMahasiswa[], rekapFormatif: ModulRekap[]): string {
-  const esc = (v: string) => `"${v.replace(/"/g, '""')}"`
-  const KATEGORI_LABEL: Record<NGainCategory, string> = { tinggi: 'Tinggi', sedang: 'Sedang', rendah: 'Rendah' }
-
-  let csv = 'Nama,Kelas,Pre-test,Post-test,Peningkatan Skor,Kategori\n'
-  for (const m of perMahasiswa) {
-    csv += [
-      esc(m.nama),
-      esc(m.kelasId ?? '—'),
-      m.pre ?? '—',
-      m.post ?? '—',
-      m.peningkatan != null ? m.peningkatan.toFixed(2) : '—',
-      m.kategori ? KATEGORI_LABEL[m.kategori] : '—',
-    ].join(',') + '\n'
-  }
-
-  csv += '\nModul,Pengerjaan,Mahasiswa,Rata-rata,Tertinggi,Terendah,% Lulus\n'
-  for (const r of rekapFormatif) {
-    csv += [
-      esc(r.judul),
-      r.jumlahPengerjaan,
-      r.jumlahMahasiswa,
-      r.rataRata,
-      r.tertinggi,
-      r.terendah,
-      r.persenLulus,
-    ].join(',') + '\n'
-  }
-  return csv
-}
