@@ -23,8 +23,8 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 ## 3. Halaman dosen
 
 - Halaman lama (Forum, Draf, Feedback, Observasi, ProjekAkhir, Validasi, Analitik, Manajemen, Profil, Changelog, Diagnostik, Workshop, Ngain, Vark) sudah dihapus dari kode sejak commit `0ef7797`; rute lamanya mengalihkan. Warna galat memakai `danger`, bukan `red`. (papan #58, #61)
-- Akun tanpa tab: tiga kartu angka di atas, kartu profil (mahasiswa: plus baris kelas), lalu Kode undangan dan Notifikasi dua kolom sama tinggi. `/pengaturan` mengalihkan ke `/akun`; `/akun?tab=kelas` mengalihkan ke `/kelas`. (#28, #33, papan #40, #56)
-- Kelas adalah item rel sendiri (`/kelas`, dosen), bukan tab Akun; rel dosen 7 item. (papan #55)
+- Akun tanpa tab: tiga kartu angka di atas, kartu profil (mahasiswa: plus baris kelas), lalu Kode undangan dan Notifikasi dua baris penuh lebar (daftar Notifikasi dibatasi 8 plus Tampilkan semua). `/pengaturan` mengalihkan ke `/akun`; `/akun?tab=kelas` mengalihkan ke `/kelas`. (#28, #33, papan #40, #56)
+- Kelas dan Bank soal adalah item rel sendiri (dosen); rel dosen 8 item: Dashboard, Modul, Video, Asesmen, Bank soal, Berkas, Kelas, Akun. Asesmen tidak punya tombol ke Bank soal. (papan #55, #76)
 - Berkas: kedua tab memakai kolom No · Nama berkas · Ukuran · Tanggal unggah · Dipakai topik (mata kuliah · topik) · Aksi lewat satu komponen tabel. (papan #54)
 - Tema diganti lewat tombol ikon bulan/matahari di rel (di atas Keluar) dan topbar telepon, bukan kartu di Akun. Hook `useTheme` di `src/hooks/useTheme.ts`. (papan #42)
 - Radius kontrol satu token `--radius-control` (10 px) untuk `.btn`, dropdown, pil, input, textarea. Lencana, avatar, toggle, ubin ikon, dan lingkaran stepper tetap bulat. (papan #44)
