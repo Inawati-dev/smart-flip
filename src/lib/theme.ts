@@ -4,7 +4,7 @@
 // live during development, adapted to this project's token set (colors +
 // button fill/text + soft-accent tint, not just the accent hue).
 
-export type ThemeId = 'bawaan' | 'seline' | 'claude' | 'soft-pill' | 'executive'
+export type ThemeId = 'bawaan' | 'seline' | 'dark' | 'claude' | 'soft-pill' | 'executive'
 
 export interface ThemeColors {
   cream: string
@@ -51,7 +51,7 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
     },
   },
   seline: {
-    label: 'Seline',
+    label: 'Light',
     desc: 'Netral terang, aksen biru.',
     colors: {
       cream: '#FAFAF9',
@@ -77,6 +77,33 @@ export const THEMES: Record<ThemeId, { label: string; desc: string; colors: Them
       btnBg: '#3BA6F1',
       btnText: '#FFFFFF',
       accentSoft: '#EEF7FE',
+      fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
+      r: '12px',
+    },
+  },
+  // Pasangan gelap dari Light (permintaan Johan 16 Sep 2026): latar gelap
+  // kebiruan, teks terang, aksen biru yang sama. Kontras teks utama pada
+  // latar kartu: #E7EAF0 di atas #1B2130 = 12,9:1; teks sekunder #A9B1C2 di
+  // atas #1B2130 = 7,0:1 (dihitung rumus WCAG saat ditulis).
+  dark: {
+    label: 'Dark',
+    desc: 'Gelap kebiruan, aksen biru; pasangan tema Light.',
+    colors: {
+      cream: '#12161F',
+      ivory: '#1B2130',
+      bg3: '#242B3C',
+      terra: '#3BA6F1',
+      terraD: '#6BBDF5',
+      brown: '#E7EAF0',
+      brown2: '#A9B1C2',
+      brown3: '#7C8597',
+      brown4: '#4E586B',
+      border: '#2E3748',
+      border2: '#27303F',
+      btnBg: '#3BA6F1',
+      btnText: '#0B1220',
+      accentSoft: 'rgba(59,166,241,.16)',
       fontSans: "'Inter', ui-sans-serif, system-ui, sans-serif",
       fontDisplay: "'Inter', ui-sans-serif, system-ui, sans-serif",
       r: '12px',

@@ -1,5 +1,20 @@
 @import "tailwindcss";
 
+/* Alias statis untuk token yang dipakai CSS mentah di bawah (select, .card, dsb).
+   Nilai runtime tetap disuntik injectDesignTokens() di main.tsx (menimpa ini);
+   alias ini hanya menjaga cat pertama sebelum JS jalan (antrean #30). */
+:root {
+  --cream: #F5F2E9;
+  --ivory: #FFFDF8;
+  --bg3: #FAF7F0;
+  --terra: #D4A373;
+  --terra-d: #B8855A;
+  --brown: #3E362E;
+  --brown2: #6B5D4F;
+  --brown3: #9B8B7A;
+  --border: rgba(62,54,46,.10);
+}
+
 @theme {
   --color-cream: #F5F2E9;
   --color-ivory: #FFFDF8;

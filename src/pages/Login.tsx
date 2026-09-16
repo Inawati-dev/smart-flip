@@ -326,11 +326,11 @@ export function Login() {
             <span>Dana Internal UM 2026</span>
           </div>
           <ul className="flex flex-col gap-1.5 text-[0.78rem] text-cream/45 list-disc pl-4">
-            <li>Modul interaktif per-bab dengan video &amp; kuis</li>
-            <li>Jalur belajar adaptif dari tes diagnostik</li>
+            <li>Modul PDF dan video untuk tiap pertemuan</li>
+            <li>Pre-test di awal, tes formatif tiap topik, post-test di akhir</li>
+            <li>Topik terbuka bertahap, lulus pada skor 80</li>
             <li>Asesmen gaya belajar VARK</li>
-            <li>Forum diskusi &amp; asistensi draf penelitian</li>
-            <li>Progress otomatis, sinkron lintas perangkat</li>
+            <li>Progres tersimpan, sinkron lintas perangkat</li>
           </ul>
         </div>
         <button
