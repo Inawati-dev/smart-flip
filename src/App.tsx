@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
+import { CourseProvider } from './contexts/CourseContext'
 import { useAuth } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { ErrorBoundary } from './components/ErrorBoundary'
@@ -65,6 +66,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+        <CourseProvider>
         <BrowserRouter>
           <ErrorBoundary>
             <Suspense fallback={<div className="p-8 text-brown-3">Memuat…</div>}>
@@ -149,6 +151,7 @@ export default function App() {
             </Suspense>
           </ErrorBoundary>
         </BrowserRouter>
+        </CourseProvider>
       </AuthProvider>
     </QueryClientProvider>
   )

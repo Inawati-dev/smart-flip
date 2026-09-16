@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModule, useModules } from '../hooks/useModules'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
+import { useCourse } from '../contexts/CourseContext'
 import { saveQuizAttempt, PASS_SCORE } from '../lib/quizAttempts'
 import { fetchBankSoal } from '../lib/kuisSoal'
 import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
@@ -27,6 +28,7 @@ export default function Formatif() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
+  const { courseId } = useCourse()
   const { data: modul, isLoading: modulLoading } = useModule(moduleId)
   const { data: modules = [] } = useModules()
   const { statusOf, loading: topikLoading } = useTopikStatus()
@@ -83,6 +85,7 @@ export default function Formatif() {
         answers: jawabanTampil,
         kind: 'formatif',
         questionOrder: acak.urut,
+        courseId,
       })
       await queryClient.invalidateQueries({ queryKey: ['quizAttempts', moduleId] })
       await queryClient.invalidateQueries({ queryKey: ['quizAttempts', 'all'] })

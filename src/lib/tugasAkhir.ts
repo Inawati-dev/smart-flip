@@ -15,6 +15,7 @@ export interface RubrikKriteria {
 
 export interface FinalProject {
   id: string
+  course_id?: number
   dosen_id: string
   title: string
   description: string
@@ -53,6 +54,8 @@ export interface ProjectInput {
   deadline: string | null
   rubric: RubrikKriteria[]
   classIds: string[]
+  /** Mata kuliah (v23). */
+  courseId?: number
 }
 
 export const RUBRIK_BAWAAN: RubrikKriteria[] = [
@@ -113,7 +116,7 @@ function parseSubmission(row: Record<string, unknown>): FinalSubmission {
 
 // ── Dosen ──
 
-export async function fetchProjectsDosen(): Promise<FinalProject[]> {
+export async function fetchProjectsDosen(courseId?: number): Promise<FinalProject[]> {
   if (!isSupabaseConfigured) return []
   try {
     const { data: userData } = await supabase.auth.getUser()
@@ -121,11 +124,12 @@ export async function fetchProjectsDosen(): Promise<FinalProject[]> {
     if (!uid) return []
     // Difilter dosen_id: policy baca "brief terbuka" juga berlaku untuk dosen,
     // jadi tanpa filter ini brief dosen lain yang terbuka ikut muncul.
-    const { data, error } = await supabase
-      .from('tugas_akhir_briefs')
-      .select('*')
-      .eq('dosen_id', uid)
-      .order('created_at', { ascending: false })
+    let query = supabase.from('tugas_akhir_briefs').select('*').eq('dosen_id', uid).order('created_at', { ascending: false })
+    if (courseId != null) query = query.eq('course_id', courseId)
+    let { data, error } = await query
+    if (error && courseId != null && (error.code === '42703' || /course_id/.test(error.message))) {
+      ;({ data, error } = await supabase.from('tugas_akhir_briefs').select('*').eq('dosen_id', uid).order('created_at', { ascending: false }))
+    }
     if (error) throw error
     return (data ?? []).map((r) => parseProject(r as Record<string, unknown>))
   } catch (e) {
@@ -147,6 +151,7 @@ export async function createProject(input: ProjectInput, dosenId: string): Promi
       rubric: input.rubric,
       class_ids: input.classIds,
       is_open: true,
+      ...(input.courseId != null ? { course_id: input.courseId } : {}),
     })
     .select('*')
     .single()
@@ -217,16 +222,15 @@ export async function gradeSubmission(
 // ── Mahasiswa ──
 
 /** Brief yang terbuka untuk mahasiswa ini (RLS menyaring kelas). Yang terbaru bila lebih dari satu. */
-export async function fetchProjectMhs(): Promise<FinalProject | null> {
+export async function fetchProjectMhs(courseId?: number): Promise<FinalProject | null> {
   if (!isSupabaseConfigured) return null
   try {
-    const { data, error } = await supabase
-      .from('tugas_akhir_briefs')
-      .select('*')
-      .eq('is_open', true)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+    let query = supabase.from('tugas_akhir_briefs').select('*').eq('is_open', true).order('created_at', { ascending: false }).limit(1)
+    if (courseId != null) query = query.eq('course_id', courseId)
+    let { data, error } = await query.maybeSingle()
+    if (error && courseId != null && (error.code === '42703' || /course_id/.test(error.message))) {
+      ;({ data, error } = await supabase.from('tugas_akhir_briefs').select('*').eq('is_open', true).order('created_at', { ascending: false }).limit(1).maybeSingle())
+    }
     if (error) throw error
     return data ? parseProject(data as Record<string, unknown>) : null
   } catch (e) {

@@ -65,7 +65,7 @@ describe('Modul', () => {
     const withPdf = { ...FAKE_MODULE, pdf_path: 'https://example.test/modul-pdf/modul-1.pdf' }
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 1], withPdf)
-    queryClient.setQueryData(['modules'], [withPdf])
+    queryClient.setQueryData(['modules', 'course', 1], [withPdf])
     queryClient.setQueryData(['progress', 'all'], {})
     queryClient.setQueryData(['quizAttempts', 1], [])
 
@@ -78,7 +78,7 @@ describe('Modul', () => {
   it('shows "belum mengunggah" instead of the read button when pdf_path and path are both empty', () => {
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 1], { ...FAKE_MODULE, pdf_path: null, path: '' })
-    queryClient.setQueryData(['modules'], [FAKE_MODULE])
+    queryClient.setQueryData(['modules', 'course', 1], [FAKE_MODULE])
     queryClient.setQueryData(['progress', 'all'], {})
     queryClient.setQueryData(['quizAttempts', 1], [])
 
@@ -91,7 +91,7 @@ describe('Modul', () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 1], FAKE_MODULE)
-    queryClient.setQueryData(['modules'], [FAKE_MODULE])
+    queryClient.setQueryData(['modules', 'course', 1], [FAKE_MODULE])
     queryClient.setQueryData(['manajemen', 'customs', [1]], {})
 
     const html = renderModul(queryClient)

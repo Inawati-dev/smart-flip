@@ -13,6 +13,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchAttemptsByKind, PASS_SCORE } from './quizAttempts'
 import { isSupabaseConfigured } from './supabase'
+import { useCourse } from '../contexts/CourseContext'
 
 export type TopikStatus = 'done' | 'open' | 'locked'
 
@@ -48,7 +49,7 @@ export function markPretestDone(): void {
   }
 }
 
-async function isPreTestDone(): Promise<boolean> {
+async function isPreTestDone(courseId?: number): Promise<boolean> {
   try {
     if (localStorage.getItem(PRETEST_SKIP_KEY) === '1') return true
   } catch {
@@ -61,7 +62,7 @@ async function isPreTestDone(): Promise<boolean> {
       return false
     }
   }
-  const attempts = await fetchAttemptsByKind('pre')
+  const attempts = await fetchAttemptsByKind('pre', courseId)
   return attempts.length > 0
 }
 
@@ -69,7 +70,8 @@ async function isPreTestDone(): Promise<boolean> {
 // default FALSE (localStorage sfp_pretest_done belum diisi) supaya alur
 // gerbangnya sendiri bisa dicoba tanpa DB (spec §9 WP6 poin 3).
 export function usePreTestDone() {
-  return useQuery({ queryKey: ['pretest-done'], queryFn: isPreTestDone })
+  const { courseId } = useCourse()
+  return useQuery({ queryKey: ['pretest-done', courseId], queryFn: () => isPreTestDone(courseId) })
 }
 
 // preDone KHUSUS untuk kalkulasi status topik (beda dari usePreTestDone di
@@ -83,10 +85,11 @@ export function usePreTestDone() {
 // stub WP1–WP5 — inilah yang menjaga Modul.test.tsx/ModulList.test.tsx/
 // Video.test.tsx/PertemuanStepper.test.tsx tetap hijau tanpa disentuh.
 function useTopikPreDone() {
+  const { courseId } = useCourse()
   return useQuery({
-    queryKey: ['topik-pretest-done'],
+    queryKey: ['topik-pretest-done', courseId],
     queryFn: async () => {
-      const attempts = await fetchAttemptsByKind('pre')
+      const attempts = await fetchAttemptsByKind('pre', courseId)
       if (attempts.length > 0) return true
       try {
         return localStorage.getItem(PRETEST_SKIP_KEY) === '1'

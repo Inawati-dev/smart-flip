@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
+import { createCourse, updateCourse, deleteCourse, type Course } from '../lib/courses'
 import { useTopikStatus } from '../lib/topik'
 import { moduleIdToPath } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
@@ -20,6 +22,7 @@ import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { FileInput } from '../components/FileInput'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconTrash, IconDocument } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 
@@ -30,6 +33,7 @@ const BORDER = { borderColor: 'var(--border)' } as const
 // disederhanakan (tanpa reorder/bulk/hapus/tambah — itu tetap di sana).
 export function DosenModulTable() {
   const queryClient = useQueryClient()
+  const { courseId } = useCourse()
   const { data: modules = [] } = useModules()
   const moduleIds = useMemo(() => modules.map((m) => m.id), [modules])
   const { data: customs = {} } = useModulCustoms(moduleIds)
@@ -90,8 +94,10 @@ export function DosenModulTable() {
     setSaving(true)
     try {
       if (creatingNew) {
-        const nextOrderNum = Math.max(0, ...modules.map((m) => m.order_num)) + 1
-        const newId = await createModulReturningId({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum })
+        // modules sudah tersaring per mata kuliah terpilih (useModules), jadi
+        // nomor urut topik baru = jumlah topik mata kuliah ini + 1.
+        const nextOrderNum = modules.length + 1
+        const newId = await createModulReturningId({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum, courseId })
         await queryClient.invalidateQueries({ queryKey: ['modules'] })
         if (createPdfFile) {
           setSavingStatus('Mengunggah PDF…')
@@ -324,14 +330,16 @@ export function DosenModulTable() {
             {creatingNew && (
               <div className="mb-4">
                 <span className="block text-xs font-semibold text-brown-2 mb-1">PDF topik (opsional)</span>
-                <FileInput
-                  accept="application/pdf,.pdf"
-                  label="Pilih PDF"
-                  hint="PDF, maks 20 MB"
-                  maxSizeMb={20}
-                  file={createPdfFile}
-                  onChange={setCreatePdfFile}
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
+                  <FileInput
+                    accept="application/pdf,.pdf"
+                    label="Pilih PDF"
+                    hint="PDF, maks 20 MB"
+                    maxSizeMb={20}
+                    file={createPdfFile}
+                    onChange={setCreatePdfFile}
+                  />
+                </div>
               </div>
             )}
             <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
@@ -386,7 +394,9 @@ export function DosenModulTable() {
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Ganti PDF topik</h3>
-            <div className="flex items-end gap-2 flex-wrap mb-2">
+
+            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah berkas baru</p>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
               <FileInput
                 accept="application/pdf,.pdf"
                 label="Pilih PDF"
@@ -402,34 +412,41 @@ export function DosenModulTable() {
                 type="button"
                 onClick={handleUploadPdf}
                 disabled={!pdfFile || uploadingPdf}
-                className="btn btn-primary btn-sm flex-shrink-0 min-w-[7.5rem]"
+                className="btn btn-primary btn-sm min-w-[8rem]"
               >
                 {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
               </button>
             </div>
+
             {isSupabaseConfigured && pdfFiles.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap pt-3 mt-1 border-t" style={BORDER}>
-                <span className="text-[11px] text-brown-3 whitespace-nowrap">atau pakai file yang sudah ada:</span>
-                <Select
-                  value={pickedPdfUrl}
-                  onChange={setPickedPdfUrl}
-                  placeholder="Pilih file…"
-                  className="h-11 px-2.5 rounded-lg border text-sm text-brown flex-1 min-w-[160px]"
-                  style={BORDER}
-                  options={pdfFiles.map((f) => ({
-                    value: f.url,
-                    label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
-                  }))}
-                />
-                {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau berkas yang dipilih" />}
-                <button
-                  type="button"
-                  onClick={handleAssignPdf}
-                  disabled={!pickedPdfUrl || assigningPdf}
-                  className="btn btn-secondary btn-sm flex-shrink-0 min-w-[7.5rem]"
-                >
-                  {assigningPdf ? 'Memasang…' : 'Gunakan'}
-                </button>
+              <div className="pt-4 mt-4 border-t" style={BORDER}>
+                <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
+                  Atau pakai berkas yang sudah ada
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Select
+                      value={pickedPdfUrl}
+                      onChange={setPickedPdfUrl}
+                      placeholder="Pilih file…"
+                      className="h-11 px-2.5 rounded-lg border text-sm text-brown flex-1 min-w-0"
+                      style={BORDER}
+                      options={pdfFiles.map((f) => ({
+                        value: f.url,
+                        label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
+                      }))}
+                    />
+                    {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau berkas yang dipilih" />}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAssignPdf}
+                    disabled={!pickedPdfUrl || assigningPdf}
+                    className="btn btn-secondary btn-sm min-w-[8rem]"
+                  >
+                    {assigningPdf ? 'Memasang…' : 'Gunakan'}
+                  </button>
+                </div>
               </div>
             )}
             {pdfError && <p className="text-[11px] text-red mt-2">{pdfError}</p>}
@@ -451,6 +468,212 @@ export function DosenModulTable() {
   )
 }
 
+// Modal "Kelola mata kuliah" (antrean #68) — dosen daftar, ubah, hapus, dan
+// menambah mata kuliah. Dibuka dari tombol di samping MataKuliahSelect di
+// ModulList().
+function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const { courses } = useCourse()
+
+  const [toast, setToast] = useState<string | null>(null)
+  function showToast(msg: string) {
+    setToast(msg)
+    setTimeout(() => setToast(null), 2800)
+  }
+
+  const [editId, setEditId] = useState<number | null>(null)
+  const [formKode, setFormKode] = useState('')
+  const [formNama, setFormNama] = useState('')
+  const [formDeskripsi, setFormDeskripsi] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  function resetForm() {
+    setEditId(null)
+    setFormKode('')
+    setFormNama('')
+    setFormDeskripsi('')
+  }
+
+  function openEdit(c: Course) {
+    setEditId(c.id)
+    setFormKode(c.code)
+    setFormNama(c.name)
+    setFormDeskripsi(c.description)
+  }
+
+  async function saveForm() {
+    const kode = formKode.trim()
+    const nama = formNama.trim()
+    if (!kode || !nama) return
+    setSaving(true)
+    try {
+      if (editId != null) {
+        await updateCourse(editId, { code: kode, name: nama, description: formDeskripsi.trim() })
+        showToast('Mata kuliah disimpan')
+      } else {
+        await createCourse({ code: kode, name: nama, description: formDeskripsi.trim(), dosenId: user?.id ?? null })
+        showToast('Mata kuliah ditambahkan')
+      }
+      await queryClient.invalidateQueries({ queryKey: ['courses'] })
+      resetForm()
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal menyimpan mata kuliah')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const [deleteId, setDeleteId] = useState<number | null>(null)
+  const [deleting, setDeleting] = useState(false)
+
+  async function confirmDelete() {
+    if (deleteId == null) return
+    setDeleting(true)
+    try {
+      await deleteCourse(deleteId)
+      await queryClient.invalidateQueries({ queryKey: ['courses'] })
+      showToast('Mata kuliah dihapus')
+      setDeleteId(null)
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal menghapus mata kuliah')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  return (
+    <>
+      <div
+        className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
+        style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose()
+        }}
+      >
+        <div
+          className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
+          style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
+        >
+          <h3 className="font-display text-lg font-semibold text-brown mb-4">Kelola mata kuliah</h3>
+
+          <div className="flex flex-col gap-2 mb-4">
+            {courses.length === 0 ? (
+              <p className="text-sm text-brown-3">Belum ada mata kuliah.</p>
+            ) : (
+              courses.map((c) => (
+                <div key={c.id} className="flex items-center justify-between gap-2 row-divider py-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-brown truncate">
+                      {c.code} · {c.name}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button onClick={() => openEdit(c)} className="btn btn-secondary btn-sm">
+                      Ubah
+                    </button>
+                    <button
+                      onClick={() => setDeleteId(c.id)}
+                      aria-label={`Hapus mata kuliah ${c.name}`}
+                      title="Hapus mata kuliah"
+                      className="btn btn-danger btn-icon flex-shrink-0"
+                    >
+                      <IconTrash size={14} />
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div className="pt-4 border-t" style={BORDER}>
+            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
+              {editId != null ? 'Ubah mata kuliah' : 'Tambah mata kuliah'}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_2fr] gap-2 mb-2">
+              <input
+                value={formKode}
+                onChange={(e) => setFormKode(e.target.value.slice(0, 20))}
+                placeholder="Kode, mis. MPP"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                style={BORDER}
+              />
+              <input
+                value={formNama}
+                onChange={(e) => setFormNama(e.target.value.slice(0, 100))}
+                placeholder="Nama mata kuliah"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                style={BORDER}
+              />
+            </div>
+            <textarea
+              value={formDeskripsi}
+              onChange={(e) => setFormDeskripsi(e.target.value.slice(0, 200))}
+              placeholder="Deskripsi (opsional)"
+              rows={2}
+              className="w-full rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y mb-3"
+              style={BORDER}
+            />
+            <div className="flex gap-2.5 justify-end">
+              {editId != null && (
+                <button onClick={resetForm} className="btn btn-secondary btn-sm">
+                  Batal ubah
+                </button>
+              )}
+              <button
+                onClick={() => void saveForm()}
+                disabled={saving || !formKode.trim() || !formNama.trim()}
+                className="btn btn-primary btn-sm min-w-[7.5rem]"
+              >
+                {saving ? 'Menyimpan…' : editId != null ? 'Simpan' : 'Tambah'}
+              </button>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-4 mt-2 border-t" style={BORDER}>
+            <button onClick={onClose} className="btn btn-secondary">
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {deleteId != null && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !deleting) setDeleteId(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">
+              Hapus mata kuliah "{courses.find((c) => c.id === deleteId)?.name || ''}"?
+            </h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Semua topik, soal, dan hasil tes mata kuliah ini ikut terhapus.
+            </p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setDeleteId(null)} disabled={deleting} className="btn btn-secondary btn-sm flex-1">
+                Batal
+              </button>
+              <button onClick={() => void confirmDelete()} disabled={deleting} className="btn btn-danger btn-sm flex-1 min-w-[7.5rem]">
+                {deleting ? 'Menghapus…' : 'Ya, Hapus'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-brown text-white text-sm px-4 py-2.5 rounded-lg z-[800]">
+          {toast}
+        </div>
+      )}
+    </>
+  )
+}
+
 // /modul (spec §8.0, §9 WP5). Mahasiswa: dialihkan otomatis ke modul aktifnya
 // (progres <100% & tidak locked, urut order_num; fallback modul pertama).
 // Dosen: tabel kelola PDF (§5.2), sama seperti di /modul/:id (lihat Modul.tsx).
@@ -460,6 +683,7 @@ export function ModulList() {
   const { data: modules = [] } = useModules()
   const { data: progress = {} } = useAllProgress()
   const { statusOf } = useTopikStatus()
+  const [kelolaOpen, setKelolaOpen] = useState(false)
 
   useEffect(() => {
     if (authLoading || role === 'dosen' || modules.length === 0) return
@@ -472,8 +696,19 @@ export function ModulList() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <h1 className="text-2xl font-bold text-brown mb-4">Modul</h1>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
+          <h1 className="text-2xl font-bold text-brown">Modul</h1>
+          <div className="flex items-center gap-2">
+            {role === 'dosen' && (
+              <button onClick={() => setKelolaOpen(true)} className="btn btn-ghost btn-sm">
+                Kelola mata kuliah
+              </button>
+            )}
+            <MataKuliahSelect />
+          </div>
+        </div>
         {role === 'dosen' ? <DosenModulTable /> : <p className="text-brown-3">Memuat modul…</p>}
+        {kelolaOpen && <KelolaMataKuliahModal onClose={() => setKelolaOpen(false)} />}
       </div>
     </Layout>
   )

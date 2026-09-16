@@ -43,7 +43,7 @@ describe('Feedback', () => {
 
   it('renders the heading, module select, and all four rating aspects', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [
+    queryClient.setQueryData(['modules', 'course', 1], [
       { id: 1, order_num: 1, title: 'Dasar R&D', description: null, video_url: null, pdf_path: null, is_active: true, path: 'books/modul-01.pdf', videoId: null, color: 'var(--sage)', sub: '', capaian: [], materi: [], kuis: [], jurnal: [], studiKasus: [] },
     ])
     queryClient.setQueryData(['feedback', null, null], [])
@@ -78,7 +78,7 @@ describe('Feedback', () => {
 
   it('renders without throwing when there are no modules or feedback yet', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [])
+    queryClient.setQueryData(['modules', 'course', 1], [])
     queryClient.setQueryData(['feedback', null, null], [])
     const html = renderFeedback(queryClient)
     expect(html).toContain('Kirim Penilaian')

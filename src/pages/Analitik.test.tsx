@@ -35,7 +35,7 @@ function renderAnalitik(queryClient: QueryClient) {
 }
 
 function seedEmptyRealData(queryClient: QueryClient) {
-  queryClient.setQueryData(['modules'], [])
+  queryClient.setQueryData(['modules', 'course', 1], [])
   queryClient.setQueryData(['analitik', 'studentStats'], null)
   queryClient.setQueryData(['analitik', 'modulDistribution'], null)
   queryClient.setQueryData(['analitik', 'feedbackAspectAvg'], null)
@@ -100,7 +100,7 @@ describe('Analitik', () => {
 
   it('uses real student stats instead of demo data when Supabase returns a roster', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [])
+    queryClient.setQueryData(['modules', 'course', 1], [])
     queryClient.setQueryData(
       ['analitik', 'studentStats'],
       [{ id: 'u1', nama: 'Zainal Arifin', modul: 5, kuis: 88, jam: 6.5, kepraktisan: 4.8, status: 'aktif' }],

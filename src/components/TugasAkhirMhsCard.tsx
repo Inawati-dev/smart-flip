@@ -9,6 +9,7 @@ import {
   BERKAS_ACCEPT,
   BERKAS_MAKS_MB,
 } from '../lib/tugasAkhir'
+import { useCourse } from '../contexts/CourseContext'
 import { FileInput } from './FileInput'
 
 // Kartu tugas akhir di kolom kanan AsesmenDaftar (AsesmenMhs.tsx),
@@ -27,7 +28,11 @@ function formatTanggal(iso: string): string {
 
 export function TugasAkhirMhsCard() {
   const queryClient = useQueryClient()
-  const { data: project, isLoading } = useQuery({ queryKey: ['final-project-mhs'], queryFn: fetchProjectMhs })
+  const { courseId } = useCourse()
+  const { data: project, isLoading } = useQuery({
+    queryKey: ['final-project-mhs', courseId],
+    queryFn: () => fetchProjectMhs(courseId),
+  })
   const { data: submission } = useQuery({
     queryKey: ['final-submission-mhs', project?.id],
     queryFn: () => fetchMySubmission(project!.id),

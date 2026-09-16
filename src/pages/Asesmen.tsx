@@ -3,19 +3,20 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { Layout } from '../components/Layout'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
-import { IconChart, IconClipboard, IconDownload, IconTrendingUp, IconUsers } from '../components/icons'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
+import { GrafikBatang } from '../components/GrafikBatang'
+import { IconChart, IconClipboard, IconTrendingUp, IconUsers } from '../components/icons'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
 import { useKelasByDosen } from '../hooks/useKelas'
 import { cocokFilter } from '../lib/kelas'
 import {
-  buildAsesmenCsv,
   fetchAsesmenAttempts,
   fetchAttemptsPrePost,
   hitungPeningkatanKelas,
   rekapPerModul,
   type PeningkatanMahasiswa,
 } from '../lib/asesmen'
-import { downloadCsv } from '../lib/analitik'
 import type { NGainCategory } from '../lib/ngain'
 import { PASS_SCORE } from '../lib/quizAttempts'
 import { fetchProjectsDosen, fetchSubmissionsDosen } from '../lib/tugasAkhir'
@@ -51,22 +52,23 @@ function scoreClass(score: number): string {
 
 export default function Asesmen() {
   const { user } = useAuth()
+  const { courseId } = useCourse()
   const { data: kelasList = [] } = useKelasByDosen(user?.id)
   const [tahunFilter, setTahunFilter] = useState<number | null>(null)
   const [kelasFilter, setKelasFilter] = useState<string | null>(null)
 
   const { data: prePostRows, isLoading: loadingPrePost } = useQuery({
-    queryKey: ['asesmen-pre-post'],
-    queryFn: fetchAttemptsPrePost,
+    queryKey: ['asesmen-prepost', courseId],
+    queryFn: () => fetchAttemptsPrePost(courseId),
   })
   const { data: formatifRows, isLoading: loadingFormatif } = useQuery({
-    queryKey: ['asesmen-formatif'],
-    queryFn: fetchAsesmenAttempts,
+    queryKey: ['asesmen-formatif', courseId],
+    queryFn: () => fetchAsesmenAttempts(courseId),
   })
   // Kolom "Tugas akhir" di tabel bawah: nilai total kiriman untuk brief
   // TERBARU dosen ini saja (antrean #57 opsi A) — dosen dengan beberapa
   // brief lama tetap hanya melihat kolom untuk yang paling baru dibuat.
-  const { data: latestProject } = useQuery({ queryKey: ['final-projects'], queryFn: fetchProjectsDosen })
+  const { data: latestProject } = useQuery({ queryKey: ['final-projects', courseId], queryFn: () => fetchProjectsDosen(courseId) })
   const brief = latestProject?.[0] ?? null
   const { data: briefSubmissions = [] } = useQuery({
     queryKey: ['final-submissions', brief?.id],
@@ -112,12 +114,14 @@ export default function Asesmen() {
 
   const totalKategori = peningkatan.sebaran.tinggi + peningkatan.sebaran.sedang + peningkatan.sebaran.rendah
 
-  function exportCsv() {
-    downloadCsv(
-      `asesmen-${new Date().toISOString().slice(0, 10)}.csv`,
-      buildAsesmenCsv(peningkatan.perMahasiswa, rekapFormatif),
-    )
-  }
+  const grafikFormatif = useMemo(
+    () => rekapFormatif.map((r) => ({ label: r.judul, value: r.rataRata, sub: `${r.jumlahPengerjaan} pengerjaan` })),
+    [rekapFormatif],
+  )
+  const grafikLulus = useMemo(
+    () => rekapFormatif.map((r) => ({ label: r.judul, value: r.persenLulus, sub: `${r.jumlahPengerjaan} pengerjaan` })),
+    [rekapFormatif],
+  )
 
   const emptyState = (label: string) => (
     <div className="text-center py-14 px-4 text-brown-3 text-sm">
@@ -141,23 +145,12 @@ export default function Asesmen() {
             <Link to="/asesmen/bank" className="btn btn-secondary">
               Bank soal
             </Link>
-            <Link to="/asesmen/tes" className="btn btn-secondary">
-              Tes khusus
-            </Link>
-            <Link to="/asesmen/kelompok" className="btn btn-secondary">
-              Tes kelompok
-            </Link>
-            <Link to="/asesmen/tugas-akhir" className="btn btn-secondary">
-              Tugas akhir
-            </Link>
-            <button onClick={exportCsv} className="btn btn-primary">
-              <IconDownload size={16} /> Unduh CSV
-            </button>
           </div>
         </div>
 
-        {/* FILTER TAHUN + KELAS */}
-        <div className="mb-5">
+        {/* FILTER MATA KULIAH + TAHUN + KELAS */}
+        <div className="mb-5 flex items-center gap-3 flex-wrap">
+          <MataKuliahSelect size="sm" />
           <KelasTahunFilter
             kelasList={kelasList}
             tahun={tahunFilter}
@@ -213,6 +206,35 @@ export default function Asesmen() {
             <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style={{ background: KATEGORI_BAR.tinggi }} />Tinggi ({peningkatan.sebaran.tinggi})</span>
             <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style={{ background: KATEGORI_BAR.sedang }} />Sedang ({peningkatan.sebaran.sedang})</span>
             <span><span className="inline-block w-2.5 h-2.5 rounded-full mr-1.5" style={{ background: KATEGORI_BAR.rendah }} />Rendah ({peningkatan.sebaran.rendah})</span>
+          </div>
+        </div>
+
+        {/* GRAFIK FORMATIF PER TOPIK */}
+        <div className="grid md:grid-cols-2 gap-4 mb-5">
+          <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
+            <div className="font-display text-base font-semibold text-brown mb-3">Rata-rata formatif per topik</div>
+            <div className="overflow-x-auto">
+              <GrafikBatang
+                data={grafikFormatif}
+                ambang={PASS_SCORE}
+                ambangLabel={`Lulus ${PASS_SCORE}`}
+                warna={(v) => (v >= PASS_SCORE ? 'var(--success)' : 'var(--danger)')}
+                ariaLabel="Rata-rata formatif per topik"
+              />
+            </div>
+            <p className="text-xs text-brown-3 mt-2">Garis putus-putus = ambang lulus {PASS_SCORE}.</p>
+          </div>
+          <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
+            <div className="font-display text-base font-semibold text-brown mb-3">Persentase lulus per topik</div>
+            <div className="overflow-x-auto">
+              <GrafikBatang
+                data={grafikLulus}
+                max={100}
+                warna={(v) => (v >= 50 ? 'var(--success)' : 'var(--warning)')}
+                format={(v) => `${v}%`}
+                ariaLabel="Persentase lulus per topik"
+              />
+            </div>
           </div>
         </div>
 

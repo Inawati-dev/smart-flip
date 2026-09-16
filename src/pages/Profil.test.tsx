@@ -37,7 +37,7 @@ function renderProfil(queryClient: QueryClient) {
 }
 
 function seedEmptyQueryCache(queryClient: QueryClient) {
-  queryClient.setQueryData(['modules'], [])
+  queryClient.setQueryData(['modules', 'course', 1], [])
   queryClient.setQueryData(['progress', 'all'], {})
   queryClient.setQueryData(['progress', 'totalTimeSpent'], 0)
   queryClient.setQueryData(['quizAttempts', 'all'], [])

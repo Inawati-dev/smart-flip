@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import TesKelompok from './TesKelompok'
+import TesKelompok, { DosenTesKelompokPanel } from './TesKelompok'
 
 afterEach(cleanup)
 
@@ -83,16 +83,33 @@ function renderAt(path: string) {
         <Routes>
           <Route path="/asesmen/kelompok" element={<TesKelompok />} />
           <Route path="/asesmen/kelompok/:code" element={<TesKelompok />} />
+          <Route path="/asesmen/bank" element={<div>cangkang bank soal</div>} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
-describe('TesKelompok — dosen', () => {
-  it('menampilkan nama sesi dan kode tiap kelompok', async () => {
+// TesKelompok.tsx sekarang jadi cangkang tab di BankSoal.tsx (v23, permintaan
+// Johan 16 Sep 2026). Dosen yang membuka /asesmen/kelompok dialihkan ke
+// /asesmen/bank?tab=kelompok; isi lamanya sekarang DosenTesKelompokPanel.
+describe('TesKelompok — dosen dialihkan ke tab bank soal', () => {
+  it('membuka /asesmen/kelompok sebagai dosen mengalihkan ke /asesmen/bank?tab=kelompok', () => {
     authMock.role = 'dosen'
     renderAt('/asesmen/kelompok')
+    expect(screen.getByText('cangkang bank soal')).toBeTruthy()
+  })
+})
+
+describe('DosenTesKelompokPanel', () => {
+  it('menampilkan nama sesi dan kode tiap kelompok', async () => {
+    render(
+      <QueryClientProvider client={newQueryClient()}>
+        <MemoryRouter initialEntries={['/asesmen/bank?tab=kelompok']}>
+          <DosenTesKelompokPanel />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
     await waitFor(() => {
       expect(screen.getByText('Sesi Tes Kelompok 1')).toBeTruthy()
     })

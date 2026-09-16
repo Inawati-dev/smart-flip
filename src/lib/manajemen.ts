@@ -105,6 +105,8 @@ export async function createModul(data: {
   status?: ModulStatus
   durasi?: string
   catatan?: string
+  /** Mata kuliah (v23). Tanpa ini DB memakai bawaan 1. */
+  courseId?: number
 }): Promise<void> {
   if (!isSupabaseConfigured) {
     throw new Error('createModul membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
@@ -115,6 +117,7 @@ export async function createModul(data: {
       title: data.judul,
       description: data.deskripsi,
       order_num: data.orderNum,
+      ...(data.courseId != null ? { course_id: data.courseId } : {}),
       // Mirrors saveModulCustom's is_active mapping below so a freshly created
       // module respects the Status the dosen picked, instead of always
       // landing is_active:true regardless of what the form said.
@@ -147,6 +150,8 @@ export async function createModulReturningId(data: {
   status?: ModulStatus
   durasi?: string
   catatan?: string
+  /** Mata kuliah (v23). Tanpa ini DB memakai bawaan 1. */
+  courseId?: number
 }): Promise<number> {
   if (!isSupabaseConfigured) {
     throw new Error('createModulReturningId membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
@@ -157,6 +162,7 @@ export async function createModulReturningId(data: {
       title: data.judul,
       description: data.deskripsi,
       order_num: data.orderNum,
+      ...(data.courseId != null ? { course_id: data.courseId } : {}),
       is_active: data.status !== 'nonaktif',
     })
     .select('id')

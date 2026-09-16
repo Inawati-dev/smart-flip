@@ -40,7 +40,7 @@ describe('Draf', () => {
 
   it('renders without throwing and shows the empty state when there are no drafts', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [])
+    queryClient.setQueryData(['modules', 'course', 1], [])
     queryClient.setQueryData(['drafts', false, null], [])
     const html = renderDraf(queryClient)
     expect(html).toContain('Draf Saya')
@@ -51,7 +51,7 @@ describe('Draf', () => {
 
   it('renders seeded drafts and escapes user content as plain text (no raw HTML injection)', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [
+    queryClient.setQueryData(['modules', 'course', 1], [
       { id: 1, order_num: 1, title: 'Dasar R&D', description: null, video_url: null, pdf_path: null, is_active: true, path: 'books/modul-01.pdf', videoId: null, color: 'var(--sage)', sub: '', capaian: [], materi: [], kuis: [], jurnal: [], studiKasus: [] },
     ])
     queryClient.setQueryData(['drafts', false, null], [

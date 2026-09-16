@@ -40,7 +40,7 @@ describe('Forum', () => {
 
   it('renders without throwing and shows the empty state when there are no posts', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [])
+    queryClient.setQueryData(['modules', 'course', 1], [])
     queryClient.setQueryData(['forum', 'posts', null], [])
     const html = renderForum(queryClient)
     expect(html).toContain('Belum ada diskusi di sini')
@@ -48,7 +48,7 @@ describe('Forum', () => {
 
   it('renders seeded posts and escapes user content as plain text (no raw HTML injection)', () => {
     const queryClient = new QueryClient()
-    queryClient.setQueryData(['modules'], [
+    queryClient.setQueryData(['modules', 'course', 1], [
       { id: 1, order_num: 1, title: 'Dasar R&D', description: null, video_url: null, pdf_path: null, is_active: true, path: 'books/modul-01.pdf', videoId: null, color: 'var(--sage)', sub: '', capaian: [], materi: [], kuis: [], jurnal: [], studiKasus: [] },
     ])
     queryClient.setQueryData(['forum', 'posts', null], [

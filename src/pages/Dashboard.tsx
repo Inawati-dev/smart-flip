@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
 import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
@@ -15,6 +16,7 @@ import { WelcomeModal } from '../components/WelcomeModal'
 import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { PillGroup } from '../components/PillGroup'
 import { downloadCsv } from '../lib/analitik'
@@ -41,7 +43,7 @@ import {
   IconDownload,
   IconVideo,
   IconClipboard,
-  IconUpload,
+  IconGraduationCap,
 } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -107,6 +109,7 @@ function StatusChip({ status }: { status: MatriksSel['status'] }) {
 // di src/lib/aktivitas.ts mengubahnya jadi umpan, ringkasan, daftar
 // perhatian, dan matriks — tidak ada angka statis di halaman ini.
 export function DosenHome({ dosenId }: { dosenId?: string }) {
+  const { courseId } = useCourse()
   const { data: kelasList = [] } = useKelasByDosen(dosenId)
   const [tahun, setTahun] = useState<number | null>(null)
   const [kelas, setKelas] = useState<string | null>(null)
@@ -127,7 +130,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
   const idTunggal = kelasIdCocok.size === 1 ? [...kelasIdCocok][0] : null
   const kelasIdServer: FilterAktivitas['kelasId'] = !filterAktif ? 'semua' : (idTunggal ?? 'semua')
   const perluSaringKlien = filterAktif && idTunggal == null
-  const filter = useMemo<FilterAktivitas>(() => ({ kelasId: kelasIdServer, hari }), [kelasIdServer, hari])
+  const filter = useMemo<FilterAktivitas>(() => ({ kelasId: kelasIdServer, hari, courseId }), [kelasIdServer, hari, courseId])
 
   const { data: sumberMentah, isLoading } = useQuery({
     queryKey: ['aktivitas', filter],
@@ -186,17 +189,20 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
   return (
     <div className="flex flex-col gap-5">
       {/* Judul + lencana perlu perhatian */}
-      <div className="flex items-center gap-2 flex-wrap -mt-1 mb-1">
-        <p className="text-brown-3">Dashboard dosen</p>
-        {perhatian.length > 0 && (
-          <Link
-            to="?tab=perhatian"
-            className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-2 text-[11px] font-bold rounded-full"
-            style={{ background: 'var(--danger)', color: 'var(--btn-text)' }}
-          >
-            {perhatian.length} perlu perhatian
-          </Link>
-        )}
+      <div className="flex items-center justify-between gap-2 flex-wrap -mt-1 mb-1">
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-brown-3">Dashboard dosen</p>
+          {perhatian.length > 0 && (
+            <Link
+              to="?tab=perhatian"
+              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-2 text-[11px] font-bold rounded-full"
+              style={{ background: 'var(--danger)', color: 'var(--btn-text)' }}
+            >
+              {perhatian.length} perlu perhatian
+            </Link>
+          )}
+        </div>
+        <MataKuliahSelect />
       </div>
 
       {/* Filter */}
@@ -232,13 +238,11 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
       </div>
 
       {/* Jalan pintas */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal pre, formatif, post, kelompok" />
-        <ShortcutCard to="/asesmen/tes" icon={IconTarget} label="Tes khusus" desc="Sesi post-test berkode" />
-        <ShortcutCard to="/asesmen/kelompok" icon={IconUsers} label="Tes kelompok" desc="Kelompok berkode" />
-        <ShortcutCard to="/asesmen/tugas-akhir" icon={IconUpload} label="Tugas akhir" desc="Brief proyek dan penilaian" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal, tes khusus, tes kelompok, tugas akhir" />
         <ShortcutCard to="/modul" icon={IconFolder} label="PDF topik" desc="PDF tiap topik" />
         <ShortcutCard to="/video" icon={IconVideo} label="Video topik" desc="Video tiap topik" />
+        <ShortcutCard to="/akun?tab=kelas" icon={IconGraduationCap} label="Kelas" desc="Kelas dan kode gabung" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
@@ -434,7 +438,10 @@ export function DashboardMhs({
 
   return (
     <>
-      <h1 className="text-2xl font-bold text-brown mb-1">Dashboard</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+        <h1 className="text-2xl font-bold text-brown">Dashboard</h1>
+        <MataKuliahSelect />
+      </div>
       <p className="text-brown-3 mb-6">
         Topik {hasil.topikAktif.orderNum} dari {totalModules} · {hasil.topikAktif.title}
       </p>

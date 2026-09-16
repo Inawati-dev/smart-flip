@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, waitFor, within } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import BankSoal from './BankSoal'
@@ -61,6 +61,45 @@ vi.mock('../lib/kuisSoal', () => ({
   deleteKuisSoal: (...args: unknown[]) => mockDeleteKuisSoal(...args),
 }))
 
+// Panel tab lain butuh lib masing-masing dipalsukan supaya tidak menembak
+// Supabase sungguhan saat tabnya dirender (isSupabaseConfigured: false di
+// atas membuat semuanya jatuh ke mode demo, tapi query-nya tetap perlu ada).
+vi.mock('../lib/testSessions', () => ({
+  fetchSessionsByDosen: async () => [],
+  createSession: vi.fn(),
+  setSessionOpen: vi.fn(),
+  verifyTestCode: async () => null,
+  fetchSessionResults: async () => [],
+  fetchMyAttemptForSession: async () => null,
+  generateCode: () => 'ABCDEF',
+}))
+vi.mock('../lib/tesKelompok', () => ({
+  fetchGroupSessions: async () => [],
+  createGroupSession: vi.fn(),
+  setGroupSessionOpen: vi.fn(),
+  deleteGroupSession: vi.fn(),
+  fetchGroupResults: async () => [],
+  verifyGroupCode: async () => null,
+  joinGroup: vi.fn(),
+  fetchTeamView: async () => [],
+  submitGroupAttempt: vi.fn(),
+  kelompokkanHasil: () => [],
+  rataKelompok: () => null,
+  UKURAN_KELOMPOK_BAWAAN: 5,
+}))
+vi.mock('../lib/tugasAkhir', () => ({
+  fetchProjectsDosen: async () => [],
+  createProject: vi.fn(),
+  updateProject: vi.fn(),
+  deleteProject: vi.fn(),
+  fetchSubmissionsDosen: async () => [],
+  gradeSubmission: vi.fn(),
+  signedFileUrl: vi.fn(),
+  hitungTotal: () => null,
+  RUBRIK_BAWAAN: [{ nama: 'Kelengkapan laporan', bobot: 30 }],
+}))
+vi.mock('../hooks/useKelas', () => ({ useKelasByDosen: () => ({ data: [] }) }))
+
 function renderBankSoal(initialUrl: string) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -102,13 +141,23 @@ describe('BankSoal', () => {
     expect(screen.getByText(/Hapus soal nomor/)).toBeTruthy()
   })
 
-  it('shows the "Tes kelompok" tab and clicking it calls fetchBankSoal with kind "kelompok"', async () => {
+  it('shows all four tabs (Soal, Tes khusus, Tes kelompok, Tugas akhir)', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
-    const tab = await screen.findByText('Tes kelompok')
-    fireEvent.click(tab)
+    const tabGroup = await screen.findByRole('group', { name: 'Tab bank soal' })
+    expect(within(tabGroup).getByText('Soal')).toBeTruthy()
+    expect(within(tabGroup).getByText('Tes khusus')).toBeTruthy()
+    expect(within(tabGroup).getByText('Tes kelompok')).toBeTruthy()
+    expect(within(tabGroup).getByText('Tugas akhir')).toBeTruthy()
+  })
+
+  it('clicking the "Tes kelompok" jenis pill (not the outer tab) calls fetchBankSoal with kind "kelompok"', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?jenis=pre')
+    const jenisGroup = await screen.findByRole('group', { name: 'Filter jenis soal' })
+    fireEvent.click(within(jenisGroup).getByText('Tes kelompok'))
     await waitFor(() => {
-      expect(mockFetchBankSoal).toHaveBeenCalledWith('kelompok', undefined)
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('kelompok', undefined, 1)
     })
   })
 
@@ -116,7 +165,13 @@ describe('BankSoal', () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=diagnostik')
     await waitFor(() => {
-      expect(mockFetchBankSoal).toHaveBeenCalledWith('pre', undefined)
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('pre', undefined, 1)
     })
+  })
+
+  it('?tab=khusus renders the tes-khusus panel content ("+ Buat sesi tes")', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?tab=khusus')
+    expect(await screen.findByText('+ Buat sesi tes')).toBeTruthy()
   })
 })

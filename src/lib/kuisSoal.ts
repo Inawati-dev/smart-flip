@@ -18,6 +18,8 @@ export interface KuisSoal {
   id: number
   kind: SoalKind
   module_id: number | null
+  /** Mata kuliah (v23) untuk pre/post/kelompok/vark; formatif ikut module_id, boleh null. */
+  course_id?: number | null
   question: string
   options: string[]
   answer_idx: number | null
@@ -81,15 +83,30 @@ function demoWriteAll(kind: SoalKind, moduleId: number | null, soal: KuisSoal[])
 // baru dari migrasi v17: kalau kolom `kind` belum ada di DB, jatuh ke query
 // lama tanpa `kind` (soal lama semuanya formatif) untuk kind='formatif';
 // jenis lain (belum bisa ada sebelum v17) mengembalikan array kosong.
-export async function fetchBankSoal(kind: SoalKind, moduleId?: number): Promise<KuisSoal[]> {
+// courseId (v23) menyaring soal pre/post/kelompok milik satu mata kuliah;
+// formatif cukup moduleId. Kolom belum ada di DB -> ulang tanpa saringan.
+export async function fetchBankSoal(kind: SoalKind, moduleId?: number, courseId?: number): Promise<KuisSoal[]> {
   if (isSupabaseConfigured) {
     try {
-      let query = supabase
-        .from('quiz_questions')
-        .select('id, kind, module_id, question, options, answer_idx, explanation, order_num')
-        .eq('kind', kind)
+      const base = () =>
+        supabase
+          .from('quiz_questions')
+          .select('id, kind, module_id, course_id, question, options, answer_idx, explanation, order_num')
+          .eq('kind', kind)
+      let query = base()
       if (moduleId != null) query = query.eq('module_id', moduleId)
-      const { data, error } = await query.order('order_num')
+      if (courseId != null && moduleId == null) query = query.eq('course_id', courseId)
+      let { data, error }: { data: KuisSoal[] | null; error: { code?: string; message: string } | null } = await query.order('order_num')
+      if (error && (error.code === '42703' || /course_id/.test(error.message))) {
+        let q2 = supabase
+          .from('quiz_questions')
+          .select('id, kind, module_id, question, options, answer_idx, explanation, order_num')
+          .eq('kind', kind)
+        if (moduleId != null) q2 = q2.eq('module_id', moduleId)
+        const r2 = await q2.order('order_num')
+        data = r2.data as KuisSoal[] | null
+        error = r2.error
+      }
       if (error) throw error
       if (data) return data as KuisSoal[]
     } catch (e) {

@@ -2,10 +2,15 @@ import { useMemo, useState, type DragEvent } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
+import { useCourse } from '../contexts/CourseContext'
 import { fetchBankSoal, createKuisSoal, updateKuisSoal, deleteKuisSoal, type SoalKind } from '../lib/kuisSoal'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { PillGroup } from '../components/PillGroup'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
+import { DosenTesKhususPanel } from './TesKhusus'
+import { DosenTesKelompokPanel } from './TesKelompok'
+import { TugasAkhirPanel } from './TugasAkhir'
 import { IconEdit, IconTrash, IconGrip } from '../components/icons'
 
 // Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post/kelompok
@@ -13,6 +18,20 @@ import { IconEdit, IconTrash, IconGrip } from '../components/icons'
 // tab ini (antrean #65, keputusan Johan 16 Sep 2026): datanya dibiarkan di
 // DB, hanya tidak ditampilkan lagi di sini. Pola tabel/modal/drag-reorder
 // ditiru dari Manajemen.tsx:119-219, 886-995.
+//
+// v23 (16 Sep 2026, Johan: "untuk menu bank soal, test khusus, tes kelompok
+// dan tugas akhirnya jadikan 1 page dimana diganti jadi Bank soal"): halaman
+// ini jadi cangkang bertab — soal/khusus/kelompok/tugas — memuat panel dari
+// TesKhusus.tsx/TesKelompok.tsx/TugasAkhir.tsx tanpa Layout/h1 masing-masing.
+
+const TAB_ORDER = ['soal', 'khusus', 'kelompok', 'tugas'] as const
+type Tab = (typeof TAB_ORDER)[number]
+const TAB_LABELS: Record<Tab, string> = {
+  soal: 'Soal',
+  khusus: 'Tes khusus',
+  kelompok: 'Tes kelompok',
+  tugas: 'Tugas akhir',
+}
 
 type FilterKind = Exclude<SoalKind, 'vark'>
 
@@ -37,9 +56,53 @@ interface Row {
 }
 
 export function BankSoal() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tabParam = searchParams.get('tab') as Tab | null
+  const tab: Tab = tabParam != null && TAB_ORDER.includes(tabParam) ? tabParam : 'soal'
+
+  function selectTab(t: string) {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('tab', t)
+      return next
+    })
+  }
+
+  return (
+    <Layout>
+      <div className="p-4 md:p-6 pb-16">
+        <Link to="/asesmen" className="text-brown-3 text-sm mb-4 inline-block inline-flex items-center min-h-11">
+          ← Hasil asesmen
+        </Link>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
+          <MataKuliahSelect size="sm" />
+        </div>
+        <div className="mb-5">
+          <PillGroup
+            options={TAB_ORDER.map((t) => ({ value: t, label: TAB_LABELS[t] }))}
+            value={tab}
+            onChange={selectTab}
+            ariaLabel="Tab bank soal"
+          />
+        </div>
+
+        {tab === 'soal' && <BankSoalTab />}
+        {tab === 'khusus' && <DosenTesKhususPanel />}
+        {tab === 'kelompok' && <DosenTesKelompokPanel />}
+        {tab === 'tugas' && <TugasAkhirPanel />}
+      </div>
+    </Layout>
+  )
+}
+
+// ── Tab "Soal" — bank soal pre/formatif/post/kelompok (isi lama halaman ini) ──
+
+function BankSoalTab() {
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: modules = [] } = useModules()
+  const { courseId } = useCourse()
 
   // Tautan lama ke jenis yang sudah dicabut (atau jenis tak dikenal apa pun)
   // jatuh ke 'pre', bukan cuma dua nama tertentu.
@@ -49,8 +112,8 @@ export function BankSoal() {
   const modulId = modulParam ? parseInt(modulParam, 10) : (modules[0]?.id ?? null)
 
   const bankQuery = useQuery({
-    queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null],
-    queryFn: () => fetchBankSoal(jenis as SoalKind, jenis === 'formatif' ? (modulId ?? undefined) : undefined),
+    queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null, courseId],
+    queryFn: () => fetchBankSoal(jenis as SoalKind, jenis === 'formatif' ? (modulId ?? undefined) : undefined, courseId),
     enabled: jenis !== 'formatif' || modulId != null,
   })
 
@@ -74,20 +137,30 @@ export function BankSoal() {
   }
 
   async function invalidate() {
-    await queryClient.invalidateQueries({ queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null] })
+    await queryClient.invalidateQueries({ queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null, courseId] })
   }
 
+  // setSearchParams((prev) => ...) supaya ?tab= (dan parameter tab lain)
+  // tidak ikut terhapus (spec A.7) — beda dari setSearchParams({...}) lama
+  // yang mengganti seluruh query string.
   function selectJenis(k: FilterKind) {
-    if (k === 'formatif') {
-      const modId = modulId ?? modules[0]?.id
-      setSearchParams(modId != null ? { jenis: k, modul: String(modId) } : { jenis: k })
-    } else {
-      setSearchParams({ jenis: k })
-    }
+    const modId = k === 'formatif' ? (modulId ?? modules[0]?.id) : null
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('jenis', k)
+      if (modId != null) next.set('modul', String(modId))
+      else next.delete('modul')
+      return next
+    })
   }
 
   function selectModul(id: number) {
-    setSearchParams({ jenis: 'formatif', modul: String(id) })
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('jenis', 'formatif')
+      next.set('modul', String(id))
+      return next
+    })
   }
 
   // ── Modal Tambah/Ubah ──
@@ -136,7 +209,16 @@ export function BankSoal() {
     try {
       const module_id = isFormatif ? modalModuleId : null
       if (modalOpen === 'new') {
-        await createKuisSoal({ kind: jenis, module_id, question, options, answer_idx: jawaban, explanation: null, order_num: nextOrderNum })
+        await createKuisSoal({
+          kind: jenis,
+          module_id,
+          course_id: courseId,
+          question,
+          options,
+          answer_idx: jawaban,
+          explanation: null,
+          order_num: nextOrderNum,
+        })
       } else if (modalOpen != null) {
         await updateKuisSoal(modalOpen, { kind: jenis, module_id, question, options, answer_idx: jawaban })
       }
@@ -209,20 +291,10 @@ export function BankSoal() {
   }
 
   return (
-    <Layout>
-      <div className="p-4 md:p-6 pb-16">
-        <Link to="/asesmen" className="text-brown-3 text-sm mb-4 inline-block inline-flex items-center min-h-11">
-          ← Hasil asesmen
-        </Link>
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-5">
-          <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
-          <button onClick={openAddModal} className="btn btn-primary">
-            + Tambah soal
-          </button>
-        </div>
-
-        {/* Filter jenis */}
-        <div className="flex items-center gap-2 flex-wrap mb-2">
+    <>
+      {/* Filter jenis */}
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <PillGroup
             options={KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k] }))}
             value={jenis}
@@ -239,9 +311,13 @@ export function BankSoal() {
             />
           )}
         </div>
-        <p className="text-sm text-brown-3 mb-3">
+        <button onClick={openAddModal} className="btn btn-primary btn-sm">
+          + Tambah soal
+        </button>
+      </div>
+      <p className="text-sm text-brown-3 mb-3">
           {jenis === 'kelompok' ? 'Soal untuk tes kelompok. Semua anggota kelompok mengerjakan soal yang sama.' : ' '}
-        </p>
+      </p>
 
         <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
           <div className="overflow-x-auto">
@@ -325,7 +401,6 @@ export function BankSoal() {
             </table>
           </div>
         </div>
-      </div>
 
       {/* Modal Tambah/Ubah */}
       {modalOpen != null && (
@@ -446,7 +521,7 @@ export function BankSoal() {
           {toast}
         </div>
       )}
-    </Layout>
+    </>
   )
 }
 

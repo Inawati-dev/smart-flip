@@ -8,10 +8,12 @@ import { fetchAttemptsByKind, saveQuizAttempt, PASS_SCORE } from '../lib/quizAtt
 import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
 import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topik'
 import { computeNGain } from '../lib/ngain'
+import { useCourse } from '../contexts/CourseContext'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner } from '../components/SoalRunner'
 import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
 
 // Asesmen sisi mahasiswa (spec §4, §9 WP6): satu komponen, tiga tampilan
 // dipilih dari path — App.tsx sudah memasang route /asesmen, /asesmen/pre,
@@ -72,6 +74,7 @@ function PanelCard({
 // belajar (antrean #57 opsi A) diganti tugas akhir — rute lamanya dibiarkan
 // ada, tidak ditautkan lagi dari sini.
 function AsesmenDaftar() {
+  const { courseId } = useCourse()
   const { data: modules = [] } = useModules()
   const { statusOf } = useTopikStatus()
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
@@ -79,8 +82,8 @@ function AsesmenDaftar() {
 
   const { data: attemptsAktif = [] } = useQuizAttempts(topikAktif?.id ?? 0)
   const { data: preAttempts = [] } = useQuery({
-    queryKey: ['attempts-by-kind', 'pre'],
-    queryFn: () => fetchAttemptsByKind('pre'),
+    queryKey: ['attempts-by-kind', 'pre', courseId],
+    queryFn: () => fetchAttemptsByKind('pre', courseId),
   })
 
   const bestAktif = attemptsAktif.length ? Math.max(...attemptsAktif.map((a) => a.score)) : null
@@ -99,7 +102,10 @@ function AsesmenDaftar() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <h1 className="font-display text-2xl font-bold text-brown mb-1">Asesmen</h1>
+        <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+          <h1 className="font-display text-2xl font-bold text-brown">Asesmen</h1>
+          <MataKuliahSelect />
+        </div>
         <p className="text-brown-3 mb-4">Pre-test, tes formatif tiap topik, post-test, tes kelompok, dan tugas akhir.</p>
         <PertemuanStepper
           current={topikAktif?.id ?? sorted[0]?.id ?? 0}
@@ -178,13 +184,14 @@ function AsesmenDaftar() {
 function PreTest() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
+  const { courseId } = useCourse()
   const { data: soal = [], isLoading: soalLoading } = useQuery({
-    queryKey: ['bank-soal', 'pre'],
-    queryFn: () => fetchBankSoal('pre'),
+    queryKey: ['bank-soal', 'pre', courseId],
+    queryFn: () => fetchBankSoal('pre', undefined, courseId),
   })
   const { data: attempts = [], isLoading: attemptsLoading } = useQuery({
-    queryKey: ['attempts-by-kind', 'pre'],
-    queryFn: () => fetchAttemptsByKind('pre'),
+    queryKey: ['attempts-by-kind', 'pre', courseId],
+    queryFn: () => fetchAttemptsByKind('pre', courseId),
   })
 
   const [acak, setAcak] = useState<AcakSoalResult | null>(null)
@@ -229,6 +236,7 @@ function PreTest() {
         answers: jawabanTampil,
         kind: 'pre',
         questionOrder: acak.urut,
+        courseId,
       })
       markPretestDone()
       await queryClient.invalidateQueries({ queryKey: ['pretest-done'] })
@@ -297,13 +305,14 @@ function PreTest() {
 // (lib/ngain.ts) — istilah teknisnya sendiri tidak boleh tampil di antarmuka
 // (spec §1.1).
 function PostTest() {
+  const { courseId } = useCourse()
   const { data: postAttempts = [], isLoading: postLoading } = useQuery({
-    queryKey: ['attempts-by-kind', 'post'],
-    queryFn: () => fetchAttemptsByKind('post'),
+    queryKey: ['attempts-by-kind', 'post', courseId],
+    queryFn: () => fetchAttemptsByKind('post', courseId),
   })
   const { data: preAttempts = [], isLoading: preLoading } = useQuery({
-    queryKey: ['attempts-by-kind', 'pre'],
-    queryFn: () => fetchAttemptsByKind('pre'),
+    queryKey: ['attempts-by-kind', 'pre', courseId],
+    queryFn: () => fetchAttemptsByKind('pre', courseId),
   })
 
   if (postLoading || preLoading) {

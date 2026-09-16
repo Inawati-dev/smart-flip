@@ -96,7 +96,9 @@ async function queryFormatifAttempts() {
   }
 }
 
-export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
+// courseId (v23): hanya pengerjaan topik milik mata kuliah itu. Kolom
+// modules.course_id belum ada -> semua topik dianggap mata kuliah 1.
+export async function fetchAsesmenAttempts(courseId?: number): Promise<AsesmenAttempt[] | null> {
   if (!isSupabaseConfigured) return null
   try {
     const [attemptsRows, studentsRes, modulesRes] = await Promise.all([
@@ -108,8 +110,11 @@ export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
         .from('profiles')
         .select('id, full_name, classes!profiles_class_id_fkey(name)')
         .eq('role', 'mahasiswa'),
-      supabase.from('modules').select('id, title'),
+      supabase.from('modules').select('id, title, course_id'),
     ])
+
+    const modulCourse = new Map<number, number>()
+    for (const m of modulesRes.data ?? []) modulCourse.set(m.id as number, ((m as { course_id?: number }).course_id as number) ?? 1)
 
     const namaById = new Map<string, string>()
     const kelasById = new Map<string, string | null>()
@@ -125,6 +130,7 @@ export async function fetchAsesmenAttempts(): Promise<AsesmenAttempt[] | null> {
 
     return attemptsRows
       .filter((r) => r.module_id != null)
+      .filter((r) => courseId == null || (modulCourse.get(r.module_id as number) ?? 1) === courseId)
       .map((r) => ({
         id: r.id as number,
         userId: r.user_id as string,
@@ -220,16 +226,22 @@ export function hitungPeningkatanKelas(rows: AttemptPrePostRow[]): PeningkatanKe
 // orang. Sama seperti fetchAttemptsByKind di quizAttempts.ts: kalau kolom
 // kind belum ada (belum migrasi v17), tidak ada cara membedakan pre/post
 // dari data lama, kembalikan array kosong, bukan menebak.
-export async function fetchAttemptsPrePost(): Promise<AttemptPrePostRow[] | null> {
+// courseId (v23): pre/post per mata kuliah (quiz_attempts.course_id).
+export async function fetchAttemptsPrePost(courseId?: number): Promise<AttemptPrePostRow[] | null> {
   if (!isSupabaseConfigured) return null
   try {
-    const [attemptsRes, studentsRes] = await Promise.all([
-      supabase.from('quiz_attempts').select('user_id, score, kind').in('kind', ['pre', 'post']),
+    let attemptsQuery = supabase.from('quiz_attempts').select('user_id, score, kind, course_id').in('kind', ['pre', 'post'])
+    if (courseId != null) attemptsQuery = attemptsQuery.eq('course_id', courseId)
+    let [attemptsRes, studentsRes] = await Promise.all([
+      attemptsQuery,
       supabase
         .from('profiles')
         .select('id, full_name, classes!profiles_class_id_fkey(name)')
         .eq('role', 'mahasiswa'),
     ])
+    if (attemptsRes.error && (attemptsRes.error.code === '42703' || /course_id/.test(attemptsRes.error.message))) {
+      attemptsRes = await supabase.from('quiz_attempts').select('user_id, score, kind, course_id').in('kind', ['pre', 'post'])
+    }
     if (attemptsRes.error) {
       if (isMissingKindColumn(attemptsRes.error)) return []
       throw attemptsRes.error

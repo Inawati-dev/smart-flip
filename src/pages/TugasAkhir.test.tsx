@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import TugasAkhir from './TugasAkhir'
+import TugasAkhir, { TugasAkhirPanel } from './TugasAkhir'
 import { RUBRIK_BAWAAN } from '../lib/tugasAkhir'
 
 afterEach(cleanup)
@@ -84,26 +84,43 @@ function newQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
 }
 
-function renderAt(path: string) {
+function renderPanel() {
   return render(
     <QueryClientProvider client={newQueryClient()}>
-      <MemoryRouter initialEntries={[path]}>
-        <Routes>
-          <Route path="/asesmen/tugas-akhir" element={<TugasAkhir />} />
-        </Routes>
+      <MemoryRouter initialEntries={['/asesmen/bank?tab=tugas']}>
+        <TugasAkhirPanel />
       </MemoryRouter>
     </QueryClientProvider>,
   )
 }
 
-describe('TugasAkhir — dosen', () => {
+// TugasAkhir.tsx sekarang jadi cangkang tab di BankSoal.tsx (v23, permintaan
+// Johan 16 Sep 2026). /asesmen/tugas-akhir mengalihkan ke
+// /asesmen/bank?tab=tugas; isi lamanya sekarang TugasAkhirPanel.
+describe('TugasAkhir — dialihkan ke tab bank soal', () => {
+  it('membuka /asesmen/tugas-akhir mengalihkan ke /asesmen/bank?tab=tugas', () => {
+    render(
+      <QueryClientProvider client={newQueryClient()}>
+        <MemoryRouter initialEntries={['/asesmen/tugas-akhir']}>
+          <Routes>
+            <Route path="/asesmen/tugas-akhir" element={<TugasAkhir />} />
+            <Route path="/asesmen/bank" element={<div>cangkang bank soal</div>} />
+          </Routes>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    expect(screen.getByText('cangkang bank soal')).toBeTruthy()
+  })
+})
+
+describe('TugasAkhirPanel — dosen', () => {
   it('menampilkan judul brief', async () => {
-    renderAt('/asesmen/tugas-akhir')
+    renderPanel()
     expect(await screen.findByText('Laporan proyek akhir')).toBeTruthy()
   })
 
   it('klik "Lihat kiriman" menampilkan nama mahasiswa', async () => {
-    renderAt('/asesmen/tugas-akhir')
+    renderPanel()
     await screen.findByText('Laporan proyek akhir')
     fireEvent.click(screen.getByText('Lihat kiriman'))
     await waitFor(() => {
@@ -113,7 +130,7 @@ describe('TugasAkhir — dosen', () => {
   })
 
   it('tombol "Nilai" membuka modal berisi nama kriteria rubrik', async () => {
-    renderAt('/asesmen/tugas-akhir')
+    renderPanel()
     await screen.findByText('Laporan proyek akhir')
     fireEvent.click(screen.getByText('Lihat kiriman'))
     await screen.findByText('Budi Santoso')
