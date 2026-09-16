@@ -242,7 +242,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
         <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal, tes khusus, tes kelompok, tugas akhir" />
         <ShortcutCard to="/modul" icon={IconFolder} label="PDF topik" desc="PDF tiap topik" />
         <ShortcutCard to="/video" icon={IconVideo} label="Video topik" desc="Video tiap topik" />
-        <ShortcutCard to="/akun?tab=kelas" icon={IconGraduationCap} label="Kelas" desc="Kelas dan kode gabung" />
+        <ShortcutCard to="/kelas" icon={IconGraduationCap} label="Kelas" desc="Kelas dan kode gabung" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}

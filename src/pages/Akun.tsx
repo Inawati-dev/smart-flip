@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Navigate, useSearchParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
@@ -8,28 +8,26 @@ import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useStudentStats } from '../hooks/useAnalitik'
 import { computeStatSummary } from '../lib/analitik'
 import { saveProfilExtra } from '../lib/profil'
+import { usePreTestDone } from '../lib/topik'
 import { PASS_SCORE } from '../lib/quizAttempts'
 import { TOTAL_MODULES } from '../lib/progress'
 import { Layout } from '../components/Layout'
 import { FileInput } from '../components/FileInput'
-import { PillGroup } from '../components/PillGroup'
 import { PengaturanSections } from './Pengaturan'
-import { KelasPanel } from './Kelas'
-import { IconUser, IconGraduationCap, IconTarget, IconEdit, IconBook } from '../components/icons'
+import { IconUser, IconGraduationCap, IconEdit } from '../components/icons'
 
 // /akun (WP-C) — Profil.tsx dilebur ke sini: kartu identitas dengan modal
 // Ubah (nama, NIM/NIDN, avatar — logika dari Profil.tsx/lib/profil.ts),
-// kartu Progres singkat, lalu seluruh bagian Pengaturan. Kelola PDF pindah
-// ke rel navigasi (Layout.tsx, dosen saja); tombol keluar dari akun sudah
-// ada di rel/bilah bawah, jadi tidak diulang di sini. Rute lama yang menuju
-// halaman pengaturan terpisah sudah dilebur, /akun/profil dihapus dari
-// App.tsx; Profil.tsx dibiarkan ada (tidak ber-route) sesuai keputusan Johan
-// #2.
+// baris kartu angka ringkas, lalu seluruh bagian Pengaturan langsung di
+// bawahnya (tanpa tab). Kelola PDF dan Kelas pindah ke rel navigasi sendiri
+// (Layout.tsx, dosen saja); tombol keluar dari akun sudah ada di rel/bilah
+// bawah, jadi tidak diulang di sini. Rute lama yang menuju halaman
+// pengaturan terpisah sudah dilebur, /akun/profil dihapus dari App.tsx;
+// Profil.tsx dibiarkan ada (tidak ber-route) sesuai keputusan Johan #2.
 //
-// Kelas jadi tab (bukan halaman /kelas sendiri) — koreksi Johan 16 Sep 2026
-// "jadikan tab saja biar gak buka menu baru lagi". Tab tersimpan di ?tab=
-// lewat useSearchParams supaya bisa ditautkan langsung (/akun?tab=kelas dari
-// Kelas.tsx yang sekarang cuma alias-redirect).
+// Koreksi Johan 16 Sep 2026 "isi pengaturan di lebur jadi 1 dengan profil":
+// tab Kelas dan Pengaturan (percobaan sebelumnya di hari yang sama) dibuang,
+// ?tab=kelas dialihkan ke halaman /kelas yang baru (lihat Kelas.tsx).
 const BORDER = { borderColor: 'var(--border)' } as const
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024
 
@@ -44,29 +42,15 @@ export function Akun() {
   const { user, profile, role, refreshProfile } = useAuth()
   const isDosen = role === 'dosen'
 
-  const [searchParams, setSearchParams] = useSearchParams()
-  const tabOptions = isDosen
-    ? [
-        { value: 'profil', label: 'Profil' },
-        { value: 'kelas', label: 'Kelas' },
-        { value: 'pengaturan', label: 'Pengaturan' },
-      ]
-    : [
-        { value: 'profil', label: 'Profil' },
-        { value: 'pengaturan', label: 'Pengaturan' },
-      ]
-  const rawTab = searchParams.get('tab') || 'profil'
-  // Mahasiswa memaksa ?tab=kelas (tab dosen-only) -> jatuh ke profil.
-  const tab = rawTab === 'kelas' && !isDosen ? 'profil' : rawTab
-
-  function setTab(next: string) {
-    setSearchParams(next === 'profil' ? {} : { tab: next })
-  }
+  // ?tab=kelas lama (percobaan tab sebelumnya) dialihkan ke halaman /kelas.
+  // ?tab=pengaturan diabaikan -- halaman ini sudah memuat semuanya sekaligus.
+  const [searchParams] = useSearchParams()
 
   const { data: modules = [] } = useModules()
   const { data: progress = {} } = useAllProgress()
   const { data: allAttempts = [] } = useAllQuizAttempts()
   const { data: dosenStudents } = useStudentStats()
+  const { data: preTestDone } = usePreTestDone()
 
   const totalModules = modules.length || TOTAL_MODULES
   const modulSelesai = Object.values(progress).filter((p) => p.pct >= 100).length
@@ -137,17 +121,32 @@ export function Akun() {
     }
   }
 
+  if (searchParams.get('tab') === 'kelas') {
+    return <Navigate to="/kelas" replace />
+  }
+
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <div className="mb-5">
-          <h1 className="font-display text-2xl font-bold text-brown mb-3">Akun</h1>
-          <PillGroup options={tabOptions} value={tab} onChange={setTab} size="sm" ariaLabel="Tab akun" />
+        <h1 className="font-display text-2xl font-bold text-brown mb-4">Akun</h1>
+
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          {isDosen ? (
+            <>
+              <StatCard bar="var(--terra)" val={String(dosenSummary.totalStudents)} label="Mahasiswa terdaftar" />
+              <StatCard bar="var(--sage)" val={`${dosenSummary.avgModulPct}%`} label="Rata-rata progres" />
+              <StatCard bar="var(--info)" val={`${dosenSummary.avgKuis}%`} label="Rata-rata skor kuis" />
+            </>
+          ) : (
+            <>
+              <StatCard bar="var(--terra)" val={`${modulSelesai}/${totalModules}`} label="Topik selesai" />
+              <StatCard bar="var(--sage)" val={String(formatifLulus)} label="Formatif lulus" />
+              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Pre-test" />
+            </>
+          )}
         </div>
 
-        {tab === 'profil' && (
-          <>
-            <div className="bg-ivory rounded-2xl border p-5 mb-4 flex items-center gap-4" style={BORDER}>
+        <div className="bg-ivory rounded-2xl border p-5 mb-4 flex items-center gap-4" style={BORDER}>
               <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -180,34 +179,12 @@ export function Akun() {
                   )}
                 </div>
               </div>
-              <button onClick={openEdit} className="btn btn-secondary flex-shrink-0">
-                <IconEdit size={15} /> Ubah
-              </button>
-            </div>
+          <button onClick={openEdit} className="btn btn-secondary flex-shrink-0">
+            <IconEdit size={15} /> Ubah
+          </button>
+        </div>
 
-            <div className="bg-ivory rounded-2xl border p-4 mb-4" style={BORDER}>
-              <div className="text-sm font-semibold text-brown flex items-center gap-1.5">
-                <IconTarget size={15} /> Progres {isDosen ? 'Mengajar' : 'Belajar'}
-              </div>
-              {isDosen ? (
-                <div className="text-xs text-brown-3 mt-1.5 flex flex-col gap-0.5">
-                  <div>{dosenSummary.totalStudents} mahasiswa terdaftar</div>
-                  <div>{dosenSummary.avgModulPct}% rata-rata completeness</div>
-                  <div>{dosenSummary.avgKuis}% rata-rata skor kuis</div>
-                </div>
-              ) : (
-                <div className="text-xs text-brown-3 mt-1.5 flex flex-col gap-0.5">
-                  <div className="inline-flex items-center gap-1.5"><IconBook size={12} /> {modulSelesai}/{totalModules} topik selesai</div>
-                  <div>{formatifLulus} formatif lulus</div>
-                </div>
-              )}
-            </div>
-          </>
-        )}
-
-        {tab === 'kelas' && isDosen && <KelasPanel />}
-
-        {tab === 'pengaturan' && <PengaturanSections />}
+        <PengaturanSections />
       </div>
 
       {editOpen && (
@@ -281,6 +258,19 @@ export function Akun() {
         </div>
       )}
     </Layout>
+  )
+}
+
+// Bentuk disamakan dengan StatCard di Dashboard.tsx (garis warna 3px, angka
+// text-xl font-bold, label text-[11px]) -- tanpa slot ikon, sama seperti
+// StatCard lokal Kelas.tsx (pemanggil di sini juga tidak mengirim ikon).
+function StatCard({ bar, val, label }: { bar: string; val: string; label: string }) {
+  return (
+    <div className="bg-ivory rounded-2xl border p-3.5 relative overflow-hidden" style={BORDER}>
+      <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
+      <div className="text-xl font-bold text-brown">{val}</div>
+      <div className="text-[11px] text-brown-3 mt-1.5">{label}</div>
+    </div>
   )
 }
 

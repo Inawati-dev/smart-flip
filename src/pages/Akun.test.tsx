@@ -2,7 +2,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, cleanup } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Routes, Route } from 'react-router'
 import { Akun } from './Akun'
 
 afterEach(cleanup)
@@ -29,18 +29,14 @@ vi.mock('../lib/supabase', () => ({
   isSupabaseConfigured: false,
 }))
 
-// Tab Kelas (KelasPanel, dari Kelas.tsx) memanggil hook nyata ini lewat
-// react-query -- dimock di sini biar tes tab tidak bergantung pada
-// getKelasByDosen/Supabase sungguhan (lihat CLAUDE.md worktree ini §A.3).
-vi.mock('../hooks/useKelas', () => ({
-  useKelasByDosen: () => ({ data: [], isLoading: false }),
-}))
-
 function renderAkun(queryClient: QueryClient, initialEntries: string[] = ['/akun']) {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter initialEntries={initialEntries}>
-        <Akun />
+        <Routes>
+          <Route path="/akun" element={<Akun />} />
+          <Route path="/kelas" element={<div>halaman kelas</div>} />
+        </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
   )
@@ -91,36 +87,49 @@ describe('Akun', () => {
     expect(screen.queryByText('Kelola PDF')).toBeNull()
   })
 
-  // Pengaturan.tsx dilebur ke sini (PengaturanSections), sekarang di balik
-  // tab "Pengaturan" (koreksi Johan 16 Sep 2026 — Kelas & Pengaturan jadi
-  // tab, bukan kartu tautan) — tidak ada lagi tautan terpisah ke /pengaturan
-  // atau tombol Keluar sendiri (Keluar sudah ada di rel/bilah bawah Layout).
-  it('tab Pengaturan memuat Notifikasi, tanpa tautan Pengaturan atau tombol Keluar', () => {
+  // Pengaturan.tsx dilebur ke sini (PengaturanSections), langsung tampil
+  // tanpa tab (koreksi Johan 16 Sep 2026 "isi pengaturan di lebur jadi 1
+  // dengan profil") — tidak ada lagi tautan terpisah ke /pengaturan atau
+  // tombol Keluar sendiri (Keluar sudah ada di rel/bilah bawah Layout).
+  it('memuat Notifikasi langsung tanpa tab, tanpa tautan Pengaturan atau tombol Keluar', () => {
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
-    const { container } = renderAkun(queryClient, ['/akun?tab=pengaturan'])
+    const { container } = renderAkun(queryClient)
     expect(screen.getByText('Notifikasi')).toBeTruthy()
     expect(container.querySelector('a[href="/pengaturan"]')).toBeNull()
     expect(screen.queryByText('Keluar')).toBeNull()
   })
 
-  // Kelas jadi tab di Akun (koreksi Johan 16 Sep 2026 "jadikan tab saja biar
-  // gak buka menu baru lagi") — dosen di /akun?tab=kelas melihat KelasPanel.
-  it('dosen di /akun?tab=kelas melihat isi KelasPanel', () => {
+  // Kelas pindah jadi halaman /kelas sendiri (koreksi Johan 16 Sep 2026
+  // "page kelas ini dipindah jadi sidebar") — ?tab=kelas lama dialihkan.
+  it('?tab=kelas dialihkan ke halaman /kelas', () => {
     mockAuth.profile = { full_name: 'Dr. Ahmad Fauzi', role: 'dosen', nim_nidn: '0012345678', avatar_url: null }
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
     renderAkun(queryClient, ['/akun?tab=kelas'])
-    expect(screen.getByText(/Buat kelas, bagikan kode kelas/)).toBeTruthy()
+    expect(screen.getByText('halaman kelas')).toBeTruthy()
   })
 
-  // Mahasiswa tidak punya tab Kelas — memaksa ?tab=kelas harus jatuh ke profil.
-  it('mahasiswa memaksa ?tab=kelas jatuh ke tab profil', () => {
+  // Kartu angka dosen: mahasiswa terdaftar, rata-rata progres, rata-rata skor kuis.
+  it('dosen melihat kartu angka Mahasiswa terdaftar/Rata-rata progres/Rata-rata skor kuis', () => {
+    mockAuth.profile = { full_name: 'Dr. Ahmad Fauzi', role: 'dosen', nim_nidn: '0012345678', avatar_url: null }
+    mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
-    renderAkun(queryClient, ['/akun?tab=kelas'])
-    expect(screen.queryByText(/Buat kelas, bagikan kode kelas/)).toBeNull()
-    expect(screen.getByText('Ahmad Rizki')).toBeTruthy()
+    renderAkun(queryClient)
+    expect(screen.getByText('Mahasiswa terdaftar')).toBeTruthy()
+    expect(screen.getByText('Rata-rata progres')).toBeTruthy()
+    expect(screen.getByText('Rata-rata skor kuis')).toBeTruthy()
+  })
+
+  // Kartu angka mahasiswa: topik selesai, formatif lulus, pre-test.
+  it('mahasiswa melihat kartu angka Topik selesai/Formatif lulus/Pre-test', () => {
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    expect(screen.getByText('Topik selesai')).toBeTruthy()
+    expect(screen.getByText('Formatif lulus')).toBeTruthy()
+    expect(screen.getByText('Pre-test')).toBeTruthy()
   })
 })

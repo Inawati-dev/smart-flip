@@ -364,6 +364,8 @@ export interface ModulPdfFile {
   name: string
   url: string
   updatedAt: string | null
+  createdAt: string | null
+  sizeBytes: number | null
   /** Judul modul yang sedang memakai file ini, atau null kalau tidak dipakai siapa pun. */
   usedBy: string | null
 }
@@ -376,21 +378,28 @@ export interface ModulPdfFile {
 // backend to list.
 export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
   if (!isSupabaseConfigured) return []
-  const [listRes, modulesRes] = await Promise.all([
+  const [listRes, modulesRes0] = await Promise.all([
     supabase.storage.from('modul-pdf').list('', {
       limit: 200,
       sortBy: { column: 'created_at', order: 'desc' },
     }),
-    supabase.from('modules').select('title, pdf_path'),
+    supabase.from('modules').select('title, pdf_path, course_id, courses(name)'),
   ])
   if (listRes.error) throw listRes.error
+  // Sebelum migrasi v23 relasi courses belum ada; ulang tanpa embed.
+  const modulesRes = modulesRes0.error ? await supabase.from('modules').select('title, pdf_path') : modulesRes0
 
   // Peta nama-objek → judul modul pemakainya, supaya file yatim (sisa upload
   // lama yang sudah tidak ditunjuk modul mana pun) bisa dibedakan di UI.
   const usedBy = new Map<string, string>()
   for (const m of modulesRes.data ?? []) {
     const name = storageObjectName((m as { pdf_path?: string }).pdf_path)
-    if (name) usedBy.set(name, (m as { title?: string }).title || 'Tanpa judul')
+    if (name) {
+      const row = m as { title?: string; courses?: { name?: string } | { name?: string }[] | null }
+      const c = Array.isArray(row.courses) ? row.courses[0] : row.courses
+      const judul = row.title || 'Tanpa judul'
+      usedBy.set(name, c?.name ? `${c.name} · ${judul}` : judul)
+    }
   }
 
   return (listRes.data || [])
@@ -406,6 +415,8 @@ export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
       name: f.name,
       url: supabase.storage.from('modul-pdf').getPublicUrl(f.name).data.publicUrl,
       updatedAt: f.updated_at ?? null,
+      createdAt: f.created_at ?? null,
+      sizeBytes: (f.metadata as { size?: number } | null)?.size ?? null,
       usedBy: usedBy.get(f.name) ?? null,
     }))
 }
@@ -538,20 +549,22 @@ export interface ModulVideoFile {
   name: string
   url: string
   updatedAt: string | null
+  createdAt: string | null
   sizeBytes: number | null
-  /** Judul topik yang sedang memakai berkas ini, atau null bila belum terpakai. */
+  /** Mata kuliah dan judul topik yang memakai berkas ini, atau null bila belum terpakai. */
   usedBy: string | null
 }
 
 export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
   if (!isSupabaseConfigured) return []
-  const [listRes, modulesRes] = await Promise.all([
+  const [listRes, modulesRes0] = await Promise.all([
     supabase.storage.from('modul-video').list('', {
       limit: 200,
       sortBy: { column: 'created_at', order: 'desc' },
     }),
-    supabase.from('modules').select('title, video_url'),
+    supabase.from('modules').select('title, video_url, course_id, courses(name)'),
   ])
+  const modulesRes = modulesRes0.error ? await supabase.from('modules').select('title, video_url') : modulesRes0
   if (listRes.error) {
     // Bucket belum dibuat (migrasi v21 belum jalan): tampilkan kosong, jangan crash.
     if (/not found|does not exist/i.test(listRes.error.message)) return []
@@ -560,7 +573,12 @@ export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
   const usedBy = new Map<string, string>()
   for (const m of modulesRes.data ?? []) {
     const name = videoStorageObjectName((m as { video_url?: string }).video_url)
-    if (name) usedBy.set(name, (m as { title?: string }).title || 'Tanpa judul')
+    if (name) {
+      const row = m as { title?: string; courses?: { name?: string } | { name?: string }[] | null }
+      const c = Array.isArray(row.courses) ? row.courses[0] : row.courses
+      const judul = row.title || 'Tanpa judul'
+      usedBy.set(name, c?.name ? `${c.name} · ${judul}` : judul)
+    }
   }
   return (listRes.data || [])
     .filter((f) => {
@@ -572,6 +590,7 @@ export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
       name: f.name,
       url: supabase.storage.from('modul-video').getPublicUrl(f.name).data.publicUrl,
       updatedAt: f.updated_at ?? null,
+      createdAt: f.created_at ?? null,
       sizeBytes: (f.metadata as { size?: number } | null)?.size ?? null,
       usedBy: usedBy.get(f.name) ?? null,
     }))

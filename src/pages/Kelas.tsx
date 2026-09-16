@@ -1,5 +1,4 @@
 import { useState, type FormEvent } from 'react'
-import { Navigate } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useKelasByDosen } from '../hooks/useKelas'
@@ -15,6 +14,7 @@ import {
 } from '../lib/kelas'
 import { downloadCsv } from '../lib/analitik'
 import { FileInput } from '../components/FileInput'
+import { Layout } from '../components/Layout'
 import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -43,10 +43,10 @@ function buildCredentialsCsv(results: ImportResult[]): string {
 // through src/lib/kelas.ts — same DataLayer-abstraction convention as every
 // other dosen-only management page (see Manajemen.tsx).
 //
-// Sejak 16 Sep 2026 (koreksi Johan "jadikan tab saja") panel ini dirender
-// sebagai tab "Kelas" di Akun.tsx, bukan halaman /kelas sendiri — jadi TIDAK
-// membungkus <Layout> maupun judul h1 (judul tab di Akun.tsx sudah cukup).
-// Rute /kelas lama dipertahankan sebagai alias (lihat Kelas() di bawah).
+// Dirender oleh Kelas() di bawah sebagai halaman penuh /kelas, item rel
+// navigasi sendiri (Layout.tsx) — koreksi Johan 16 Sep 2026 "page kelas ini
+// dipindah jadi sidebar yaa biar enak mantau", membatalkan percobaan
+// sebelumnya di hari yang sama yang sempat menjadikannya tab di Akun.tsx.
 export function KelasPanel() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -706,12 +706,16 @@ function StatCard({ bar, val, label }: { bar: string; val: string; label: string
   )
 }
 
-// /kelas lama — cuma pengalih sekarang, isinya sudah pindah ke KelasPanel di
-// atas (dirender sebagai tab di Akun.tsx). Dipertahankan supaya tautan lama
-// ke /kelas tidak 404 (koreksi Johan 16 Sep 2026: "jadikan tab saja biar gak
-// buka menu baru lagi").
+// /kelas — halaman penuh, item rel navigasi sendiri (dosen saja).
 export function Kelas() {
-  return <Navigate to="/akun?tab=kelas" replace />
+  return (
+    <Layout>
+      <div className="p-4 md:p-6 pb-16">
+        <h1 className="font-display text-2xl font-bold text-brown mb-1">Kelas</h1>
+        <KelasPanel />
+      </div>
+    </Layout>
+  )
 }
 
 export default Kelas
