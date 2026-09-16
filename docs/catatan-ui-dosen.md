@@ -22,7 +22,10 @@ Rumah aturan tampilan yang diputuskan Johan saat meninjau akses dosen. Tiap buti
 
 ## 3. Halaman dosen
 
-- Akun memuat profil (modal ubah), kelas, progres mengajar, Tema, Kode undangan, Notifikasi; `/pengaturan` mengalihkan ke `/akun`. (#28, #33)
+- Akun bertab `PillGroup` di `?tab=`: Profil (kartu profil dan progres), Kelas (dosen, isi lama `/kelas`), Pengaturan (Kode undangan dan Notifikasi dua kolom). `/kelas` dan `/pengaturan` mengalihkan ke `/akun`. (#28, #33, papan #40, #41)
+- Tema diganti lewat tombol ikon bulan/matahari di rel (di atas Keluar) dan topbar telepon, bukan kartu di Akun. Hook `useTheme` di `src/hooks/useTheme.ts`. (papan #42)
+- Radius kontrol satu token `--radius-control` (10 px) untuk `.btn`, dropdown, pil, input, textarea. Lencana, avatar, toggle, ubin ikon, dan lingkaran stepper tetap bulat. (papan #44)
+- Dashboard dosen: kartu angka ringkas 6 dalam satu baris di laptop (`xl:grid-cols-6`), jalan pintas 5 kolom; mahasiswa 3 kartu angka 3 kolom. (papan #39)
 - Satuan per pertemuan disebut "topik" di semua teks pengguna; nama menu Modul dan Video tetap. Tambah topik, Ubah topik, Hapus topik. (papan #35)
 - Modul: tabel 9 topik, Tambah topik (dengan unggah PDF opsional), Ganti PDF, Ubah topik, Hapus dengan modal konfirmasi, ikon pratinjau. (#35, #43)
 - Unggah berkas selalu lewat `FileInput` (`src/components/FileInput.tsx`): tombol "Pilih ...", nama dan ukuran berkas, batas ukuran. Tidak ada `<input type="file">` polos di halaman yang tampil. (papan #36)
