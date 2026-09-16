@@ -246,9 +246,10 @@ export interface PerluPerhatianItem {
 }
 
 // Belum ada halaman profil per-mahasiswa untuk dosen (di luar lingkup WP9),
-// jadi tautannya mengarah ke Analitik Kelas yang sudah memuat daftar
-// mahasiswa — bukan tautan langsung ke satu baris.
-const TAUTAN_MAHASISWA = '/analitik'
+// jadi tautannya mengarah ke Asesmen (dulu Analitik Kelas, dihapus antrean
+// #80) yang sudah memuat daftar mahasiswa — bukan tautan langsung ke satu
+// baris.
+const TAUTAN_MAHASISWA = '/asesmen'
 
 // Daftar "perlu perhatian" (spec §5.0 poin 4). Kartu ke-4 (sesi tes khusus
 // hampir tutup) belum bisa dihitung di sini — test_sessions datang di WP6b,

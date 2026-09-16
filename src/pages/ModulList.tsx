@@ -449,7 +449,7 @@ export function DosenModulTable() {
                 </div>
               </div>
             )}
-            {pdfError && <p className="text-[11px] text-red mt-2">{pdfError}</p>}
+            {pdfError && <p className="text-[11px] text-danger mt-2">{pdfError}</p>}
             <div className="flex justify-end pt-4">
               <button onClick={() => setPdfModalId(null)} className="btn btn-secondary">
                 Tutup

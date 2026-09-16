@@ -626,7 +626,7 @@ function MahasiswaTesKhusus() {
               className="h-12 w-full rounded-[var(--radius-control)] border px-3 text-lg font-mono tracking-[0.3em] text-center text-brown mb-3"
               style={BORDER}
             />
-            {verifyError && <p className="text-sm text-red mb-3">{verifyError}</p>}
+            {verifyError && <p className="text-sm text-danger mb-3">{verifyError}</p>}
             <button onClick={() => void doVerify(kodeInput)} disabled={verifying || !kodeInput.trim()} className="btn btn-primary w-full">
               {verifying ? 'Memeriksa…' : 'Masuk'}
             </button>

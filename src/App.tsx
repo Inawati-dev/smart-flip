@@ -15,33 +15,20 @@ import { ResetPassword } from './pages/ResetPassword'
 // antrean #21 (optimasi kecepatan akses). Dashboard.tsx tidak punya default
 // export, jadi dibungkus .then(); sisanya sudah punya default export.
 const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
-const Diagnostik = lazy(() => import('./pages/Diagnostik'))
 const Akun = lazy(() => import('./pages/Akun'))
 const KelolaPdf = lazy(() => import('./pages/KelolaPdf'))
 const Modul = lazy(() => import('./pages/Modul'))
 const ModulList = lazy(() => import('./pages/ModulList'))
 const Video = lazy(() => import('./pages/Video'))
 const Formatif = lazy(() => import('./pages/Formatif'))
-const Workshop = lazy(() => import('./pages/Workshop'))
 const Ebook = lazy(() => import('./pages/Ebook'))
-const Vark = lazy(() => import('./pages/Vark'))
 const TugasAkhir = lazy(() => import('./pages/TugasAkhir'))
 const TesKelompok = lazy(() => import('./pages/TesKelompok'))
-const Forum = lazy(() => import('./pages/Forum'))
-const Draf = lazy(() => import('./pages/Draf'))
-const Feedback = lazy(() => import('./pages/Feedback'))
 const Asesmen = lazy(() => import('./pages/Asesmen'))
 const AsesmenMhs = lazy(() => import('./pages/AsesmenMhs'))
 const BankSoal = lazy(() => import('./pages/BankSoal'))
 const TesKhusus = lazy(() => import('./pages/TesKhusus'))
-const Observasi = lazy(() => import('./pages/Observasi'))
-const ProjekAkhir = lazy(() => import('./pages/ProjekAkhir'))
-const Validasi = lazy(() => import('./pages/Validasi'))
-const Analitik = lazy(() => import('./pages/Analitik'))
-const Manajemen = lazy(() => import('./pages/Manajemen'))
 const Kelas = lazy(() => import('./pages/Kelas'))
-const Changelog = lazy(() => import('./pages/Changelog'))
-const Pengaturan = lazy(() => import('./pages/Pengaturan'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -85,7 +72,11 @@ export default function App() {
               <Route path="/modul" element={<ProtectedRoute><ModulList /></ProtectedRoute>} />
               <Route path="/modul/:id" element={<ProtectedRoute><Modul /></ProtectedRoute>} />
               <Route path="/modul/:id/kuis" element={<ProtectedRoute><KuisRedirect /></ProtectedRoute>} />
-              <Route path="/modul/:id/workshop" element={<ProtectedRoute><Workshop /></ProtectedRoute>} />
+              {/* Workshop.tsx dihapus (antrean #80, keputusan Johan 16 Sep
+                  2026) - tidak ditautkan dari navigasi mana pun. Alias
+                  dipertahankan supaya tautan/bookmark lama tidak 404. */}
+              <Route path="/modul/:id/workshop" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/workshop" element={<Navigate to="/dashboard" replace />} />
               <Route path="/video" element={<ProtectedRoute><Video /></ProtectedRoute>} />
               <Route path="/video/:id" element={<ProtectedRoute><Video /></ProtectedRoute>} />
               <Route path="/akun" element={<ProtectedRoute><Akun /></ProtectedRoute>} />
@@ -97,26 +88,23 @@ export default function App() {
               {/* /profil dipertahankan sebagai alias route lama (dipakai
                   beberapa tautan internal), dialihkan ke /akun untuk menu. */}
               <Route path="/profil" element={<Navigate to="/akun" replace />} />
-              <Route
-                path="/diagnostik"
-                element={
-                  <ProtectedRoute roles={['mahasiswa']}>
-                    <Diagnostik />
-                  </ProtectedRoute>
-                }
-              />
+              {/* Diagnostik, Vark, Forum, Draf, Feedback, Observasi,
+                  ProjekAkhir dihapus (antrean #80, keputusan Johan 16 Sep
+                  2026) — tidak ditautkan dari navigasi mana pun. Alias ke
+                  /dashboard dipertahankan supaya tautan/bookmark lama tidak
+                  404. */}
+              <Route path="/diagnostik" element={<Navigate to="/dashboard" replace />} />
+              {/* Ebook.tsx TETAP ADA (beda dari rencana awal) — Modul.tsx
+                  masih memakai <Link to={`/ebook?book=${modul.id}`}> (tombol
+                  "Buka Ebook"), jadi ini bukan halaman tanpa tautan. */}
               <Route path="/ebook" element={<ProtectedRoute><Ebook /></ProtectedRoute>} />
-              <Route path="/asesmen/vark" element={<ProtectedRoute><Vark /></ProtectedRoute>} />
-              <Route path="/vark" element={<ProtectedRoute><Vark /></ProtectedRoute>} />
-              <Route path="/forum" element={<ProtectedRoute><Forum /></ProtectedRoute>} />
-              <Route path="/draf" element={<ProtectedRoute><Draf /></ProtectedRoute>} />
-              <Route path="/feedback" element={<ProtectedRoute><Feedback /></ProtectedRoute>} />
-              {/* Sisi mahasiswa dari Aktivitas Mandiri — /asesmen dosen-only,
-                  jadi pengumpulan observasi butuh rutenya sendiri. */}
-              <Route path="/observasi" element={<ProtectedRoute roles={['mahasiswa']}><Observasi /></ProtectedRoute>} />
-              {/* Satu rute, dua tampilan: mahasiswa mengerjakan proposal,
-                  dosen memantau & menilai (bercabang di dalam komponennya). */}
-              <Route path="/projek-akhir" element={<ProtectedRoute><ProjekAkhir /></ProtectedRoute>} />
+              <Route path="/asesmen/vark" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/vark" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/forum" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/draf" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/feedback" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/observasi" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/projek-akhir" element={<Navigate to="/dashboard" replace />} />
               <Route path="/asesmen" element={<ProtectedRoute><AsesmenRoute /></ProtectedRoute>} />
               <Route path="/asesmen/pre" element={<ProtectedRoute roles={['mahasiswa']}><AsesmenMhs /></ProtectedRoute>} />
               <Route path="/asesmen/post" element={<ProtectedRoute roles={['mahasiswa']}><AsesmenMhs /></ProtectedRoute>} />
@@ -133,20 +121,24 @@ export default function App() {
               {/* Tes kelompok (antrean #65): bercabang per peran seperti TesKhusus. */}
               <Route path="/asesmen/kelompok" element={<ProtectedRoute><TesKelompok /></ProtectedRoute>} />
               <Route path="/asesmen/kelompok/:code" element={<ProtectedRoute><TesKelompok /></ProtectedRoute>} />
-              {/* /ngain dipertahankan sebagai alias — tautan/bookmark lama ke
-                  halaman ini masih ada sebelum namanya berubah jadi Asesmen. */}
-              <Route path="/ngain" element={<ProtectedRoute roles={['dosen']}><Asesmen /></ProtectedRoute>} />
-              <Route path="/validasi" element={<ProtectedRoute roles={['dosen']}><Validasi /></ProtectedRoute>} />
-              <Route path="/analitik" element={<ProtectedRoute roles={['dosen']}><Analitik /></ProtectedRoute>} />
-              <Route path="/manajemen" element={<ProtectedRoute roles={['dosen']}><Manajemen /></ProtectedRoute>} />
+              {/* /ngain, /validasi, /analitik: halaman lama sudah dihapus
+                  (antrean #80) — /ngain lebih dulu jadi alias ke Asesmen,
+                  sekarang ketiganya alias langsung ke /asesmen supaya
+                  tautan/bookmark lama tidak 404. */}
+              <Route path="/ngain" element={<Navigate to="/asesmen" replace />} />
+              <Route path="/validasi" element={<Navigate to="/asesmen" replace />} />
+              <Route path="/analitik" element={<Navigate to="/asesmen" replace />} />
+              <Route path="/manajemen" element={<Navigate to="/modul" replace />} />
               <Route path="/kelas" element={<ProtectedRoute roles={['dosen']}><Kelas /></ProtectedRoute>} />
-              {/* Dosen-only: riwayat rilis memuat catatan teknis & temuan
-                  keamanan yang tidak perlu dibaca mahasiswa maupun pengunjung
-                  anonim. Sempat publik sebelumnya (dan tautannya dulu ada di
-                  footer AuthShell) — tautan itu sudah dicabut bersamaan dengan
-                  perubahan ini, jadi tidak ada lagi jalan masuk yang menggantung. */}
-              <Route path="/changelog" element={<ProtectedRoute roles={['dosen']}><Changelog /></ProtectedRoute>} />
-              <Route path="/pengaturan" element={<ProtectedRoute><Pengaturan /></ProtectedRoute>} />
+              {/* Changelog.tsx dihapus (antrean #80) — riwayat rilis sudah
+                  tidak ditautkan dari mana pun (tautannya di footer AuthShell
+                  sudah dicabut sebelumnya). Alias ke /dashboard. */}
+              <Route path="/changelog" element={<Navigate to="/dashboard" replace />} />
+              {/* Pengaturan.tsx: default export sudah dihapus (isinya cuma
+                  Navigate ke /akun) — dipindah langsung ke sini, tanpa lewat
+                  ProtectedRoute/lazy chunk. PengaturanSections (dirender di
+                  Akun.tsx) tidak tersentuh. */}
+              <Route path="/pengaturan" element={<Navigate to="/akun" replace />} />
             </Routes>
             </Suspense>
           </ErrorBoundary>

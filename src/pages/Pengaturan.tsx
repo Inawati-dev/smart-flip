@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
 import { computeNeedsAttentionStudents } from '../lib/analitik'
@@ -258,12 +257,6 @@ export function PengaturanSections() {
       )}
     </>
   )
-}
-
-// /pengaturan lama — cuma pengalih sekarang, isinya sudah pindah ke
-// PengaturanSections di atas (dirender dari Akun.tsx).
-export default function Pengaturan() {
-  return <Navigate to="/akun" replace />
 }
 
 // Duplikat kecil dari ToggleRow milik Profil.tsx (tidak diekspor dari sana) —

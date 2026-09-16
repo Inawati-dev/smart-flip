@@ -46,9 +46,8 @@ export interface StatSummary {
 export type SortKey = 'no' | 'nama' | 'modul' | 'kuis' | 'jam' | 'kepraktisan' | 'status'
 
 // ── Demo/dummy data — ported verbatim from legacy/analitik.html ──────
-// Follows the same precedent as src/pages/Profil.tsx's dosen view (dummy
-// "28 mahasiswa terdaftar" stats): shown whenever Supabase isn't configured
-// or the real aggregate query comes back empty.
+// Shown whenever Supabase isn't configured or the real aggregate query
+// comes back empty.
 
 export const DUMMY_STUDENTS: StudentStat[] = [
   { id: 1, nama: 'Ahmad Rizki', modul: 3, kuis: 78, jam: 4.2, kepraktisan: 4.2, status: 'aktif' },

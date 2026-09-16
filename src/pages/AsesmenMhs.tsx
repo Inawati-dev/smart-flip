@@ -74,7 +74,7 @@ function PanelCard({
 // belajar (antrean #57 opsi A) diganti tugas akhir — rute lamanya dibiarkan
 // ada, tidak ditautkan lagi dari sini.
 function AsesmenDaftar() {
-  const { courseId } = useCourse()
+  const { courseId, course } = useCourse()
   const { data: modules = [] } = useModules()
   const { statusOf } = useTopikStatus()
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
@@ -155,7 +155,7 @@ function AsesmenDaftar() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <PanelCard title="Pre-test" value={preSkor != null ? `Skor ${preSkor}` : 'Belum'} />
+            <PanelCard title="Pre-test" value={preSkor != null ? `Skor ${preSkor} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`} />
             {/* /asesmen/tes diisi WP6b (spec §9); untuk sekarang tautan saja. */}
             <PanelCard
               title="Post-test"
@@ -184,7 +184,7 @@ function AsesmenDaftar() {
 function PreTest() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const { courseId } = useCourse()
+  const { courseId, course } = useCourse()
   const { data: soal = [], isLoading: soalLoading } = useQuery({
     queryKey: ['bank-soal', 'pre', courseId],
     queryFn: () => fetchBankSoal('pre', undefined, courseId),
@@ -288,8 +288,9 @@ function PreTest() {
           </div>
         ) : (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-1">Kerjakan pre-test dulu.</p>
-            <p className="text-sm text-brown-3 mb-5">{soal.length} soal · tanpa kode, tanpa ambang lulus</p>
+            <p className="text-brown-2 mb-1">Kerjakan pre-test {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
+            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode, tanpa ambang lulus</p>
+            <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya pre-test sendiri, jadi pre-test ini hanya untuk mata kuliah yang sedang dipilih.</p>
             <button onClick={mulai} className="btn btn-primary">
               Mulai
             </button>

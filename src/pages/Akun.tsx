@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useModules } from '../hooks/useModules'
+import { fetchMyKelas, labelKelas } from '../lib/kelas'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useStudentStats } from '../hooks/useAnalitik'
@@ -47,6 +48,7 @@ export function Akun() {
   const [searchParams] = useSearchParams()
 
   const { data: modules = [] } = useModules()
+  const { data: kelasSaya = null } = useQuery({ queryKey: ['kelas-saya'], queryFn: fetchMyKelas, enabled: !isDosen })
   const { data: progress = {} } = useAllProgress()
   const { data: allAttempts = [] } = useAllQuizAttempts()
   const { data: dosenStudents } = useStudentStats()
@@ -176,6 +178,9 @@ export function Akun() {
                   </span>
                   {profile?.nim_nidn && (
                     <span className="text-xs text-brown-3">{isDosen ? 'NIDN' : 'NIM'} {profile.nim_nidn}</span>
+                  )}
+                  {!isDosen && (
+                    <span className="text-xs text-brown-3">{kelasSaya ? labelKelas(kelasSaya) : 'Belum bergabung kelas'}</span>
                   )}
                 </div>
               </div>

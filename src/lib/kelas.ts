@@ -180,6 +180,23 @@ export async function deleteKelas(id: string): Promise<void> {
   setDemoClasses(getDemoClasses().filter((c) => c.id !== id))
 }
 
+/** Kelas mahasiswa yang sedang masuk (profiles.class_id), null bila belum bergabung atau tanpa Supabase. */
+export async function fetchMyKelas(): Promise<{ name: string; angkatan: number } | null> {
+  if (!isSupabaseConfigured) return null
+  const { data: userData } = await supabase.auth.getUser()
+  const uid = userData.user?.id
+  if (!uid) return null
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('class_id, classes!profiles_class_id_fkey(name, angkatan)')
+    .eq('id', uid)
+    .maybeSingle()
+  if (error || !data) return null
+  const rel = (data as { classes?: { name: string; angkatan: number } | { name: string; angkatan: number }[] | null }).classes
+  const k = Array.isArray(rel) ? rel[0] : rel
+  return k?.name ? { name: k.name, angkatan: k.angkatan } : null
+}
+
 export interface KelasSummary {
   totalStudents: number
   byAngkatan: Array<{ angkatan: number; total: number }>
