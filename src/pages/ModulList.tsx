@@ -667,16 +667,14 @@ export function ModulList() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-bold text-brown">Modul</h1>
-            {role === 'dosen' && (
-              <button onClick={() => setKelolaOpen(true)} className="btn btn-secondary btn-sm" title="Tambah, ubah, atau hapus mata kuliah">
-                <IconGear size={14} /> Kelola mata kuliah
-              </button>
-            )}
-          </div>
+        <div className="flex items-center gap-3 flex-wrap mb-4">
+          <h1 className="text-2xl font-bold text-brown">Modul</h1>
           <MataKuliahSelect />
+          {role === 'dosen' && (
+            <button onClick={() => setKelolaOpen(true)} className="btn btn-secondary btn-sm" title="Tambah, ubah, atau hapus mata kuliah">
+              <IconGear size={14} /> Kelola mata kuliah
+            </button>
+          )}
         </div>
         {role === 'dosen' ? (
           <DosenModulRak />

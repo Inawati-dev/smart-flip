@@ -13,7 +13,7 @@ import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
 import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { IconEdit } from '../components/icons'
+import { IconEdit, IconPlay } from '../components/icons'
 import { KartuVideo } from '../components/KartuVideo'
 import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
 
@@ -92,7 +92,7 @@ function VideoMahasiswa() {
     return (
       <Layout>
         <div className="p-4 md:p-6">
-          <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+          <div className="flex items-center gap-3 flex-wrap mb-1">
             <h1 className="text-2xl font-bold text-brown">Video</h1>
             <MataKuliahSelect />
           </div>
@@ -389,7 +389,7 @@ function VideoDosen() {
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
+        <div className="flex items-center gap-3 flex-wrap mb-1">
           <h1 className="font-display text-2xl font-bold text-brown">Video</h1>
           <MataKuliahSelect />
         </div>
@@ -418,18 +418,31 @@ function VideoDosen() {
                   judul={m.title}
                   url={m.video_url}
                   durasi={m.duration_sec ? formatDuration(m.duration_sec) : undefined}
-                  chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
+                  chip={chip.jenis === 'warn' ? <ChipRak jenis="warn" label={chip.label} /> : undefined}
                   onClick={url ? () => setPreviewUrl(url) : undefined}
                   warna={warnaSampul(m.order_num)}
                   aksi={
-                    <button
-                      onClick={() => openEdit(m)}
-                      aria-label={url ? 'Ubah video' : 'Tambah video'}
-                      title={url ? 'Ubah video' : 'Tambah video'}
-                      className="btn btn-secondary btn-sm whitespace-nowrap"
-                    >
-                      <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah video' : 'Tambah video'}</span>
-                    </button>
+                    <>
+                      <button
+                        onClick={() => openEdit(m)}
+                        aria-label={url ? 'Ubah video' : 'Tambah video'}
+                        title={url ? 'Ubah video' : 'Tambah video'}
+                        className={`btn btn-secondary btn-sm w-full whitespace-nowrap ${url ? '' : 'col-span-2'}`}
+                      >
+                        <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah video' : 'Tambah video'}</span>
+                      </button>
+                      {url && (
+                        <button
+                          type="button"
+                          onClick={() => setPreviewUrl(url)}
+                          aria-label="Pratinjau video"
+                          title="Pratinjau video"
+                          className="btn btn-secondary btn-sm w-full whitespace-nowrap"
+                        >
+                          <IconPlay size={13} /> <span className="hidden sm:inline">Pratinjau</span>
+                        </button>
+                      )}
+                    </>
                   }
                 />
               )
