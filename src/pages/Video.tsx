@@ -11,6 +11,8 @@ import { saveVideoUrl, uploadModulVideo } from '../lib/manajemen'
 import { upsertVideoProgress, shouldSendTimeUpdate } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
+import { FileInput } from '../components/FileInput'
+import { IconEdit } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -94,7 +96,7 @@ function VideoMahasiswa() {
   if (!modul) {
     return (
       <Layout>
-        <div className="p-6 text-brown-3 text-sm">{modulesLoading ? 'Memuat…' : 'Modul tidak ditemukan.'}</div>
+        <div className="p-6 text-brown-3 text-sm">{modulesLoading ? 'Memuat…' : 'Topik tidak ditemukan.'}</div>
       </Layout>
     )
   }
@@ -221,7 +223,7 @@ function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: num
         <h2 className="font-semibold text-brown mb-2 text-sm">Setelah video ini</h2>
         <div className="flex flex-col gap-2">
           <Link to={`/modul/${current}`} className="btn btn-secondary">
-            Baca modul {idx + 1}
+            Baca topik {idx + 1}
           </Link>
           <Link to={`/asesmen/formatif/${current}`} className="btn btn-primary">
             Kerjakan tes formatif
@@ -340,14 +342,14 @@ function VideoDosen() {
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Video</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-20">Durasi</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Status</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-24">Aksi</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {sorted.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center py-8 text-brown-3 text-sm">
-                      Belum ada modul.
+                      Belum ada topik.
                     </td>
                   </tr>
                 ) : (
@@ -360,7 +362,7 @@ function VideoDosen() {
                         ? { label: 'Tayang', bg: 'var(--success-soft)', color: 'var(--success)' }
                         : { label: 'Tautan tidak dikenal', bg: 'var(--warning-soft)', color: 'var(--warning)' }
                     return (
-                      <tr key={m.id} className="border-t" style={BORDER}>
+                      <tr key={m.id} className="row-divider">
                         <td className="px-3 py-2.5 font-semibold text-brown">{idx + 1}</td>
                         <td className="px-3 py-2.5 font-medium text-brown min-w-[160px]">{m.title}</td>
                         <td className="px-3 py-2.5 text-xs text-brown-3 max-w-[280px]">
@@ -393,12 +395,14 @@ function VideoDosen() {
                             {chip.label}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5">
+                        <td className="px-3 py-2.5 text-center">
                           <button
                             onClick={() => openEdit(m)}
-                            className="btn btn-secondary btn-sm whitespace-nowrap min-w-[7.5rem]"
+                            aria-label={url ? 'Ubah video' : 'Tambah video'}
+                            title={url ? 'Ubah video' : 'Tambah video'}
+                            className="btn btn-secondary whitespace-nowrap"
                           >
-                            {url ? 'Ubah' : 'Tambah tautan'}
+                            <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah video' : 'Tambah video'}</span>
                           </button>
                         </td>
                       </tr>
@@ -437,7 +441,7 @@ function VideoDosen() {
               className="w-full h-11 rounded-lg border px-3 mb-2"
               style={{ ...BORDER, fontSize: '16px' }}
             />
-            {urlError && <p className="text-xs mb-2" style={{ color: 'var(--red, #C0392B)' }}>{urlError}</p>}
+            {urlError && <p className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{urlError}</p>}
             {parsedInput && (
               <div className="mb-2 rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
                 {parsedInput.kind === 'youtube' ? (
@@ -456,15 +460,17 @@ function VideoDosen() {
 
             <div className="mt-3 pt-3 border-t" style={BORDER}>
               <p className="text-xs font-semibold text-brown-2 mb-1">atau unggah berkas</p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <input
-                  type="file"
-                  accept="video/mp4,video/webm"
-                  onChange={(e) => {
-                    setVideoFile(e.target.files?.[0] ?? null)
+              <div className="flex items-end gap-2 flex-wrap">
+                <FileInput
+                  accept="video/mp4,video/webm,.mp4,.webm"
+                  label="Pilih video"
+                  hint="MP4 atau WebM, maks 100 MB"
+                  maxSizeMb={100}
+                  file={videoFile}
+                  onChange={(f) => {
+                    setVideoFile(f)
                     setVideoFileError('')
                   }}
-                  className="text-sm text-brown-2 flex-1 min-w-[140px]"
                 />
                 <button
                   type="button"
@@ -475,8 +481,7 @@ function VideoDosen() {
                   {uploadingVideo ? 'Mengunggah…' : 'Unggah'}
                 </button>
               </div>
-              <p className="text-[11px] text-brown-3 mt-1">Maks 100 MB, format mp4 atau webm.</p>
-              {videoFileError && <p className="text-[11px] mt-1" style={{ color: 'var(--red, #C0392B)' }}>{videoFileError}</p>}
+              {videoFileError && <p className="text-[11px] mt-1" style={{ color: 'var(--danger)' }}>{videoFileError}</p>}
             </div>
 
             <div className="flex gap-3 mt-3">

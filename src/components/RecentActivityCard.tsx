@@ -69,7 +69,7 @@ export function RecentActivityCard() {
                 const ActivityIconComp = ACTIVITY_ICON[a.kind] || IconDocument
                 const badge = ACTIVITY_BADGE[a.kind] || { bg: 'var(--bg3)', color: 'var(--brown-2)' }
                 return (
-                  <tr key={i} className="border-t" style={BORDER}>
+                  <tr key={i} className="row-divider">
                     <td className="px-4 py-2.5 text-brown-2">
                       <span className="inline-flex items-center gap-1.5">
                         <ActivityIconComp size={14} /> {a.who}

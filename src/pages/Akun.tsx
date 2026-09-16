@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
@@ -11,6 +11,7 @@ import { saveProfilExtra } from '../lib/profil'
 import { PASS_SCORE } from '../lib/quizAttempts'
 import { TOTAL_MODULES } from '../lib/progress'
 import { Layout } from '../components/Layout'
+import { FileInput } from '../components/FileInput'
 import { PengaturanSections } from './Pengaturan'
 import { IconUser, IconGraduationCap, IconTarget, IconUsers, IconEdit, IconBook } from '../components/icons'
 
@@ -69,9 +70,11 @@ export function Akun() {
     setEditOpen(true)
   }
 
-  function handleAvatarPick(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
+  // FileInput mengganti input polos (antrean #54): ia sudah menyaring ukuran
+  // sendiri lewat maxSizeMb, jadi di sini cukup terima File langsung — dan
+  // karena alurnya langsung baca ke dataURL (bukan disimpan sebagai draft),
+  // file yang dikirim balik ke <FileInput> selalu null.
+  function handleAvatarPick(file: File | null) {
     if (!file) return
     if (!file.type.startsWith('image/')) {
       showToast('File harus berupa gambar')
@@ -213,10 +216,7 @@ export function Akun() {
               <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {formAvatar ? <img src={formAvatar} alt={formNama} className="w-full h-full object-cover" /> : initialsOf(formNama)}
               </div>
-              <label className="btn btn-secondary btn-sm">
-                <IconEdit size={14} /> Ganti foto
-                <input type="file" accept="image/*" onChange={handleAvatarPick} className="hidden text-base" />
-              </label>
+              <FileInput accept="image/*" label="Pilih foto" maxSizeMb={5} file={null} onChange={handleAvatarPick} />
               {formAvatar && (
                 <button type="button" onClick={() => setFormAvatar('')} className="text-xs text-brown-3 underline">
                   Hapus

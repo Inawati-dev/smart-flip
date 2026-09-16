@@ -36,4 +36,20 @@ describe('PillGroup', () => {
     expect(screen.getByText('Post-test').getAttribute('aria-pressed')).toBe('true')
     expect(screen.getByText('Pre-test').getAttribute('aria-pressed')).toBe('false')
   })
+
+  // Antrean 16 Sep 2026: badge notifikasi di pil tab (Dashboard dosen).
+  it('shows a badge when given', () => {
+    render(<PillGroup options={[{ value: 'a', label: 'Tab A', badge: 3 }]} value="a" onChange={() => {}} />)
+    expect(screen.getByText('3')).toBeTruthy()
+  })
+
+  it('caps a badge above 99 at "99+"', () => {
+    render(<PillGroup options={[{ value: 'a', label: 'Tab A', badge: 150 }]} value="a" onChange={() => {}} />)
+    expect(screen.getByText('99+')).toBeTruthy()
+  })
+
+  it('hides the badge when it is 0', () => {
+    render(<PillGroup options={[{ value: 'a', label: 'Tab A', badge: 0 }]} value="a" onChange={() => {}} />)
+    expect(screen.queryByText('0')).toBeNull()
+  })
 })

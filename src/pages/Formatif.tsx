@@ -53,7 +53,7 @@ export default function Formatif() {
   if (!modul) {
     return (
       <Layout>
-        <div className="p-6 text-brown">Modul tidak ditemukan</div>
+        <div className="p-6 text-brown">Topik tidak ditemukan</div>
       </Layout>
     )
   }
@@ -185,7 +185,7 @@ export default function Formatif() {
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
                   <button onClick={() => navigate(`/modul/${moduleId}`)} className="btn btn-secondary flex-1">
-                    Baca modul lagi
+                    Baca topik lagi
                   </button>
                   <button onClick={mulai} className="btn btn-primary flex-1">
                     Kerjakan ulang

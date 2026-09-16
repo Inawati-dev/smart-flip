@@ -284,12 +284,11 @@ export function Select({
                   aria-selected={selected}
                   onMouseEnter={() => setHighlighted(i)}
                   onClick={() => commit(i)}
-                  className="flex items-center px-3 py-2 text-sm leading-snug cursor-pointer whitespace-normal"
+                  className={`flex items-center px-3 py-2 text-sm leading-snug cursor-pointer whitespace-normal ${i > 0 ? 'row-divider' : ''}`}
                   style={{
-                    // 1px gutter between options (not on the first row),
-                    // as a border-top instead of a margin so it doesn't
-                    // add extra gaps on top of the ul's own padding.
-                    borderTop: i > 0 ? '1px solid var(--border)' : undefined,
+                    // Gutter 0.5px antaropsi (bukan baris pertama), pakai kelas
+                    // .row-divider (border-top) bukan margin supaya tidak
+                    // nambah jarak di atas padding ul-nya sendiri.
                     color: selected ? 'var(--brown)' : 'var(--brown2)',
                     fontWeight: selected ? 600 : 500,
                     background: selected

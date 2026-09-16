@@ -25,7 +25,7 @@ import {
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
 import { PillGroup } from '../components/PillGroup'
-import { IconTarget } from '../components/icons'
+import { IconTarget, IconLock, IconChart } from '../components/icons'
 
 // Tes khusus berkode (spec §4.6, §9 WP6b) - satu-satunya tes mahasiswa yang
 // dijaga kode; pre-test dan formatif tidak. Dua tampilan dipilih dari peran
@@ -202,7 +202,7 @@ function DosenTesKhusus() {
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Kelas</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Waktu</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Status</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Aksi</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-56">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -220,7 +220,7 @@ function DosenTesKhusus() {
                   </tr>
                 ) : (
                   sessions.map((s) => (
-                    <tr key={s.id} className="border-t" style={BORDER}>
+                    <tr key={s.id} className="row-divider">
                       <td className="px-3 py-2.5 text-brown font-medium">{s.name}</td>
                       <td className="px-3 py-2.5 font-mono font-bold text-brown tracking-wider">{s.code}</td>
                       <td className="px-3 py-2.5 text-brown-2">{namaKelas(s.class_ids)}</td>
@@ -239,13 +239,23 @@ function DosenTesKhusus() {
                           {s.is_open ? 'Dibuka' : 'Ditutup'}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5">
-                        <div className="flex gap-1.5 flex-wrap">
-                          <button onClick={() => void toggleOpen(s)} className="btn btn-secondary btn-sm min-w-[7.5rem]">
-                            {s.is_open ? 'Tutup sesi' : 'Buka lagi'}
+                      <td className="px-3 py-2.5 text-center">
+                        <div className="inline-flex items-center justify-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() => void toggleOpen(s)}
+                            aria-label={s.is_open ? 'Tutup sesi' : 'Buka lagi'}
+                            title={s.is_open ? 'Tutup sesi' : 'Buka lagi'}
+                            className="btn btn-secondary whitespace-nowrap"
+                          >
+                            <IconLock size={13} /> <span className="hidden sm:inline">{s.is_open ? 'Tutup sesi' : 'Buka lagi'}</span>
                           </button>
-                          <button onClick={() => setHasilSession(s)} className="btn btn-secondary btn-sm">
-                            Lihat hasil
+                          <button
+                            onClick={() => setHasilSession(s)}
+                            aria-label="Lihat hasil"
+                            title="Lihat hasil"
+                            className="btn btn-secondary whitespace-nowrap"
+                          >
+                            <IconChart size={13} /> <span className="hidden sm:inline">Lihat hasil</span>
                           </button>
                         </div>
                       </td>
@@ -459,7 +469,7 @@ function DosenTesKhusus() {
                     </tr>
                   ) : (
                     hasil.map((h) => (
-                      <tr key={h.user_id} className="border-t" style={BORDER}>
+                      <tr key={h.user_id} className="row-divider">
                         <td className="px-3 py-2 text-brown">{h.full_name}</td>
                         <td className="px-3 py-2 font-semibold text-brown">{h.score}</td>
                         <td className="px-3 py-2 text-brown-3 text-xs">{new Date(h.attempted_at).toLocaleString('id-ID')}</td>

@@ -360,7 +360,7 @@ function PengaturanToggleRow({
   onChange: () => void
 }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b" style={{ borderColor: 'var(--border2, var(--border))' }}>
+    <div className="flex items-center justify-between py-2.5 row-divider-b" style={{ borderColor: 'var(--border2, var(--border))' }}>
       <div>
         <div className="text-sm text-brown-2">{label}</div>
         <div className="text-xs text-brown-3 mt-0.5">{sub}</div>

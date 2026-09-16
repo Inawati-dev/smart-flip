@@ -27,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
   { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Pre-test, formatif, post-test' },
-  { to: '/akun/pdf', icon: IconDocument, label: 'PDF', desc: 'Kelola berkas PDF modul', dosenOnly: true },
+  { to: '/akun/pdf', icon: IconDocument, label: 'Berkas', desc: 'PDF dan video tiap topik', dosenOnly: true },
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil, kelas, pengaturan' },
 ]
 
