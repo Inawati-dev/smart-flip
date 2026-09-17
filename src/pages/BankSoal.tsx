@@ -75,8 +75,10 @@ export function BankSoal() {
           <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
           <MataKuliahSelect size="sm" />
         </div>
-        <div className="mb-5">
+        {/* Tingkat 1: tab bergaris bawah; tingkat 2 (jenis soal) tetap pil kecil (antrean #102 opsi A). */}
+        <div className="mb-4">
           <PillGroup
+            variant="tab"
             options={TAB_ORDER.map((t) => ({ value: t, label: TAB_LABELS[t] }))}
             value={tab}
             onChange={selectTab}
@@ -293,6 +295,7 @@ function BankSoalTab() {
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
         <div className="flex items-center gap-2 flex-wrap">
           <PillGroup
+            size="sm"
             options={KIND_ORDER.map((k) => ({ value: k, label: KIND_LABELS[k] }))}
             value={jenis}
             onChange={(v) => selectJenis(v as FilterKind)}
