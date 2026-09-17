@@ -23,7 +23,7 @@ export function PillGroup({ options, value, onChange, size = 'md', ariaLabel, va
   const tinggi = size === 'sm' ? 'min-h-11 sm:min-h-9' : 'min-h-11'
   if (variant === 'tab') {
     return (
-      <div role="tablist" aria-label={ariaLabel} className="flex gap-1 border-b overflow-x-auto" style={{ borderColor: 'var(--border)' }}>
+      <div role="tablist" aria-label={ariaLabel} className="flex gap-1 border-b" style={{ borderColor: 'var(--border)' }}>
         {options.map((opt) => {
           const active = opt.value === value
           return (
