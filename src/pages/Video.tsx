@@ -7,7 +7,7 @@ import { useModules } from '../hooks/useModules'
 import { useTopikStatus } from '../lib/topik'
 import { useAuth } from '../contexts/AuthContext'
 import { parseVideoUrl } from '../lib/video'
-import { saveVideoUrl, uploadModulVideo } from '../lib/manajemen'
+import { saveVideoUrl, uploadModulVideo, saveModulOrder } from '../lib/manajemen'
 import { upsertVideoProgress, shouldSendTimeUpdate, fetchVideoProgressMap } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
@@ -16,6 +16,7 @@ import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconPlay } from '../components/icons'
 import { KartuVideo } from '../components/KartuVideo'
 import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
+import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -327,6 +328,20 @@ function VideoDosen() {
     setTimeout(() => setToast(null), 2800)
   }
 
+  // Urutan topik (antrean #104): sama dengan rak Modul, baris `modules` yang sama.
+  const [urutkanOpen, setUrutkanOpen] = useState(false)
+  async function simpanUrutan(ids: number[]) {
+    try {
+      await saveModulOrder(ids)
+      showToast('Urutan topik disimpan')
+    } catch {
+      showToast('Gagal menyimpan urutan topik')
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+    }
+  }
+  const { seretProps } = useSeretTopik(sorted, simpanUrutan)
+
   function openEdit(m: ModuleRow) {
     setEditModul(m)
     setDurasiMenit(m.duration_sec ? String(Math.round(m.duration_sec / 60)) : '')
@@ -393,9 +408,15 @@ function VideoDosen() {
           <h1 className="font-display text-2xl font-bold text-brown">Video</h1>
           <MataKuliahSelect />
         </div>
-        <p className="text-xs text-brown-3 mb-4">
-          {sorted.length} pertemuan · {punyaVideo} punya video
-        </p>
+        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+          <p className="text-xs text-brown-3">
+            {sorted.length} pertemuan · {punyaVideo} punya video
+          </p>
+          <button onClick={() => setUrutkanOpen(true)} disabled={sorted.length < 2} className="btn btn-secondary btn-sm">
+            Urutkan
+          </button>
+        </div>
+        <UrutkanTopikModal open={urutkanOpen} modules={sorted} onClose={() => setUrutkanOpen(false)} onSimpan={simpanUrutan} />
 
         {sorted.length === 0 ? (
           <div className="p-6 rounded-xl bg-ivory border text-center text-brown-3 text-sm" style={BORDER}>
@@ -412,8 +433,8 @@ function VideoDosen() {
                   ? { jenis: 'ok', label: 'Tayang' }
                   : { jenis: 'warn', label: 'Tautan tidak dikenal' }
               return (
+                <div key={m.id} {...seretProps(m.id)}>
                 <KartuVideo
-                  key={m.id}
                   nomor={m.order_num}
                   judul={m.title}
                   url={m.video_url}
@@ -445,6 +466,7 @@ function VideoDosen() {
                     </>
                   }
                 />
+                </div>
               )
             })}
           </Rak>

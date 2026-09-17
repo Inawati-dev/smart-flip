@@ -10,6 +10,7 @@ import { useTopikStatus } from '../lib/topik'
 import { moduleIdToPath } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
 import {
+  saveModulOrder,
   saveModulCustom,
   createModulReturningId,
   deleteModul,
@@ -26,6 +27,7 @@ import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconTrash, IconDocument, IconGear, IconEye } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
+import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -203,16 +205,36 @@ export function DosenModulRak() {
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
   const jumlahPdf = sorted.filter((m) => m.pdf_path).length
 
+  // Urutan topik (antrean #104): seret kartu di rak atau lewat modal.
+  const [urutkanOpen, setUrutkanOpen] = useState(false)
+  async function simpanUrutan(ids: number[]) {
+    try {
+      await saveModulOrder(ids)
+      showToast('Urutan topik disimpan')
+    } catch {
+      showToast('Gagal menyimpan urutan topik')
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: ['modules'] })
+    }
+  }
+  const { seretProps } = useSeretTopik(sorted, simpanUrutan)
+
   return (
     <>
       <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
         <p className="text-sm text-brown-3">
           {sorted.length} topik · {jumlahPdf} punya PDF
         </p>
-        <button onClick={openCreate} className="btn btn-primary btn-sm">
-          + Tambah topik
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => setUrutkanOpen(true)} disabled={sorted.length < 2} className="btn btn-secondary btn-sm">
+            Urutkan
+          </button>
+          <button onClick={openCreate} className="btn btn-primary btn-sm">
+            + Tambah topik
+          </button>
+        </div>
       </div>
+      <UrutkanTopikModal open={urutkanOpen} modules={sorted} onClose={() => setUrutkanOpen(false)} onSimpan={simpanUrutan} />
       {sorted.length === 0 ? (
         <p className="text-brown-3">Belum ada topik. Tambah topik pertama.</p>
       ) : (
@@ -223,8 +245,8 @@ export function DosenModulRak() {
             const fileName = m.pdf_path ? m.pdf_path.split('/').pop()?.split('?')[0] : null
             const hasPdf = !!m.pdf_path
             return (
+              <div key={m.id} {...seretProps(m.id)}>
               <KartuTopik
-                key={m.id}
                 nomor={m.order_num}
                 judul={judul}
                 keterangan={fileName ? 'PDF' : 'Belum ada PDF'}
@@ -264,6 +286,7 @@ export function DosenModulRak() {
                   </>
                 }
               />
+              </div>
             )
           })}
         </Rak>
