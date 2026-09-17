@@ -144,7 +144,7 @@ describe('BankSoal', () => {
   it('shows all four tabs (Soal, Tes khusus, Tes kelompok, Tugas akhir)', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
-    const tabGroup = await screen.findByRole('group', { name: 'Tab bank soal' })
+    const tabGroup = await screen.findByRole('tablist', { name: 'Tab bank soal' })
     expect(within(tabGroup).getByText('Soal')).toBeTruthy()
     expect(within(tabGroup).getByText('Tes khusus')).toBeTruthy()
     expect(within(tabGroup).getByText('Tes kelompok')).toBeTruthy()

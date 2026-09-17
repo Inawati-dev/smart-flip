@@ -30,6 +30,14 @@ describe('PillGroup', () => {
     expect(screen.getByText('Post-test').className).toContain('bg-ivory')
   })
 
+  // Antrean #102 opsi A: varian tab bergaris bawah untuk tingkat 1 (Bank soal).
+  it('variant tab renders a tablist with the active tab selected', () => {
+    render(<PillGroup variant="tab" options={OPTIONS} value="post" onChange={() => {}} ariaLabel="Tab" />)
+    expect(screen.getByRole('tablist').className).toContain('border-b')
+    expect(screen.getByText('Post-test').getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByText('Pre-test').getAttribute('aria-selected')).toBe('false')
+  })
+
   it('clicking a pill switches the active state to it', () => {
     render(<ControlledPillGroup />)
     fireEvent.click(screen.getByText('Post-test'))

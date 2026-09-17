@@ -11,14 +11,38 @@ interface PillGroupProps {
   onChange: (value: string) => void
   size?: 'sm' | 'md'
   ariaLabel?: string
+  /** 'tab' = tab bergaris bawah (tingkat 1), 'pill' = pil (tingkat 2, bawaan). Antrean #102. */
+  variant?: 'pill' | 'tab'
 }
 
 // Shared toggle-pill row, replaces the hand-rolled pill <button> maps that
 // used to live in each page (BankSoal's jenis filter, TesKhusus's sumber
 // soal), so every pill group in the app looks identical.
-export function PillGroup({ options, value, onChange, size = 'md', ariaLabel }: PillGroupProps) {
+export function PillGroup({ options, value, onChange, size = 'md', ariaLabel, variant = 'pill' }: PillGroupProps) {
   // Tinggi 44 px di telepon (tap target), 36 px untuk ukuran sm di layar sm ke atas.
   const tinggi = size === 'sm' ? 'min-h-11 sm:min-h-9' : 'min-h-11'
+  if (variant === 'tab') {
+    return (
+      <div role="tablist" aria-label={ariaLabel} className="flex gap-1 border-b overflow-x-auto" style={{ borderColor: 'var(--border)' }}>
+        {options.map((opt) => {
+          const active = opt.value === value
+          return (
+            <button
+              key={opt.value}
+              type="button"
+              role="tab"
+              onClick={() => onChange(opt.value)}
+              aria-selected={active}
+              className={`min-h-11 px-2.5 sm:px-3.5 -mb-px text-sm whitespace-nowrap border-b-2 transition-colors ${active ? 'font-semibold' : 'hover:text-brown'}`}
+              style={{ borderColor: active ? 'var(--terra)' : 'transparent', color: active ? 'var(--terra-d)' : 'var(--brown2)' }}
+            >
+              {opt.label}
+            </button>
+          )
+        })}
+      </div>
+    )
+  }
   return (
     <div role="group" aria-label={ariaLabel} className="flex flex-wrap gap-1.5">
       {options.map((opt) => {
