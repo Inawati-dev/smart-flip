@@ -93,7 +93,25 @@ export async function fetchModules(courseId?: number): Promise<ModuleRow[]> {
     }
     return []
   }
-  return courseId == null ? DEMO_MODULES : DEMO_MODULES.filter((m) => m.course_id === courseId)
+  const demo = courseId == null ? DEMO_MODULES : DEMO_MODULES.filter((m) => m.course_id === courseId)
+  return terapkanUrutanDemo(demo)
+}
+
+// Mode demo: saveModulOrder() menulis id ke localStorage `sfp_modul_order`;
+// terapkan supaya urutan yang diubah dosen terlihat (antrean #104).
+function terapkanUrutanDemo(rows: ModuleRow[]): ModuleRow[] {
+  let ids: number[] | null = null
+  try {
+    ids = JSON.parse(localStorage.getItem('sfp_modul_order') ?? 'null') as number[] | null
+  } catch {
+    ids = null
+  }
+  if (!Array.isArray(ids)) return rows
+  const pos = new Map(ids.map((id, i) => [id, i]))
+  if (!rows.some((m) => pos.has(m.id))) return rows
+  return [...rows]
+    .sort((a, b) => (pos.get(a.id) ?? a.order_num + 1000) - (pos.get(b.id) ?? b.order_num + 1000))
+    .map((m, i) => ({ ...m, order_num: i + 1 }))
 }
 
 export async function fetchModuleById(id: number): Promise<ModuleRow | null> {
