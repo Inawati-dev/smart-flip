@@ -14,12 +14,16 @@ import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchAttemptsByKind, PASS_SCORE } from './quizAttempts'
 import { isSupabaseConfigured } from './supabase'
 import { useCourse } from '../contexts/CourseContext'
+import { golonganDariSkor, bacaSkorPreDemo, type Golongan } from './golongan'
 
 export type TopikStatus = 'done' | 'open' | 'locked'
 
 export interface TopikState {
   statusOf: (moduleId: number) => TopikStatus
   loading: boolean
+  /** Golongan pre-test mata kuliah terpilih (antrean #105). */
+  golongan: Golongan
+  skorPre: number | null
 }
 
 // localStorage flags dipakai gerbang pre-test (ProtectedRoute.tsx) dan
@@ -84,37 +88,43 @@ export function usePreTestDone() {
 // (mis. renderToStaticMarkup di tes) tetap melihat topik 1 'open' seperti
 // stub WP1–WP5 — inilah yang menjaga Modul.test.tsx/ModulList.test.tsx/
 // Video.test.tsx/PertemuanStepper.test.tsx tetap hijau tanpa disentuh.
-function useTopikPreDone() {
+// Antrean #105: query ini juga membawa skor pre-test terakhir untuk golongan.
+// Mode demo: `done` selalu true (niat awal initialData di atas; refetch dulu
+// sempat menimpanya jadi false), skor dibaca dari localStorage per mata kuliah.
+function useTopikPre() {
   const { courseId } = useCourse()
   return useQuery({
     queryKey: ['topik-pretest-done', courseId],
-    queryFn: async () => {
+    queryFn: async (): Promise<{ done: boolean; skor: number | null }> => {
       const attempts = await fetchAttemptsByKind('pre', courseId)
-      if (attempts.length > 0) return true
+      const skor = attempts.length ? attempts[attempts.length - 1].score : bacaSkorPreDemo(courseId)
+      if (!isSupabaseConfigured || attempts.length > 0) return { done: true, skor }
       try {
-        return localStorage.getItem(PRETEST_SKIP_KEY) === '1'
+        return { done: localStorage.getItem(PRETEST_SKIP_KEY) === '1', skor }
       } catch {
-        return false
+        return { done: false, skor }
       }
     },
-    initialData: !isSupabaseConfigured ? true : undefined,
+    initialData: !isSupabaseConfigured ? { done: true, skor: bacaSkorPreDemo(courseId) } : undefined,
   })
 }
 
 // Fungsi murni (diuji langsung, lihat topik.test.ts): topik pertama 'open'
 // kalau preDone, topik n>1 'open' kalau topik n-1 skor terbaik >= passScore;
-// 'done' kalau topik itu sendiri sudah >= passScore.
+// 'done' kalau topik itu sendiri sudah >= passScore. Golongan Mahir
+// (antrean #105) membuka semua topik begitu pre-test selesai.
 export function hitungStatusTopik(
   modulesUrut: Array<{ id: number }>,
   bestFormatif: Record<number, number>,
   preDone: boolean,
   passScore: number = PASS_SCORE,
+  mahir: boolean = false,
 ): (moduleId: number) => TopikStatus {
   return (moduleId: number) => {
     const idx = modulesUrut.findIndex((m) => m.id === moduleId)
     if (idx === -1) return 'locked'
     const ownScore = bestFormatif[moduleId] ?? 0
-    const gateOpen = idx === 0 ? preDone : (bestFormatif[modulesUrut[idx - 1].id] ?? 0) >= passScore
+    const gateOpen = !preDone ? false : mahir || idx === 0 ? true : (bestFormatif[modulesUrut[idx - 1].id] ?? 0) >= passScore
     if (!gateOpen) return 'locked'
     return ownScore >= passScore ? 'done' : 'open'
   }
@@ -129,11 +139,17 @@ function bestScoreByModule(attempts: Array<{ moduleId: number; score: number }>)
 export function useTopikStatus(): TopikState {
   const { data: modules = [], isLoading: modulesLoading } = useModules()
   const { data: attempts = [], isLoading: attemptsLoading } = useAllQuizAttempts()
-  const { data: preDone = false, isLoading: preLoading } = useTopikPreDone()
+  const { data: pre, isLoading: preLoading } = useTopikPre()
+  const preDone = pre?.done ?? false
+  const skorPre = pre?.skor ?? null
+  const golongan = golonganDariSkor(skorPre)
 
   const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const bestFormatif = useMemo(() => bestScoreByModule(attempts), [attempts])
-  const statusOf = useMemo(() => hitungStatusTopik(sorted, bestFormatif, preDone), [sorted, bestFormatif, preDone])
+  const statusOf = useMemo(
+    () => hitungStatusTopik(sorted, bestFormatif, preDone, PASS_SCORE, golongan === 'mahir'),
+    [sorted, bestFormatif, preDone, golongan],
+  )
 
-  return { statusOf, loading: modulesLoading || attemptsLoading || preLoading }
+  return { statusOf, loading: modulesLoading || attemptsLoading || preLoading, golongan, skorPre }
 }

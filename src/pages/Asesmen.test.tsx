@@ -61,4 +61,26 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     expect(await screen.findByText('Rata-rata formatif per topik')).toBeTruthy()
     expect(screen.getByText('Persentase lulus per topik')).toBeTruthy()
   })
+
+  // Antrean #105 opsi B: golongan pre-test per mahasiswa, batas 80.
+  it('menghitung golongan pre-test: Mahir dan Remedial per mahasiswa', async () => {
+    const queryClient = newQueryClient()
+    queryClient.setQueryData(['asesmen-prepost', 1], [
+      { userId: 'a', nama: 'Ani', kelasId: 'A', pre: 85, post: 90 },
+      { userId: 'b', nama: 'Budi', kelasId: 'A', pre: 60 },
+    ])
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/asesmen']}>
+          <Asesmen />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByText('Ani')).toBeTruthy()
+    const teks = document.body.textContent ?? ''
+    expect(teks).toContain('Mahir 1 · Remedial 1')
+    expect(screen.getByText('Golongan')).toBeTruthy()
+    expect(screen.getAllByText('Mahir').length).toBe(1)
+    expect(screen.getAllByText('Remedial').length).toBe(1)
+  })
 })

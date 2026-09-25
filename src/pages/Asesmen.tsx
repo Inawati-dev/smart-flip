@@ -18,6 +18,8 @@ import {
 } from '../lib/asesmen'
 import type { NGainCategory } from '../lib/ngain'
 import { PASS_SCORE } from '../lib/quizAttempts'
+import { ChipRak } from '../components/KartuTopik'
+import { golonganDariSkor, GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 import { fetchProjectsDosen, fetchSubmissionsDosen } from '../lib/tugasAkhir'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -113,6 +115,13 @@ export default function Asesmen() {
 
   const totalKategori = peningkatan.sebaran.tinggi + peningkatan.sebaran.sedang + peningkatan.sebaran.rendah
 
+  // Golongan pre-test per mahasiswa (antrean #105 opsi B, batas 80).
+  const jumlahGolongan = useMemo(() => {
+    const n = { mahir: 0, remedial: 0, belum: 0 }
+    for (const m of peningkatan.perMahasiswa) n[golonganDariSkor(m.pre)]++
+    return n
+  }, [peningkatan.perMahasiswa])
+
   const grafikFormatif = useMemo(
     () => rekapFormatif.map((r) => ({ label: r.judul, value: r.rataRata, sub: `${r.jumlahPengerjaan} pengerjaan` })),
     [rekapFormatif],
@@ -161,6 +170,10 @@ export default function Asesmen() {
           <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Pre-test</div>
             <div className="font-display text-2xl font-bold text-brown">{formatSkor(peningkatan.rataPre)}</div>
+            <div className="text-xs text-brown-3 mt-1 tabular-nums">
+              Mahir {jumlahGolongan.mahir} · Remedial {jumlahGolongan.remedial}
+              {jumlahGolongan.belum > 0 && ` · Belum dipetakan ${jumlahGolongan.belum}`}
+            </div>
           </div>
           <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Post-test</div>
@@ -242,10 +255,10 @@ export default function Asesmen() {
             emptyState('pengerjaan pre-test atau post-test yang tercatat')
           ) : (
             <div className="overflow-x-auto rounded-lg border" style={BORDER}>
-              <table className="w-full border-collapse min-w-[720px]">
+              <table className="w-full border-collapse min-w-[820px]">
                 <thead className="bg-cream">
                   <tr>
-                    {['Nama', 'Kelas', 'Pre', 'Post', 'Peningkatan', 'Kategori', 'Tugas akhir'].map((h, i) => (
+                    {['Nama', 'Kelas', 'Pre', 'Golongan', 'Post', 'Peningkatan', 'Kategori', 'Tugas akhir'].map((h, i) => (
                       <th
                         key={h}
                         className={`px-3 py-2.5 text-xs font-semibold text-brown-2 tracking-wide uppercase ${
@@ -264,6 +277,9 @@ export default function Asesmen() {
                       <td className="px-3 py-2.5 text-sm text-brown-3">{m.kelasId ?? '—'}</td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">
                         {m.pre != null ? m.pre : '—'}
+                      </td>
+                      <td className="px-3 py-2.5 text-center">
+                        <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(m.pre)]} label={GOLONGAN_LABEL[golonganDariSkor(m.pre)]} />
                       </td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">
                         {m.post != null ? m.post : '—'}

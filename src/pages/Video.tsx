@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
-import { useModules } from '../hooks/useModules'
+import { useModules, useIkutiMataKuliah } from '../hooks/useModules'
 import { useTopikStatus } from '../lib/topik'
 import { useAuth } from '../contexts/AuthContext'
 import { parseVideoUrl } from '../lib/video'
@@ -78,6 +78,7 @@ function VideoMahasiswa() {
   const { data: progressMap = {} } = useQuery({ queryKey: ['video-progress'], queryFn: fetchVideoProgressMap })
   const sorted = useMemo(() => sortModules(modules), [modules])
   const current = id ? parseInt(id, 10) : null
+  const menyesuaikan = useIkutiMataKuliah(current)
   const [durations, setDurations] = useState<Record<number, number>>({})
 
   function handleDuration(moduleId: number, sec: number) {
@@ -148,7 +149,7 @@ function VideoMahasiswa() {
   if (!modul) {
     return (
       <Layout>
-        <div className="p-6 text-brown-3 text-sm">{modulesLoading ? 'Memuat…' : 'Topik tidak ditemukan.'}</div>
+        <div className="p-6 text-brown-3 text-sm">{modulesLoading || menyesuaikan ? 'Memuat…' : 'Topik tidak ditemukan.'}</div>
       </Layout>
     )
   }
@@ -158,12 +159,12 @@ function VideoMahasiswa() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <Link to="/video" className="text-terra text-xs font-semibold inline-block mb-2">
+        <Link to="/video" className="text-terra text-xs font-semibold inline-flex items-center min-h-11 mb-1">
           ← Semua video
         </Link>
         <div className="flex items-center gap-3 flex-wrap mb-4">
           <h1 className="text-2xl font-bold text-brown">
-            Pertemuan {idx + 1} · {modul.title}
+            Pertemuan {modul.order_num} · {modul.title}
           </h1>
           <MataKuliahSelect />
         </div>
@@ -171,8 +172,8 @@ function VideoMahasiswa() {
 
         {status === 'locked' ? (
           <div className="mt-6 p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
-            <p className="text-brown-2 mb-3 text-sm">Selesaikan topik {idx} dulu.</p>
-            <Link to="/video" className="text-terra font-semibold text-sm">
+            <p className="text-brown-2 mb-3 text-sm">Selesaikan topik {modul.order_num - 1} dulu.</p>
+            <Link to="/video" className="text-terra font-semibold text-sm inline-flex items-center min-h-11">
               ← Kembali
             </Link>
           </div>
