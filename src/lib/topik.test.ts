@@ -30,4 +30,16 @@ describe('hitungStatusTopik', () => {
     expect(statusOf(1)).toBe('open')
     expect(statusOf(2)).toBe('locked')
   })
+
+  // Antrean #105 opsi B: Mahir membuka semua topik sesudah pre-test.
+  it('mahir opens every topic once pre-test is done, done still needs formatif >= 80', () => {
+    const statusOf = hitungStatusTopik(MODULES, { 1: 90 }, true, 80, true)
+    expect(statusOf(MODULES[0].id)).toBe('done')
+    expect(statusOf(MODULES[MODULES.length - 1].id)).toBe('open')
+  })
+
+  it('mahir without pre-test done stays locked', () => {
+    const statusOf = hitungStatusTopik(MODULES, {}, false, 80, true)
+    expect(statusOf(MODULES[MODULES.length - 1].id)).toBe('locked')
+  })
 })

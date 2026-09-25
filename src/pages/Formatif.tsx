@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useModule, useModules } from '../hooks/useModules'
+import { useModule, useModules, useIkutiMataKuliah } from '../hooks/useModules'
+import { useAuth } from '../contexts/AuthContext'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { useCourse } from '../contexts/CourseContext'
 import { saveQuizAttempt, PASS_SCORE } from '../lib/quizAttempts'
@@ -32,6 +33,9 @@ export default function Formatif() {
   const { data: modul, isLoading: modulLoading } = useModule(moduleId)
   const { data: modules = [] } = useModules()
   const { statusOf, loading: topikLoading } = useTopikStatus()
+  const { role } = useAuth()
+  // Dosen tidak dipindah mata kuliahnya (temuan pemeriksa #106).
+  const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
   const { data: soal = [], isLoading: soalLoading } = useQuery({
     queryKey: ['bank-soal', 'formatif', moduleId],
     queryFn: () => fetchBankSoal('formatif', moduleId),
@@ -45,7 +49,7 @@ export default function Formatif() {
   const [saving, setSaving] = useState(false)
   const [modal, setModal] = useState<{ kind: 'apresiasi' | 'remedial'; score: number } | null>(null)
 
-  if (modulLoading || topikLoading || soalLoading) {
+  if (modulLoading || topikLoading || soalLoading || menyesuaikan) {
     return (
       <Layout>
         <div className="p-6 text-brown-3">Memuat…</div>
@@ -101,7 +105,7 @@ export default function Formatif() {
     <Layout>
       <div className="p-4 md:p-6">
         <h1 className="font-display text-xl font-bold text-brown mb-4">
-          Tes formatif · Pertemuan {idx + 1} · {modul.title}
+          Tes formatif · Pertemuan {modul.order_num} · {modul.title}
         </h1>
         <PertemuanStepper current={moduleId} basePath="/asesmen/formatif" statusOf={statusOf} />
 
@@ -109,8 +113,8 @@ export default function Formatif() {
           {status === 'locked' ? (
             <div className="p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
               <IconLock size={28} className="mx-auto mb-3 text-brown-3" />
-              <p className="text-brown-2 mb-3 text-sm">Selesaikan topik {idx} dulu.</p>
-              <Link to="/asesmen" className="text-terra font-semibold text-sm">
+              <p className="text-brown-2 mb-3 text-sm">Selesaikan topik {modul.order_num - 1} dulu.</p>
+              <Link to="/asesmen" className="inline-flex items-center min-h-11 text-terra font-semibold text-sm">
                 ← Kembali
               </Link>
             </div>

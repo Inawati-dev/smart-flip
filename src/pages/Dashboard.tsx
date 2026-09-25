@@ -9,6 +9,8 @@ import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useKelasByDosen } from '../hooks/useKelas'
 import { cocokFilter } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
+import { useTopikStatus } from '../lib/topik'
+import { GOLONGAN_LABEL, type Golongan } from '../lib/golongan'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
 import type { ModuleRow } from '../lib/modules'
 import type { QuizAttemptWithModule } from '../lib/quizAttempts'
@@ -359,6 +361,7 @@ export function Dashboard() {
   const { data: modules = [], isLoading: modulesLoading } = useModules()
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useAllQuizAttempts()
+  const { golongan, skorPre } = useTopikStatus()
   const [showWelcome, setShowWelcome] = useState(false)
 
   // Gerbang pre-test menggantikan gerbang diagnostik lama (D4 = A, spec §4.1):
@@ -395,7 +398,7 @@ export function Dashboard() {
         ) : modules.length === 0 ? (
           <p className="text-brown-3">{modulesLoading ? 'Memuat…' : 'Belum ada topik. Dosen menambah topik lewat menu Modul.'}</p>
         ) : (
-          <DashboardMhs modules={modules} progress={progress} attempts={attempts} />
+          <DashboardMhs modules={modules} progress={progress} attempts={attempts} pre={{ skor: skorPre, golongan }} />
         )}
       </div>
     </Layout>
@@ -408,10 +411,13 @@ export function DashboardMhs({
   modules,
   progress,
   attempts,
+  pre,
 }: {
   modules: ModuleRow[]
   progress: ProgressMap
   attempts: QuizAttemptWithModule[]
+  /** Skor dan golongan pre-test (antrean #105). */
+  pre?: { skor: number | null; golongan: Golongan }
 }) {
   const hasil = hitungLangkah({ modules, progress, attempts })
   const totalModules = modules.length || TOTAL_MODULES
@@ -466,7 +472,12 @@ export function DashboardMhs({
           }
           bar="var(--terra)"
         />
-        <StatCard icon={IconFolder} val="—" label="Pre-test" bar="var(--info)" />
+        <StatCard
+          icon={IconFolder}
+          val={pre?.skor != null ? String(pre.skor) : '—'}
+          label={pre ? `Pre-test · ${GOLONGAN_LABEL[pre.golongan]}` : 'Pre-test'}
+          bar="var(--info)"
+        />
       </div>
 
       <div className="bg-ivory rounded-2xl border p-4" style={BORDER}>

@@ -14,6 +14,8 @@ import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner } from '../components/SoalRunner'
 import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
+import { ChipRak } from '../components/KartuTopik'
+import { golonganDariSkor, simpanSkorPreDemo, GOLONGAN_LABEL, GOLONGAN_CHIP, GOLONGAN_KETERANGAN, AMBANG_MAHIR } from '../lib/golongan'
 
 // Asesmen sisi mahasiswa (spec §4, §9 WP6): satu komponen, tiga tampilan
 // dipilih dari path — App.tsx sudah memasang route /asesmen, /asesmen/pre,
@@ -155,7 +157,10 @@ function AsesmenDaftar() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <PanelCard title="Pre-test" value={preSkor != null ? `Skor ${preSkor} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`} />
+            <PanelCard
+              title="Pre-test"
+              value={preSkor != null ? `Skor ${preSkor} · ${GOLONGAN_LABEL[golonganDariSkor(preSkor)]} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`}
+            />
             {/* /asesmen/tes diisi WP6b (spec §9); untuk sekarang tautan saja. */}
             <PanelCard
               title="Post-test"
@@ -239,7 +244,10 @@ function PreTest() {
         courseId,
       })
       markPretestDone()
+      simpanSkorPreDemo(courseId, hasil.score)
       await queryClient.invalidateQueries({ queryKey: ['pretest-done'] })
+      // Status topik ikut golongan pre-test (antrean #105), jadi hitung ulang.
+      await queryClient.invalidateQueries({ queryKey: ['topik-pretest-done'] })
       await queryClient.invalidateQueries({ queryKey: ['attempts-by-kind', 'pre'] })
     } catch (e) {
       console.warn('[asesmen-pre] saveQuizAttempt gagal:', e)
@@ -274,7 +282,12 @@ function PreTest() {
           />
         ) : skorFinal != null ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-5">Skor pre-test {skorFinal} tersimpan.</p>
+            <p className="text-brown-2 mb-3">Skor pre-test {skorFinal} tersimpan.</p>
+            {/* Golongan pre-test (antrean #105 opsi B, batas 80). */}
+            <div className="flex justify-center mb-2">
+              <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal)]} label={`Golongan ${GOLONGAN_LABEL[golonganDariSkor(skorFinal)]}`} />
+            </div>
+            <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{GOLONGAN_KETERANGAN[golonganDariSkor(skorFinal)]}</p>
             <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
               Mulai belajar
             </button>
@@ -289,7 +302,7 @@ function PreTest() {
         ) : (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-1">Kerjakan pre-test {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
-            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode, tanpa ambang lulus</p>
+            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode · skor {AMBANG_MAHIR} ke atas masuk golongan Mahir dan semua topik langsung terbuka</p>
             <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya pre-test sendiri, jadi pre-test ini hanya untuk mata kuliah yang sedang dipilih.</p>
             <button onClick={mulai} className="btn btn-primary">
               Mulai

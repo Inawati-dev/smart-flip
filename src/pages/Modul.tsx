@@ -1,5 +1,5 @@
 import { Link, useParams } from 'react-router'
-import { useModule } from '../hooks/useModules'
+import { useModule, useIkutiMataKuliah } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { useAuth } from '../contexts/AuthContext'
@@ -33,6 +33,7 @@ export default function Modul() {
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useQuizAttempts(moduleId)
   const { statusOf } = useTopikStatus()
+  const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
 
   if (role === 'dosen') {
     return (
@@ -45,7 +46,7 @@ export default function Modul() {
     )
   }
 
-  if (isLoading) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
+  if (isLoading || menyesuaikan) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
   if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
   const status = statusOf(modul.id)
@@ -54,7 +55,7 @@ export default function Modul() {
       <Layout>
         <div className="p-8 text-center">
           <p className="text-brown mb-3">Selesaikan topik {modul.order_num - 1} dulu.</p>
-          <Link to="/modul" className="text-terra text-sm font-semibold">
+          <Link to="/modul" className="text-terra text-sm font-semibold inline-flex items-center min-h-11">
             ← Kembali
           </Link>
         </div>
