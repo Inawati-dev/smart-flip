@@ -491,7 +491,6 @@ function MahasiswaTesKelompok() {
   const [acak, setAcak] = useState<AcakSoalResult | null>(null)
   const [currentQ, setCurrentQ] = useState(0)
   const [jawaban, setJawaban] = useState<Record<number, number>>({})
-  const [submitted, setSubmitted] = useState<Record<number, boolean>>({})
   const [saving, setSaving] = useState(false)
 
   const { data: soal = [] } = useQuery({
@@ -547,7 +546,6 @@ function MahasiswaTesKelompok() {
     setAcak(group?.shuffle ? acakSoal(soal) : urutanTanpaAcak(soal))
     setCurrentQ(0)
     setJawaban({})
-    setSubmitted({})
   }
 
   async function handleFinish() {
@@ -624,14 +622,13 @@ function MahasiswaTesKelompok() {
             q={acak.tampil[currentQ]}
             currentQ={currentQ}
             selected={jawaban[currentQ] ?? -1}
-            isSubmitted={submitted[currentQ] ?? false}
+            // Tes penilaian: kunci tidak ditunjukkan saat mengerjakan maupun sesudahnya
+            // (antrean #139), supaya tidak bocor ke yang belum mengerjakan.
+            isSubmitted={false}
+            tunda
             saving={saving}
             finishLabel="Kirim ✓"
-            onSelect={(i) => {
-              if (submitted[currentQ]) return
-              setJawaban((a) => ({ ...a, [currentQ]: i }))
-              setSubmitted((s) => ({ ...s, [currentQ]: true }))
-            }}
+            onSelect={(i) => setJawaban((a) => ({ ...a, [currentQ]: i }))}
             onPrev={() => setCurrentQ((c) => Math.max(0, c - 1))}
             onNext={() => setCurrentQ((c) => Math.min(acak.tampil.length - 1, c + 1))}
             onFinish={handleFinish}
