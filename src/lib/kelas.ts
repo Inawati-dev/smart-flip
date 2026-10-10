@@ -441,3 +441,22 @@ export async function resetDiagnostik(userIds: string[], courseId: number): Prom
   if (error) throw error
   return data?.length ?? 0
 }
+
+/**
+ * Cek kode kelas sebelum pendaftaran (antrean #126 bagian c, fungsi SQL
+ * verify_class_code di migration_v33). 'belum_bisa_dicek' = fungsi belum ada di
+ * basis data atau jaringan gagal: pendaftaran tidak diblokir karena itu, kode
+ * tetap dikirim dan diputuskan server seperti sebelumnya.
+ */
+export type HasilKodeKelas = 'ok' | 'tidak_ada' | 'penuh' | 'belum_bisa_dicek'
+
+export async function cekKodeKelas(kode: string): Promise<HasilKodeKelas> {
+  if (!isSupabaseConfigured) return 'belum_bisa_dicek'
+  try {
+    const { data, error } = await supabase.rpc('verify_class_code', { submitted: kode.trim().toUpperCase() })
+    if (error) return 'belum_bisa_dicek'
+    return data === 'ok' || data === 'penuh' ? data : 'tidak_ada'
+  } catch {
+    return 'belum_bisa_dicek'
+  }
+}

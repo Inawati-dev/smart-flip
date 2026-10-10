@@ -8,6 +8,9 @@ import { Register, isDosenInviteCodeValid } from './Register'
 const mockSupabase = vi.hoisted(() => ({
   configured: false,
   signUp: vi.fn(async (_args: unknown) => ({ data: { user: null }, error: null })),
+  // Jawaban verify_class_code (antrean #126 bagian c).
+  kodeKelas: 'ok' as string,
+  rpc: vi.fn(async (_nama: string, _arg: unknown) => ({ data: 'ok' as string, error: null })),
 }))
 
 vi.mock('../lib/supabase', () => ({
@@ -15,6 +18,7 @@ vi.mock('../lib/supabase', () => ({
     auth: {
       signUp: mockSupabase.signUp,
     },
+    rpc: (nama: string, arg: unknown) => mockSupabase.rpc(nama, arg).then(() => ({ data: mockSupabase.kodeKelas, error: null })),
   },
   get isSupabaseConfigured() {
     return mockSupabase.configured
@@ -25,6 +29,8 @@ afterEach(() => {
   cleanup()
   mockSupabase.configured = false
   mockSupabase.signUp.mockClear()
+  mockSupabase.rpc.mockClear()
+  mockSupabase.kodeKelas = 'ok'
 })
 
 describe('Register', () => {
@@ -109,14 +115,15 @@ describe('Register — Kode Kelas field (interactive)', () => {
     expect(screen.getByLabelText(/Kode Kelas/)).toBeTruthy()
   })
 
-  it('is not marked required, unlike the Dosen invite code field', () => {
+  // Antrean #126 bagian c: kode kelas kini wajib bagi mahasiswa.
+  it('is marked required for mahasiswa', () => {
     render(
       <MemoryRouter>
         <Register />
       </MemoryRouter>,
     )
     const input = screen.getByLabelText(/Kode Kelas/) as HTMLInputElement
-    expect(input.required).toBe(false)
+    expect(input.required).toBe(true)
   })
 })
 
@@ -132,10 +139,51 @@ describe('Register — tautan konfirmasi email', () => {
     fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
     fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
+    fireEvent.change(screen.getByLabelText(/Kode Kelas/), { target: { value: 'abc123' } })
     fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
 
     await waitFor(() => expect(mockSupabase.signUp).toHaveBeenCalledTimes(1))
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('verify_class_code', { submitted: 'ABC123' })
     const arg = mockSupabase.signUp.mock.calls[0][0] as { options: { emailRedirectTo: string } }
     expect(arg.options.emailRedirectTo.endsWith('/')).toBe(true)
+  })
+})
+
+// Antrean #126 bagian c: tanpa kode kelas yang dikenali, akun mahasiswa tidak dibuat.
+describe('Register — kode kelas wajib', () => {
+  function isiDanKirim(kode: string) {
+    mockSupabase.configured = true
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>,
+    )
+    fireEvent.change(screen.getByLabelText('Nama Lengkap'), { target: { value: 'Budi' } })
+    fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
+    fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
+    if (kode) fireEvent.change(screen.getByLabelText(/Kode Kelas/), { target: { value: kode } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
+  }
+
+  it('kode kosong: ditolak tanpa memanggil server', async () => {
+    isiDanKirim('')
+    expect(await screen.findByText(/Kode kelas wajib diisi/)).toBeTruthy()
+    expect(mockSupabase.rpc).not.toHaveBeenCalled()
+    expect(mockSupabase.signUp).not.toHaveBeenCalled()
+  })
+
+  it('kode tidak dikenali: akun tidak dibuat', async () => {
+    mockSupabase.kodeKelas = 'tidak_ada'
+    isiDanKirim('SALAH1')
+    expect(await screen.findByText(/Kode kelas tidak dikenali/)).toBeTruthy()
+    expect(mockSupabase.signUp).not.toHaveBeenCalled()
+  })
+
+  it('kelas penuh: akun tidak dibuat', async () => {
+    mockSupabase.kodeKelas = 'penuh'
+    isiDanKirim('PENUH1')
+    expect(await screen.findByText(/sudah penuh/)).toBeTruthy()
+    expect(mockSupabase.signUp).not.toHaveBeenCalled()
   })
 })

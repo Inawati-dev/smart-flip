@@ -81,6 +81,7 @@ export function DosenModulRak() {
   const [creatingNew, setCreatingNew] = useState(false)
   const [formJudul, setFormJudul] = useState('')
   const [formDeskripsi, setFormDeskripsi] = useState('')
+  const [formMenit, setFormMenit] = useState('')
   const [saving, setSaving] = useState(false)
   const [savingStatus, setSavingStatus] = useState('')
   const [createPdfFile, setCreatePdfFile] = useState<File | null>(null)
@@ -92,6 +93,7 @@ export function DosenModulRak() {
     setEditId(id)
     setFormJudul(custom?.judul || m?.title || '')
     setFormDeskripsi(custom?.deskripsi || m?.description || '')
+    setFormMenit(m?.estimasi_menit ? String(m.estimasi_menit) : '')
   }
 
   function openCreate() {
@@ -99,6 +101,7 @@ export function DosenModulRak() {
     setCreatingNew(true)
     setFormJudul('')
     setFormDeskripsi('')
+    setFormMenit('')
     setCreatePdfFile(null)
   }
 
@@ -115,6 +118,12 @@ export function DosenModulRak() {
   async function saveEdit() {
     const judul = formJudul.trim()
     if (!judul) return
+    // Perkiraan waktu belajar (antrean #119 WP-3): kosong = tidak ditampilkan.
+    const menit = formMenit.trim() === '' ? null : Number(formMenit)
+    if (menit != null && !(Number.isInteger(menit) && menit >= 1 && menit <= 600)) {
+      showToast('Perkiraan waktu belajar harus bilangan bulat 1 sampai 600 menit, atau dikosongkan.')
+      return
+    }
     if (creatingNew && !isSupabaseConfigured) {
       showToast('Tambah topik butuh koneksi Supabase, belum tersedia di mode demo.')
       return
@@ -126,6 +135,7 @@ export function DosenModulRak() {
         // nomor urut topik baru = jumlah topik mata kuliah ini + 1.
         const nextOrderNum = modules.length + 1
         const newId = await createModulReturningId({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum, courseId })
+        if (menit != null) await saveModulCustom(newId, { judul, deskripsi: formDeskripsi.trim(), estimasiMenit: menit })
         await queryClient.invalidateQueries({ queryKey: ['modules'] })
         if (createPdfFile) {
           setSavingStatus('Mengunggah PDF…')
@@ -142,9 +152,10 @@ export function DosenModulRak() {
           showToast('Topik baru ditambahkan')
         }
       } else if (editId != null) {
-        const data: ModulCustom = { ...customs[editId], judul, deskripsi: formDeskripsi.trim() }
+        const data: ModulCustom = { ...customs[editId], judul, deskripsi: formDeskripsi.trim(), estimasiMenit: menit }
         await saveModulCustom(editId, data)
         await queryClient.invalidateQueries({ queryKey: ['manajemen', 'customs'] })
+        await queryClient.invalidateQueries({ queryKey: ['modules'] })
         showToast('Topik disimpan')
       }
       closeFormModal()
@@ -289,6 +300,7 @@ export function DosenModulRak() {
                 judul={judul}
                 keterangan={fileName ? 'PDF' : 'Belum Ada PDF'}
                 adaPdf={!!fileName}
+                kaki={m.estimasi_menit ? `± ${m.estimasi_menit} menit` : undefined}
                 aksi={
                   <>
                     <button
@@ -359,6 +371,21 @@ export function DosenModulRak() {
                 className="rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y"
                 style={BORDER}
               />
+            </label>
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
+              Perkiraan Waktu Belajar (menit)
+              <input
+                type="number"
+                inputMode="numeric"
+                min={1}
+                max={600}
+                value={formMenit}
+                onChange={(e) => setFormMenit(e.target.value)}
+                placeholder="Kosongkan bila tidak perlu"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown tabular-nums"
+                style={BORDER}
+              />
+              <span className="font-normal text-brown-3">Tampil di kartu topik mahasiswa sebagai "± n menit".</span>
             </label>
             {creatingNew && (
               <div className="mb-4">
@@ -817,7 +844,7 @@ export function ModulList() {
                       keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}
                       adaPdf={!!m.pdf_path}
                       persen={pct}
-                      kaki={kaki}
+                      kaki={m.estimasi_menit ? `${kaki} · ± ${m.estimasi_menit} menit` : kaki}
                       chip={chip}
                       terkunci={status === 'locked'}
                       judulKunci={bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}

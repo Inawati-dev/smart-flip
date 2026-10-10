@@ -13,6 +13,8 @@ export interface ModuleRow {
   is_active: boolean
   /** Minggu ke berapa materi topik dibuka (v29); kosong = bawaan lib/jadwal.ts. */
   minggu_mulai?: number | null
+  /** Perkiraan waktu belajar topik dalam menit (v33, antrean #119 WP-3); kosong = tidak ditampilkan. */
+  estimasi_menit?: number | null
   path: string
   videoId: string | null
   color: string
@@ -36,6 +38,7 @@ export function normalizeModuleRow(row: Record<string, unknown>): ModuleRow {
     pdf_path: (row.pdf_path as string) ?? null,
     is_active: (row.is_active as boolean) ?? true,
     minggu_mulai: (row.minggu_mulai as number) ?? null,
+    estimasi_menit: (row.estimasi_menit as number) ?? null,
     path: (row.path as string) || (row.pdf_path as string) || '',
     videoId: (row.videoId as string) ?? null,
     color: (row.color as string) || 'var(--sage)',

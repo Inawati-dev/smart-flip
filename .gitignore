@@ -34,3 +34,6 @@ dist/
 *.tsbuildinfo
 .vercel
 .env*
+
+# Catatan desain lokal (antrean #107 butir h): tidak ikut ke repo publik
+.interface-design/

@@ -15,6 +15,8 @@ export interface ModulCustom {
   catatan?: string
   updatedAt?: string
   pdfPath?: string
+  /** Perkiraan waktu belajar (menit, v33). `undefined` = jangan ubah, `null` = kosongkan. */
+  estimasiMenit?: number | null
 }
 
 const CUSTOM_KEY_PREFIX = 'sfp_modul_custom_'
@@ -60,7 +62,13 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
         is_active: data.status !== 'nonaktif',
       }
       if (data.pdfPath) update.pdf_path = data.pdfPath
-      const { error } = await supabase.from('modules').update(update).eq('id', moduleId)
+      if (data.estimasiMenit !== undefined) update.estimasi_menit = data.estimasiMenit
+      let { error } = await supabase.from('modules').update(update).eq('id', moduleId)
+      // Kolom estimasi_menit belum ada (v33 belum dijalankan): simpan sisanya, jangan gagalkan semuanya.
+      if (error && 'estimasi_menit' in update && (error.code === '42703' || /estimasi_menit/.test(error.message))) {
+        delete update.estimasi_menit
+        ;({ error } = await supabase.from('modules').update(update).eq('id', moduleId))
+      }
       if (error) throw error
       return
     } catch (e) {

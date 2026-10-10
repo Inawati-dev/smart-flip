@@ -89,6 +89,7 @@ export default function Modul() {
               <div className="flex flex-col gap-2">
                 {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
                 {modul.description && <p className="text-sm text-brown-2 leading-relaxed">{modul.description}</p>}
+                {modul.estimasi_menit ? <p className="text-xs text-brown-3 tabular-nums">Perkiraan waktu belajar: ± {modul.estimasi_menit} menit</p> : null}
                 {hasPdf ? (
                   <Link to={`/ebook?book=${modul.id}`} className="btn btn-primary mt-2 w-fit">
                     <IconBook size={16} /> Baca Modul

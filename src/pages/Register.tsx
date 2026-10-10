@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
 import { verifyDosenInviteCode } from '../lib/inviteCode'
+import { cekKodeKelas } from '../lib/kelas'
 
 // Pengecekan awal di sisi klien saja, untuk umpan balik form yang instan —
 // penegakan SEBENARNYA ada di server (database/migration_v6_dosen_invite_gate.sql):
@@ -47,7 +48,26 @@ export function Register() {
     // Pengaturan; kalau klien masih membandingkan ke nilai yang dipanggang saat
     // build, mengganti kode akan langsung mematikan pendaftaran dosen sampai
     // ada rebuild — dua sumber kebenaran yang pasti lepas sinkron.
+    // Kode kelas wajib bagi mahasiswa (antrean #126 bagian c): tanpa kode yang
+    // dikenali, akun tidak dibuat. Dosen mengendalikan siapa yang masuk lewat kode itu.
+    if (role === 'mahasiswa' && !classCode.trim()) {
+      setError('Kode kelas wajib diisi. Minta kodenya ke dosen Anda.')
+      return
+    }
+
     setLoading(true)
+    if (role === 'mahasiswa') {
+      const hasil = await cekKodeKelas(classCode)
+      if (hasil === 'tidak_ada' || hasil === 'penuh') {
+        setError(
+          hasil === 'penuh'
+            ? 'Kelas dengan kode itu sudah penuh. Hubungi dosen Anda.'
+            : 'Kode kelas tidak dikenali. Periksa lagi atau minta ke dosen Anda.',
+        )
+        setLoading(false)
+        return
+      }
+    }
     if (role === 'dosen') {
       const ok = await verifyDosenInviteCode(inviteCode)
       if (!ok) {
@@ -212,7 +232,7 @@ export function Register() {
         {role === 'mahasiswa' && (
           <div className="flex flex-col gap-1.5">
             <label htmlFor="classCode" className="text-[0.78rem] font-semibold text-brown-2">
-              Kode Kelas <span className="font-normal text-brown-3">(opsional)</span>
+              Kode Kelas
             </label>
             <input
               id="classCode"
@@ -220,11 +240,12 @@ export function Register() {
               placeholder="Contoh: 7XQK2M, dari dosen Anda"
               value={classCode}
               onChange={(e) => setClassCode(e.target.value)}
+              required
               className={authInputClass}
               style={authInputStyle}
             />
             <p className="text-[13px] text-brown-3">
-              Isi jika dosen sudah memberi kode kelas: bisa juga dilewati dan diisi belakangan.
+              Wajib diisi. Minta kode kelas ke dosen Anda.
             </p>
           </div>
         )}
