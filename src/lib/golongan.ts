@@ -1,18 +1,16 @@
-import { PASS_SCORE } from './quizAttempts'
+import { AMBANG_DIAGNOSTIK, AMBANG_FORMATIF } from './ambang'
 import { isSupabaseConfigured } from './supabase'
 
 // Golongan hasil pre-test (antrean #105 opsi B, keputusan Johan 26 Sep 2026:
-// batas 80). Mahir membuka semua topik sekaligus; Remedial membuka topik satu
-// per satu seperti sebelumnya. Formatif >= 80 tetap syarat topik selesai untuk
+// batas bawaan 80, sejak antrean #136 setelan mata kuliah). Mahir membuka semua topik sekaligus; Remedial membuka topik satu
+// per satu seperti sebelumnya. Lulus formatif tetap syarat topik selesai untuk
 // keduanya. Tanpa skor pre-test (bank pre-test kosong, dilewati) = Belum
 // dipetakan, jalurnya sama dengan Remedial. Nama di layar mengikuti naskah
 // Bagian I (antrean #119 WP-1): Jalur cepat dan Belajar mendalam; nilai di
 // kode tetap 'mahir' dan 'remedial'.
 export type Golongan = 'mahir' | 'remedial' | 'belum'
 
-export const AMBANG_MAHIR = PASS_SCORE
-
-export function golonganDariSkor(skor: number | null | undefined, ambang: number = AMBANG_MAHIR): Golongan {
+export function golonganDariSkor(skor: number | null | undefined, ambang: number = AMBANG_DIAGNOSTIK): Golongan {
   if (skor == null) return 'belum'
   return skor >= ambang ? 'mahir' : 'remedial'
 }
@@ -30,10 +28,10 @@ export const GOLONGAN_CHIP: Record<Golongan, 'ok' | 'warn' | 'todo'> = {
   belum: 'todo',
 }
 
-export const GOLONGAN_KETERANGAN: Record<Golongan, string> = {
-  mahir: `Semua topik sudah terbuka. Tes formatif tiap topik tetap perlu skor ${AMBANG_MAHIR} supaya topik dihitung selesai.`,
-  remedial: `Topik dibuka satu per satu. Topik berikutnya terbuka setelah tes formatif topik sebelumnya dapat skor ${AMBANG_MAHIR}.`,
-  belum: 'Belum ada skor tes diagnostik awal, jadi topik dibuka satu per satu.',
+export function keteranganGolongan(g: Golongan, ambangFormatif: number = AMBANG_FORMATIF): string {
+  if (g === 'mahir') return `Semua topik sudah terbuka. Tes formatif tiap topik tetap perlu skor ${ambangFormatif} supaya topik dihitung selesai.`
+  if (g === 'remedial') return `Topik dibuka satu per satu. Topik berikutnya terbuka setelah tes formatif topik sebelumnya dapat skor ${ambangFormatif}.`
+  return 'Belum ada skor tes diagnostik awal, jadi topik dibuka satu per satu.'
 }
 
 // Mode demo (tanpa Supabase) tidak bisa membaca quiz_attempts, jadi skor

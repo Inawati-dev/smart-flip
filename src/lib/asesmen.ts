@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import { computeNGain, categorizeNGain, type NGainCategory } from './ngain'
+import { AMBANG_FORMATIF } from './ambang'
 
 // Sumber data halaman Asesmen dosen (WP7,
 // docs/superpowers/specs/2026-09-15-tiga-menu-asesmen-design.md §5.3):
@@ -16,7 +17,7 @@ export interface AsesmenAttempt {
   moduleId: number
   modulJudul: string
   score: number
-  /** Kolom generated di DB: `score >= 80`, pasangan PASS_SCORE di src/lib/quizAttempts.ts. */
+  /** Kolom generated di DB (`score >= 80`, v17). Tidak dipakai untuk hitungan sejak antrean #136. */
   passed: boolean
   attemptedAt: string
 }
@@ -44,8 +45,8 @@ function isMissingKindColumn(e: unknown): boolean {
   return msg.includes('column') && msg.includes('kind')
 }
 
-/** Rekap agregat per modul untuk tabel "Tes Formatif per Modul". Ambang lulus = PASS_SCORE (80), dari kolom `passed` generated di DB. */
-export function rekapPerModul(attempts: AsesmenAttempt[]): ModulRekap[] {
+/** Rekap agregat per modul untuk tabel "Tes Formatif per Modul". Lulus = skor mencapai batas formatif mata kuliah (lib/ambang.ts). */
+export function rekapPerModul(attempts: AsesmenAttempt[], ambang: number = AMBANG_FORMATIF): ModulRekap[] {
   const byModul = new Map<number, AsesmenAttempt[]>()
   for (const a of attempts) {
     const list = byModul.get(a.moduleId)
@@ -56,7 +57,7 @@ export function rekapPerModul(attempts: AsesmenAttempt[]): ModulRekap[] {
   return [...byModul.entries()]
     .map(([moduleId, list]) => {
       const scores = list.map((a) => a.score)
-      const lulus = list.filter((a) => a.passed).length
+      const lulus = list.filter((a) => a.score >= ambang).length
       return {
         moduleId,
         judul: list[0].modulJudul,

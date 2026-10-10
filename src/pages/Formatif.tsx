@@ -5,7 +5,8 @@ import { useModule, useModules, useIkutiMataKuliah } from '../hooks/useModules'
 import { useAuth } from '../contexts/AuthContext'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { useCourse } from '../contexts/CourseContext'
-import { saveQuizAttempt, PASS_SCORE } from '../lib/quizAttempts'
+import { saveQuizAttempt } from '../lib/quizAttempts'
+import { useAmbang } from '../lib/ambang'
 import { fetchBankSoal } from '../lib/kuisSoal'
 import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
 import { useTopikStatus } from '../lib/topik'
@@ -30,6 +31,7 @@ export default function Formatif() {
   const queryClient = useQueryClient()
 
   const { courseId } = useCourse()
+  const ambang = useAmbang()
   const { data: modul, isLoading: modulLoading } = useModule(moduleId)
   const { data: modules = [] } = useModules()
   const { statusOf, loading: topikLoading } = useTopikStatus()
@@ -97,7 +99,7 @@ export default function Formatif() {
       console.warn('[formatif] saveQuizAttempt gagal:', e)
     }
     setSaving(false)
-    setModal({ kind: hasil.score >= PASS_SCORE ? 'apresiasi' : 'remedial', score: hasil.score })
+    setModal({ kind: hasil.score >= ambang.formatif ? 'apresiasi' : 'remedial', score: hasil.score })
     setAcak(null)
   }
 
@@ -142,7 +144,7 @@ export default function Formatif() {
           ) : (
             <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
               <p className="text-sm text-brown-3 mb-1">{soal.length} soal pilihan ganda</p>
-              <p className="text-sm text-brown-3 mb-5">Syarat lulus: skor ≥ {PASS_SCORE}</p>
+              <p className="text-sm text-brown-3 mb-5">Syarat lulus: skor ≥ {ambang.formatif}</p>
               {bestScore != null && (
                 <p className="text-sm text-brown-2 mb-5">
                   Skor terbaik kamu sebelumnya: <strong>{bestScore}</strong>
@@ -188,7 +190,7 @@ export default function Formatif() {
               <>
                 <h3 className="font-display text-lg font-bold text-brown mb-2">Belum lulus, skor {modal.score}</h3>
                 <p className="text-sm text-brown-2 mb-6">
-                  Syarat lulus {PASS_SCORE}. Kerjakan ulang; urutan soal dan opsi diacak lagi.
+                  Syarat lulus {ambang.formatif}. Kerjakan ulang; urutan soal dan opsi diacak lagi.
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
                   <button onClick={() => navigate(`/modul/${moduleId}`)} className="btn btn-secondary flex-1">

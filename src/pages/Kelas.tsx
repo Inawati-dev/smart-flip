@@ -22,7 +22,8 @@ import { StatCard } from '../components/StatCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { PillGroup } from '../components/PillGroup'
 import { ChipRak } from '../components/KartuTopik'
-import { GOLONGAN_LABEL, GOLONGAN_CHIP, AMBANG_MAHIR } from '../lib/golongan'
+import { GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
+import { useAmbang } from '../lib/ambang'
 import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -96,10 +97,11 @@ export function KelasPanel() {
   // Dua kelompok hasil tes diagnostik per kelas (antrean #140). Tes itu per
   // mata kuliah, jadi daftar ini ikut mata kuliah yang dipilih.
   const { courseId, course } = useCourse()
+  const ambangDiagnostik = useAmbang().diagnostik
   const idKelas = classes.map((k) => k.id)
   const { data: golongan = {} } = useQuery({
-    queryKey: ['golongan-kelas', courseId, idKelas.join(',')],
-    queryFn: () => fetchGolonganKelas(idKelas, courseId),
+    queryKey: ['golongan-kelas', courseId, ambangDiagnostik, idKelas.join(',')],
+    queryFn: () => fetchGolonganKelas(idKelas, courseId, ambangDiagnostik),
     enabled: idKelas.length > 0,
   })
   const [golTarget, setGolTarget] = useState<KelasWithCount | null>(null)
@@ -581,7 +583,7 @@ export function KelasPanel() {
               </button>
             </div>
             <p className="text-xs text-brown-3 mb-4">
-              {course?.name ? `${course.name}. ` : ''}Skor {AMBANG_MAHIR} ke atas masuk {GOLONGAN_LABEL.mahir}, di bawah itu {GOLONGAN_LABEL.remedial}.
+              {course?.name ? `${course.name}. ` : ''}Skor {ambangDiagnostik} ke atas masuk {GOLONGAN_LABEL.mahir}, di bawah itu {GOLONGAN_LABEL.remedial}.
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(['remedial', 'mahir'] as const).map((g) => {

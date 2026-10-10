@@ -387,6 +387,7 @@ export interface AnggotaGolongan {
 export function kelompokkanGolongan(
   profil: Array<{ id: string; full_name: string | null; class_id: string | null }>,
   attempts: Array<{ user_id: string; score: number }>,
+  ambang?: number,
 ): Record<string, AnggotaGolongan[]> {
   const skor = new Map<string, number>()
   for (const a of attempts) skor.set(a.user_id, a.score)
@@ -394,7 +395,7 @@ export function kelompokkanGolongan(
   for (const p of profil) {
     if (!p.class_id) continue
     const s = skor.get(p.id) ?? null
-    ;(hasil[p.class_id] ??= []).push({ id: p.id, nama: p.full_name || 'Tanpa nama', skor: s, golongan: golonganDariSkor(s) })
+    ;(hasil[p.class_id] ??= []).push({ id: p.id, nama: p.full_name || 'Tanpa nama', skor: s, golongan: golonganDariSkor(s, ambang) })
   }
   for (const daftar of Object.values(hasil)) daftar.sort((a, b) => a.nama.localeCompare(b.nama))
   return hasil
@@ -402,7 +403,7 @@ export function kelompokkanGolongan(
 
 // Tes diagnostik berlaku per mata kuliah, jadi kelompoknya ikut `courseId`.
 // Mode demo tidak punya akun mahasiswa di kelas (lihat getKelasByDosen): kosong.
-export async function fetchGolonganKelas(classIds: string[], courseId: number): Promise<Record<string, AnggotaGolongan[]>> {
+export async function fetchGolonganKelas(classIds: string[], courseId: number, ambang?: number): Promise<Record<string, AnggotaGolongan[]>> {
   if (!isSupabaseConfigured || classIds.length === 0) return {}
   const [profil, attempts] = await Promise.all([
     supabase.from('profiles').select('id, full_name, class_id').in('class_id', classIds),
@@ -418,5 +419,6 @@ export async function fetchGolonganKelas(classIds: string[], courseId: number): 
   return kelompokkanGolongan(
     (profil.data ?? []) as Array<{ id: string; full_name: string | null; class_id: string | null }>,
     (attempts.data ?? []) as Array<{ user_id: string; score: number }>,
+    ambang,
   )
 }

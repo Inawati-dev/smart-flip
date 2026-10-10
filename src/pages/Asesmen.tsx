@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
@@ -17,7 +17,8 @@ import {
   type PeningkatanMahasiswa,
 } from '../lib/asesmen'
 import type { NGainCategory } from '../lib/ngain'
-import { PASS_SCORE } from '../lib/quizAttempts'
+import { ambangDari } from '../lib/ambang'
+import { updateCourse, isMissingCourseSchema, type Course } from '../lib/courses'
 import { ChipRak } from '../components/KartuTopik'
 import { golonganDariSkor, GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 import { fetchProjectsDosen, fetchSubmissionsDosen } from '../lib/tugasAkhir'
@@ -44,16 +45,84 @@ function formatGain(v: number | null): string {
   return v == null ? '—' : v.toFixed(2).replace('.', ',')
 }
 
-// Dua warna saja, mengikuti ambang lulus PASS_SCORE (80). Bukan gradasi
-// tiga warna lama yang tengahnya masih menyimpan ambang 60 yang sudah tidak
-// dipakai (lihat src/lib/quizAttempts.ts).
-function scoreClass(score: number): string {
-  return score >= PASS_SCORE ? 'text-sage-d' : 'text-danger'
+// Dua warna saja, mengikuti batas lulus formatif mata kuliah (lib/ambang.ts).
+function scoreClass(score: number, ambang: number): string {
+  return score >= ambang ? 'text-sage-d' : 'text-danger'
+}
+
+// Modal "Batas skor" (antrean #136): dosen mengatur batas golongan tes
+// diagnostik dan batas lulus formatif untuk mata kuliah yang sedang dipilih.
+function BatasSkorModal({ course, onClose }: { course: Course; onClose: () => void }) {
+  const queryClient = useQueryClient()
+  const awal = ambangDari(course)
+  const [diagnostik, setDiagnostik] = useState(String(awal.diagnostik))
+  const [formatif, setFormatif] = useState(String(awal.formatif))
+  const [saving, setSaving] = useState(false)
+  const [galat, setGalat] = useState('')
+  const d = Number(diagnostik)
+  const f = Number(formatif)
+  const sah = diagnostik !== '' && formatif !== '' && [d, f].every((n) => Number.isInteger(n) && n >= 0 && n <= 100)
+
+  async function simpan() {
+    setSaving(true)
+    setGalat('')
+    try {
+      await updateCourse(course.id, { ambang_diagnostik: d, ambang_formatif: f })
+      await queryClient.invalidateQueries({ queryKey: ['courses'] })
+      onClose()
+    } catch (e) {
+      setGalat(
+        isMissingCourseSchema(e)
+          ? 'Kolom batas skor belum ada di basis data. Jalankan migration_v27_batas_skor.sql di Supabase dulu.'
+          : (e as { message?: string } | null)?.message || 'Gagal menyimpan batas skor',
+      )
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const KOTAK = 'w-full h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown tabular-nums'
+  return (
+    <div
+      className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+      style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
+    >
+      <div className="bg-ivory rounded-2xl p-5 max-w-md w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+        <h3 className="text-base font-semibold text-brown mb-1">Batas skor</h3>
+        <p className="text-xs text-brown-3 mb-4">{course.name}. Berlaku juga untuk pengerjaan yang sudah ada.</p>
+        <div className="flex flex-col gap-3 mb-4">
+          <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+            Tes diagnostik awal: skor mulai dari sini masuk Jalur cepat
+            <input type="number" inputMode="numeric" min={0} max={100} value={diagnostik} onChange={(e) => setDiagnostik(e.target.value)} className={KOTAK} style={BORDER} />
+          </label>
+          <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+            Tes formatif: skor mulai dari sini lulus dan topik berikutnya terbuka
+            <input type="number" inputMode="numeric" min={0} max={100} value={formatif} onChange={(e) => setFormatif(e.target.value)} className={KOTAK} style={BORDER} />
+          </label>
+        </div>
+        {!sah && <p className="text-xs text-danger mb-3">Isi dua angka bulat antara 0 dan 100.</p>}
+        {galat && <p className="text-xs text-danger mb-3">{galat}</p>}
+        <div className="flex gap-2.5 justify-end">
+          <button onClick={onClose} className="btn btn-secondary">
+            Batal
+          </button>
+          <button onClick={() => void simpan()} disabled={!sah || saving} className="btn btn-primary min-w-[7.5rem]">
+            {saving ? 'Menyimpan…' : 'Simpan'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 export default function Asesmen() {
   const { user } = useAuth()
-  const { courseId } = useCourse()
+  const { courseId, course } = useCourse()
+  const ambang = ambangDari(course)
+  const [batasOpen, setBatasOpen] = useState(false)
   const { data: kelasList = [] } = useKelasByDosen(user?.id)
   const [tahunFilter, setTahunFilter] = useState<number | null>(null)
   const [kelasFilter, setKelasFilter] = useState<string | null>(null)
@@ -111,16 +180,16 @@ export default function Asesmen() {
   }, [formatifRows, namaKelasCocok])
 
   const peningkatan = useMemo(() => hitungPeningkatanKelas(prePostFiltered), [prePostFiltered])
-  const rekapFormatif = useMemo(() => rekapPerModul(formatifFiltered), [formatifFiltered])
+  const rekapFormatif = useMemo(() => rekapPerModul(formatifFiltered, ambang.formatif), [formatifFiltered, ambang.formatif])
 
   const totalKategori = peningkatan.sebaran.tinggi + peningkatan.sebaran.sedang + peningkatan.sebaran.rendah
 
-  // Golongan pre-test per mahasiswa (antrean #105 opsi B, batas 80).
+  // Golongan pre-test per mahasiswa (antrean #105 opsi B; batasnya setelan mata kuliah, antrean #136).
   const jumlahGolongan = useMemo(() => {
     const n = { mahir: 0, remedial: 0, belum: 0 }
-    for (const m of peningkatan.perMahasiswa) n[golonganDariSkor(m.pre)]++
+    for (const m of peningkatan.perMahasiswa) n[golonganDariSkor(m.pre, ambang.diagnostik)]++
     return n
-  }, [peningkatan.perMahasiswa])
+  }, [peningkatan.perMahasiswa, ambang.diagnostik])
 
   const grafikFormatif = useMemo(
     () => rekapFormatif.map((r) => ({ label: r.judul, value: r.rataRata, sub: `${r.jumlahPengerjaan} pengerjaan` })),
@@ -154,6 +223,11 @@ export default function Asesmen() {
         {/* FILTER MATA KULIAH + TAHUN + KELAS */}
         <div className="mb-5 flex items-center gap-3 flex-wrap">
           <MataKuliahSelect size="sm" />
+          {course && (
+            <button onClick={() => setBatasOpen(true)} className="btn btn-secondary btn-sm whitespace-nowrap">
+              Batas skor: {ambang.diagnostik} dan {ambang.formatif}
+            </button>
+          )}
           <KelasTahunFilter
             kelasList={kelasList}
             tahun={tahunFilter}
@@ -223,13 +297,13 @@ export default function Asesmen() {
             <div className="overflow-x-auto">
               <GrafikBatang
                 data={grafikFormatif}
-                ambang={PASS_SCORE}
-                ambangLabel={`Lulus ${PASS_SCORE}`}
-                warna={(v) => (v >= PASS_SCORE ? 'var(--success)' : 'var(--danger)')}
+                ambang={ambang.formatif}
+                ambangLabel={`Lulus ${ambang.formatif}`}
+                warna={(v) => (v >= ambang.formatif ? 'var(--success)' : 'var(--danger)')}
                 ariaLabel="Rata-rata formatif per topik"
               />
             </div>
-            <p className="text-xs text-brown-3 mt-2">Garis putus-putus = ambang lulus {PASS_SCORE}.</p>
+            <p className="text-xs text-brown-3 mt-2">Garis putus-putus = ambang lulus {ambang.formatif}.</p>
           </div>
           <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
             <div className="font-display text-base font-semibold text-brown mb-3">Persentase lulus per topik</div>
@@ -279,7 +353,7 @@ export default function Asesmen() {
                         {m.pre != null ? m.pre : '—'}
                       </td>
                       <td className="px-3 py-2.5 text-center">
-                        <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(m.pre)]} label={GOLONGAN_LABEL[golonganDariSkor(m.pre)]} />
+                        <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(m.pre, ambang.diagnostik)]} label={GOLONGAN_LABEL[golonganDariSkor(m.pre, ambang.diagnostik)]} />
                       </td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">
                         {m.post != null ? m.post : '—'}
@@ -338,7 +412,7 @@ export default function Asesmen() {
                       <td className="px-3 py-2.5 text-sm font-medium text-brown">{r.judul}</td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">{r.jumlahPengerjaan}</td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">{r.jumlahMahasiswa}</td>
-                      <td className={`px-3 py-2.5 text-sm text-center font-bold tabular-nums ${scoreClass(r.rataRata)}`}>
+                      <td className={`px-3 py-2.5 text-sm text-center font-bold tabular-nums ${scoreClass(r.rataRata, ambang.formatif)}`}>
                         {r.rataRata}
                       </td>
                       <td className="px-3 py-2.5 text-sm text-center text-brown-2 tabular-nums">{r.tertinggi}</td>
@@ -357,6 +431,7 @@ export default function Asesmen() {
           )}
         </div>
       </div>
+      {batasOpen && course && <BatasSkorModal course={course} onClose={() => setBatasOpen(false)} />}
     </Layout>
   )
 }

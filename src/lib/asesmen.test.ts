@@ -46,8 +46,10 @@ describe('rekapPerModul', () => {
     { id: 2, userId: 'u2', nama: 'Budi', kelas: 'A', moduleId: 1, modulJudul: 'Modul 1', score: 79, passed: false, attemptedAt: '2026-09-02' },
   ]
 
-  it('ambang lulus mengikuti kolom `passed` dari DB (>=80), bukan angka 60', () => {
-    const rekap = rekapPerModul(rows)
+  // Antrean #136: lulus dihitung dari skor terhadap batas mata kuliah, bukan kolom `passed`.
+  it('ambang lulus mengikuti batas yang diberikan, bawaan 70', () => {
+    expect(rekapPerModul(rows)[0].lulus).toBe(2)
+    const rekap = rekapPerModul(rows, 80)
     expect(rekap[0].lulus).toBe(1)
     expect(rekap[0].persenLulus).toBe(50)
   })

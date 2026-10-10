@@ -4,7 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchBankSoal } from '../lib/kuisSoal'
-import { fetchAttemptsByKind, saveQuizAttempt, PASS_SCORE } from '../lib/quizAttempts'
+import { fetchAttemptsByKind, saveQuizAttempt } from '../lib/quizAttempts'
+import { useAmbang } from '../lib/ambang'
 import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
 import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topik'
 import { computeNGain } from '../lib/ngain'
@@ -15,7 +16,7 @@ import { SoalRunner, TinjauanJawaban } from '../components/SoalRunner'
 import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { ChipRak } from '../components/KartuTopik'
-import { golonganDariSkor, simpanSkorPreDemo, GOLONGAN_LABEL, GOLONGAN_CHIP, GOLONGAN_KETERANGAN, AMBANG_MAHIR } from '../lib/golongan'
+import { golonganDariSkor, simpanSkorPreDemo, GOLONGAN_LABEL, GOLONGAN_CHIP, keteranganGolongan } from '../lib/golongan'
 
 // Asesmen sisi mahasiswa (spec §4, §9 WP6): satu komponen, tiga tampilan
 // dipilih dari path — App.tsx sudah memasang route /asesmen, /asesmen/pre,
@@ -77,6 +78,7 @@ function PanelCard({
 // ada, tidak ditautkan lagi dari sini.
 function AsesmenDaftar() {
   const { courseId, course } = useCourse()
+  const ambang = useAmbang()
   const { data: modules = [] } = useModules()
   const { statusOf } = useTopikStatus()
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
@@ -123,7 +125,7 @@ function AsesmenDaftar() {
                   <h2 className="font-semibold text-brown">Tes formatif · {topikAktif.title}</h2>
                   {chipAktif && <StatusChip label={chipAktif} />}
                 </div>
-                <p className="text-sm text-brown-3 mb-1">Syarat lulus: skor ≥ {PASS_SCORE}</p>
+                <p className="text-sm text-brown-3 mb-1">Syarat lulus: skor ≥ {ambang.formatif}</p>
                 <p className="text-sm text-brown-3 mb-4">Skor terbaik: {bestAktif != null ? bestAktif : '—'}</p>
                 <Link to={`/asesmen/formatif/${topikAktif.id}`} className="btn btn-primary">
                   Kerjakan
@@ -159,7 +161,7 @@ function AsesmenDaftar() {
           <div className="flex flex-col gap-3">
             <PanelCard
               title="Tes diagnostik awal"
-              value={preSkor != null ? `Skor ${preSkor} · ${GOLONGAN_LABEL[golonganDariSkor(preSkor)]} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`}
+              value={preSkor != null ? `Skor ${preSkor} · ${GOLONGAN_LABEL[golonganDariSkor(preSkor, ambang.diagnostik)]} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`}
             />
             {/* /asesmen/tes diisi WP6b (spec §9); untuk sekarang tautan saja. */}
             <PanelCard
@@ -197,6 +199,7 @@ function PreTest() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { courseId, course } = useCourse()
+  const ambang = useAmbang()
   const { data: soal = [], isLoading: soalLoading } = useQuery({
     queryKey: ['bank-soal', 'pre', courseId],
     queryFn: () => fetchBankSoal('pre', undefined, courseId),
@@ -295,11 +298,11 @@ function PreTest() {
           <>
             <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
               <p className="text-brown-2 mb-3">Skor tes diagnostik awal {skorFinal} tersimpan.</p>
-              {/* Golongan pre-test (antrean #105 opsi B, batas 80). */}
+              {/* Golongan tes diagnostik (antrean #105 opsi B; batasnya setelan mata kuliah). */}
               <div className="flex justify-center mb-2">
-                <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal)]} label={GOLONGAN_LABEL[golonganDariSkor(skorFinal)]} />
+                <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal, ambang.diagnostik)]} label={GOLONGAN_LABEL[golonganDariSkor(skorFinal, ambang.diagnostik)]} />
               </div>
-              <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{GOLONGAN_KETERANGAN[golonganDariSkor(skorFinal)]}</p>
+              <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{keteranganGolongan(golonganDariSkor(skorFinal, ambang.diagnostik), ambang.formatif)}</p>
               <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
                 Mulai belajar
               </button>
@@ -316,7 +319,7 @@ function PreTest() {
         ) : (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-1">Kerjakan tes diagnostik awal {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
-            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode · skor {AMBANG_MAHIR} ke atas masuk {GOLONGAN_LABEL.mahir} dan semua topik langsung terbuka</p>
+            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode · skor {ambang.diagnostik} ke atas masuk {GOLONGAN_LABEL.mahir} dan semua topik langsung terbuka</p>
             <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya tes diagnostik awal sendiri, jadi tes ini hanya untuk mata kuliah yang sedang dipilih.</p>
             <button onClick={mulai} className="btn btn-primary">
               Mulai

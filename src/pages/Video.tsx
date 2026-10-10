@@ -17,6 +17,7 @@ import { IconEdit, IconPlay } from '../components/icons'
 import { KartuVideo } from '../components/KartuVideo'
 import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
+import { useAmbang } from '../lib/ambang'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -75,6 +76,7 @@ function VideoMahasiswa() {
   const { id } = useParams()
   const { data: modules = [], isLoading: modulesLoading } = useModules()
   const { statusOf } = useTopikStatus()
+  const ambangFormatif = useAmbang().formatif
   const { data: progressMap = {} } = useQuery({ queryKey: ['video-progress'], queryFn: fetchVideoProgressMap })
   const sorted = useMemo(() => sortModules(modules), [modules])
   const current = id ? parseInt(id, 10) : null
@@ -128,7 +130,7 @@ function VideoMahasiswa() {
                         durasi={detik(m) ? formatDuration(detik(m)!) : undefined}
                         chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
                         terkunci={status === 'locked'}
-                        judulKunci="Selesaikan tes formatif topik sebelumnya (skor 80) dulu"
+                        judulKunci={`Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
                         to={hasVideo ? `/video/${m.id}` : undefined}
                         warna={warnaSampul(m.order_num)}
                       />

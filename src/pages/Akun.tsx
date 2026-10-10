@@ -10,7 +10,7 @@ import { useStudentStats } from '../hooks/useAnalitik'
 import { computeStatSummary } from '../lib/analitik'
 import { saveProfilExtra } from '../lib/profil'
 import { usePreTestDone } from '../lib/topik'
-import { PASS_SCORE } from '../lib/quizAttempts'
+import { useAmbang } from '../lib/ambang'
 import { TOTAL_MODULES } from '../lib/progress'
 import { Layout } from '../components/Layout'
 import { FileInput } from '../components/FileInput'
@@ -40,6 +40,7 @@ function initialsOf(name: string | undefined): string {
 }
 
 export function Akun() {
+  const ambangFormatif = useAmbang().formatif
   const queryClient = useQueryClient()
   const { user, profile, role, refreshProfile } = useAuth()
   const isDosen = role === 'dosen'
@@ -61,7 +62,7 @@ export function Akun() {
   allAttempts.forEach((a) => {
     if (a.score > (bestByModule.get(a.moduleId) ?? 0)) bestByModule.set(a.moduleId, a.score)
   })
-  const formatifLulus = [...bestByModule.values()].filter((s) => s >= PASS_SCORE).length
+  const formatifLulus = [...bestByModule.values()].filter((s) => s >= ambangFormatif).length
   const dosenSummary = computeStatSummary(dosenStudents ?? [], totalModules)
 
   const [editOpen, setEditOpen] = useState(false)

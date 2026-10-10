@@ -17,7 +17,7 @@ const STEPS_MAHASISWA: Step[] = [
   {
     icon: IconTarget,
     title: 'Cara Belajar',
-    desc: 'Tiap topik punya modul PDF, video, dan tes formatif. Urutannya: baca modul, tonton video, lalu kerjakan tes. Skor 80 membuka topik berikutnya; di bawah itu kerjakan ulang.',
+    desc: 'Tiap topik punya modul PDF, video, dan tes formatif. Urutannya: baca modul, tonton video, lalu kerjakan tes. Lulus tes formatif membuka topik berikutnya; kalau belum lulus, kerjakan ulang.',
   },
   {
     icon: IconCompass,

@@ -11,6 +11,7 @@ import { cocokFilter, fetchMyKelas } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
 import { useTopikStatus } from '../lib/topik'
 import { GOLONGAN_LABEL, GOLONGAN_CHIP, type Golongan } from '../lib/golongan'
+import { useAmbang } from '../lib/ambang'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
 import type { ModuleRow } from '../lib/modules'
 import type { QuizAttemptWithModule } from '../lib/quizAttempts'
@@ -96,7 +97,11 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
   const idTunggal = kelasIdCocok.size === 1 ? [...kelasIdCocok][0] : null
   const kelasIdServer: FilterAktivitas['kelasId'] = !filterAktif ? 'semua' : (idTunggal ?? 'semua')
   const perluSaringKlien = filterAktif && idTunggal == null
-  const filter = useMemo<FilterAktivitas>(() => ({ kelasId: kelasIdServer, hari, courseId }), [kelasIdServer, hari, courseId])
+  const ambangFormatif = useAmbang().formatif
+  const filter = useMemo<FilterAktivitas>(
+    () => ({ kelasId: kelasIdServer, hari, courseId, passScore: ambangFormatif }),
+    [kelasIdServer, hari, courseId, ambangFormatif],
+  )
 
   const { data: sumberMentah, isLoading } = useQuery({
     queryKey: ['aktivitas', filter],
@@ -323,6 +328,7 @@ export function Dashboard() {
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useAllQuizAttempts()
   const { golongan, skorPre } = useTopikStatus()
+  const ambang = useAmbang()
   const { data: kelasSaya = null } = useQuery({ queryKey: ['kelas-saya'], queryFn: fetchMyKelas, enabled: role === 'mahasiswa' })
   const [showWelcome, setShowWelcome] = useState(false)
 
@@ -365,6 +371,7 @@ export function Dashboard() {
             progress={progress}
             attempts={attempts}
             pre={{ skor: skorPre, golongan }}
+            ambangFormatif={ambang.formatif}
             identitas={{ nama: profile?.full_name || 'Mahasiswa', kelas: kelasSaya }}
           />
         )}
@@ -381,6 +388,7 @@ export function DashboardMhs({
   attempts,
   pre,
   identitas,
+  ambangFormatif,
 }: {
   modules: ModuleRow[]
   progress: ProgressMap
@@ -389,8 +397,10 @@ export function DashboardMhs({
   pre?: { skor: number | null; golongan: Golongan }
   /** Nama, kelas, dan angkatan untuk kepala halaman (antrean #143). */
   identitas?: { nama: string; kelas: { name: string; angkatan: number } | null }
+  /** Batas lulus formatif mata kuliah (antrean #136); kosong = bawaan. */
+  ambangFormatif?: number
 }) {
-  const hasil = hitungLangkah({ modules, progress, attempts })
+  const hasil = hitungLangkah({ modules, progress, attempts, passScore: ambangFormatif })
   const totalModules = modules.length || TOTAL_MODULES
   const actions = langkahActions(hasil.topikAktif.id, hasil.topikAktif.orderNum)
   const langkahLain = (Object.keys(actions) as Array<keyof typeof actions>).filter(

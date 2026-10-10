@@ -1,12 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import { TOTAL_MODULES } from './progress'
 
-// Ambang lulus formatif/pre/post — pasangan: kolom generated
-// quiz_attempts.passed di database/migration_v17_bank_soal.sql
-// (GENERATED ALWAYS AS (score >= 80) STORED). Ganti salah satu, ganti
-// keduanya.
-export const PASS_SCORE = 80
-
 export interface QuizAttempt {
   score: number
   answers: unknown

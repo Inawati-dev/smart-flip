@@ -14,6 +14,9 @@ export interface Course {
   dosen_id: string | null
   order_num: number
   is_active: boolean
+  /** Batas skor (v27, antrean #136); kosong sebelum migrasi jalan, lihat lib/ambang.ts. */
+  ambang_diagnostik?: number | null
+  ambang_formatif?: number | null
 }
 
 export const DEMO_COURSES: Course[] = [
@@ -108,7 +111,7 @@ export async function createCourse(input: { code: string; name: string; descript
   return data as Course
 }
 
-export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active'>>): Promise<void> {
+export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active' | 'ambang_diagnostik' | 'ambang_formatif'>>): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Mengubah mata kuliah butuh koneksi Supabase.')
   const { error } = await supabase.from('courses').update(patch).eq('id', id)
   if (error) throw error

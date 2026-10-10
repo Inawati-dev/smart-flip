@@ -6,7 +6,6 @@ import {
   fetchAllQuizAttemptsOnce,
   fetchQuizAttempts,
   saveQuizAttempt,
-  PASS_SCORE,
 } from './quizAttempts'
 
 // Mutable mock state so individual tests can flip Supabase "configured" on
@@ -56,11 +55,6 @@ vi.mock('./supabase', () => ({
   },
 }))
 
-describe('PASS_SCORE', () => {
-  it('is 80, matching the quiz_attempts.passed generated column (migration_v17)', () => {
-    expect(PASS_SCORE).toBe(80)
-  })
-})
 
 describe('formatAttemptDate', () => {
   it('formats an ISO date string into id-ID short date format', () => {

@@ -1,7 +1,7 @@
 import type { ProgressMap } from './progress'
 import { moduleIdToPath } from './progress'
 import type { QuizAttemptWithModule } from './quizAttempts'
-import { PASS_SCORE } from './quizAttempts'
+import { AMBANG_FORMATIF } from './ambang'
 
 // Status "langkah berikutnya" mahasiswa di Dashboard (§4.0 spec WP8).
 // WP8 hanya tahu baca-modul dan formatif — 'video ditonton' belum tercatat
@@ -41,7 +41,7 @@ export function hitungLangkah({
   modules,
   progress,
   attempts,
-  passScore = PASS_SCORE,
+  passScore = AMBANG_FORMATIF,
 }: HitungLangkahInput): LangkahResult {
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
   if (sorted.length === 0) {

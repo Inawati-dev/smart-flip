@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
-import { PASS_SCORE } from './quizAttempts'
+import { AMBANG_FORMATIF } from './ambang'
 
 // Dashboard dosen = aktivitas kelas (spec §5.0, §9 WP9). Fungsi murni di
 // bawah (gabungKejadian, ringkasKelas, perluPerhatian, matriksProgres) hanya
@@ -89,7 +89,7 @@ function profileOf(profiles: ProfileLite[], id: string): ProfileLite | undefined
 // quiz_attempts (pre/formatif/post/tes-khusus), user_progress (modul dibaca),
 // video_progress (video ditonton), dan profiles (VARK selesai, gabung kelas).
 export function gabungKejadian(sumber: SumberAktivitas): Kejadian[] {
-  const passScore = sumber.passScore ?? PASS_SCORE
+  const passScore = sumber.passScore ?? AMBANG_FORMATIF
   const items: Kejadian[] = []
 
   for (const a of sumber.attempts) {
@@ -203,7 +203,7 @@ function lastActivityMap(sumber: SumberAktivitas): Map<string, number> {
 // selalu jendela 7 hari tetap, terlepas dari filter rentang waktu di atasnya
 // (filter itu sudah membatasi data yang masuk lewat fetchSumberAktivitas).
 export function ringkasKelas(sumber: SumberAktivitas, opts: { hariAktif?: number; now?: Date } = {}): RingkasKelas {
-  const passScore = sumber.passScore ?? PASS_SCORE
+  const passScore = sumber.passScore ?? AMBANG_FORMATIF
   const hariAktif = opts.hariAktif ?? 7
   const now = opts.now ?? new Date()
   const cutoffAktif = now.getTime() - hariAktif * 86_400_000
@@ -255,7 +255,7 @@ const TAUTAN_MAHASISWA = '/asesmen'
 // hampir tutup) belum bisa dihitung di sini — test_sessions datang di WP6b,
 // di luar lingkup WP9.
 export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {}): PerluPerhatianItem[] {
-  const passScore = sumber.passScore ?? PASS_SCORE
+  const passScore = sumber.passScore ?? AMBANG_FORMATIF
   const now = opts.now ?? new Date()
   const cutoff7 = now.getTime() - 7 * 86_400_000
   const items: PerluPerhatianItem[] = []
@@ -307,7 +307,7 @@ export interface MatriksBaris {
 // Tabel mahasiswa × modul (spec §5.0 poin 5). 'L' = lulus (skor terbaik ≥
 // ambang), 'R' = sudah dicoba tapi belum lulus (remedial), '-' = belum dicoba.
 export function matriksProgres(sumber: SumberAktivitas): MatriksBaris[] {
-  const passScore = sumber.passScore ?? PASS_SCORE
+  const passScore = sumber.passScore ?? AMBANG_FORMATIF
   const modules = [...sumber.modules].sort((a, b) => a.orderNum - b.orderNum)
   return sumber.profiles.map((p) => ({
     userId: p.id,
@@ -330,6 +330,8 @@ export interface FilterAktivitas {
   hari: 7 | 30 | 'semester'
   /** Mata kuliah (v23). Tanpa ini = semua topik. */
   courseId?: number
+  /** Batas lulus formatif mata kuliah itu (antrean #136). */
+  passScore?: number
 }
 
 const SEMESTER_HARI = 180
@@ -339,7 +341,7 @@ function sinceIso(hari: FilterAktivitas['hari']): string {
   return new Date(Date.now() - days * 86_400_000).toISOString()
 }
 
-const SUMBER_KOSONG: SumberAktivitas = { attempts: [], progress: [], video: [], profiles: [], modules: [], passScore: PASS_SCORE }
+const SUMBER_KOSONG: SumberAktivitas = { attempts: [], progress: [], video: [], profiles: [], modules: [], passScore: AMBANG_FORMATIF }
 
 export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<SumberAktivitas> {
   if (!isSupabaseConfigured) return SUMBER_KOSONG
@@ -428,7 +430,7 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
     const progressMk = filter.courseId == null ? progress : progress.filter((p) => idTopik.has(p.moduleId))
     const videoMk = filter.courseId == null ? video : video.filter((v) => idTopik.has(v.moduleId))
 
-    return { attempts: attemptsMk, progress: progressMk, video: videoMk, profiles, modules, passScore: PASS_SCORE }
+    return { attempts: attemptsMk, progress: progressMk, video: videoMk, profiles, modules, passScore: filter.passScore ?? AMBANG_FORMATIF }
   } catch (e) {
     console.warn('[aktivitas] fetchSumberAktivitas gagal:', e)
     return SUMBER_KOSONG

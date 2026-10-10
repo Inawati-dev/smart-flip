@@ -3,7 +3,7 @@
 // 2026-09-15-tiga-menu-asesmen-design.md §4.2, §9 WP6.
 //
 // WP1–WP5 memakai stub (semua topik 'open'). WP6 (ini) mengganti isinya
-// dengan hitungan dari quiz_attempts (formatif topik n-1 skor >= PASS_SCORE)
+// dengan hitungan dari quiz_attempts (formatif topik n-1 skor >= batas formatif, lib/ambang.ts)
 // tanpa mengubah tanda tangan useTopikStatus, jadi Modul.tsx/ModulList.tsx/
 // Video.tsx (sudah memakainya) tidak perlu disentuh.
 
@@ -11,7 +11,8 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
-import { fetchAttemptsByKind, PASS_SCORE } from './quizAttempts'
+import { fetchAttemptsByKind } from './quizAttempts'
+import { AMBANG_FORMATIF, useAmbang } from './ambang'
 import { isSupabaseConfigured } from './supabase'
 import { useCourse } from '../contexts/CourseContext'
 import { golonganDariSkor, bacaSkorPreDemo, type Golongan } from './golongan'
@@ -117,7 +118,7 @@ export function hitungStatusTopik(
   modulesUrut: Array<{ id: number }>,
   bestFormatif: Record<number, number>,
   preDone: boolean,
-  passScore: number = PASS_SCORE,
+  passScore: number = AMBANG_FORMATIF,
   mahir: boolean = false,
 ): (moduleId: number) => TopikStatus {
   return (moduleId: number) => {
@@ -142,13 +143,14 @@ export function useTopikStatus(): TopikState {
   const { data: pre, isLoading: preLoading } = useTopikPre()
   const preDone = pre?.done ?? false
   const skorPre = pre?.skor ?? null
-  const golongan = golonganDariSkor(skorPre)
+  const ambang = useAmbang()
+  const golongan = golonganDariSkor(skorPre, ambang.diagnostik)
 
   const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const bestFormatif = useMemo(() => bestScoreByModule(attempts), [attempts])
   const statusOf = useMemo(
-    () => hitungStatusTopik(sorted, bestFormatif, preDone, PASS_SCORE, golongan === 'mahir'),
-    [sorted, bestFormatif, preDone, golongan],
+    () => hitungStatusTopik(sorted, bestFormatif, preDone, ambang.formatif, golongan === 'mahir'),
+    [sorted, bestFormatif, preDone, golongan, ambang.formatif],
   )
 
   return { statusOf, loading: modulesLoading || attemptsLoading || preLoading, golongan, skorPre }

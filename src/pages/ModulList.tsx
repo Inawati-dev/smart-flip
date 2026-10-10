@@ -28,6 +28,7 @@ import { IconEdit, IconTrash, IconDocument, IconGear, IconEye } from '../compone
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
+import { useAmbang } from '../lib/ambang'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -711,6 +712,7 @@ export function ModulList() {
   const { data: modules = [] } = useModules()
   const { data: progress = {} } = useAllProgress()
   const { statusOf } = useTopikStatus()
+  const ambangFormatif = useAmbang().formatif
   const [kelolaOpen, setKelolaOpen] = useState(false)
 
   const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
@@ -774,7 +776,7 @@ export function ModulList() {
                       kaki={kaki}
                       chip={chip}
                       terkunci={status === 'locked'}
-                      judulKunci="Selesaikan tes formatif topik sebelumnya (skor 80) dulu"
+                      judulKunci={`Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
                       to={`/modul/${m.id}`}
                     />
                   )
