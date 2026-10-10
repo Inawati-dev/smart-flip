@@ -181,5 +181,13 @@ describe('ModulList', () => {
     await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     expect(screen.getByLabelText('Pilih mata kuliah')).toBeTruthy()
     expect(screen.getByText('Kelola mata kuliah')).toBeTruthy()
+
+    // Antrean #141: tiap mata kuliah punya sakelar buka-tutup untuk mahasiswa.
+    fireEvent.click(screen.getByText('Kelola mata kuliah'))
+    const sakelar = screen.getAllByRole('switch')
+    expect(sakelar.map((s) => [s.textContent, s.getAttribute('aria-checked'), (s as HTMLButtonElement).disabled])).toEqual([
+      ['Tutup akses', 'true', false],
+      ['Tutup akses', 'true', false],
+    ])
   })
 })

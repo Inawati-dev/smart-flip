@@ -24,7 +24,7 @@ const BORDER = { borderColor: 'var(--border)' } as const
 
 export function AsesmenMhs() {
   const { pathname } = useLocation()
-  if (pathname === '/asesmen/pre') return <PreTest />
+  if (pathname === '/asesmen/pre') return <PreTestPerMataKuliah />
   if (pathname === '/asesmen/post') return <PostTest />
   return <AsesmenDaftar />
 }
@@ -186,6 +186,13 @@ function AsesmenDaftar() {
 // TIDAK mengunci mahasiswa (keputusan sementara — lihat laporan WP6): tombol
 // "Lanjut tanpa pre-test" menandai localStorage sfp_pretest_skip supaya
 // usePreTestDone (lib/topik.ts) menganggap gerbang lolos.
+// Ganti mata kuliah = tes lain: hasil dan tinjauan mata kuliah sebelumnya
+// tidak boleh terbawa, jadi komponennya dipasang ulang (antrean #141).
+function PreTestPerMataKuliah() {
+  const { courseId } = useCourse()
+  return <PreTest key={courseId} />
+}
+
 function PreTest() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -262,7 +269,12 @@ function PreTest() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <h1 className="font-display text-xl font-bold text-brown mb-4">Tes diagnostik awal</h1>
+        {/* Pemilih mata kuliah disembunyikan selama mengerjakan; di luar itu ia
+            jalan keluar bagi yang salah memilih mata kuliah (antrean #141). */}
+        <div className="flex items-center gap-3 flex-wrap mb-4">
+          <h1 className="font-display text-xl font-bold text-brown">Tes diagnostik awal</h1>
+          {!acak && <MataKuliahSelect />}
+        </div>
 
         {acak ? (
           <SoalRunner

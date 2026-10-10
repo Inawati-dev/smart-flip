@@ -21,7 +21,7 @@ export function MataKuliahSelect({ size = 'sm', className = '' }: { size?: 'sm' 
       // ini pemilih meluber di luar viewport telepon. `.select-trigger-label`
       // sudah truncate+ellipsis, batas ini yang bikin truncate itu kepakai.
       className={`max-w-[180px] sm:max-w-[260px]${className ? ` ${className}` : ''}`}
-      options={courses.map((c) => ({ value: String(c.id), label: c.name }))}
+      options={courses.map((c) => ({ value: String(c.id), label: c.is_active ? c.name : `${c.name} (ditutup)` }))}
     />
   )
 }

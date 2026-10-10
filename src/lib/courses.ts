@@ -73,11 +73,19 @@ function warnOnce(e: unknown): void {
   console.warn('[courses] migration_v23 belum jalan? Memakai satu mata kuliah bawaan.', e)
 }
 
-/** Daftar mata kuliah aktif. Sebelum v23 jalan: satu mata kuliah bawaan supaya halaman tetap hidup. */
-export async function fetchCourses(): Promise<Course[]> {
+/**
+ * Daftar mata kuliah. Mahasiswa hanya mendapat yang dibuka (`is_active`);
+ * dosen memanggil dengan `termasukDitutup` supaya yang ditutup tetap
+ * terlihat dan bisa dibuka lagi (antrean #141). Saringan ini di sisi
+ * aplikasi: policy "all read courses" di v23 masih mengizinkan baca semua.
+ * Sebelum v23 jalan: satu mata kuliah bawaan supaya halaman tetap hidup.
+ */
+export async function fetchCourses(termasukDitutup = false): Promise<Course[]> {
   if (!isSupabaseConfigured) return DEMO_COURSES
   try {
-    const { data, error } = await supabase.from('courses').select('*').eq('is_active', true).order('order_num')
+    let q = supabase.from('courses').select('*')
+    if (!termasukDitutup) q = q.eq('is_active', true)
+    const { data, error } = await q.order('order_num')
     if (error) throw error
     return (data as Course[]) ?? []
   } catch (e) {

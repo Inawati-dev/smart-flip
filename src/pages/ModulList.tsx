@@ -521,6 +521,23 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
     }
   }
 
+  // Buka atau tutup mata kuliah untuk mahasiswa (antrean #141). Yang terakhir
+  // masih dibuka tidak bisa ditutup, supaya mahasiswa selalu punya satu.
+  const jumlahDibuka = courses.filter((c) => c.is_active).length
+  const [togglingId, setTogglingId] = useState<number | null>(null)
+  async function toggleBuka(c: Course) {
+    setTogglingId(c.id)
+    try {
+      await updateCourse(c.id, { is_active: !c.is_active })
+      await queryClient.invalidateQueries({ queryKey: ['courses'] })
+      showToast(c.is_active ? `${c.name} ditutup untuk mahasiswa` : `${c.name} dibuka untuk mahasiswa`)
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Gagal mengubah akses mata kuliah')
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -559,13 +576,27 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
               <p className="text-sm text-brown-3">Belum ada mata kuliah.</p>
             ) : (
               courses.map((c) => (
-                <div key={c.id} className="flex items-center justify-between gap-2 row-divider py-2">
-                  <div className="min-w-0">
+                <div key={c.id} className="flex items-center justify-between gap-2 flex-wrap row-divider py-2">
+                  <div className="min-w-0 flex-1 basis-40">
                     <div className="text-sm font-semibold text-brown truncate">
                       {c.code} · {c.name}
                     </div>
+                    <div className="text-[11px] text-brown-3">
+                      {c.is_active ? 'Dibuka untuk mahasiswa' : 'Ditutup, mahasiswa tidak melihatnya'}
+                    </div>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <button
+                      role="switch"
+                      aria-checked={c.is_active}
+                      aria-label={`Mata kuliah ${c.name} dibuka untuk mahasiswa`}
+                      title={c.is_active && jumlahDibuka <= 1 ? 'Minimal satu mata kuliah harus tetap dibuka' : undefined}
+                      onClick={() => void toggleBuka(c)}
+                      disabled={togglingId === c.id || (c.is_active && jumlahDibuka <= 1)}
+                      className="btn btn-secondary min-w-[6.5rem]"
+                    >
+                      {c.is_active ? 'Tutup akses' : 'Buka akses'}
+                    </button>
                     <button onClick={() => openEdit(c)} className="btn btn-secondary min-w-[4.5rem]">
                       Ubah
                     </button>
