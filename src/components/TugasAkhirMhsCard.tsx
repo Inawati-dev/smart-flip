@@ -13,7 +13,7 @@ import {
 import { useCourse } from '../contexts/CourseContext'
 import { FileInput } from './FileInput'
 
-// Kartu tugas akhir di kolom kanan AsesmenDaftar (AsesmenMhs.tsx),
+// Kartu mini projek (dulu "tugas akhir", antrean #170) di kolom kanan AsesmenDaftar (AsesmenMhs.tsx),
 // menggantikan PanelCard VARK (antrean #57 opsi A). Pola kartu meniru
 // PanelCard yang ada di AsesmenMhs.tsx: judul kecil uppercase, isi, tautan.
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -35,7 +35,7 @@ export function TugasAkhirMhsCard() {
   })
   return (
     <div className="bg-ivory rounded-xl border p-4" style={BORDER}>
-      <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Tugas Akhir</div>
+      <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Mini Projek</div>
       {isLoading ? (
         <p className="text-sm text-brown-3">Memuat…</p>
       ) : projects.length === 0 ? (
@@ -95,10 +95,10 @@ function BriefItem({ project }: { project: FinalProject }) {
     try {
       await submitTugasAkhir({ projectId: project.id, file, link, note })
       await queryClient.invalidateQueries({ queryKey: ['final-submission-mhs', project.id] })
-      showToast(submission ? 'Kiriman diperbarui' : 'Tugas terkirim')
+      showToast(submission ? 'Kiriman diperbarui' : 'Mini projek terkirim')
       setModalOpen(false)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Gagal mengirim tugas.')
+      setError(e instanceof Error ? e.message : 'Gagal mengirim mini projek.')
     } finally {
       setSaving(false)
     }
@@ -188,7 +188,7 @@ function BriefItem({ project }: { project: FinalProject }) {
 
           {submission?.total == null && (
             <button type="button" onClick={openModal} className="btn btn-primary btn-sm">
-              {submission ? 'Kirim Ulang' : 'Kirim Tugas'}
+              {submission ? 'Kirim Ulang' : 'Kirim Mini Projek'}
             </button>
           )}
         </>
@@ -204,7 +204,7 @@ function BriefItem({ project }: { project: FinalProject }) {
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">
-              {submission ? 'Kirim Ulang Tugas Akhir' : 'Kirim Tugas Akhir'}
+              {submission ? 'Kirim Ulang Mini Projek' : 'Kirim Mini Projek'}
             </h3>
 
             <div className="mb-3">
@@ -212,7 +212,7 @@ function BriefItem({ project }: { project: FinalProject }) {
               <FileInput
                 accept={BERKAS_ACCEPT}
                 label="Pilih Berkas"
-                hint="PDF atau DOCX, maks 20 MB"
+                hint="Hanya berkas Word (.docx), maks 20 MB"
                 maxSizeMb={BERKAS_MAKS_MB}
                 file={file}
                 onChange={setFile}

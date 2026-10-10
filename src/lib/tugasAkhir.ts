@@ -66,7 +66,16 @@ export const RUBRIK_BAWAAN: RubrikKriteria[] = [
 ]
 
 export const BERKAS_MAKS_MB = 20
-export const BERKAS_ACCEPT = '.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+// Mini projek (dulu tugas akhir, antrean #170): unggahan baru hanya .docx.
+// Kiriman lama berformat PDF atau DOC yang sudah tersimpan tetap bisa dibuka.
+export const BERKAS_ACCEPT = '.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+/** Melempar Error berpesan Indonesia bila nama berkas tidak berakhir .docx (huruf besar-kecil diabaikan). */
+export function cekBerkasDocx(file: { name: string }): void {
+  if (!/\.docx$/i.test(file.name)) {
+    throw new Error('Hanya berkas Word (.docx) yang diterima. Ubah dulu berkas PDF atau DOC ke format .docx.')
+  }
+}
 
 /** Rata-rata berbobot nilai per kriteria, dibulatkan 0..100. Null bila rubrik kosong atau ada nilai kosong. */
 export function hitungTotal(rubric: RubrikKriteria[], scores: Array<number | null | undefined>): number | null {
@@ -140,7 +149,7 @@ export async function fetchProjectsDosen(courseId?: number): Promise<FinalProjec
 }
 
 export async function createProject(input: ProjectInput, dosenId: string): Promise<FinalProject> {
-  if (!isSupabaseConfigured) throw new Error('Membuat tugas akhir butuh koneksi Supabase, tidak tersedia di mode demo.')
+  if (!isSupabaseConfigured) throw new Error('Membuat mini projek butuh koneksi Supabase, tidak tersedia di mode demo.')
   const { data, error } = await supabase
     .from('tugas_akhir_briefs')
     .insert({
@@ -160,7 +169,7 @@ export async function createProject(input: ProjectInput, dosenId: string): Promi
 }
 
 export async function updateProject(id: string, patch: Partial<ProjectInput> & { isOpen?: boolean }): Promise<void> {
-  if (!isSupabaseConfigured) throw new Error('Mengubah tugas akhir butuh koneksi Supabase.')
+  if (!isSupabaseConfigured) throw new Error('Mengubah mini projek butuh koneksi Supabase.')
   const row: Record<string, unknown> = {}
   if (patch.title !== undefined) row.title = patch.title
   if (patch.description !== undefined) row.description = patch.description
@@ -173,7 +182,7 @@ export async function updateProject(id: string, patch: Partial<ProjectInput> & {
 }
 
 export async function deleteProject(id: string): Promise<void> {
-  if (!isSupabaseConfigured) throw new Error('Menghapus tugas akhir butuh koneksi Supabase.')
+  if (!isSupabaseConfigured) throw new Error('Menghapus mini projek butuh koneksi Supabase.')
   const { error } = await supabase.from('tugas_akhir_briefs').delete().eq('id', id)
   if (error) throw error
 }
@@ -280,7 +289,8 @@ export async function submitTugasAkhir(input: {
   link: string
   note: string
 }): Promise<FinalSubmission> {
-  if (!isSupabaseConfigured) throw new Error('Mengirim tugas akhir butuh koneksi Supabase, tidak tersedia di mode demo.')
+  if (input.file) cekBerkasDocx(input.file)
+  if (!isSupabaseConfigured) throw new Error('Mengirim mini projek butuh koneksi Supabase, tidak tersedia di mode demo.')
   const { data: userData } = await supabase.auth.getUser()
   const uid = userData.user?.id
   if (!uid) throw new Error('Belum masuk.')

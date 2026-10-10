@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hitungTotal, lewatTenggat, RUBRIK_BAWAAN } from './tugasAkhir'
+import { hitungTotal, lewatTenggat, cekBerkasDocx, submitTugasAkhir, BERKAS_ACCEPT, RUBRIK_BAWAAN } from './tugasAkhir'
 
 describe('hitungTotal', () => {
   it('rata-rata berbobot dibulatkan', () => {
@@ -26,5 +26,27 @@ describe('lewatTenggat', () => {
     const now = new Date('2026-09-16T10:00:00Z')
     expect(lewatTenggat('2026-09-15T00:00:00Z', now)).toBe(true)
     expect(lewatTenggat('2026-09-17T00:00:00Z', now)).toBe(false)
+  })
+})
+
+// Antrean #170: unggahan mini projek baru hanya .docx.
+describe('cekBerkasDocx', () => {
+  it('menerima .docx dengan huruf besar-kecil apa pun', () => {
+    expect(() => cekBerkasDocx({ name: 'laporan.docx' })).not.toThrow()
+    expect(() => cekBerkasDocx({ name: 'LAPORAN.DOCX' })).not.toThrow()
+    expect(() => cekBerkasDocx({ name: 'a.b.Docx' })).not.toThrow()
+  })
+  it('menolak pdf, doc, tanpa ekstensi, dan .docx.pdf dengan pesan yang menyebut .docx', () => {
+    for (const nama of ['laporan.pdf', 'laporan.doc', 'laporan', 'laporan.docx.pdf', 'docx']) {
+      expect(() => cekBerkasDocx({ name: nama })).toThrow(/\.docx/)
+    }
+  })
+  it('atribut accept hanya memuat .docx', () => {
+    expect(BERKAS_ACCEPT).toContain('.docx')
+    expect(BERKAS_ACCEPT).not.toMatch(/pdf|msword|\.doc,/)
+  })
+  it('submitTugasAkhir menolak berkas pdf sebelum menyentuh Supabase', async () => {
+    const pdf = new File(['x'], 'laporan.pdf', { type: 'application/pdf' })
+    await expect(submitTugasAkhir({ projectId: 'p1', file: pdf, link: '', note: '' })).rejects.toThrow(/\.docx/)
   })
 })

@@ -8,12 +8,10 @@ import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { PillGroup } from '../components/PillGroup'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { DosenTesKhususPanel } from './TesKhusus'
-import { DosenTesKelompokPanel } from './TesKelompok'
 import { TugasAkhirPanel } from './TugasAkhir'
 import { IconEdit, IconTrash, IconGrip } from '../components/icons'
 
-// Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post/kelompok
+// Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post
 // dari satu layar (quiz_questions, kolom kind). Dua jenis lama dicabut dari
 // tab ini (antrean #65, keputusan Johan 16 Sep 2026): datanya dibiarkan di
 // DB, hanya tidak ditampilkan lagi di sini. Pola tabel/modal/drag-reorder
@@ -23,24 +21,27 @@ import { IconEdit, IconTrash, IconGrip } from '../components/icons'
 // dan tugas akhirnya jadikan 1 page dimana diganti jadi Bank soal"): halaman
 // ini jadi cangkang bertab — soal/khusus/kelompok/tugas — memuat panel dari
 // TesKhusus.tsx/TesKelompok.tsx/TugasAkhir.tsx tanpa Layout/h1 masing-masing.
+//
+// Antrean #170 (Johan 10 Okt 2026: "Jenis Bank Soal hanya 3 (soal, aktivitas
+// mandiri, dan Mini Projek)"): tab Tes Khusus dan Tes Kelompok dan jenis soal
+// Tes Kelompok dihilangkan dari antarmuka; "Tugas Akhir" tampil sebagai "Mini
+// Projek". Nilai internal 'khusus'/'kelompok'/'tugas' tidak diubah. Tautan
+// lama ?tab=khusus, ?tab=kelompok, ?jenis=kelompok jatuh ke bawaan.
 
-const TAB_ORDER = ['soal', 'khusus', 'kelompok', 'tugas'] as const
+const TAB_ORDER = ['soal', 'tugas'] as const
 type Tab = (typeof TAB_ORDER)[number]
 const TAB_LABELS: Record<Tab, string> = {
   soal: 'Soal',
-  khusus: 'Tes Khusus',
-  kelompok: 'Tes Kelompok',
-  tugas: 'Tugas Akhir',
+  tugas: 'Mini Projek',
 }
 
-type FilterKind = Exclude<SoalKind, 'vark'>
+type FilterKind = Exclude<SoalKind, 'vark' | 'kelompok'>
 
-const KIND_ORDER: FilterKind[] = ['pre', 'formatif', 'post', 'kelompok']
+const KIND_ORDER: FilterKind[] = ['pre', 'formatif', 'post']
 const KIND_LABELS: Record<FilterKind, string> = {
   pre: 'Tes Diagnostik Awal',
   formatif: 'Formatif',
   post: 'Post-test',
-  kelompok: 'Tes Kelompok',
 }
 const LETTERS = ['A', 'B', 'C', 'D'] as const
 
@@ -89,15 +90,13 @@ export function BankSoal() {
         </div>
 
         {tab === 'soal' && <BankSoalTab />}
-        {tab === 'khusus' && <DosenTesKhususPanel />}
-        {tab === 'kelompok' && <DosenTesKelompokPanel />}
         {tab === 'tugas' && <TugasAkhirPanel />}
       </div>
     </Layout>
   )
 }
 
-// ── Tab "Soal" — bank soal pre/formatif/post/kelompok (isi lama halaman ini) ──
+// ── Tab "Soal" — bank soal pre/formatif/post (isi lama halaman ini) ──
 
 function BankSoalTab() {
   const queryClient = useQueryClient()
@@ -325,9 +324,7 @@ function BankSoalTab() {
           + Tambah Soal
         </button>
       </div>
-      <p className="text-sm text-brown-3 mb-3">
-          {jenis === 'kelompok' ? 'Soal untuk tes kelompok. Semua anggota kelompok mengerjakan soal yang sama.' : ' '}
-      </p>
+      <div className="mb-3" />
 
         <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
           <div className="overflow-x-auto">

@@ -28,7 +28,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
   { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Tes diagnostik awal, formatif, post-test' },
-  { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank Soal', desc: 'Soal, tes khusus, tes kelompok, tugas akhir', dosenOnly: true },
+  { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank Soal', desc: 'Soal dan mini projek', dosenOnly: true },
   // Menu Berkas (/akun/pdf) disembunyikan (antrean #168): berkas kini ikut terhapus bersama topiknya. Rutenya tetap ada.
   { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas dan kode gabung', dosenOnly: true },
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil dan pengaturan' },

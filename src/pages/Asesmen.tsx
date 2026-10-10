@@ -132,7 +132,7 @@ export default function Asesmen() {
     queryKey: ['asesmen-formatif', courseId],
     queryFn: () => fetchAsesmenAttempts(courseId),
   })
-  // Kolom "Tugas akhir" di tabel bawah: nilai total kiriman untuk brief
+  // Kolom "Mini Projek" (dulu tugas akhir) di tabel bawah: nilai total kiriman untuk brief
   // TERBARU dosen ini saja (antrean #57 opsi A) — dosen dengan beberapa
   // brief lama tetap hanya melihat kolom untuk yang paling baru dibuat.
   const { data: latestProject } = useQuery({ queryKey: ['final-projects', courseId], queryFn: () => fetchProjectsDosen(courseId) })
@@ -329,7 +329,7 @@ export default function Asesmen() {
               <table className="w-full border-collapse min-w-[820px]">
                 <thead className="bg-cream">
                   <tr>
-                    {['Nama', 'Kelas', 'Pre', 'Golongan', 'Post', 'Peningkatan', 'Kategori', 'Tugas Akhir'].map((h, i) => (
+                    {['Nama', 'Kelas', 'Pre', 'Golongan', 'Post', 'Peningkatan', 'Kategori', 'Mini Projek'].map((h, i) => (
                       <th
                         key={h}
                         className={`px-3 py-2.5 text-xs font-semibold text-brown-2 tracking-wide uppercase ${

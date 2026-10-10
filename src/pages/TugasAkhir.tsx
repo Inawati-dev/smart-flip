@@ -251,7 +251,7 @@ export function TugasAkhirPanel() {
 
         {!isSupabaseConfigured ? (
           <div className="bg-ivory rounded-2xl border p-5 text-sm text-brown-3" style={BORDER}>
-            Butuh Supabase untuk mengelola tugas akhir.
+            Butuh Supabase untuk mengelola mini projek.
           </div>
         ) : (
           <>

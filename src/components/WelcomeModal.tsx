@@ -22,7 +22,7 @@ const STEPS_MAHASISWA: Step[] = [
   {
     icon: IconCompass,
     title: 'Tes Diagnostik Awal',
-    desc: 'Kerjakan tes diagnostik awal satu kali sebelum materi terbuka. Di akhir mata kuliah ada post-test lewat kode dari dosen; selisih keduanya menjadi peningkatan skormu.',
+    desc: 'Kerjakan tes diagnostik awal satu kali sebelum materi terbuka. Di akhir mata kuliah ada post-test yang dibuka dosen; selisih keduanya menjadi peningkatan skormu.',
   },
 ]
 
@@ -35,7 +35,7 @@ const STEPS_DOSEN: Step[] = [
   {
     icon: IconLightbulb,
     title: 'Panduan Mulai',
-    desc: 'Menu Modul untuk PDF, menu Video untuk tautan video, menu Asesmen untuk hasil kelas, bank soal, dan tes khusus berkode. Kelas dan kode undangan ada di menu Akun.',
+    desc: 'Menu Modul untuk PDF, menu Video untuk tautan video, menu Asesmen untuk hasil kelas, bank soal, dan mini projek. Kelas dan kode undangan ada di menu Akun.',
   },
 ]
 

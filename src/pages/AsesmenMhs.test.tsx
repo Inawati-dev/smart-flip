@@ -29,6 +29,7 @@ function renderAt(path: string, queryClient: QueryClient) {
         <Routes>
           <Route path="/asesmen/pre" element={<AsesmenMhs />} />
           <Route path="/asesmen/post" element={<AsesmenMhs />} />
+          <Route path="/asesmen" element={<AsesmenMhs />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -93,6 +94,23 @@ describe('AsesmenMhs — post-test (spec §9 WP6 poin 5c)', () => {
     queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
     renderAt('/asesmen/post', queryClient)
 
-    expect(await screen.findByText('Post-test dibuka dosen lewat tes khusus.')).toBeTruthy()
+    expect(await screen.findByText('Post-test dibuka oleh dosen.')).toBeTruthy()
+  })
+})
+
+// Antrean #170: tes khusus dan tes kelompok dihilangkan dari halaman Asesmen
+// mahasiswa; tugas akhir tampil sebagai mini projek.
+describe('AsesmenMhs — daftar /asesmen tanpa tes khusus dan tes kelompok', () => {
+  it('tidak ada tautan ke tes khusus/kelompok dan tidak ada teks yang menyebutnya', async () => {
+    const queryClient = newQueryClient()
+    queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
+    queryClient.setQueryData(['final-projects-mhs', 1], [])
+    renderAt('/asesmen', queryClient)
+
+    expect(await screen.findByText('Mini Projek')).toBeTruthy()
+    expect(screen.getByText('Post-test')).toBeTruthy()
+    expect(document.querySelector('a[href^="/asesmen/tes"], a[href^="/asesmen/kelompok"]')).toBeNull()
+    const teks = document.body.textContent ?? ''
+    expect(teks).not.toMatch(/tes khusus|tes kelompok|tugas akhir/i)
   })
 })

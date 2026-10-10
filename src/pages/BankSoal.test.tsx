@@ -141,24 +141,32 @@ describe('BankSoal', () => {
     expect(screen.getByText(/Hapus Soal Nomor/)).toBeTruthy()
   })
 
-  it('shows all four tabs (Soal, Tes Khusus, Tes Kelompok, Tugas Akhir)', async () => {
+  // Antrean #170: hanya dua tab (Soal, Mini Projek) dan tiga jenis soal.
+  it('shows only two tabs: Soal and Mini Projek', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
     const tabGroup = await screen.findByRole('tablist', { name: 'Tab bank soal' })
-    expect(within(tabGroup).getByText('Soal')).toBeTruthy()
-    expect(within(tabGroup).getByText('Tes Khusus')).toBeTruthy()
-    expect(within(tabGroup).getByText('Tes Kelompok')).toBeTruthy()
-    expect(within(tabGroup).getByText('Tugas Akhir')).toBeTruthy()
+    expect(within(tabGroup).getAllByRole('tab').map((t) => t.textContent)).toEqual(['Soal', 'Mini Projek'])
+    expect(within(tabGroup).queryByText('Tes Khusus')).toBeNull()
+    expect(within(tabGroup).queryByText('Tes Kelompok')).toBeNull()
+    expect(within(tabGroup).queryByText('Tugas Akhir')).toBeNull()
   })
 
-  it('clicking the "Tes Kelompok" jenis pill (not the outer tab) calls fetchBankSoal with kind "kelompok"', async () => {
+  it('jenis soal tinggal Tes Diagnostik Awal, Formatif, Post-test (tanpa Tes Kelompok)', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
     const jenisGroup = await screen.findByRole('group', { name: 'Filter jenis soal' })
-    fireEvent.click(within(jenisGroup).getByText('Tes Kelompok'))
+    expect(within(jenisGroup).getAllByRole('button').map((b) => b.textContent)).toEqual(['Tes Diagnostik Awal', 'Formatif', 'Post-test'])
+    expect(within(jenisGroup).queryByText('Tes Kelompok')).toBeNull()
+  })
+
+  it('?jenis=kelompok (tautan lama) jatuh ke Tes Diagnostik Awal tanpa galat', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?tab=soal&jenis=kelompok')
     await waitFor(() => {
-      expect(mockFetchBankSoal).toHaveBeenCalledWith('kelompok', undefined, 1)
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('pre', undefined, 1)
     })
+    expect(mockFetchBankSoal).not.toHaveBeenCalledWith('kelompok', undefined, 1)
   })
 
   it('falls back to "pre" for old ?jenis=diagnostik / ?jenis=vark links', async () => {
@@ -169,9 +177,19 @@ describe('BankSoal', () => {
     })
   })
 
-  it('?tab=khusus renders the tes-khusus panel content ("+ Buat Sesi Tes")', async () => {
+  it.each(['khusus', 'kelompok'])('?tab=%s (tautan lama) jatuh ke tab Soal tanpa panel sesi tes', async (tab) => {
     mockFetchBankSoal.mockResolvedValue([])
-    renderBankSoal('/asesmen/bank?tab=khusus')
-    expect(await screen.findByText('+ Buat Sesi Tes')).toBeTruthy()
+    renderBankSoal(`/asesmen/bank?tab=${tab}`)
+    await waitFor(() => {
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('pre', undefined, 1)
+    })
+    expect(screen.getByRole('tab', { name: 'Soal' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.queryByText('+ Buat Sesi Tes')).toBeNull()
+  })
+
+  it('?tab=tugas menampilkan panel Mini Projek ("+ Buat Brief")', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?tab=tugas')
+    expect(await screen.findByText('+ Buat Brief')).toBeTruthy()
   })
 })

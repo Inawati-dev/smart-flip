@@ -202,7 +202,7 @@ export default function Formatif() {
                 <p className="text-sm text-brown-2 mb-6">
                   {nextModul
                     ? `Topik ${idx + 2} ${nextModul.title} sekarang terbuka.`
-                    : 'Semua topik selesai. Post-test dibuka dosen lewat tes khusus.'}
+                    : 'Semua topik selesai. Post-test dibuka oleh dosen.'}
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
                   <button onClick={() => setModal(null)} className="btn btn-secondary flex-1">

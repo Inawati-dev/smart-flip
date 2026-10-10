@@ -53,6 +53,7 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     expect(screen.queryByText('Tes Khusus')).toBeFalsy()
     expect(screen.queryByText('Tes Kelompok')).toBeFalsy()
     expect(screen.queryByText('Tugas Akhir')).toBeFalsy()
+    expect(screen.queryByText('Mini Projek')).toBeFalsy()
     expect(screen.queryByText('Unduh CSV')).toBeFalsy()
   })
 

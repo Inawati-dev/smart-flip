@@ -75,9 +75,10 @@ function PanelCard({
 }
 
 // §5a — /asesmen mahasiswa: kartu tes formatif topik aktif + panel
-// pre-test/post-test/tes kelompok/tugas akhir + daftar 9 topik. Panel gaya
-// belajar (antrean #57 opsi A) diganti tugas akhir — rute lamanya dibiarkan
-// ada, tidak ditautkan lagi dari sini.
+// pre-test/post-test/mini projek + daftar 9 topik. Panel gaya belajar
+// (antrean #57 opsi A) diganti mini projek (dulu "tugas akhir", antrean #170) —
+// rute lamanya dibiarkan ada, tidak ditautkan lagi dari sini. Tautan ke tes
+// khusus dan tes kelompok juga dicabut (antrean #170); rutenya tetap ada.
 function AsesmenDaftar() {
   const { courseId, course } = useCourse()
   const ambang = useAmbang()
@@ -117,7 +118,7 @@ function AsesmenDaftar() {
           <h1 className="font-display text-2xl font-bold text-brown">Asesmen</h1>
           <MataKuliahSelect />
         </div>
-        <p className="text-brown-3 mb-4">Tes diagnostik awal, tes formatif tiap topik, post-test, tes kelompok, dan tugas akhir.</p>
+        <p className="text-brown-3 mb-4">Tes diagnostik awal, tes formatif tiap topik, post-test, dan mini projek.</p>
         <PertemuanStepper
           current={topikAktif?.id ?? sorted[0]?.id ?? 0}
           basePath="/asesmen/formatif"
@@ -180,19 +181,7 @@ function AsesmenDaftar() {
               title="Tes diagnostik awal"
               value={preSkor != null ? `Skor ${preSkor} · ${GOLONGAN_LABEL[golonganDariSkor(preSkor, ambang.diagnostik)]} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`}
             />
-            {/* /asesmen/tes diisi WP6b (spec §9); untuk sekarang tautan saja. */}
-            <PanelCard
-              title="Post-test"
-              value="Dibuka dosen lewat tes khusus"
-              linkTo="/asesmen/tes"
-              linkLabel="Masukkan Kode"
-            />
-            <PanelCard
-              title="Tes kelompok"
-              value="Kode dari dosen, dikerjakan per kelompok"
-              linkTo="/asesmen/kelompok"
-              linkLabel="Masukkan Kode"
-            />
+            <PanelCard title="Post-test" value="Dibuka oleh dosen" />
             <TugasAkhirMhsCard />
           </div>
         </div>
@@ -219,7 +208,7 @@ function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinj
   const pertama = sorted.find((m) => statusOf(m.id) === 'open')
   const langkah =
     golongan === 'mahir'
-      ? ['Pilih topik mana pun, semuanya sudah terbuka.', `Kerjakan tes formatif tiap topik sampai skor ${ambang.formatif}.`, 'Sesudah semua topik selesai, lanjut ke post-test dan tugas akhir.']
+      ? ['Pilih topik mana pun, semuanya sudah terbuka.', `Kerjakan tes formatif tiap topik sampai skor ${ambang.formatif}.`, 'Sesudah semua topik selesai, lanjut ke post-test dan mini projek.']
       : [
           `Mulai dari Topik ${pertama?.order_num ?? 1}: baca modul dan tonton videonya.`,
           `Kerjakan tes formatifnya sampai skor ${ambang.formatif}.`,
@@ -463,7 +452,7 @@ function PreTest() {
   )
 }
 
-// §5c — /asesmen/post: hanya lewat sesi tes khusus (WP6b), jadi di sini cuma
+// §5c — /asesmen/post: dibuka dosen (lewat sesi WP6b), jadi di sini cuma
 // membaca hasil kalau sudah ada. "Peningkatan skor" pakai rumus computeNGain
 // (lib/ngain.ts) — istilah teknisnya sendiri tidak boleh tampil di antarmuka
 // (spec §1.1).
@@ -495,7 +484,7 @@ function PostTest() {
         <h1 className="font-display text-xl font-bold text-brown mb-4">Post-test</h1>
         {!post ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2">Post-test dibuka dosen lewat tes khusus.</p>
+            <p className="text-brown-2">Post-test dibuka oleh dosen.</p>
           </div>
         ) : (
           <div className="bg-ivory border rounded-xl p-7" style={BORDER}>

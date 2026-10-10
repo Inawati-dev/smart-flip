@@ -40,10 +40,8 @@ import {
   IconUsers,
   IconFolder,
   IconCheck,
-  IconBook,
   IconChart,
   IconRefresh,
-  IconTarget,
 } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -185,8 +183,8 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
         />
       </div>
 
-      {/* 6 angka ringkas */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+      {/* 5 angka ringkas (kartu sesi tes khusus dihilangkan, antrean #170) */}
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
         <StatCard
           icon={IconUsers}
           val={ringkas ? `${ringkas.aktif7Hari}/${ringkas.totalMhs}` : '—'}
@@ -204,7 +202,6 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
         <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik Rata-rata Kelas" bar="var(--info)" to="/asesmen" />
         <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata Formatif" bar="var(--sage)" to="/asesmen" />
         <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" to="/asesmen" />
-        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi Tes Khusus Aktif" bar="var(--info)" to="/asesmen/bank?tab=khusus" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
@@ -485,16 +482,6 @@ export function DashboardMhs({
           bar="var(--info)"
           to="/asesmen"
         />
-      </div>
-
-      <div className="bg-ivory rounded-2xl border p-4" style={BORDER}>
-        <div className="text-sm font-semibold text-brown mb-1 flex items-center gap-1.5">
-          <IconBook size={15} /> Tes Khusus dari Dosen
-        </div>
-        <p className="text-xs text-brown-3 mb-3">Punya kode dari dosen? Masukkan di sini.</p>
-        <Link to="/asesmen/tes" className="btn btn-secondary btn-sm">
-          Masukkan Kode
-        </Link>
       </div>
     </>
   )
