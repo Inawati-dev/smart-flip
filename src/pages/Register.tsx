@@ -78,7 +78,7 @@ export function Register() {
     }
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -99,18 +99,12 @@ export function Register() {
         },
       })
       if (signUpError) throw signUpError
-
-      if (data.user) {
-        // role sengaja tidak dikirim -- handle_new_user() (server) yang nentuin
-        // final role berdasar dosen_invite_code, profiles_lock_role trigger akan
-        // tolak diam-diam kalau tetap dikirim dari client.
-        const { error: profileError } = await supabase.from('profiles').upsert({
-          id: data.user.id,
-          full_name: fullName.trim(),
-          nim_nidn: nimNidn.trim(),
-        })
-        if (profileError) console.warn('Profile upsert:', profileError.message)
-      }
+      // Baris profil (nama, peran, kelas, NIM/NIDN) dibuat pemicu
+      // handle_new_user() di basis data dari `data` di atas (NIM sejak
+      // migration_v36). Dulu di sini ada upsert profil tanpa kolom `role`
+      // yang selalu ditolak basis data dan hanya masuk console.warn
+      // (antrean #178); sebelum email dikonfirmasi juga belum ada sesi
+      // untuk menulis dari peramban.
 
       setSuccess('Pendaftaran berhasil! Cek email untuk konfirmasi sebelum masuk.')
       setFullName('')
