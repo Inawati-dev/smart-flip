@@ -87,7 +87,7 @@ vi.mock('../lib/tugasAkhir', async (importOriginal) => {
 
 vi.mock('../lib/paketProposal', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../lib/paketProposal')>()
-  return { ...actual, buatPaketProposal: vi.fn(), simpanBobotPaket: vi.fn() }
+  return { ...actual, buatPaketProposal: vi.fn(), simpanBobotPaket: vi.fn(), hapusPaketProposal: vi.fn() }
 })
 
 beforeEach(() => {
@@ -232,14 +232,14 @@ describe('TugasAkhirPanel — Paket Rancangan Proposal', () => {
     expect(screen.getAllByText('Bab 1 · Pendahuluan')).toHaveLength(1)
   })
 
-  it('Hapus Paket meminta konfirmasi lalu menghapus keempat brief', async () => {
-    const { deleteProject } = await import('../lib/tugasAkhir')
+  it('Hapus Paket meminta konfirmasi lalu menghapus paket dalam satu perintah', async () => {
+    const { hapusPaketProposal } = await import('../lib/paketProposal')
     state.projects = briefPaketUji
     renderPanel()
     fireEvent.click(await screen.findByRole('button', { name: /Hapus Paket/ }))
     expect(screen.getByText(/semua kiriman serta nilai mahasiswa/)).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Ya, Hapus Paket' }))
-    await waitFor(() => expect(vi.mocked(deleteProject)).toHaveBeenCalledTimes(4))
+    await waitFor(() => expect(vi.mocked(hapusPaketProposal)).toHaveBeenCalledTimes(1))
   })
 
   it('modal nilai menampilkan teks "ukur" kriteria bila ada', async () => {
@@ -248,7 +248,8 @@ describe('TugasAkhirPanel — Paket Rancangan Proposal', () => {
     await screen.findByText('Rancangan Proposal Lengkap')
     fireEvent.click(screen.getAllByRole('button', { name: 'Lihat Kiriman' })[0])
     await screen.findByText('Budi Santoso')
+    // Teks ukur tampil dua kali: di daftar rubrik tab dosen dan di modal nilai.
     fireEvent.click(screen.getAllByRole('button', { name: 'Nilai' })[0])
-    await waitFor(() => expect(screen.getByText(PAKET_PROPOSAL[0].rubrik[0].ukur as string)).toBeTruthy())
+    await waitFor(() => expect(screen.getAllByText(PAKET_PROPOSAL[0].rubrik[0].ukur as string)).toHaveLength(2))
   })
 })

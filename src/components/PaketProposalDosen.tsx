@@ -3,14 +3,16 @@ import { useQueries } from '@tanstack/react-query'
 import { useCourse } from '../contexts/CourseContext'
 import { useModules } from '../hooks/useModules'
 import { labelKelas, tahunUnik, type Kelas, type KelasWithCount } from '../lib/kelas'
-import { fetchSubmissionsDosen, deleteProject, type FinalProject } from '../lib/tugasAkhir'
+import { fetchSubmissionsDosen, type FinalProject } from '../lib/tugasAkhir'
 import {
+  AKTIVITAS_MANDIRI,
   BOBOT_BAWAAN,
   PAKET_PROPOSAL,
   babPaket,
   bobotSah,
   briefPaket,
   buatPaketProposal,
+  hapusPaketProposal,
   simpanBobotPaket,
   tenggatBawaan,
 } from '../lib/paketProposal'
@@ -328,14 +330,14 @@ export function PaketProposalDosen({
   async function hapusPaket() {
     setDeleting(true)
     try {
-      for (const b of briefs) await deleteProject(b.id)
+      await hapusPaketProposal(briefs[0].paket_id as string)
       await onChanged()
       onDihapus(briefs.map((b) => b.id))
       onToast('Paket proposal dihapus')
       setBuka(null)
     } catch {
       await onChanged()
-      onToast('Gagal menghapus paket; sebagian brief mungkin sudah terhapus')
+      onToast('Gagal menghapus paket')
     } finally {
       setDeleting(false)
     }
@@ -423,6 +425,38 @@ export function PaketProposalDosen({
                 <IconTrash size={14} /> Hapus Paket
               </button>
             </div>
+          </div>
+          <div className="border-t px-4 py-3 flex flex-col gap-1" style={BORDER}>
+            <p className="text-[13px] font-semibold text-brown-3 uppercase tracking-wide">Rubrik Tiap Mini Projek</p>
+            {briefs.map((b) => (
+              <details key={b.id}>
+                <summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-brown">{`Rubrik ${b.title}`}</summary>
+                <ul className="flex flex-col gap-1.5 pb-3 list-none m-0 p-0">
+                  {b.rubric.map((r) => (
+                    <li key={r.nama} className="flex items-start gap-3 rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--bg3)' }}>
+                      <span className="flex-1 min-w-0">
+                        <span className="font-semibold text-brown block">{r.nama}</span>
+                        {r.ukur && <span className="text-[13px] text-brown-2 block">{r.ukur}</span>}
+                      </span>
+                      <span className="font-semibold text-brown tabular-nums shrink-0">{r.bobot}</span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
+          <div className="border-t px-4 py-3 flex flex-col gap-1" style={BORDER}>
+            <p className="text-[13px] font-semibold text-brown-3 uppercase tracking-wide">Aktivitas Mandiri yang Dilihat Mahasiswa di Tiap Topik</p>
+            {AKTIVITAS_MANDIRI.map((a) => (
+              <details key={a.topik}>
+                <summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-brown">{`Topik ${a.topik}, hasilnya dipakai di ${babPaket(a.bab)?.judul ?? `Bab ${a.bab}`}`}</summary>
+                <ol className="pb-3 pl-5 m-0 flex flex-col gap-1 text-sm text-brown-2 list-decimal">
+                  {a.langkah.map((l) => (
+                    <li key={l} className="break-words">{l}</li>
+                  ))}
+                </ol>
+              </details>
+            ))}
           </div>
         </section>
       )}

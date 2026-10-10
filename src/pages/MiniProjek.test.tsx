@@ -111,6 +111,15 @@ describe('MiniProjek', () => {
     expect(screen.getByText('0 dari 3 bab dinilai')).toBeTruthy()
   })
 
+  it('mengunduh templat memunculkan pesan singkat dan tautannya menuju berkas templat bab itu', async () => {
+    tampil()
+    const tautan = (await screen.findByRole('link', { name: 'Unduh Templat Bab 1' })) as HTMLAnchorElement
+    expect(tautan.getAttribute('href')).toBe('/templat/Templat-Bab-1-Pendahuluan.docx')
+    tautan.addEventListener('click', (e) => e.preventDefault()) // jsdom tidak bisa bernavigasi
+    fireEvent.click(tautan)
+    expect(await screen.findByText('Templat Bab 1 diunduh')).toBeTruthy()
+  })
+
   it('tombol Kirim nonaktif sampai berkas dipilih dan semua kotak dicentang', async () => {
     tampil()
     fireEvent.click(await screen.findByRole('button', { name: 'Kirim Bab 1 (.docx)' }))

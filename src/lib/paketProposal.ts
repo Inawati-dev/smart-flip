@@ -55,7 +55,7 @@ export const PAKET_PROPOSAL: BabPaket[] = [
       { no: '1.2', nama: 'Identifikasi Masalah', bahan: 'Dari Topik 1: masalah dalam 2 sampai 3 kalimat. Dari Topik 2: tiga alternatif topik berskor.' },
       { no: '1.3', nama: 'Rumusan Masalah', bahan: 'Dari Topik 3: satu sampai dua rumusan masalah berbentuk pertanyaan.' },
       { no: '1.4', nama: 'Tujuan dan Manfaat', bahan: 'Dari Topik 3: tujuan terukur, manfaat praktis dan teoretis.' },
-      { no: '1.5', nama: 'Spesifikasi Produk', bahan: 'Dari Topik 3: tabel spesifikasi produk, ruang lingkup, dan definisi operasional.' },
+      { no: '1.5', nama: 'Spesifikasi Produk yang Dikembangkan', bahan: 'Dari Topik 3: tabel spesifikasi produk, ruang lingkup, dan definisi operasional.' },
     ],
     lampiran: 'Lampirkan hasil Aktivitas Mandiri Topik 1, 2, dan 3 di akhir berkas yang sama.',
     periksa: ['Lima bagian terisi', 'Lampiran AM-1, AM-2, AM-3 ada'],
@@ -78,7 +78,7 @@ export const PAKET_PROPOSAL: BabPaket[] = [
     butuhTautan: false,
     templat: '/templat/Templat-Bab-2-Landasan-Teori.docx',
     bagian: [
-      { no: '2.1', nama: 'Kajian Teori per Tema', bahan: 'Dari Topik 4: outline tema dan paragraf sintesis tiap tema.' },
+      { no: '2.1', nama: 'Kajian Teori', bahan: 'Dari Topik 4: outline tema dan paragraf sintesis tiap tema.' },
       { no: '2.2', nama: 'Penelitian yang Relevan', bahan: 'Dari Topik 4: tabel minimal tiga penelitian yang relevan.' },
       { no: '2.3', nama: 'Kerangka Berpikir', bahan: 'Dari Topik 4: gambar empat kotak dan satu paragraf penjelasan.' },
     ],
@@ -102,10 +102,10 @@ export const PAKET_PROPOSAL: BabPaket[] = [
     butuhTautan: true,
     templat: '/templat/Templat-Bab-3-Model-Pengembangan.docx',
     bagian: [
-      { no: '3.1', nama: 'Model dan Alasannya', bahan: 'Dari Topik 5: model terpilih dan alasan 3 sampai 5 kalimat.' },
-      { no: '3.2', nama: 'Prosedur per Tahap', bahan: 'Dari Topik 5: tabel kerja tahap model, ditulis ulang sebagai satu paragraf per tahap.' },
+      { no: '3.1', nama: 'Model Pengembangan dan Alasannya', bahan: 'Dari Topik 5: model terpilih dan alasan 3 sampai 5 kalimat.' },
+      { no: '3.2', nama: 'Prosedur Pengembangan', bahan: 'Dari Topik 5: tabel kerja tahap model, ditulis ulang sebagai satu paragraf per tahap.' },
       { no: '3.3', nama: 'Validasi Ahli dan Uji Coba', bahan: 'Dari Topik 5: validator ahli, sasaran uji coba, tiga sampai lima kriteria validasi.' },
-      { no: '3.4', nama: 'Instrumen', bahan: 'Dari Topik 6: jenis instrumen dan minimal 8 butir.' },
+      { no: '3.4', nama: 'Instrumen Pengumpulan Data', bahan: 'Dari Topik 6: jenis instrumen dan minimal 8 butir.' },
       { no: '3.5', nama: 'Teknik Analisis Data', bahan: 'Dari Topik 6: teknik analisis dan rencana responden, waktu, cara analisis.' },
       { no: '3.6', nama: 'Prototipe Produk', bahan: 'Dari Topik 5: flowchart ditempel di berkas; tautan prototipe diisi saat mengirim.' },
     ],
@@ -290,6 +290,13 @@ export async function simpanBobotPaket(briefs: FinalProject[], bobot: number[]):
   if (gagal?.error) throw kolomHilang(gagal.error) ? new Error(PESAN_V37) : gagal.error
 }
 
+/** Dosen: hapus keempat brief paket dalam satu perintah, jadi tidak bisa terhapus sebagian. */
+export async function hapusPaketProposal(paketId: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new Error('Menghapus paket butuh koneksi Supabase.')
+  const { error } = await supabase.from('tugas_akhir_briefs').delete().eq('paket_id', paketId)
+  if (error) throw error
+}
+
 // ── Aktivitas Mandiri per topik (panel di halaman topik) ──
 // Langkahnya disalin dari naskah modul Bab 1 sampai 6 (kerja nyata/Naskah
 // sampai Aktivitas Mandiri, keadaan 11 Okt 2026). Aktivitas ini tidak diunggah
@@ -335,7 +342,7 @@ export const AKTIVITAS_MANDIRI: AktivitasMandiri[] = [
   {
     topik: 3,
     bab: 1,
-    dipakai: ['1.1 Latar Belakang Masalah', '1.3 Rumusan Masalah', '1.4 Tujuan dan Manfaat', '1.5 Spesifikasi Produk'],
+    dipakai: ['1.1 Latar Belakang Masalah', '1.3 Rumusan Masalah', '1.4 Tujuan dan Manfaat', '1.5 Spesifikasi Produk yang Dikembangkan'],
     langkah: [
       'Buka kembali topik dan studi pendahuluan yang telah Anda susun di Bab 2',
       'Tulis draft latar belakang mengikuti alur: konteks umum -> data/bukti masalah -> urgensi (minimal 3 paragraf)',
@@ -351,7 +358,7 @@ export const AKTIVITAS_MANDIRI: AktivitasMandiri[] = [
   {
     topik: 4,
     bab: 2,
-    dipakai: ['2.1 Kajian Teori per Tema', '2.2 Penelitian yang Relevan', '2.3 Kerangka Berpikir'],
+    dipakai: ['2.1 Kajian Teori', '2.2 Penelitian yang Relevan', '2.3 Kerangka Berpikir'],
     langkah: [
       'Tentukan 2-3 tema utama yang perlu dibahas dalam kajian pustaka Anda, berdasarkan topik yang telah ditetapkan di Bab 2-3',
       'Telusuri minimal 5 sumber relevan dari industri/praktik dan dari kalangan akademik, minimal 3 di antaranya berupa hasil penelitian, melalui mesin pencari jurnal seperti Google Scholar atau Garuda, atau sumber lain yang kredibel',
@@ -367,7 +374,7 @@ export const AKTIVITAS_MANDIRI: AktivitasMandiri[] = [
   {
     topik: 5,
     bab: 3,
-    dipakai: ['3.1 Model dan Alasannya', '3.2 Prosedur per Tahap', '3.3 Validasi Ahli dan Uji Coba', '3.6 Prototipe Produk'],
+    dipakai: ['3.1 Model Pengembangan dan Alasannya', '3.2 Prosedur Pengembangan', '3.3 Validasi Ahli dan Uji Coba', '3.6 Prototipe Produk'],
     langkah: [
       'Baca kembali karakteristik proyek Anda (jenis produk, tenggat waktu, kebutuhan pengulangan siklus)',
       'Gunakan Tabel 5.5 (perbandingan tujuh model pengembangan) untuk memperoleh pilihan awal',
@@ -383,7 +390,7 @@ export const AKTIVITAS_MANDIRI: AktivitasMandiri[] = [
   {
     topik: 6,
     bab: 3,
-    dipakai: ['3.4 Instrumen', '3.5 Teknik Analisis Data'],
+    dipakai: ['3.4 Instrumen Pengumpulan Data', '3.5 Teknik Analisis Data'],
     langkah: [
       'Tentukan jenis instrumen yang paling sesuai untuk menguji produk Anda (angket, pedoman wawancara, lembar observasi, atau kombinasi)',
       'Rancang minimal 8 butir instrumen (misalnya 8 pertanyaan angket atau 8 poin lembar validasi), pastikan setiap butir jelas dan tidak bermakna ganda',

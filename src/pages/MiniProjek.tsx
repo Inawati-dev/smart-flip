@@ -157,6 +157,7 @@ export function MiniProjek() {
                   onKirim={() => setKirimUrutan(brief.urutan ?? null)}
                   onRincian={() => setRincianUrutan(brief.urutan ?? null)}
                   onBuka={(path) => void bukaBerkas(path)}
+                  onUnduhTemplat={() => tampilPesan(bab.urutan === 4 ? 'Templat Rancangan Proposal diunduh' : `Templat Bab ${bab.urutan} diunduh`)}
                 />
               )
             })}
@@ -214,6 +215,7 @@ function KartuBab({
   onKirim,
   onRincian,
   onBuka,
+  onUnduhTemplat,
 }: {
   bab: BabPaket
   brief: FinalProject
@@ -226,6 +228,7 @@ function KartuBab({
   onKirim: () => void
   onRincian: () => void
   onBuka: (path: string | null | undefined) => void
+  onUnduhTemplat: () => void
 }) {
   const gabung = bab.urutan === 4
   const topikSumber = gabung ? [] : bab.topik
@@ -334,7 +337,7 @@ function KartuBab({
                   Unduh Bab {i + 1} Terkirim
                 </button>
               ))}
-            <a href={bab.templat} download className="btn btn-secondary btn-sm no-underline">
+            <a href={bab.templat} download onClick={onUnduhTemplat} className="btn btn-secondary btn-sm no-underline">
               {gabung ? 'Unduh Templat' : `Unduh Templat Bab ${bab.urutan}`}
             </a>
             <button type="button" onClick={onKirim} className="btn btn-primary btn-sm">
