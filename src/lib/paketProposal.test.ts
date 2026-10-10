@@ -9,6 +9,7 @@ import {
   nilaiMiniProjek,
   statusBab,
   tautanSah,
+  bobotPaket,
   tenggatBawaan,
   topikTerbukaDari,
 } from './paketProposal'
@@ -86,6 +87,8 @@ describe('tautanSah', () => {
     expect(tautanSah(' http://contoh.id/p ')).toBe(true)
     expect(tautanSah('figma.com/proto')).toBe(false)
     expect(tautanSah('')).toBe(false)
+    expect(tautanSah('http://')).toBe(false)
+    expect(tautanSah('http://a.b javascript:alert(1)')).toBe(false)
   })
 })
 
@@ -98,6 +101,12 @@ describe('briefPaket', () => {
     const daftar = [p('lain', null, null), p('b3', 'P2', 3), p('b1', 'P2', 1), p('lama1', 'P1', 1), p('b4', 'P2', 4), p('b2', 'P2', 2)]
     expect(briefPaket(daftar).map((x) => x.id)).toEqual(['b1', 'b2', 'b3', 'b4'])
     expect(briefPaket([p('lain', null, null)])).toEqual([])
+  })
+  it('bobotPaket memakai bobot tersimpan bila sah, bawaan bila kosong atau jumlahnya bukan 100', () => {
+    const b = (bobot: Array<number | null>) => bobot.map((x, i) => ({ ...p('b' + i, 'P', i + 1), bobot: x }))
+    expect(bobotPaket(b([25, 25, 25, 25]))).toEqual([25, 25, 25, 25])
+    expect(bobotPaket(b([null, null, null, null]))).toEqual(BOBOT_BAWAAN)
+    expect(bobotPaket(b([30, 20, 25, 34]))).toEqual(BOBOT_BAWAAN)
   })
 })
 
@@ -112,7 +121,7 @@ describe('jadwal paket', () => {
     expect(terbuka(1)).toBe(true)
     expect(terbuka(2)).toBe(false)
     expect(terbuka(4)).toBe(false)
-    expect(terbuka(9)).toBe(false)
+    expect(terbuka(9)).toBe(true) // topik yang tidak ada di mata kuliah ini tidak mengunci
     expect(topikTerbukaDari('2026-09-07', modul, new Date(2026, 10, 2))(4)).toBe(true) // awal minggu ke-9
   })
   it('tenggat usulan Bab 1 = awal minggu ke-7 (Topik 3 mulai minggu 5), Rancangan Proposal kosong', () => {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
@@ -23,6 +23,7 @@ import { updateCourse, isMissingCourseSchema, type Course } from '../lib/courses
 import { ChipRak } from '../components/KartuTopik'
 import { golonganDariSkor, GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 import { fetchProjectsDosen, fetchSubmissionsDosen } from '../lib/tugasAkhir'
+import { bobotPaket, briefPaket, nilaiMiniProjek } from '../lib/paketProposal'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -137,17 +138,36 @@ export default function Asesmen() {
   // TERBARU dosen ini saja (antrean #57 opsi A) — dosen dengan beberapa
   // brief lama tetap hanya melihat kolom untuk yang paling baru dibuat.
   const { data: latestProject } = useQuery({ queryKey: ['final-projects', courseId], queryFn: () => fetchProjectsDosen(courseId) })
-  const brief = latestProject?.[0] ?? null
+  // Mata kuliah dengan Paket Rancangan Proposal (antrean #179): nilai Mini Projek
+  // = jumlah nilai keempat bab kali bobotnya; tanpa paket, brief terbaru saja.
+  const paket = useMemo(() => briefPaket(latestProject ?? []), [latestProject])
+  const brief = paket.length > 0 ? null : (latestProject?.[0] ?? null)
   const { data: briefSubmissions = [] } = useQuery({
     queryKey: ['final-submissions', brief?.id],
     queryFn: () => fetchSubmissionsDosen(brief!.id),
     enabled: brief != null,
   })
-  const tugasAkhirByUser = useMemo(() => {
-    const m = new Map<string, number | null>()
+  const paketSubmissions = useQueries({
+    queries: paket.map((b) => ({ queryKey: ['final-submissions', b.id], queryFn: () => fetchSubmissionsDosen(b.id) })),
+  })
+  const paketData = paketSubmissions.map((q) => q.data)
+  // Tanpa useMemo: jumlah query paket berubah-ubah dan datanya kecil.
+  const tugasAkhirByUser = (() => {
+    const m = new Map<string, number | string | null>()
+    if (paket.length > 0) {
+      const bobot = bobotPaket(paket)
+      const rows = paketData.flatMap((d) => d ?? [])
+      for (const uid of new Set(rows.map((s) => s.user_id))) {
+        const total = paketData.map((d) => d?.find((s) => s.user_id === uid)?.total ?? null)
+        const nilai = nilaiMiniProjek(bobot, total)
+        const dinilai = total.filter((t) => t != null).length
+        m.set(uid, nilai ?? (dinilai > 0 ? `${dinilai} dari ${paket.length} dinilai` : null))
+      }
+      return m
+    }
     for (const s of briefSubmissions) m.set(s.user_id, s.total)
     return m
-  }, [briefSubmissions])
+  })()
 
   // `null` di KEDUA query = Supabase belum dikonfigurasi / gagal (mode
   // demo), beda maknanya dari array kosong (terhubung, memang belum ada

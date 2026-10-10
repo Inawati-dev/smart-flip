@@ -31,7 +31,7 @@ vi.mock('../contexts/AuthContext', () => ({
 
 // Rute PDF dan Kelas (dosenOnly) dipindah keluar dari Akun ke rel navigasi
 // sendiri (16 Sep 2026). Dipakai dua tes di bawah untuk hitung tautan menu persis.
-const ALL_NAV_HREFS = ['/dashboard', '/modul', '/video', '/asesmen', '/akun/pdf', '/kelas', '/akun']
+const ALL_NAV_HREFS = ['/dashboard', '/modul', '/video', '/asesmen', '/mini-projek', '/akun/pdf', '/kelas', '/akun']
 
 function presentNavHrefs(html: string): string[] {
   return ALL_NAV_HREFS.filter((href) => html.includes(`href="${href}"`))
@@ -73,14 +73,15 @@ describe('Layout', () => {
     expect(html).toContain('PDF tiap pertemuan')
   })
 
-  it('mahasiswa melihat 5 tautan menu, tanpa /akun/pdf dan /kelas', () => {
+  it('mahasiswa melihat 6 tautan menu termasuk /mini-projek, tanpa /akun/pdf dan /kelas', () => {
     mockIsSupabaseConfigured.value = false
     mockAuth.user = { id: 'u1', email: 'mhs@test.local' }
     mockAuth.role = 'mahasiswa'
     mockAuth.profile = { full_name: 'Mahasiswa Test', avatar_url: null }
     const html = renderLayout()
     const hrefs = presentNavHrefs(html)
-    expect(hrefs).toHaveLength(5)
+    expect(hrefs).toHaveLength(6)
+    expect(hrefs).toContain('/mini-projek')
     expect(hrefs).not.toContain('/akun/pdf')
     expect(hrefs).not.toContain('/kelas')
   })
@@ -94,6 +95,7 @@ describe('Layout', () => {
     const html = renderLayout()
     const hrefs = presentNavHrefs(html)
     expect(hrefs).toHaveLength(6)
+    expect(hrefs).not.toContain('/mini-projek')
     expect(hrefs).not.toContain('/akun/pdf')
     expect(hrefs).toContain('/kelas')
   })

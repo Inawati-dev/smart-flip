@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   fetchProjectsMhs,
@@ -29,16 +30,19 @@ function formatTanggal(iso: string): string {
 
 export function TugasAkhirMhsCard() {
   const { courseId } = useCourse()
-  const { data: projects = [], isLoading } = useQuery({
+  const { data: semua = [], isLoading } = useQuery({
     queryKey: ['final-projects-mhs', courseId],
     queryFn: () => fetchProjectsMhs(courseId),
   })
+  // Brief Paket Rancangan Proposal (antrean #179) dikerjakan di /mini-projek, bukan di kartu ini.
+  const projects = semua.filter((p) => !p.paket_id)
+  const adaPaket = semua.some((p) => p.paket_id)
   return (
     <div className="bg-ivory rounded-xl border p-4" style={BORDER}>
       <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Mini Projek</div>
       {isLoading ? (
         <p className="text-sm text-brown-3">Memuat…</p>
-      ) : projects.length === 0 ? (
+      ) : projects.length === 0 && !adaPaket ? (
         <p className="text-sm text-brown-3">Belum ada brief dari dosen.</p>
       ) : (
         <div className="flex flex-col">
@@ -47,6 +51,11 @@ export function TugasAkhirMhsCard() {
               <BriefItem project={p} />
             </div>
           ))}
+          {adaPaket && (
+            <Link to="/mini-projek" className={`btn btn-secondary btn-sm self-start no-underline ${projects.length > 0 ? 'mt-3' : ''}`}>
+              Paket Rancangan Proposal
+            </Link>
+          )}
         </div>
       )}
     </div>

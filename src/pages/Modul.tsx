@@ -1,5 +1,10 @@
 import { Link, useParams } from 'react-router'
-import { useModule, useIkutiMataKuliah } from '../hooks/useModules'
+import { useQuery } from '@tanstack/react-query'
+import { useModule, useModules, useIkutiMataKuliah } from '../hooks/useModules'
+import { useCourse } from '../contexts/CourseContext'
+import { fetchProjectsMhs } from '../lib/tugasAkhir'
+import { aktivitasTopik, briefPaket } from '../lib/paketProposal'
+import { AktivitasMandiriPanel } from '../components/AktivitasMandiriPanel'
 import { useAllProgress } from '../hooks/useProgress'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { useAuth } from '../contexts/AuthContext'
@@ -36,6 +41,16 @@ export default function Modul() {
   const { data: attempts = [] } = useQuizAttempts(moduleId)
   const { statusOf, bukaPada, formatifPada } = useTopikStatus()
   const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
+  // Panel Aktivitas Mandiri (antrean #179): hanya bila mata kuliah punya paket
+  // proposal. Dosen tidak sampai ke tata letak baca di bawah, jadi tak diambil.
+  const { courseId } = useCourse()
+  const { data: daftarModul = [] } = useModules()
+  const { data: briefs = [] } = useQuery({
+    queryKey: ['final-projects-mhs', courseId],
+    queryFn: () => fetchProjectsMhs(courseId),
+    enabled: role !== 'dosen',
+  })
+  const adaPaket = briefPaket(briefs).length > 0
 
   if (role === 'dosen') {
     return (
@@ -71,6 +86,9 @@ export default function Modul() {
   const prog = progress[moduleIdToPath(modul.id)]
   const pct = prog?.pct ?? 0
   const hasPdf = !!(modul.pdf_path || modul.path)
+  // Nomor topik = urutan modul di daftar mata kuliahnya (1, 2, ...).
+  const urut = [...daftarModul].sort((a, b) => a.order_num - b.order_num).findIndex((m) => m.id === modul.id)
+  const nomorTopik = urut >= 0 ? urut + 1 : modul.order_num
 
   return (
     <Layout>
@@ -136,6 +154,10 @@ export default function Modul() {
             </div>
           </div>
         </div>
+
+        {adaPaket && aktivitasTopik(nomorTopik) && (
+          <AktivitasMandiriPanel nomorTopik={nomorTopik} judulTopik={modul.title} peran={role} />
+        )}
 
         <div className="bg-ivory border rounded-xl p-4 mt-5" style={{ borderColor: 'var(--border)' }}>
           <h2 className="font-bold text-brown mb-3 text-sm">Riwayat Belajar</h2>

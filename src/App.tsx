@@ -26,6 +26,7 @@ const TugasAkhir = lazy(() => import('./pages/TugasAkhir'))
 const TesKelompok = lazy(() => import('./pages/TesKelompok'))
 const Asesmen = lazy(() => import('./pages/Asesmen'))
 const AsesmenMhs = lazy(() => import('./pages/AsesmenMhs'))
+const MiniProjek = lazy(() => import('./pages/MiniProjek'))
 const BankSoal = lazy(() => import('./pages/BankSoal'))
 const TesKhusus = lazy(() => import('./pages/TesKhusus'))
 const Kelas = lazy(() => import('./pages/Kelas'))
@@ -108,6 +109,8 @@ export default function App() {
               <Route path="/asesmen" element={<ProtectedRoute><AsesmenRoute /></ProtectedRoute>} />
               <Route path="/asesmen/pre" element={<ProtectedRoute roles={['mahasiswa']}><AsesmenMhs /></ProtectedRoute>} />
               <Route path="/asesmen/post" element={<ProtectedRoute roles={['mahasiswa']}><AsesmenMhs /></ProtectedRoute>} />
+              {/* Paket Rancangan Proposal (antrean #179): empat Mini Projek berurutan, sisi mahasiswa. */}
+              <Route path="/mini-projek" element={<ProtectedRoute roles={['mahasiswa']}><MiniProjek /></ProtectedRoute>} />
               <Route path="/asesmen/formatif/:id" element={<ProtectedRoute><Formatif /></ProtectedRoute>} />
               <Route path="/asesmen/bank" element={<ProtectedRoute roles={['dosen']}><BankSoal /></ProtectedRoute>} />
               {/* Tanpa roles: TesKhusus bercabang sendiri per peran (spec

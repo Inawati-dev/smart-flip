@@ -196,7 +196,9 @@ export function topikTerbukaDari(
   if (!jadwal) return () => true
   return (nomor) => {
     const j = jadwal.get(modulesUrut[nomor - 1]?.id)
-    return !!j && now.getTime() >= j.materi.getTime()
+    // Mata kuliah yang topiknya lebih sedikit tidak punya jadwal untuk topik ini;
+    // dianggap terbuka supaya bab tidak terkunci selamanya.
+    return !j || now.getTime() >= j.materi.getTime()
   }
 }
 
@@ -223,6 +225,12 @@ export function bobotSah(bobot: number[]): boolean {
   )
 }
 
+/** Bobot tersimpan keempat brief; kembali ke bawaan bila ada yang kosong atau jumlahnya bukan 100. */
+export function bobotPaket(briefs: FinalProject[]): number[] {
+  const tersimpan = briefs.map((b) => b.bobot ?? NaN)
+  return bobotSah(tersimpan) ? tersimpan : BOBOT_BAWAAN
+}
+
 /** Nilai Mini Projek = jumlah nilai tiap bab kali bobotnya. Null selama masih ada bab yang belum dinilai. */
 export function nilaiMiniProjek(bobot: number[], total: Array<number | null | undefined>): number | null {
   if (!bobotSah(bobot) || total.length !== bobot.length) return null
@@ -237,14 +245,14 @@ export function nilaiMiniProjek(bobot: number[], total: Array<number | null | un
 
 /** Tautan prototipe Bab 3: wajib http atau https. */
 export function tautanSah(link: string): boolean {
-  return /^https?:\/\/\S+\.\S+/i.test(link.trim())
+  return /^https?:\/\/\S+\.\S+$/i.test(link.trim())
 }
 
 const PESAN_V37 = 'Kolom paket belum ada di basis data. Jalankan database/migration_v37_paket_proposal.sql di Supabase, lalu coba lagi.'
 
 function kolomHilang(e: unknown): boolean {
   const err = e as { code?: string; message?: string } | null
-  return !!err && (err.code === '42703' || err.code === 'PGRST204' || /paket_id|urutan|bobot/.test(err.message ?? ''))
+  return !!err && (err.code === '42703' || err.code === 'PGRST204')
 }
 
 /** Dosen: buat empat brief sekaligus. `tenggat[i]` untuk bab ke-(i+1), boleh null. */

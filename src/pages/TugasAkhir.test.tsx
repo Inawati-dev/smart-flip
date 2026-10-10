@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
 import TugasAkhir, { TugasAkhirPanel, isoKeLokal } from './TugasAkhir'
-import { RUBRIK_BAWAAN } from '../lib/tugasAkhir'
+import { RUBRIK_BAWAAN, type FinalProject } from '../lib/tugasAkhir'
+import { PAKET_PROPOSAL } from '../lib/paketProposal'
 
 afterEach(cleanup)
 
@@ -18,6 +19,10 @@ vi.mock('../contexts/AuthContext', () => ({
 }))
 
 vi.mock('../hooks/useKelas', () => ({ useKelasByDosen: () => ({ data: [] }) }))
+vi.mock('../hooks/useModules', () => ({ useModules: () => ({ data: [] }) }))
+
+// Daftar brief yang dikembalikan fetchProjectsDosen; tiap uji boleh menggantinya.
+const state = vi.hoisted(() => ({ projects: [] as unknown[] }))
 
 const project = {
   id: 'brief-1',
@@ -70,7 +75,7 @@ vi.mock('../lib/tugasAkhir', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../lib/tugasAkhir')>()
   return {
     ...actual,
-    fetchProjectsDosen: async () => [project],
+    fetchProjectsDosen: async () => state.projects,
     fetchSubmissionsDosen: async () => submissions,
     createProject: vi.fn(),
     updateProject: vi.fn(),
@@ -79,6 +84,30 @@ vi.mock('../lib/tugasAkhir', async (importOriginal) => {
     signedFileUrl: vi.fn(async () => 'https://signed.example/url'),
   }
 })
+
+vi.mock('../lib/paketProposal', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../lib/paketProposal')>()
+  return { ...actual, buatPaketProposal: vi.fn(), simpanBobotPaket: vi.fn() }
+})
+
+beforeEach(() => {
+  state.projects = [project]
+})
+
+const briefPaketUji: FinalProject[] = PAKET_PROPOSAL.map((b) => ({
+  id: `paket-${b.urutan}`,
+  dosen_id: 'dosen-1',
+  title: b.judul,
+  description: b.ringkas,
+  deadline: null,
+  rubric: b.rubrik,
+  class_ids: [],
+  is_open: true,
+  created_at: '2026-10-01T00:00:00Z',
+  paket_id: 'p1',
+  urutan: b.urutan,
+  bobot: b.bobot,
+}))
 
 function newQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } })
@@ -159,5 +188,67 @@ describe('TugasAkhirPanel — dosen', () => {
     await waitFor(() => {
       expect(screen.getByText(RUBRIK_BAWAAN[0].nama)).toBeTruthy()
     })
+  })
+})
+
+describe('TugasAkhirPanel — Paket Rancangan Proposal', () => {
+  it('tanpa paket: tombol "Buat Paket Proposal" tampil dan tabel paket tidak ada', async () => {
+    renderPanel()
+    await screen.findByText('Laporan proyek akhir')
+    expect(screen.getByRole('button', { name: 'Buat Paket Proposal' })).toBeTruthy()
+    expect(screen.queryByText('Ubah Bobot')).toBeNull()
+  })
+
+  it('dengan paket: tabel empat baris tampil dan tombol "Buat Paket Proposal" hilang', async () => {
+    state.projects = [...briefPaketUji, project]
+    renderPanel()
+    await screen.findByText('Rancangan Proposal Lengkap')
+    expect(screen.queryByRole('button', { name: 'Buat Paket Proposal' })).toBeNull()
+    expect(screen.getAllByRole('button', { name: 'Lihat Kiriman' })).toHaveLength(5) // 4 paket + 1 brief biasa
+    expect(screen.getByText('Topik 1 sampai 6')).toBeTruthy()
+    expect(screen.getByText('6 + tautan prototipe')).toBeTruthy()
+    expect(screen.getByText('3 bab + Daftar Pustaka')).toBeTruthy()
+    expect(screen.getByText(/20% Bab 1 \+ 20% Bab 2 \+ 25% Bab 3 \+ 35% Rancangan Proposal Lengkap/)).toBeTruthy()
+  })
+
+  it('modal Ubah Bobot menolak simpan saat jumlah bukan 100', async () => {
+    state.projects = briefPaketUji
+    renderPanel()
+    fireEvent.click(await screen.findByRole('button', { name: 'Ubah Bobot' }))
+    const simpan = screen.getByRole('button', { name: 'Simpan Bobot' }) as HTMLButtonElement
+    expect(simpan.disabled).toBe(false)
+    fireEvent.change(screen.getByLabelText('Bobot Bab 1 · Pendahuluan'), { target: { value: '30' } })
+    expect(simpan.disabled).toBe(true)
+    expect(screen.getByText(/Jumlah sekarang 110/)).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Bobot Bab 2 · Landasan Teori'), { target: { value: '10' } })
+    expect(simpan.disabled).toBe(false)
+  })
+
+  it('brief paket tidak muncul di daftar brief biasa', async () => {
+    state.projects = [...briefPaketUji, project]
+    renderPanel()
+    await screen.findByText('Laporan proyek akhir')
+    // Judul paket hanya sekali: di tabel paket, bukan juga sebagai kartu brief.
+    expect(screen.getAllByText('Bab 1 · Pendahuluan')).toHaveLength(1)
+  })
+
+  it('Hapus Paket meminta konfirmasi lalu menghapus keempat brief', async () => {
+    const { deleteProject } = await import('../lib/tugasAkhir')
+    state.projects = briefPaketUji
+    renderPanel()
+    fireEvent.click(await screen.findByRole('button', { name: /Hapus Paket/ }))
+    expect(screen.getByText(/semua kiriman serta nilai mahasiswa/)).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Ya, Hapus Paket' }))
+    await waitFor(() => expect(vi.mocked(deleteProject)).toHaveBeenCalledTimes(4))
+  })
+
+  it('modal nilai menampilkan teks "ukur" kriteria bila ada', async () => {
+    state.projects = briefPaketUji
+    renderPanel()
+    await screen.findByText('Rancangan Proposal Lengkap')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Lihat Kiriman' })[0])
+    await screen.findByText('Budi Santoso')
+    fireEvent.click(screen.getAllByRole('button', { name: 'Nilai' })[0])
+    await waitFor(() => expect(screen.getByText(PAKET_PROPOSAL[0].rubrik[0].ukur as string)).toBeTruthy())
   })
 })

@@ -107,7 +107,8 @@ describe('AsesmenMhs — daftar /asesmen tanpa tes khusus dan tes kelompok', () 
     queryClient.setQueryData(['final-projects-mhs', 1], [])
     renderAt('/asesmen', queryClient)
 
-    expect(await screen.findByText('Mini Projek')).toBeTruthy()
+    // Teks 'Mini Projek' kini juga ada di menu Layout (antrean #179), jadi cari semua.
+    expect((await screen.findAllByText('Mini Projek')).length).toBeGreaterThan(0)
     expect(screen.queryByText('Post-test')).toBeNull()
     expect(document.querySelector('a[href^="/asesmen/tes"], a[href^="/asesmen/kelompok"]')).toBeNull()
     const teks = document.body.textContent ?? ''

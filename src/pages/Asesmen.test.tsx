@@ -84,4 +84,34 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     expect(screen.getAllByText('Jalur Cepat').length).toBe(1)
     expect(screen.getAllByText('Belajar Mendalam').length).toBe(1)
   })
+
+  // Antrean #179: kolom Mini Projek dari empat brief paket berbobot.
+  it('kolom Mini Projek: kemajuan "2 dari 4 dinilai" selama paket belum lengkap, angka bobot bila lengkap', async () => {
+    const queryClient = newQueryClient()
+    queryClient.setQueryData(['asesmen-prepost', 1], [
+      { userId: 'a', nama: 'Ani', kelasId: 'A', pre: 85, post: 90 },
+      { userId: 'b', nama: 'Budi', kelasId: 'A', pre: 60, post: 70 },
+    ])
+    const bobot = [20, 20, 25, 35]
+    queryClient.setQueryData(
+      ['final-projects', 1],
+      bobot.map((b, i) => ({ id: `p${i + 1}`, paket_id: 'x', urutan: i + 1, bobot: b, rubric: [], class_ids: [], created_at: '2026-10-01' })),
+    )
+    const nilai = (uid: string, total: number) => ({ user_id: uid, total, graded_at: '2026-10-02' })
+    queryClient.setQueryData(['final-submissions', 'p1'], [nilai('a', 80), nilai('b', 70)])
+    queryClient.setQueryData(['final-submissions', 'p2'], [nilai('a', 60), nilai('b', 90)])
+    queryClient.setQueryData(['final-submissions', 'p3'], [nilai('a', 100)])
+    queryClient.setQueryData(['final-submissions', 'p4'], [nilai('a', 100)])
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/asesmen']}>
+          <Asesmen />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByText('Ani')).toBeTruthy()
+    // Ani: 80*.20 + 60*.20 + 100*.25 + 100*.35 = 88
+    expect(screen.getByText('88')).toBeTruthy()
+    expect(screen.getByText('2 dari 4 dinilai')).toBeTruthy()
+  })
 })

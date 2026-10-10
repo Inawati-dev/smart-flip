@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import { useKelasByDosen } from '../hooks/useKelas'
-import { labelKelas, tahunUnik } from '../lib/kelas'
+import { labelKelas } from '../lib/kelas'
 import { isSupabaseConfigured } from '../lib/supabase'
 import {
   fetchProjectsDosen,
@@ -22,6 +22,7 @@ import {
 } from '../lib/tugasAkhir'
 import { IconEdit, IconTrash, IconLock, IconLink, IconDocument } from '../components/icons'
 import { TanggalInput } from '../components/TanggalInput'
+import { PaketProposalDosen, PemilihKelas, isoKeLokal } from '../components/PaketProposalDosen'
 
 // Tugas akhir sisi dosen (antrean #57 opsi A). Pola daftar + modal ditiru
 // dari TesKhusus.tsx (DosenTesKhusus): kartu bukan tabel untuk daftar brief
@@ -30,16 +31,7 @@ import { TanggalInput } from '../components/TanggalInput'
 // lewat ?brief=<id>.
 const BORDER = { borderColor: 'var(--border)' } as const
 
-// Tenggat tersimpan sebagai ISO berzona (UTC). Isian tanggal memakai jam
-// setempat 'YYYY-MM-DDTHH:mm', jadi harus dikonversi, bukan dipotong: memotong
-// teks ISO menampilkan jam UTC sebagai jam setempat, lalu saat disimpan lagi
-// tenggat bergeser sebesar selisih zona (7 jam di WIB) tiap kali (antrean #171).
-export function isoKeLokal(iso: string): string {
-  const t = new Date(iso)
-  if (Number.isNaN(t.getTime())) return ''
-  const p = (n: number) => String(n).padStart(2, '0')
-  return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}T${p(t.getHours())}:${p(t.getMinutes())}`
-}
+export { isoKeLokal }
 
 function formatTenggat(deadline: string | null): string {
   if (!deadline) return 'Tanpa tenggat'
@@ -255,13 +247,27 @@ export function TugasAkhirPanel() {
           </div>
         ) : (
           <>
+            <PaketProposalDosen
+              projects={projects}
+              kelasList={kelasList}
+              courseId={courseId}
+              userId={user?.id ?? ''}
+              onTambahLain={openCreate}
+              onLihat={(id) => setSearchParams({ brief: id })}
+              onUbah={openEdit}
+              onChanged={invalidateProjects}
+              onToast={showToast}
+              onDihapus={(ids) => {
+                if (briefId && ids.includes(briefId)) setSearchParams({})
+              }}
+            />
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-6">
               {isLoading ? (
                 <p className="text-brown-3 text-sm">Memuat…</p>
               ) : projects.length === 0 ? (
                 <p className="text-brown-3 text-sm">Belum ada brief. Buat brief pertama untuk mahasiswa.</p>
               ) : (
-                projects.map((p) => (
+                projects.filter((p) => !p.paket_id).map((p) => (
                   <div key={p.id} className="bg-ivory rounded-xl border p-4 flex flex-col gap-2" style={BORDER}>
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="font-semibold text-brown truncate">{p.title}</h3>
@@ -448,42 +454,13 @@ export function TugasAkhirPanel() {
               <TanggalInput denganJam ariaLabel="Tenggat" value={deadline} onChange={setDeadline} />
             </label>
 
-            <div className="mb-3">
-              <span className="text-xs font-semibold text-brown-2 block mb-1.5">Kelas</span>
-              <label className="flex items-center gap-2 text-sm text-brown-2 min-h-11">
-                <input
-                  type="checkbox"
-                  checked={semuaKelas}
-                  onChange={(e) => setSemuaKelas(e.target.checked)}
-                  className="w-4 h-4 accent-terra"
-                />
-                Semua Kelas
-              </label>
-              {!semuaKelas && (
-                <div className="flex flex-col gap-2 max-h-40 overflow-y-auto border rounded-lg p-2" style={BORDER}>
-                  {tahunUnik(kelasList).map((tahun) => (
-                    <div key={tahun}>
-                      <div className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-1">{tahun}</div>
-                      <div className="flex flex-col gap-1.5">
-                        {kelasList
-                          .filter((k) => k.angkatan === tahun)
-                          .map((k) => (
-                            <label key={k.id} className="flex items-center gap-2 text-sm text-brown-2 min-h-11">
-                              <input
-                                type="checkbox"
-                                checked={classIds.includes(k.id)}
-                                onChange={() => toggleKelas(k.id)}
-                                className="w-4 h-4 accent-terra"
-                              />
-                              {labelKelas(k, kelasList)}
-                            </label>
-                          ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <PemilihKelas
+              kelasList={kelasList}
+              semuaKelas={semuaKelas}
+              setSemuaKelas={setSemuaKelas}
+              classIds={classIds}
+              toggleKelas={toggleKelas}
+            />
 
             <div className="mb-4">
               <span className="text-xs font-semibold text-brown-2 block mb-1.5">Rubrik Penilaian</span>
@@ -577,6 +554,7 @@ export function TugasAkhirPanel() {
                 <div key={i} className="flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium text-brown">{r.nama}</div>
+                    {r.ukur && <div className="text-[13px] leading-snug text-brown-3">{r.ukur}</div>}
                     <div className="text-xs text-brown-3">Bobot {r.bobot}</div>
                   </div>
                   <input

@@ -6,7 +6,7 @@ import { resetOnboarding } from '../lib/onboarding'
 import { LogoutModal } from './LogoutModal'
 import { BrandMark } from './AuthShell'
 import { useTheme } from '../hooks/useTheme'
-import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconMoon, IconSun, IconUsers, IconClipboard } from './icons'
+import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconMoon, IconSun, IconUsers, IconClipboard, IconDocument } from './icons'
 
 interface NavItem {
   to: string
@@ -14,6 +14,7 @@ interface NavItem {
   label: string
   desc: string
   dosenOnly?: boolean
+  mahasiswaOnly?: boolean
 }
 
 // Tata letak C "Jalur Pertemuan" (spec 2026-09-15 §8.0): lima menu datar, SAMA
@@ -28,6 +29,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
   { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Tes diagnostik awal dan tes formatif' },
+  { to: '/mini-projek', icon: IconDocument, label: 'Mini Projek', desc: 'Rancangan proposal per bab', mahasiswaOnly: true },
   { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank Soal', desc: 'Soal dan mini projek', dosenOnly: true },
   // Menu Berkas (/akun/pdf) disembunyikan (antrean #168): berkas kini ikut terhapus bersama topiknya. Rutenya tetap ada.
   { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas dan kode gabung', dosenOnly: true },
@@ -62,7 +64,7 @@ export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
   const { user, role, profile } = useAuth()
   const [logoutOpen, setLogoutOpen] = useState(false)
-  const navItems = NAV_ITEMS.filter((item) => !item.dosenOnly || role === 'dosen')
+  const navItems = NAV_ITEMS.filter((item) => (!item.dosenOnly || role === 'dosen') && (!item.mahasiswaOnly || role === 'mahasiswa'))
   const currentActive = activeTo(location.pathname, navItems)
   const { theme, toggle: toggleTheme } = useTheme()
   const themeToggleLabel = theme === 'light' ? 'Ganti ke tema gelap' : 'Ganti ke tema terang'
