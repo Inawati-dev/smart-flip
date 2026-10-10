@@ -1,21 +1,30 @@
 // @vitest-environment jsdom
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { Register, isDosenInviteCodeValid } from './Register'
+
+const mockSupabase = vi.hoisted(() => ({
+  configured: false,
+  signUp: vi.fn(async (_args: unknown) => ({ data: { user: null }, error: null })),
+}))
 
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
-      signUp: async () => ({ data: { user: null }, error: null }),
+      signUp: mockSupabase.signUp,
     },
   },
-  isSupabaseConfigured: false,
+  get isSupabaseConfigured() {
+    return mockSupabase.configured
+  },
 }))
 
 afterEach(() => {
   cleanup()
+  mockSupabase.configured = false
+  mockSupabase.signUp.mockClear()
 })
 
 describe('Register', () => {
@@ -108,5 +117,25 @@ describe('Register — Kode Kelas field (interactive)', () => {
     )
     const input = screen.getByLabelText(/Kode Kelas/) as HTMLInputElement
     expect(input.required).toBe(false)
+  })
+})
+
+describe('Register — tautan konfirmasi email', () => {
+  it('memanggil signUp dengan emailRedirectTo ke akar aplikasi (berakhiran /)', async () => {
+    mockSupabase.configured = true
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>,
+    )
+    fireEvent.change(screen.getByLabelText('Nama lengkap'), { target: { value: 'Budi' } })
+    fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
+    fireEvent.change(screen.getByLabelText('Kata sandi'), { target: { value: 'rahasia123' } })
+    fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
+
+    await waitFor(() => expect(mockSupabase.signUp).toHaveBeenCalledTimes(1))
+    const arg = mockSupabase.signUp.mock.calls[0][0] as { options: { emailRedirectTo: string } }
+    expect(arg.options.emailRedirectTo.endsWith('/')).toBe(true)
   })
 })

@@ -6,6 +6,7 @@ import {
   computeStudentStatus,
   computeInactiveStudents,
   computeNeedsAttentionStudents,
+  saringPerluPerhatian,
   bucketKuisDist,
   computeStatSummary,
   sortStudents,
@@ -16,6 +17,7 @@ import {
   fetchFeedbackAspectAvg,
   DUMMY_STUDENTS,
   type StudentStat,
+  type NeedsAttentionStudent,
 } from './analitik'
 
 // isSupabaseConfigured is false in the test env (no VITE_SUPABASE_* vars set),
@@ -95,6 +97,44 @@ describe('computeNeedsAttentionStudents', () => {
     expect(flagged.find((s) => s.nama === 'Belum Modul Saja')).toMatchObject({ belumModul: true, belumDiagnostik: false })
     expect(flagged.find((s) => s.nama === 'Belum Diagnostik Saja')).toMatchObject({ belumModul: false, belumDiagnostik: true })
     expect(flagged.find((s) => s.nama === 'Belum Dua-duanya')).toMatchObject({ belumModul: true, belumDiagnostik: true })
+  })
+})
+
+describe('computeNeedsAttentionStudents: kelas dan angkatan', () => {
+  it('membawa kelas dan angkatan dari StudentStat, null kalau tidak ada', () => {
+    const flagged = computeNeedsAttentionStudents([
+      { id: 1, nama: 'A', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', jalur: null, kelas: 'Kelas A', angkatan: 2026 },
+      { id: 2, nama: 'B', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', jalur: null },
+    ])
+    expect(flagged[0]).toMatchObject({ kelas: 'Kelas A', angkatan: 2026 })
+    expect(flagged[1]).toMatchObject({ kelas: null, angkatan: null })
+  })
+})
+
+describe('saringPerluPerhatian', () => {
+  const daftar: NeedsAttentionStudent[] = [
+    { id: 1, nama: 'A', belumModul: true, belumDiagnostik: false, kelas: 'Kelas A', angkatan: 2026 },
+    { id: 2, nama: 'B', belumModul: false, belumDiagnostik: true, kelas: 'Kelas B', angkatan: 2026 },
+    { id: 3, nama: 'C', belumModul: true, belumDiagnostik: true, kelas: 'Kelas A', angkatan: 2025 },
+    { id: 4, nama: 'D', belumModul: true, belumDiagnostik: false, kelas: null, angkatan: null },
+  ]
+  const nama = (r: NeedsAttentionStudent[]) => r.map((s) => s.nama)
+  const semua = { status: 'semua' as const, tahun: null, kelas: null }
+
+  it('tanpa saringan mengembalikan semua', () => {
+    expect(nama(saringPerluPerhatian(daftar, semua))).toEqual(['A', 'B', 'C', 'D'])
+  })
+  it('status modul dan diagnostik', () => {
+    expect(nama(saringPerluPerhatian(daftar, { ...semua, status: 'modul' }))).toEqual(['A', 'C', 'D'])
+    expect(nama(saringPerluPerhatian(daftar, { ...semua, status: 'diagnostik' }))).toEqual(['B', 'C'])
+  })
+  it('tahun dan kelas menyaring, mahasiswa tanpa kelas ikut tersaring keluar', () => {
+    expect(nama(saringPerluPerhatian(daftar, { ...semua, tahun: 2026 }))).toEqual(['A', 'B'])
+    expect(nama(saringPerluPerhatian(daftar, { ...semua, kelas: 'Kelas A' }))).toEqual(['A', 'C'])
+  })
+  it('semua saringan digabung', () => {
+    expect(nama(saringPerluPerhatian(daftar, { status: 'modul', tahun: 2026, kelas: 'Kelas A' }))).toEqual(['A'])
+    expect(saringPerluPerhatian(daftar, { status: 'diagnostik', tahun: 2026, kelas: 'Kelas A' })).toEqual([])
   })
 })
 

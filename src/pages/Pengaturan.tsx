@@ -1,8 +1,11 @@
 import { useState } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
-import { computeNeedsAttentionStudents } from '../lib/analitik'
+import { useKelasByDosen } from '../hooks/useKelas'
+import { computeNeedsAttentionStudents, saringPerluPerhatian, type StatusPerhatian } from '../lib/analitik'
 import { IconBell, IconLock } from '../components/icons'
+import { KelasTahunFilter } from '../components/KelasTahunFilter'
+import { PillGroup } from '../components/PillGroup'
 import {
   MIN_INVITE_CODE_LENGTH,
   getDosenInviteCode,
@@ -26,10 +29,23 @@ const BATAS_DAFTAR = 8
 
 export function PengaturanSections() {
   const [tampilSemua, setTampilSemua] = useState(false)
-  const { role } = useAuth()
+  const { role, user } = useAuth()
   const isDosen = role === 'dosen'
   const { data: students } = useStudentStats()
   const needsAttention = isDosen && students ? computeNeedsAttentionStudents(students) : []
+
+  // Saringan kartu Notifikasi (antrean #128): status, tahun, kelas. Daftar
+  // kelas sama dengan filter di Dashboard dosen.
+  const { data: kelasList = [] } = useKelasByDosen(isDosen ? user?.id : undefined)
+  const [status, setStatus] = useState<StatusPerhatian>('semua')
+  const [tahun, setTahun] = useState<number | null>(null)
+  const [kelas, setKelas] = useState<string | null>(null)
+  const filterAktif = status !== 'semua' || tahun != null || kelas != null
+  // Hitungan pil mengikuti saringan tahun dan kelas, bukan saringan status.
+  const sesudahKelas = saringPerluPerhatian(needsAttention, { status: 'semua', tahun, kelas })
+  const tersaring = saringPerluPerhatian(sesudahKelas, { status, tahun: null, kelas: null })
+  const jumlahModul = sesudahKelas.filter((s) => s.belumModul).length
+  const jumlahDiagnostik = sesudahKelas.filter((s) => s.belumDiagnostik).length
 
   // ── Kode undangan dosen ──
   // Sengaja tidak diambil otomatis saat halaman dibuka: ini rahasia yang
@@ -195,10 +211,36 @@ export function PengaturanSections() {
           ) : (
             <>
               <p className="text-xs text-brown-3 mb-3 mt-1">
-                {needsAttention.length} mahasiswa belum mulai modul atau belum tes diagnostik.
+                {filterAktif ? `${tersaring.length} dari ${needsAttention.length}` : needsAttention.length} mahasiswa belum mulai
+                modul atau belum tes diagnostik.
               </p>
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <PillGroup
+                  size="sm"
+                  ariaLabel="Filter status"
+                  value={status}
+                  onChange={(v) => setStatus(v as StatusPerhatian)}
+                  options={[
+                    { value: 'semua', label: `Semua (${sesudahKelas.length})` },
+                    { value: 'modul', label: `Belum mulai modul (${jumlahModul})` },
+                    { value: 'diagnostik', label: `Belum tes diagnostik (${jumlahDiagnostik})` },
+                  ]}
+                />
+                <KelasTahunFilter
+                  kelasList={kelasList}
+                  tahun={tahun}
+                  kelas={kelas}
+                  onChange={(f) => {
+                    setTahun(f.tahun)
+                    setKelas(f.kelas)
+                  }}
+                />
+              </div>
+              {tersaring.length === 0 && (
+                <p className="text-xs text-brown-3">Tidak ada mahasiswa yang cocok dengan filter ini.</p>
+              )}
               <div className="flex flex-col gap-1.5">
-                {(tampilSemua ? needsAttention : needsAttention.slice(0, BATAS_DAFTAR)).map((s) => (
+                {(tampilSemua ? tersaring : tersaring.slice(0, BATAS_DAFTAR)).map((s) => (
                   <div
                     key={s.id}
                     className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg flex-wrap"
@@ -220,9 +262,9 @@ export function PengaturanSections() {
                   </div>
                 ))}
               </div>
-              {needsAttention.length > BATAS_DAFTAR && (
+              {tersaring.length > BATAS_DAFTAR && (
                 <button type="button" onClick={() => setTampilSemua((v) => !v)} className="btn btn-ghost btn-sm self-start mt-2">
-                  {tampilSemua ? 'Tampilkan lebih sedikit' : `Tampilkan semua (${needsAttention.length})`}
+                  {tampilSemua ? 'Tampilkan lebih sedikit' : `Tampilkan semua (${tersaring.length})`}
                 </button>
               )}
             </>

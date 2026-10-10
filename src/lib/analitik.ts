@@ -14,6 +14,7 @@ export interface StudentStat {
   status: StudentStatus
   jalur?: 'cepat' | 'mendalam' | null
   kelas?: string | null
+  angkatan?: number | null
 }
 
 export interface ModulDistItem {
@@ -124,6 +125,8 @@ export interface NeedsAttentionStudent {
   nama: string
   belumModul: boolean
   belumDiagnostik: boolean
+  kelas: string | null
+  angkatan: number | null
 }
 
 // Simplest first cut of a "who needs a nudge" notification, per user request
@@ -135,7 +138,31 @@ export interface NeedsAttentionStudent {
 export function computeNeedsAttentionStudents(students: StudentStat[]): NeedsAttentionStudent[] {
   return students
     .filter((s) => s.modul === 0 || s.jalur == null)
-    .map((s) => ({ id: s.id, nama: s.nama, belumModul: s.modul === 0, belumDiagnostik: s.jalur == null }))
+    .map((s) => ({
+      id: s.id,
+      nama: s.nama,
+      belumModul: s.modul === 0,
+      belumDiagnostik: s.jalur == null,
+      kelas: s.kelas ?? null,
+      angkatan: s.angkatan ?? null,
+    }))
+}
+
+export type StatusPerhatian = 'semua' | 'modul' | 'diagnostik'
+
+// Saringan daftar "perlu perhatian" untuk kartu Notifikasi (antrean #128).
+// tahun/kelas null = tidak menyaring; mahasiswa tanpa kelas tersaring keluar
+// begitu tahun atau kelas dipilih.
+export function saringPerluPerhatian(
+  daftar: NeedsAttentionStudent[],
+  { status, tahun, kelas }: { status: StatusPerhatian; tahun: number | null; kelas: string | null },
+): NeedsAttentionStudent[] {
+  return daftar.filter(
+    (s) =>
+      (status === 'semua' || (status === 'modul' ? s.belumModul : s.belumDiagnostik)) &&
+      (tahun == null || s.angkatan === tahun) &&
+      (kelas == null || s.kelas === kelas),
+  )
 }
 
 // Bucket skor kuis mahasiswa jadi 5 kategori (0-59/60-69/70-79/80-89/90-100),
@@ -260,7 +287,7 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
       // ambiguous and PostgREST rejects it with PGRST201. Confirmed live in
       // production (2026-07-24): this silently fell back to DUMMY_STUDENTS
       // on every real dosen account until this fix.
-      supabase.from('profiles').select('id, full_name, jalur, classes!profiles_class_id_fkey(name)').eq('role', 'mahasiswa'),
+      supabase.from('profiles').select('id, full_name, jalur, classes!profiles_class_id_fkey(name, angkatan)').eq('role', 'mahasiswa'),
       supabase.from('user_progress').select('user_id, module_id, status, time_spent'),
       supabase.from('quiz_attempts').select('user_id, score'),
       supabase.from('feedback').select('user_id, rata_rata'),
@@ -283,8 +310,11 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
         .map((f) => +f.rata_rata)
         .filter((n) => !isNaN(n))
       const kepraktisan = fb.length ? +(fb.reduce((a, b) => a + b, 0) / fb.length).toFixed(1) : null
-      const classRel = (s as { classes?: { name: string } | { name: string }[] | null }).classes
-      const kelas = Array.isArray(classRel) ? classRel[0]?.name ?? null : classRel?.name ?? null
+      type KelasRel = { name: string; angkatan?: number | null }
+      const classRel = (s as { classes?: KelasRel | KelasRel[] | null }).classes
+      const kelasRow = Array.isArray(classRel) ? classRel[0] : classRel
+      const kelas = kelasRow?.name ?? null
+      const angkatan = kelasRow?.angkatan ?? null
       return {
         id: s.id as string,
         nama: s.full_name as string,
@@ -295,6 +325,7 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
         status: computeStudentStatus(jam),
         jalur: (s as { jalur?: 'cepat' | 'mendalam' | null }).jalur ?? null,
         kelas,
+        angkatan,
       }
     })
   } catch (e) {

@@ -62,6 +62,9 @@ export function Register() {
         email: email.trim(),
         password,
         options: {
+          // Tanpa ini tautan konfirmasi memakai Site URL bawaan proyek Supabase
+          // (http://localhost:3000), bukan domain aplikasi.
+          emailRedirectTo: `${window.location.origin}/`,
           data: {
             full_name: fullName.trim(),
             role,

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { authInputClass, authInputStyle } from '../components/AuthShell'
@@ -18,14 +18,34 @@ function resolveVariant(): 'book' | 'flip' {
   return LOGIN_VARIANT
 }
 
+// Supabase mengembalikan galat tautan email (mis. konfirmasi yang sudah
+// terpakai/kedaluwarsa) lewat hash URL: #error=access_denied&error_code=otp_expired&...
+// Mengembalikan pesan untuk pengguna, atau '' kalau hash bukan galat.
+function pesanGalatDariHash(): string {
+  if (typeof window === 'undefined') return ''
+  const params = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  if (!params.has('error') && !params.has('error_code')) return ''
+  return params.get('error_code') === 'otp_expired'
+    ? 'Tautan konfirmasi sudah dipakai atau kedaluwarsa. Kalau email Anda sudah terkonfirmasi, silakan masuk. Kalau belum, daftar ulang untuk mendapat tautan baru.'
+    : 'Tautan tidak bisa diproses. Silakan masuk atau daftar ulang.'
+}
+
 export function Login() {
   const navigate = useNavigate()
-  const [flipped, setFlipped] = useState(false)
+  const [error, setError] = useState(pesanGalatDariHash)
+  // Buka bukunya kalau ada pesan galat tautan, supaya pesan langsung terlihat.
+  const [flipped, setFlipped] = useState(() => error !== '')
   const [role, setRole] = useState<'mahasiswa' | 'dosen'>('mahasiswa')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  // Bersihkan hash galat supaya pesan tidak muncul lagi saat dimuat ulang.
+  useEffect(() => {
+    if (pesanGalatDariHash()) {
+      window.history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+  }, [])
 
   // forgotMode swaps the back face's own content (login form <-> reset-email
   // form) instead of leaving the flip card for a separate AuthShell layout —
