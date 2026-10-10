@@ -14,6 +14,16 @@ node_modules/
 # Referensi internal — tidak perlu di-push
 kemampuan.md
 
+# Bahan pribadi di folder proyek: naskah belum terbit dan kredensial kelas.
+# Repo ini publik, jadi tidak satu pun boleh ikut ter-commit.
+kerja nyata/
+revisi/
+20 akun/
+*kredensial*.csv
+
+# Proyek memakai pnpm (pnpm-lock.yaml); lockfile npm tidak dipakai
+package-lock.json
+
 # Claude Code local config — tooling internal, bukan bagian aplikasi
 .claude/
 
