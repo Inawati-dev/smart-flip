@@ -10,6 +10,7 @@ import {
   parseImportCsv,
   importMahasiswaCSV,
   fetchGolonganKelas,
+  type AnggotaGolongan,
   type KelasWithCount,
   type ParsedImportRow,
   type ImportResult,
@@ -73,6 +74,21 @@ export function KelasPanel() {
     enabled: idKelas.length > 0,
   })
   const [golTarget, setGolTarget] = useState<KelasWithCount | null>(null)
+  // Daftar mahasiswa (antrean #145): satu kelas penuh, atau satu golongan
+  // lintas kelas yang dipecah per angkatan dan kelas.
+  const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: Array<{ judul: string | null; baris: AnggotaGolongan[] }> } | null>(null)
+  const jumlahGolongan = (g: 'mahir' | 'remedial') =>
+    classes.reduce((n, k) => n + (golongan[k.id] ?? []).filter((a) => a.golongan === g).length, 0)
+  function bukaGolongan(g: 'mahir' | 'remedial') {
+    const seksi = [...classes]
+      .sort((a, b) => b.angkatan - a.angkatan || a.name.localeCompare(b.name))
+      .map((k) => ({ judul: `Angkatan ${k.angkatan} · ${k.name}`, baris: (golongan[k.id] ?? []).filter((a) => a.golongan === g) }))
+      .filter((x) => x.baris.length > 0)
+    setDaftar({ judul: `${GOLONGAN_LABEL[g]} · ${jumlahGolongan(g)} mahasiswa`, tampilGolongan: false, seksi })
+  }
+  function bukaKelas(k: KelasWithCount) {
+    setDaftar({ judul: `Daftar mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
+  }
 
   const [createOpen, setCreateOpen] = useState(false)
   const [name, setName] = useState('')
@@ -228,6 +244,8 @@ export function KelasPanel() {
       <div className="grid grid-cols-2 sm:[grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] gap-3 mb-5">
         <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={() => gulirKe('daftar-kelas')} />
         <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={() => gulirKe('daftar-kelas')} />
+        <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => bukaGolongan('mahir')} />
+        <StatCard bar="var(--warning)" val={String(jumlahGolongan('remedial'))} label={GOLONGAN_LABEL.remedial} onClick={() => bukaGolongan('remedial')} />
         {summary.byAngkatan.map((a) => (
           <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} onClick={() => gulirKe(`angkatan-${a.angkatan}`)} />
         ))}
@@ -281,7 +299,16 @@ export function KelasPanel() {
                           const dalam = anggota.filter((a) => a.golongan === 'remedial').length
                           return (
                             <tr key={k.id} className="row-divider">
-                              <td className="px-3 py-2.5 font-medium text-brown min-w-[140px]">{k.name}</td>
+                              <td className="px-3 py-2.5 min-w-[140px]">
+                                <button
+                                  onClick={() => bukaKelas(k)}
+                                  title="Lihat daftar mahasiswa"
+                                  aria-label={`Lihat daftar mahasiswa kelas ${k.name}`}
+                                  className="min-h-[44px] font-medium text-brown text-left underline decoration-dotted underline-offset-4 hover:decoration-solid cursor-pointer"
+                                >
+                                  {k.name}
+                                </button>
+                              </td>
                               <td className="px-3 py-2.5">
                                 <button
                                   onClick={() => void copyCode(k.code)}
@@ -514,6 +541,47 @@ export function KelasPanel() {
                 </p>
               ) : null
             })()}
+          </div>
+        </div>
+      )}
+
+      {/* Daftar mahasiswa satu kelas atau satu golongan (antrean #145) */}
+      {daftar && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setDaftar(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-5 max-w-lg w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h3 className="text-base font-semibold text-brown min-w-0">{daftar.judul}</h3>
+              <button onClick={() => setDaftar(null)} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
+                <IconX size={15} />
+              </button>
+            </div>
+            <p className="text-xs text-brown-3 mb-3">{course?.name ? `Tes diagnostik ${course.name}. ` : ''}Angka di kanan = skor tes diagnostik.</p>
+            {daftar.seksi.every((x) => x.baris.length === 0) ? (
+              <p className="text-sm text-brown-3">Belum ada mahasiswa.</p>
+            ) : (
+              daftar.seksi.map((x, n) => (
+                <div key={x.judul ?? n} className="mb-3 last:mb-0">
+                  {x.judul && <div className="text-[11px] font-bold uppercase tracking-wide text-brown-3 mb-1">{x.judul}</div>}
+                  <ul className="flex flex-col">
+                    {x.baris.map((a) => (
+                      <li key={a.id} className="row-divider flex items-center justify-between gap-2 py-1.5 text-sm text-brown-2">
+                        <span className="truncate min-w-0">{a.nama}</span>
+                        <span className="flex items-center gap-2 flex-shrink-0">
+                          <span className="tabular-nums text-brown-3">{a.skor ?? '—'}</span>
+                          {daftar.tampilGolongan && <ChipRak jenis={GOLONGAN_CHIP[a.golongan]} label={GOLONGAN_LABEL[a.golongan]} />}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
