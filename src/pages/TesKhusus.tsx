@@ -641,15 +641,15 @@ function MahasiswaTesKhusus() {
             <p className="text-brown-2 mb-1">Skor kamu: <strong>{hasilBaru}</strong></p>
             {session.kind === 'post' &&
               (!pre ? (
-                <p className="text-sm text-brown-3">Belum ada skor pre-test, peningkatan skor belum bisa dihitung.</p>
+                <p className="text-sm text-brown-3">Belum ada skor tes diagnostik awal, peningkatan skor belum bisa dihitung.</p>
               ) : pre.score >= 100 ? (
-                <p className="text-sm text-brown-3">Peningkatan skor dari pre-test: -</p>
+                <p className="text-sm text-brown-3">Peningkatan skor dari tes diagnostik awal: -</p>
               ) : (
                 (() => {
                   const { gain, category } = computeNGain(pre.score, hasilBaru, 100)
                   return (
                     <p className="text-sm text-brown-3">
-                      Peningkatan skor dari pre-test: {gain.toFixed(2)} ({category})
+                      Peningkatan skor dari tes diagnostik awal: {gain.toFixed(2)} ({category})
                     </p>
                   )
                 })()

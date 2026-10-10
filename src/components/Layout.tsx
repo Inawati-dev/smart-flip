@@ -27,7 +27,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/dashboard', icon: IconHome, label: 'Dashboard', desc: 'Ringkasan dan langkah berikutnya' },
   { to: '/modul', icon: IconBook, label: 'Modul', desc: 'PDF tiap pertemuan' },
   { to: '/video', icon: IconPlay, label: 'Video', desc: 'Video tiap pertemuan' },
-  { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Pre-test, formatif, post-test' },
+  { to: '/asesmen', icon: IconChart, label: 'Asesmen', desc: 'Tes diagnostik awal, formatif, post-test' },
   { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank soal', desc: 'Soal, tes khusus, tes kelompok, tugas akhir', dosenOnly: true },
   { to: '/akun/pdf', icon: IconDocument, label: 'Berkas', desc: 'PDF dan video tiap topik', dosenOnly: true },
   { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas dan kode gabung', dosenOnly: true },

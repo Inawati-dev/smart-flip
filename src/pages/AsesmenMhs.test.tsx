@@ -45,8 +45,8 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
     queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
     renderAt('/asesmen/pre', queryClient)
 
-    expect(await screen.findByText('Lanjut tanpa pre-test')).toBeTruthy()
-    expect(screen.getByText('Dosen belum menyiapkan pre-test.')).toBeTruthy()
+    expect(await screen.findByText('Lanjut tanpa tes diagnostik awal')).toBeTruthy()
+    expect(screen.getByText('Dosen belum menyiapkan tes diagnostik awal.')).toBeTruthy()
   })
 
   it('pre-test yang sudah dikerjakan langsung menampilkan skor tersimpan', async () => {
@@ -57,7 +57,7 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
     ])
     renderAt('/asesmen/pre', queryClient)
 
-    expect(await screen.findByText('Skor pre-test 70 tersimpan.')).toBeTruthy()
+    expect(await screen.findByText('Skor tes diagnostik awal 70 tersimpan.')).toBeTruthy()
     expect(screen.getByText('Mulai belajar')).toBeTruthy()
   })
 })

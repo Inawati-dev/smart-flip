@@ -124,12 +124,12 @@ describe('Akun', () => {
   })
 
   // Kartu angka mahasiswa: topik selesai, formatif lulus, pre-test.
-  it('mahasiswa melihat kartu angka Topik selesai/Formatif lulus/Pre-test', () => {
+  it('mahasiswa melihat kartu angka Topik selesai/Formatif lulus/Tes diagnostik awal', () => {
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
     renderAkun(queryClient)
     expect(screen.getByText('Topik selesai')).toBeTruthy()
     expect(screen.getByText('Formatif lulus')).toBeTruthy()
-    expect(screen.getByText('Pre-test')).toBeTruthy()
+    expect(screen.getByText('Tes diagnostik awal')).toBeTruthy()
   })
 })

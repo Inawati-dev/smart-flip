@@ -5,7 +5,9 @@ import { isSupabaseConfigured } from './supabase'
 // batas 80). Mahir membuka semua topik sekaligus; Remedial membuka topik satu
 // per satu seperti sebelumnya. Formatif >= 80 tetap syarat topik selesai untuk
 // keduanya. Tanpa skor pre-test (bank pre-test kosong, dilewati) = Belum
-// dipetakan, jalurnya sama dengan Remedial.
+// dipetakan, jalurnya sama dengan Remedial. Nama di layar mengikuti naskah
+// Bagian I (antrean #119 WP-1): Jalur cepat dan Belajar mendalam; nilai di
+// kode tetap 'mahir' dan 'remedial'.
 export type Golongan = 'mahir' | 'remedial' | 'belum'
 
 export const AMBANG_MAHIR = PASS_SCORE
@@ -16,8 +18,8 @@ export function golonganDariSkor(skor: number | null | undefined, ambang: number
 }
 
 export const GOLONGAN_LABEL: Record<Golongan, string> = {
-  mahir: 'Mahir',
-  remedial: 'Remedial',
+  mahir: 'Jalur cepat',
+  remedial: 'Belajar mendalam',
   belum: 'Belum dipetakan',
 }
 
@@ -31,7 +33,7 @@ export const GOLONGAN_CHIP: Record<Golongan, 'ok' | 'warn' | 'todo'> = {
 export const GOLONGAN_KETERANGAN: Record<Golongan, string> = {
   mahir: `Semua topik sudah terbuka. Tes formatif tiap topik tetap perlu skor ${AMBANG_MAHIR} supaya topik dihitung selesai.`,
   remedial: `Topik dibuka satu per satu. Topik berikutnya terbuka setelah tes formatif topik sebelumnya dapat skor ${AMBANG_MAHIR}.`,
-  belum: 'Belum ada skor pre-test, jadi topik dibuka satu per satu.',
+  belum: 'Belum ada skor tes diagnostik awal, jadi topik dibuka satu per satu.',
 }
 
 // Mode demo (tanpa Supabase) tidak bisa membaca quiz_attempts, jadi skor

@@ -1,6 +1,6 @@
 # Spek: alur belajar di naskah "Bagian 1 Pendahuluan" masuk ke web SMART-FLIP
 
-Status: USULAN, menunggu keputusan Johan. Belum ada kode yang diubah.
+Status: WP-1 selesai di kode (papan #110, 10 Okt 2026). WP-2 sampai WP-5 masih usulan, menunggu keputusan Johan.
 Dibuat 10 Okt 2026 dari permintaan Johan: "pelajari karena ini masuk di koding web, setelah itu buat spec dari smartflip" (antrean #119).
 
 ## 1. Sumber
@@ -95,5 +95,6 @@ Di luar spek ini: isi enam bab, 60 soal, remedial dan pengayaan per bab, multime
 
 - Keputusan 2 (batas lulus formatif): "untuk ini dosen bisa setup saja, jadi perlu ada halaman yang setting itu". Artinya batas tidak dipatok di kode. WP-2 berubah: batas formatif (dan batas diagnostik) menjadi setelan per mata kuliah yang diisi dosen di satu halaman setelan. Akibat teknis yang perlu dirancang: kolom `quiz_attempts.passed` sekarang dihitung basis data dengan angka tetap (`score >= 80`), jadi harus diganti dengan perbandingan terhadap setelan mata kuliah. SQL-nya dikirim sebagai berkas untuk ditempel Johan di SQL Editor Supabase.
 - Keputusan 5 (tanya dosen): "di abaikan saja dlu". WP-6 ditunda.
-- Keputusan 1, 3, 4, 6, 7 belum dijawab.
+- Keputusan 1 (nama golongan): "kerjakan #119 WP-1". WP-1 dikerjakan; layar khusus dosen masih memakai "Pre-test" (antrean #133).
+- Keputusan 3, 4, 6, 7 belum dijawab.
 

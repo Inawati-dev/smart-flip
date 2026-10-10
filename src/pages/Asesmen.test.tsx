@@ -63,7 +63,7 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
   })
 
   // Antrean #105 opsi B: golongan pre-test per mahasiswa, batas 80.
-  it('menghitung golongan pre-test: Mahir dan Remedial per mahasiswa', async () => {
+  it('menghitung golongan pre-test: Jalur cepat dan Belajar mendalam per mahasiswa', async () => {
     const queryClient = newQueryClient()
     queryClient.setQueryData(['asesmen-prepost', 1], [
       { userId: 'a', nama: 'Ani', kelasId: 'A', pre: 85, post: 90 },
@@ -78,9 +78,9 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     )
     expect(await screen.findByText('Ani')).toBeTruthy()
     const teks = document.body.textContent ?? ''
-    expect(teks).toContain('Mahir 1 · Remedial 1')
+    expect(teks).toContain('Jalur cepat 1 · Belajar mendalam 1')
     expect(screen.getByText('Golongan')).toBeTruthy()
-    expect(screen.getAllByText('Mahir').length).toBe(1)
-    expect(screen.getAllByText('Remedial').length).toBe(1)
+    expect(screen.getAllByText('Jalur cepat').length).toBe(1)
+    expect(screen.getAllByText('Belajar mendalam').length).toBe(1)
   })
 })

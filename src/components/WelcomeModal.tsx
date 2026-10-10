@@ -21,8 +21,8 @@ const STEPS_MAHASISWA: Step[] = [
   },
   {
     icon: IconCompass,
-    title: 'Pre-test Sekali di Awal',
-    desc: 'Kerjakan pre-test satu kali sebelum materi terbuka. Di akhir mata kuliah ada post-test lewat kode dari dosen; selisih keduanya menjadi peningkatan skormu.',
+    title: 'Tes Diagnostik Awal',
+    desc: 'Kerjakan tes diagnostik awal satu kali sebelum materi terbuka. Di akhir mata kuliah ada post-test lewat kode dari dosen; selisih keduanya menjadi peningkatan skormu.',
   },
 ]
 

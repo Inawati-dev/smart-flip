@@ -144,7 +144,7 @@ export function Akun() {
             <>
               <StatCard bar="var(--terra)" val={`${modulSelesai}/${totalModules}`} label="Topik selesai" to="/modul" />
               <StatCard bar="var(--sage)" val={String(formatifLulus)} label="Formatif lulus" to="/asesmen" />
-              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Pre-test" to="/asesmen" />
+              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Tes diagnostik awal" to="/asesmen" />
             </>
           )}
         </div>

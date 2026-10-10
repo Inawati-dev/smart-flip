@@ -108,7 +108,7 @@ function AsesmenDaftar() {
           <h1 className="font-display text-2xl font-bold text-brown">Asesmen</h1>
           <MataKuliahSelect />
         </div>
-        <p className="text-brown-3 mb-4">Pre-test, tes formatif tiap topik, post-test, tes kelompok, dan tugas akhir.</p>
+        <p className="text-brown-3 mb-4">Tes diagnostik awal, tes formatif tiap topik, post-test, tes kelompok, dan tugas akhir.</p>
         <PertemuanStepper
           current={topikAktif?.id ?? sorted[0]?.id ?? 0}
           basePath="/asesmen/formatif"
@@ -158,7 +158,7 @@ function AsesmenDaftar() {
 
           <div className="flex flex-col gap-3">
             <PanelCard
-              title="Pre-test"
+              title="Tes diagnostik awal"
               value={preSkor != null ? `Skor ${preSkor} · ${GOLONGAN_LABEL[golonganDariSkor(preSkor)]} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`}
             />
             {/* /asesmen/tes diisi WP6b (spec §9); untuk sekarang tautan saja. */}
@@ -260,7 +260,7 @@ function PreTest() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <h1 className="font-display text-xl font-bold text-brown mb-4">Pre-test</h1>
+        <h1 className="font-display text-xl font-bold text-brown mb-4">Tes diagnostik awal</h1>
 
         {acak ? (
           <SoalRunner
@@ -282,10 +282,10 @@ function PreTest() {
           />
         ) : skorFinal != null ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-3">Skor pre-test {skorFinal} tersimpan.</p>
+            <p className="text-brown-2 mb-3">Skor tes diagnostik awal {skorFinal} tersimpan.</p>
             {/* Golongan pre-test (antrean #105 opsi B, batas 80). */}
             <div className="flex justify-center mb-2">
-              <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal)]} label={`Golongan ${GOLONGAN_LABEL[golonganDariSkor(skorFinal)]}`} />
+              <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal)]} label={GOLONGAN_LABEL[golonganDariSkor(skorFinal)]} />
             </div>
             <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{GOLONGAN_KETERANGAN[golonganDariSkor(skorFinal)]}</p>
             <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
@@ -294,16 +294,16 @@ function PreTest() {
           </div>
         ) : soal.length === 0 ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-5">Dosen belum menyiapkan pre-test.</p>
+            <p className="text-brown-2 mb-5">Dosen belum menyiapkan tes diagnostik awal.</p>
             <button onClick={lanjutTanpaPreTest} className="btn btn-primary">
-              Lanjut tanpa pre-test
+              Lanjut tanpa tes diagnostik awal
             </button>
           </div>
         ) : (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-1">Kerjakan pre-test {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
-            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode · skor {AMBANG_MAHIR} ke atas masuk golongan Mahir dan semua topik langsung terbuka</p>
-            <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya pre-test sendiri, jadi pre-test ini hanya untuk mata kuliah yang sedang dipilih.</p>
+            <p className="text-brown-2 mb-1">Kerjakan tes diagnostik awal {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
+            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode · skor {AMBANG_MAHIR} ke atas masuk {GOLONGAN_LABEL.mahir} dan semua topik langsung terbuka</p>
+            <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya tes diagnostik awal sendiri, jadi tes ini hanya untuk mata kuliah yang sedang dipilih.</p>
             <button onClick={mulai} className="btn btn-primary">
               Mulai
             </button>
@@ -354,15 +354,15 @@ function PostTest() {
               Skor post-test: <strong>{post.score}</strong>
             </p>
             {!pre ? (
-              <p className="text-sm text-brown-3">Belum ada skor pre-test, peningkatan skor belum bisa dihitung.</p>
+              <p className="text-sm text-brown-3">Belum ada skor tes diagnostik awal, peningkatan skor belum bisa dihitung.</p>
             ) : pre.score >= 100 ? (
-              <p className="text-sm text-brown-3">Peningkatan skor dari pre-test: —</p>
+              <p className="text-sm text-brown-3">Peningkatan skor dari tes diagnostik awal: —</p>
             ) : (
               (() => {
                 const { gain, category } = computeNGain(pre.score, post.score, 100)
                 return (
                   <p className="text-sm text-brown-3">
-                    Peningkatan skor dari pre-test: {gain.toFixed(2)} ({category})
+                    Peningkatan skor dari tes diagnostik awal: {gain.toFixed(2)} ({category})
                   </p>
                 )
               })()

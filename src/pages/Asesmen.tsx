@@ -171,7 +171,7 @@ export default function Asesmen() {
             <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Pre-test</div>
             <div className="font-display text-2xl font-bold text-brown">{formatSkor(peningkatan.rataPre)}</div>
             <div className="text-xs text-brown-3 mt-1 tabular-nums">
-              Mahir {jumlahGolongan.mahir} · Remedial {jumlahGolongan.remedial}
+              {GOLONGAN_LABEL.mahir} {jumlahGolongan.mahir} · {GOLONGAN_LABEL.remedial} {jumlahGolongan.remedial}
               {jumlahGolongan.belum > 0 && ` · Belum dipetakan ${jumlahGolongan.belum}`}
             </div>
           </div>

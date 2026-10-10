@@ -464,7 +464,7 @@ export function DashboardMhs({
         <StatCard
           icon={IconFolder}
           val={pre?.skor != null ? String(pre.skor) : '—'}
-          label={pre ? `Pre-test · ${GOLONGAN_LABEL[pre.golongan]}` : 'Pre-test'}
+          label={pre ? `Tes diagnostik awal · ${GOLONGAN_LABEL[pre.golongan]}` : 'Tes diagnostik awal'}
           bar="var(--info)"
           to="/asesmen"
         />
