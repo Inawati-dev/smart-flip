@@ -42,4 +42,12 @@ describe('hitungStatusTopik', () => {
     const statusOf = hitungStatusTopik(MODULES, {}, false, 80, true)
     expect(statusOf(MODULES[MODULES.length - 1].id)).toBe('locked')
   })
+  // Antrean #153: kunci jadwal berlaku untuk semua golongan, kecuali topik yang sudah lulus.
+  it('materi yang belum waktunya terkunci walau golongan mahir; yang sudah lulus tetap done', () => {
+    const belumWaktunya = (id: number) => id === 1
+    const statusOf = hitungStatusTopik(MODULES, { 2: 90 }, true, 70, true, belumWaktunya)
+    expect(statusOf(MODULES[0].id)).toBe('open')
+    expect(statusOf(MODULES[1].id)).toBe('done')
+    expect(statusOf(MODULES[2].id)).toBe('locked')
+  })
 })

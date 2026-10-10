@@ -16,11 +16,16 @@ import { AMBANG_FORMATIF, useAmbang } from './ambang'
 import { isSupabaseConfigured } from './supabase'
 import { useCourse } from '../contexts/CourseContext'
 import { golonganDariSkor, bacaSkorPreDemo, type Golongan } from './golongan'
+import { jadwalTopik } from './jadwal'
 
 export type TopikStatus = 'done' | 'open' | 'locked'
 
 export interface TopikState {
   statusOf: (moduleId: number) => TopikStatus
+  /** Tanggal materi topik dibuka bila masih terkunci jadwal; null bila tidak dikunci tanggal (antrean #153). */
+  bukaPada: (moduleId: number) => Date | null
+  /** Tanggal tes formatif topik dibuka bila belum waktunya; null bila sudah boleh. */
+  formatifPada: (moduleId: number) => Date | null
   loading: boolean
   /** Golongan pre-test mata kuliah terpilih (antrean #105). */
   golongan: Golongan
@@ -120,6 +125,8 @@ export function hitungStatusTopik(
   preDone: boolean,
   passScore: number = AMBANG_FORMATIF,
   mahir: boolean = false,
+  /** Kunci jadwal (antrean #153): false = materi topik itu belum waktunya, untuk semua golongan. */
+  materiBuka?: (moduleId: number) => boolean,
 ): (moduleId: number) => TopikStatus {
   return (moduleId: number) => {
     const idx = modulesUrut.findIndex((m) => m.id === moduleId)
@@ -127,7 +134,10 @@ export function hitungStatusTopik(
     const ownScore = bestFormatif[moduleId] ?? 0
     const gateOpen = !preDone ? false : mahir || idx === 0 ? true : (bestFormatif[modulesUrut[idx - 1].id] ?? 0) >= passScore
     if (!gateOpen) return 'locked'
-    return ownScore >= passScore ? 'done' : 'open'
+    // Yang sudah lulus tidak dikunci ulang walau jadwal diisi belakangan.
+    if (ownScore >= passScore) return 'done'
+    if (materiBuka && !materiBuka(moduleId)) return 'locked'
+    return 'open'
   }
 }
 
@@ -148,10 +158,29 @@ export function useTopikStatus(): TopikState {
 
   const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const bestFormatif = useMemo(() => bestScoreByModule(attempts), [attempts])
+  // Jadwal mata kuliah (antrean #153). `kini` dibekukan per pemasangan supaya
+  // hitungannya stabil selama halaman terbuka.
+  const { course } = useCourse()
+  const kini = useMemo(() => new Date(), [])
+  const jadwal = useMemo(() => jadwalTopik(course?.mulai_kuliah, sorted), [course?.mulai_kuliah, sorted])
+  const bukaPada = useMemo(
+    () => (id: number) => {
+      const t = jadwal?.get(id)?.materi
+      return t && t > kini ? t : null
+    },
+    [jadwal, kini],
+  )
+  const formatifPada = useMemo(
+    () => (id: number) => {
+      const t = jadwal?.get(id)?.formatif
+      return t && t > kini ? t : null
+    },
+    [jadwal, kini],
+  )
   const statusOf = useMemo(
-    () => hitungStatusTopik(sorted, bestFormatif, preDone, ambang.formatif, golongan === 'mahir'),
-    [sorted, bestFormatif, preDone, golongan, ambang.formatif],
+    () => hitungStatusTopik(sorted, bestFormatif, preDone, ambang.formatif, golongan === 'mahir', (id) => bukaPada(id) == null),
+    [sorted, bestFormatif, preDone, golongan, ambang.formatif, bukaPada],
   )
 
-  return { statusOf, loading: modulesLoading || attemptsLoading || preLoading, golongan, skorPre }
+  return { statusOf, bukaPada, formatifPada, loading: modulesLoading || attemptsLoading || preLoading, golongan, skorPre }
 }

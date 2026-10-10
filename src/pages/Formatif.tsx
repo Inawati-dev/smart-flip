@@ -14,6 +14,8 @@ import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner } from '../components/SoalRunner'
 import { IconLock } from '../components/icons'
+import { formatTanggal } from '../lib/jadwal'
+import { ChipRak } from '../components/KartuTopik'
 
 // Tes formatif per topik (spec §4.3, §4.4, §9 WP6) — menggantikan Kuis.tsx:
 // bank soal diambil dari quiz_questions kind='formatif' (bukan modules.kuis),
@@ -34,7 +36,7 @@ export default function Formatif() {
   const ambang = useAmbang()
   const { data: modul, isLoading: modulLoading } = useModule(moduleId)
   const { data: modules = [] } = useModules()
-  const { statusOf, loading: topikLoading } = useTopikStatus()
+  const { statusOf, bukaPada, formatifPada, loading: topikLoading } = useTopikStatus()
   const { role } = useAuth()
   // Dosen tidak dipindah mata kuliahnya (temuan pemeriksa #106).
   const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
@@ -115,9 +117,36 @@ export default function Formatif() {
           {status === 'locked' ? (
             <div className="p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
               <IconLock size={28} className="mx-auto mb-3 text-brown-3" />
-              <p className="text-brown-2 mb-3 text-sm">Selesaikan topik {modul.order_num - 1} dulu.</p>
+              <p className="text-brown-2 mb-3 text-sm">
+                {bukaPada(moduleId) ? `Topik ini dibuka ${formatTanggal(bukaPada(moduleId)!)}.` : `Selesaikan topik ${modul.order_num - 1} dulu.`}
+              </p>
               <Link to="/asesmen" className="inline-flex items-center min-h-11 text-terra font-semibold text-sm">
                 ← Kembali
+              </Link>
+            </div>
+          ) : status === 'done' && !acak && !modal ? (
+            // Sudah lulus: tes tertutup (antrean #153), skor terbaik tetap terlihat.
+            <div className="p-7 rounded-xl bg-ivory border text-center" style={BORDER}>
+              <div className="flex justify-center mb-3">
+                <ChipRak jenis="ok" label="Sudah Lulus" />
+              </div>
+              <p className="text-brown-2 text-sm mb-1">
+                Skor terbaik kamu: <strong>{bestScore}</strong>. Batas lulus {ambang.formatif}.
+              </p>
+              <p className="text-sm text-brown-3 mb-5">Tes formatif topik ini sudah tertutup untukmu.</p>
+              {nextModul && (
+                <Link to={`/modul/${nextModul.id}`} className="btn btn-primary">
+                  Lanjut ke topik {idx + 2}
+                </Link>
+              )}
+            </div>
+          ) : formatifPada(moduleId) && !acak ? (
+            <div className="p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
+              <IconLock size={28} className="mx-auto mb-3 text-brown-3" />
+              <p className="text-brown-2 mb-1 text-sm">Tes formatif topik ini dibuka {formatTanggal(formatifPada(moduleId)!)}.</p>
+              <p className="text-brown-3 mb-3 text-xs">Tes dibuka di pertemuan kedua topik. Baca modul dan tonton videonya dulu.</p>
+              <Link to={`/modul/${moduleId}`} className="btn btn-secondary">
+                Baca topik {modul.order_num}
               </Link>
             </div>
           ) : soal.length === 0 ? (

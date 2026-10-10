@@ -10,6 +10,7 @@ import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
 import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topik'
 import { computeNGain } from '../lib/ngain'
 import { useCourse } from '../contexts/CourseContext'
+import { formatTanggal } from '../lib/jadwal'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner, TinjauanJawaban } from '../components/SoalRunner'
@@ -80,7 +81,7 @@ function AsesmenDaftar() {
   const { courseId, course } = useCourse()
   const ambang = useAmbang()
   const { data: modules = [] } = useModules()
-  const { statusOf } = useTopikStatus()
+  const { statusOf, bukaPada, formatifPada } = useTopikStatus()
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
   const topikAktif = sorted.find((m) => statusOf(m.id) === 'open') ?? sorted.find((m) => statusOf(m.id) === 'done')
 
@@ -93,11 +94,16 @@ function AsesmenDaftar() {
   const bestAktif = attemptsAktif.length ? Math.max(...attemptsAktif.map((a) => a.score)) : null
   const preSkor = preAttempts.length ? preAttempts[preAttempts.length - 1].score : null
 
+  const aktifLulus = !!topikAktif && statusOf(topikAktif.id) === 'done'
+  // Jadwal (antrean #153): tes topik aktif bisa belum dibuka walau materinya sudah.
+  const tesDibuka = topikAktif && !aktifLulus ? formatifPada(topikAktif.id) : null
+  const topikPertamaDibuka = sorted[0] ? bukaPada(sorted[0].id) : null
+
   const chipAktif = !topikAktif
     ? null
-    : statusOf(topikAktif.id) === 'done'
+    : aktifLulus
       ? 'Lulus'
-      : statusOf(topikAktif.id) === 'locked'
+      : statusOf(topikAktif.id) === 'locked' || tesDibuka
         ? 'Terkunci'
         : bestAktif != null
           ? 'Remedial'
@@ -127,12 +133,22 @@ function AsesmenDaftar() {
                 </div>
                 <p className="text-sm text-brown-3 mb-1">Syarat lulus: skor ≥ {ambang.formatif}</p>
                 <p className="text-sm text-brown-3 mb-4">Skor terbaik: {bestAktif != null ? bestAktif : '—'}</p>
-                <Link to={`/asesmen/formatif/${topikAktif.id}`} className="btn btn-primary">
-                  Kerjakan
-                </Link>
+                {tesDibuka ? (
+                  <p className="text-sm text-brown-2">Tes formatif topik ini dibuka {formatTanggal(tesDibuka)}.</p>
+                ) : (
+                  <Link to={`/asesmen/formatif/${topikAktif.id}`} className="btn btn-primary">
+                    {aktifLulus ? 'Lihat hasil' : 'Kerjakan'}
+                  </Link>
+                )}
               </div>
             ) : (
-              <p className="text-brown-3">Memuat topik…</p>
+              <p className="text-brown-3">
+                {sorted.length === 0
+                  ? 'Memuat topik…'
+                  : topikPertamaDibuka
+                    ? `Belum ada topik yang terbuka. Topik pertama dibuka ${formatTanggal(topikPertamaDibuka)}.`
+                    : 'Belum ada topik yang terbuka.'}
+              </p>
             )}
 
             <div className="mt-5">

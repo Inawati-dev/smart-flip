@@ -114,6 +114,26 @@ describe('DashboardMhs', () => {
     expect(html).toContain('Kerjakan tes formatif 1')
   })
 
+  // Antrean #153: tes yang belum waktunya tidak ditawarkan; topik yang belum dibuka menampilkan tanggalnya.
+  it('jadwal: tes formatif belum dibuka tidak ditawarkan, topik terkunci menampilkan tanggal buka', () => {
+    const progress = { 'books/modul-01.pdf': { pct: 100, currentPage: 20, lastOpened: null } }
+    const nanti = new Date(2099, 0, 5)
+    const tesNanti = renderToStaticMarkup(
+      <MemoryRouter>
+        <DashboardMhs modules={modules} progress={progress} attempts={[]} formatifPada={() => nanti} />
+      </MemoryRouter>,
+    )
+    expect(tesNanti).not.toContain('Kerjakan tes formatif 1')
+    expect(tesNanti).toContain('Baca topik 1')
+    const topikNanti = renderToStaticMarkup(
+      <MemoryRouter>
+        <DashboardMhs modules={modules} progress={progress} attempts={[]} bukaPada={() => nanti} formatifPada={() => nanti} />
+      </MemoryRouter>,
+    )
+    expect(topikNanti).toContain('Topik 1 dibuka')
+    expect(topikNanti).not.toContain('Baca topik 1')
+  })
+
   // Antrean #143: kepala memuat nama, kelas, angkatan, dan golongan.
   it('kepala menampilkan nama, kelas, angkatan, dan golongan tes diagnostik', () => {
     const html = renderToStaticMarkup(

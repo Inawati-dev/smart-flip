@@ -10,6 +10,7 @@ import { useKelasByDosen } from '../hooks/useKelas'
 import { cocokFilter, fetchMyKelas } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
 import { useTopikStatus } from '../lib/topik'
+import { formatTanggal } from '../lib/jadwal'
 import { GOLONGAN_LABEL, GOLONGAN_CHIP, type Golongan } from '../lib/golongan'
 import { useAmbang } from '../lib/ambang'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
@@ -327,7 +328,7 @@ export function Dashboard() {
   const { data: modules = [], isLoading: modulesLoading } = useModules()
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useAllQuizAttempts()
-  const { golongan, skorPre } = useTopikStatus()
+  const { golongan, skorPre, bukaPada, formatifPada } = useTopikStatus()
   const ambang = useAmbang()
   const { data: kelasSaya = null } = useQuery({ queryKey: ['kelas-saya'], queryFn: fetchMyKelas, enabled: role === 'mahasiswa' })
   const [showWelcome, setShowWelcome] = useState(false)
@@ -372,6 +373,8 @@ export function Dashboard() {
             attempts={attempts}
             pre={{ skor: skorPre, golongan }}
             ambangFormatif={ambang.formatif}
+            bukaPada={bukaPada}
+            formatifPada={formatifPada}
             identitas={{ nama: profile?.full_name || 'Mahasiswa', kelas: kelasSaya }}
           />
         )}
@@ -389,6 +392,8 @@ export function DashboardMhs({
   pre,
   identitas,
   ambangFormatif,
+  bukaPada,
+  formatifPada,
 }: {
   modules: ModuleRow[]
   progress: ProgressMap
@@ -399,12 +404,19 @@ export function DashboardMhs({
   identitas?: { nama: string; kelas: { name: string; angkatan: number } | null }
   /** Batas lulus formatif mata kuliah (antrean #136); kosong = bawaan. */
   ambangFormatif?: number
+  /** Tanggal buka materi dan tes topik menurut jadwal (antrean #153); `null` = sudah terbuka. */
+  bukaPada?: (id: number) => Date | null
+  formatifPada?: (id: number) => Date | null
 }) {
   const hasil = hitungLangkah({ modules, progress, attempts, passScore: ambangFormatif })
   const totalModules = modules.length || TOTAL_MODULES
   const actions = langkahActions(hasil.topikAktif.id, hasil.topikAktif.orderNum)
+  const materiDibuka = bukaPada?.(hasil.topikAktif.id) ?? null
+  const tesDibuka = formatifPada?.(hasil.topikAktif.id) ?? null
+  // Tes yang belum waktunya tidak ditawarkan; membaca jadi langkah utama.
+  const utama = hasil.langkah === 'formatif' && tesDibuka ? 'baca' : hasil.langkah
   const langkahLain = (Object.keys(actions) as Array<keyof typeof actions>).filter(
-    (k) => k !== hasil.langkah,
+    (k) => k !== utama && !(k === 'formatif' && tesDibuka),
   )
 
   return (
@@ -431,14 +443,18 @@ export function DashboardMhs({
         <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-3">
           Langkah berikutnya
         </div>
-        {hasil.langkah === 'selesai-semua' ? (
+        {utama === 'selesai-semua' ? (
           <p className="text-brown-2 text-sm">
             Semua topik selesai. Menunggu sesi post-test dari dosen.
           </p>
+        ) : materiDibuka ? (
+          <p className="text-brown-2 text-sm">
+            Topik {hasil.topikAktif.orderNum} dibuka {formatTanggal(materiDibuka)}.
+          </p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            <Link to={actions[hasil.langkah].to} className="btn btn-primary">
-              {actions[hasil.langkah].label}
+            <Link to={actions[utama].to} className="btn btn-primary">
+              {actions[utama].label}
             </Link>
             {langkahLain.map((k) => (
               <Link key={k} to={actions[k].to} className="btn btn-secondary">

@@ -17,6 +17,8 @@ export interface Course {
   /** Batas skor (v27, antrean #136); kosong sebelum migrasi jalan, lihat lib/ambang.ts. */
   ambang_diagnostik?: number | null
   ambang_formatif?: number | null
+  /** Tanggal pertemuan pertama 'YYYY-MM-DD' (v29, antrean #153); kosong = tanpa kunci tanggal. */
+  mulai_kuliah?: string | null
 }
 
 export const DEMO_COURSES: Course[] = [

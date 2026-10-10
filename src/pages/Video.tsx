@@ -18,6 +18,7 @@ import { KartuVideo } from '../components/KartuVideo'
 import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
+import { formatTanggal } from '../lib/jadwal'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -75,7 +76,7 @@ function chipMahasiswa(
 function VideoMahasiswa() {
   const { id } = useParams()
   const { data: modules = [], isLoading: modulesLoading } = useModules()
-  const { statusOf } = useTopikStatus()
+  const { statusOf, bukaPada } = useTopikStatus()
   const ambangFormatif = useAmbang().formatif
   const { data: progressMap = {} } = useQuery({ queryKey: ['video-progress'], queryFn: fetchVideoProgressMap })
   const sorted = useMemo(() => sortModules(modules), [modules])
@@ -130,7 +131,7 @@ function VideoMahasiswa() {
                         durasi={detik(m) ? formatDuration(detik(m)!) : undefined}
                         chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
                         terkunci={status === 'locked'}
-                        judulKunci={`Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
+                        judulKunci={bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
                         to={hasVideo ? `/video/${m.id}` : undefined}
                         warna={warnaSampul(m.order_num)}
                       />
@@ -174,7 +175,9 @@ function VideoMahasiswa() {
 
         {status === 'locked' ? (
           <div className="mt-6 p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
-            <p className="text-brown-2 mb-3 text-sm">Selesaikan topik {modul.order_num - 1} dulu.</p>
+            <p className="text-brown-2 mb-3 text-sm">
+              {bukaPada(modul.id) ? `Topik ini dibuka ${formatTanggal(bukaPada(modul.id)!)}.` : `Selesaikan topik ${modul.order_num - 1} dulu.`}
+            </p>
             <Link to="/video" className="text-terra font-semibold text-sm inline-flex items-center min-h-11">
               ← Kembali
             </Link>
@@ -277,6 +280,9 @@ function VideoPlayer({ modul }: { modul: ModuleRow }) {
 }
 
 function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: number; sorted: ModuleRow[] }) {
+  const { statusOf, formatifPada } = useTopikStatus()
+  const lulus = statusOf(current) === 'done'
+  const tesDibuka = lulus ? null : formatifPada(current)
   const next = [sorted[idx + 1], sorted[idx + 2]].filter((m): m is ModuleRow => !!m)
   return (
     <div className="bg-ivory rounded-xl border p-4 flex flex-col gap-4" style={BORDER}>
@@ -286,9 +292,13 @@ function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: num
           <Link to={`/modul/${current}`} className="btn btn-secondary">
             Baca topik {idx + 1}
           </Link>
-          <Link to={`/asesmen/formatif/${current}`} className="btn btn-primary">
-            Kerjakan tes formatif
-          </Link>
+          {tesDibuka ? (
+            <p className="text-xs text-brown-3">Tes formatif dibuka {formatTanggal(tesDibuka)}.</p>
+          ) : (
+            <Link to={`/asesmen/formatif/${current}`} className="btn btn-primary">
+              {lulus ? 'Lihat hasil tes formatif' : 'Kerjakan tes formatif'}
+            </Link>
+          )}
         </div>
       </div>
 

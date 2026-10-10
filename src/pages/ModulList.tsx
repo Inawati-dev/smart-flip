@@ -29,6 +29,8 @@ import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
+import { formatTanggal } from '../lib/jadwal'
+import { JadwalModal } from '../components/JadwalModal'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -37,7 +39,8 @@ const BORDER = { borderColor: 'var(--border)' } as const
 // disederhanakan (tanpa reorder/bulk/hapus/tambah — itu tetap di sana).
 export function DosenModulRak() {
   const queryClient = useQueryClient()
-  const { courseId } = useCourse()
+  const { courseId, course } = useCourse()
+  const [jadwalOpen, setJadwalOpen] = useState(false)
   const { data: modules = [] } = useModules()
   const moduleIds = useMemo(() => modules.map((m) => m.id), [modules])
   const { data: customs = {} } = useModulCustoms(moduleIds)
@@ -227,6 +230,9 @@ export function DosenModulRak() {
           {sorted.length} topik · {jumlahPdf} punya PDF
         </p>
         <div className="flex items-center gap-2">
+          <button onClick={() => setJadwalOpen(true)} disabled={!course || sorted.length === 0} className="btn btn-secondary btn-sm">
+            Jadwal
+          </button>
           <button onClick={() => setUrutkanOpen(true)} disabled={sorted.length < 2} className="btn btn-secondary btn-sm">
             Urutkan
           </button>
@@ -236,6 +242,7 @@ export function DosenModulRak() {
         </div>
       </div>
       <UrutkanTopikModal open={urutkanOpen} modules={sorted} onClose={() => setUrutkanOpen(false)} onSimpan={simpanUrutan} />
+      {jadwalOpen && course && <JadwalModal course={course} modules={sorted} onClose={() => setJadwalOpen(false)} />}
       {sorted.length === 0 ? (
         <p className="text-brown-3">Belum ada topik. Tambah topik pertama.</p>
       ) : (
@@ -711,7 +718,7 @@ export function ModulList() {
   const { role } = useAuth()
   const { data: modules = [] } = useModules()
   const { data: progress = {} } = useAllProgress()
-  const { statusOf } = useTopikStatus()
+  const { statusOf, bukaPada } = useTopikStatus()
   const ambangFormatif = useAmbang().formatif
   const [kelolaOpen, setKelolaOpen] = useState(false)
 
@@ -776,7 +783,7 @@ export function ModulList() {
                       kaki={kaki}
                       chip={chip}
                       terkunci={status === 'locked'}
-                      judulKunci={`Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
+                      judulKunci={bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
                       to={`/modul/${m.id}`}
                     />
                   )

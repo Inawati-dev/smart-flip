@@ -10,6 +10,7 @@ import { PertemuanStepper } from '../components/PertemuanStepper'
 import { DosenModulRak } from './ModulList'
 import { IconBook, IconChart, IconPlay, IconEdit } from '../components/icons'
 import { SampulTopik } from '../components/KartuTopik'
+import { formatTanggal } from '../lib/jadwal'
 
 // progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
 // -- was rendering as-is ("2026-07-24T04:04:55.479+00:00") instead of a
@@ -33,7 +34,7 @@ export default function Modul() {
   const { data: modul, isLoading } = useModule(moduleId)
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useQuizAttempts(moduleId)
-  const { statusOf } = useTopikStatus()
+  const { statusOf, bukaPada, formatifPada } = useTopikStatus()
   const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
 
   if (role === 'dosen') {
@@ -55,7 +56,9 @@ export default function Modul() {
     return (
       <Layout>
         <div className="p-8 text-center">
-          <p className="text-brown mb-3">Selesaikan topik {modul.order_num - 1} dulu.</p>
+          <p className="text-brown mb-3">
+            {bukaPada(modul.id) ? `Topik ini dibuka ${formatTanggal(bukaPada(modul.id)!)}.` : `Selesaikan topik ${modul.order_num - 1} dulu.`}
+          </p>
           <Link to="/modul" className="text-terra text-sm font-semibold inline-flex items-center min-h-11">
             ← Kembali
           </Link>
@@ -121,9 +124,13 @@ export default function Modul() {
                 <Link to={`/video/${modul.id}`} className="btn btn-secondary">
                   <IconPlay size={14} /> Tonton video {modul.order_num}
                 </Link>
-                <Link to={`/asesmen/formatif/${modul.id}`} className="btn btn-secondary">
-                  <IconEdit size={14} /> Kerjakan tes formatif
-                </Link>
+                {formatifPada(modul.id) && status !== 'done' ? (
+                  <p className="text-xs text-brown-3">Tes formatif dibuka {formatTanggal(formatifPada(modul.id)!)}.</p>
+                ) : (
+                  <Link to={`/asesmen/formatif/${modul.id}`} className="btn btn-secondary">
+                    <IconEdit size={14} /> {status === 'done' ? 'Lihat hasil tes formatif' : 'Kerjakan tes formatif'}
+                  </Link>
+                )}
               </div>
             </div>
           </div>
