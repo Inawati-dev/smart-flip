@@ -11,6 +11,8 @@ export interface RubrikKriteria {
   nama: string
   /** Bobot relatif, angka positif. Total rubrik tidak harus 100. */
   bobot: number
+  /** Yang diukur kriteria ini (rubrik Paket Proposal); boleh kosong. */
+  ukur?: string
 }
 
 export interface FinalProject {
@@ -24,6 +26,10 @@ export interface FinalProject {
   class_ids: string[]
   is_open: boolean
   created_at: string
+  /** Paket Rancangan Proposal (v37): empat brief berbagi paket_id, urutan 1..4, bobot dalam persen. */
+  paket_id?: string | null
+  urutan?: number | null
+  bobot?: number | null
 }
 
 export interface FinalSubmission {
