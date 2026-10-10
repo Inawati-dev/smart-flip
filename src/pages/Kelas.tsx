@@ -26,6 +26,34 @@ import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, Ic
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
+type SeksiMahasiswa = { judul: string | null; baris: AnggotaGolongan[] }
+
+// Daftar mahasiswa per seksi (angkatan dan kelas), dipakai modal daftar kelas
+// dan tampilan tersaring di bawah kartu golongan (antrean #145, #150).
+function DaftarSeksi({ seksi, tampilGolongan }: { seksi: SeksiMahasiswa[]; tampilGolongan: boolean }) {
+  if (seksi.every((x) => x.baris.length === 0)) return <p className="text-sm text-brown-3">Belum ada mahasiswa.</p>
+  return (
+    <>
+      {seksi.map((x, n) => (
+        <div key={x.judul ?? n} className="mb-3 last:mb-0">
+          {x.judul && <div className="text-[11px] font-bold uppercase tracking-wide text-brown-3 mb-1">{x.judul}</div>}
+          <ul className="flex flex-col">
+            {x.baris.map((a) => (
+              <li key={a.id} className="row-divider flex items-center justify-between gap-2 py-1.5 text-sm text-brown-2">
+                <span className="truncate min-w-0">{a.nama}</span>
+                <span className="flex items-center gap-2 flex-shrink-0">
+                  <span className="tabular-nums text-brown-3">{a.skor ?? '—'}</span>
+                  {tampilGolongan && <ChipRak jenis={GOLONGAN_CHIP[a.golongan]} label={GOLONGAN_LABEL[a.golongan]} />}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </>
+  )
+}
+
 function gulirKe(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -76,15 +104,25 @@ export function KelasPanel() {
   const [golTarget, setGolTarget] = useState<KelasWithCount | null>(null)
   // Daftar mahasiswa (antrean #145): satu kelas penuh, atau satu golongan
   // lintas kelas yang dipecah per angkatan dan kelas.
-  const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: Array<{ judul: string | null; baris: AnggotaGolongan[] }> } | null>(null)
+  const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: SeksiMahasiswa[] } | null>(null)
   const jumlahGolongan = (g: 'mahir' | 'remedial') =>
     classes.reduce((n, k) => n + (golongan[k.id] ?? []).filter((a) => a.golongan === g).length, 0)
-  function bukaGolongan(g: 'mahir' | 'remedial') {
-    const seksi = [...classes]
+  const seksiGolongan = (g: 'mahir' | 'remedial'): SeksiMahasiswa[] =>
+    [...classes]
       .sort((a, b) => b.angkatan - a.angkatan || a.name.localeCompare(b.name))
       .map((k) => ({ judul: `Angkatan ${k.angkatan} · ${k.name}`, baris: (golongan[k.id] ?? []).filter((a) => a.golongan === g) }))
       .filter((x) => x.baris.length > 0)
-    setDaftar({ judul: `${GOLONGAN_LABEL[g]} · ${jumlahGolongan(g)} mahasiswa`, tampilGolongan: false, seksi })
+  // Klik kartu golongan menyaring daftar di bawahnya, bukan membuka modal
+  // (antrean #150). Klik lagi, atau kartu lain, mengembalikan daftar kelas.
+  const [filterGol, setFilterGol] = useState<'mahir' | 'remedial' | null>(null)
+  function pilihGolongan(g: 'mahir' | 'remedial') {
+    setFilterGol((f) => (f === g ? null : g))
+    gulirKe('daftar-kelas')
+  }
+  function keDaftarKelas(id: string) {
+    setFilterGol(null)
+    // Bagian per angkatan baru ada sesudah saringan lepas, jadi gulir sesudah render.
+    setTimeout(() => gulirKe(id), 0)
   }
   function bukaKelas(k: KelasWithCount) {
     setDaftar({ judul: `Daftar mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
@@ -242,12 +280,12 @@ export function KelasPanel() {
           berubah-ubah (tergantung berapa angkatan aktif) gak nyisain baris
           terakhir yang cuma keisi 1-2 kartu ganjil. */}
       <div className="grid grid-cols-2 sm:[grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] gap-3 mb-5">
-        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={() => gulirKe('daftar-kelas')} />
-        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={() => gulirKe('daftar-kelas')} />
-        <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => bukaGolongan('mahir')} />
-        <StatCard bar="var(--warning)" val={String(jumlahGolongan('remedial'))} label={GOLONGAN_LABEL.remedial} onClick={() => bukaGolongan('remedial')} />
+        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={() => keDaftarKelas('daftar-kelas')} />
+        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={() => keDaftarKelas('daftar-kelas')} />
+        <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => pilihGolongan('mahir')} aktif={filterGol === 'mahir'} />
+        <StatCard bar="var(--warning)" val={String(jumlahGolongan('remedial'))} label={GOLONGAN_LABEL.remedial} onClick={() => pilihGolongan('remedial')} aktif={filterGol === 'remedial'} />
         {summary.byAngkatan.map((a) => (
-          <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} onClick={() => gulirKe(`angkatan-${a.angkatan}`)} />
+          <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} onClick={() => keDaftarKelas(`angkatan-${a.angkatan}`)} />
         ))}
       </div>
 
@@ -255,8 +293,15 @@ export function KelasPanel() {
       {/* scroll-mt: kop Layout lengket 58 px, tanpa ini judul tertutup sesudah digulir dari kartu angka */}
       <div id="daftar-kelas" className="bg-ivory rounded-2xl border overflow-hidden scroll-mt-20" style={BORDER}>
         <div className="flex items-center justify-between gap-2 flex-wrap px-4 py-3.5 border-b" style={BORDER}>
-          <span className="text-sm font-semibold text-brown">Daftar kelas</span>
+          <span className="text-sm font-semibold text-brown">
+            {filterGol ? `Mahasiswa ${GOLONGAN_LABEL[filterGol]} · ${jumlahGolongan(filterGol)}` : 'Daftar kelas'}
+          </span>
           <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
+            {filterGol && (
+              <button onClick={() => setFilterGol(null)} className="btn btn-secondary btn-sm whitespace-nowrap">
+                Tampilkan semua kelas
+              </button>
+            )}
             <MataKuliahSelect size="sm" />
             <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
               + Buat kelas baru
@@ -269,6 +314,13 @@ export function KelasPanel() {
         ) : classes.length === 0 ? (
           <div className="text-center py-8 text-brown-3 text-sm">
             Belum ada kelas. Klik "+ Buat kelas baru" di atas.
+          </div>
+        ) : filterGol ? (
+          <div className="p-4">
+            <p className="text-xs text-brown-3 mb-3">
+              {course?.name ? `Tes diagnostik ${course.name}. ` : ''}Angka di kanan = skor tes diagnostik.
+            </p>
+            <DaftarSeksi seksi={seksiGolongan(filterGol)} tampilGolongan={false} />
           </div>
         ) : (
           Array.from(new Set(classes.map((k) => k.angkatan)))
@@ -562,26 +614,7 @@ export function KelasPanel() {
               </button>
             </div>
             <p className="text-xs text-brown-3 mb-3">{course?.name ? `Tes diagnostik ${course.name}. ` : ''}Angka di kanan = skor tes diagnostik.</p>
-            {daftar.seksi.every((x) => x.baris.length === 0) ? (
-              <p className="text-sm text-brown-3">Belum ada mahasiswa.</p>
-            ) : (
-              daftar.seksi.map((x, n) => (
-                <div key={x.judul ?? n} className="mb-3 last:mb-0">
-                  {x.judul && <div className="text-[11px] font-bold uppercase tracking-wide text-brown-3 mb-1">{x.judul}</div>}
-                  <ul className="flex flex-col">
-                    {x.baris.map((a) => (
-                      <li key={a.id} className="row-divider flex items-center justify-between gap-2 py-1.5 text-sm text-brown-2">
-                        <span className="truncate min-w-0">{a.nama}</span>
-                        <span className="flex items-center gap-2 flex-shrink-0">
-                          <span className="tabular-nums text-brown-3">{a.skor ?? '—'}</span>
-                          {daftar.tampilGolongan && <ChipRak jenis={GOLONGAN_CHIP[a.golongan]} label={GOLONGAN_LABEL[a.golongan]} />}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))
-            )}
+            <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} />
           </div>
         </div>
       )}

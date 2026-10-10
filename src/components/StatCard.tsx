@@ -13,6 +13,8 @@ export interface StatCardProps {
   icon?: ComponentType<{ size?: number }>
   to?: string
   onClick?: () => void
+  /** Kartu yang sedang jadi saringan daftar di bawahnya (hanya bentuk tombol). */
+  aktif?: boolean
 }
 
 const DASAR = 'bg-ivory rounded-2xl border p-3.5 relative overflow-hidden'
@@ -22,7 +24,7 @@ const DASAR = 'bg-ivory rounded-2xl border p-3.5 relative overflow-hidden'
 const KLIK =
   'block w-full text-left cursor-pointer border-[color:var(--border)] transition-colors hover:shadow-sm hover:border-terra focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]'
 
-export function StatCard({ bar, val, label, icon: Icon, to, onClick }: StatCardProps) {
+export function StatCard({ bar, val, label, icon: Icon, to, onClick, aktif }: StatCardProps) {
   const isi = (
     <>
       <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
@@ -49,7 +51,14 @@ export function StatCard({ bar, val, label, icon: Icon, to, onClick }: StatCardP
   }
   if (onClick) {
     return (
-      <button type="button" onClick={onClick} className={`${DASAR} ${KLIK}`} aria-label={aria}>
+      <button
+        type="button"
+        onClick={onClick}
+        className={`${DASAR} ${KLIK}`}
+        aria-label={aria}
+        aria-pressed={aktif}
+        style={aktif ? { borderColor: 'var(--terra)', boxShadow: '0 0 0 3px var(--accent-soft)' } : undefined}
+      >
         {isi}
       </button>
     )
