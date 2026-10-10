@@ -86,9 +86,6 @@ function BatasSkorModal({ course, onClose }: { course: Course; onClose: () => vo
     <div
       className="fixed inset-0 z-[700] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
     >
       <div className="bg-ivory rounded-2xl p-5 max-w-md w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
         <h3 className="text-base font-semibold text-brown mb-1">Batas Skor</h3>

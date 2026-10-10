@@ -270,7 +270,7 @@ export function TanggalInput({ value, onChange, denganJam, min, max, id, ariaLab
             pilih(sekarang)
           }}
         >
-          Hari ini
+          Hari Ini
         </button>
         <button
           type="button"

@@ -169,9 +169,9 @@ describe('BankSoal', () => {
     })
   })
 
-  it('?tab=khusus renders the tes-khusus panel content ("+ Buat sesi tes")', async () => {
+  it('?tab=khusus renders the tes-khusus panel content ("+ Buat Sesi Tes")', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?tab=khusus')
-    expect(await screen.findByText('+ Buat sesi tes')).toBeTruthy()
+    expect(await screen.findByText('+ Buat Sesi Tes')).toBeTruthy()
   })
 })

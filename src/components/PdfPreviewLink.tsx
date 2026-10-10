@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { IconEye, IconX } from './icons'
 import { parseVideoUrl } from '../lib/video'
+import { PembacaPdf, useCapAir } from './PembacaPdf'
 
-// Tombol kecil "pratinjau": membuka modal lebar berisi iframe (PDF) atau
-// pemutar (video), tanpa berpindah tab. Dipakai di Modul dosen, PDF Modul,
-// modal Ganti PDF, dan tabel Video dosen supaya bentuknya sama
-// (antrean #31, #32, #39). Tautan "Buka di tab baru" tetap disediakan di
-// kepala modal untuk yang ingin unduh atau cetak.
+// Tombol kecil "pratinjau": PDF dibuka di pembaca yang sama dengan flipbook
+// mahasiswa (PembacaPdf), sebagai lapisan selayar penuh di atas halaman dan
+// modal pembuka, tanpa berpindah tab (antrean #166). Video tetap di modal
+// pemutar. Dipakai di Modul dosen, PDF Modul, dan modal Ganti PDF
+// (antrean #31, #32, #39). Tautan "Buka di Tab Baru" tetap ada di bilah atas
+// untuk yang ingin unduh atau cetak.
 // `compact` (antrean #92): tombol berlabel 36 px selebar sel kisi aksi kartu,
 // label tersembunyi di telepon; bawaan tetap tombol ikon 44 px.
 export function PreviewLink({ url, label = 'Pratinjau', compact = false }: { url: string; label?: string; compact?: boolean }) {
@@ -23,11 +25,44 @@ export function PreviewLink({ url, label = 'Pratinjau', compact = false }: { url
         <IconEye size={compact ? 13 : 16} />
         {compact && <span className="hidden sm:inline">{label}</span>}
       </button>
-      {open && <PreviewModal url={url} title={label} onClose={() => setOpen(false)} />}
+      {open && (parseVideoUrl(url) ? <PreviewModal url={url} title={label} onClose={() => setOpen(false)} /> : <PratinjauPdf url={url} title={label} onClose={() => setOpen(false)} />)}
     </>
   )
 }
 
+// Pembaca flipbook di atas modal. Tidak menyimpan progres baca (tanpa onHalaman);
+// watermark mengikuti setelan mata kuliah seperti di halaman mahasiswa.
+function PratinjauPdf({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
+  const cap = useCapAir()
+  const fileName = url.split('/').pop()?.split('?')[0] || url
+  return (
+    <PembacaPdf
+      src={url}
+      judul={title}
+      cap={cap}
+      diAtasModal
+      onEscape={onClose}
+      kiri={
+        <span className="text-sm font-semibold truncate" title={fileName}>
+          {fileName}
+        </span>
+      }
+      aksi={
+        <>
+          <a href={url} target="_blank" rel="noopener noreferrer" className="pembaca-tb">
+            Buka di Tab Baru
+          </a>
+          <button type="button" onClick={onClose} className="pembaca-tb on">
+            Tutup
+          </button>
+        </>
+      }
+    />
+  )
+}
+
+// Modal pemutar video. Klik latar gelap tidak menutupnya (antrean #167);
+// tutup lewat tombol silang atau Escape. PDF tidak lewat sini lagi (lihat PratinjauPdf).
 export function PreviewModal({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -44,9 +79,6 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-3 sm:p-6"
       style={{ background: 'rgba(62,54,46,.52)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
       role="dialog"
       aria-modal="true"
       aria-label={title}
@@ -84,6 +116,7 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
           ) : video?.kind === 'file' ? (
             <video src={video.src} controls playsInline className="w-full h-full bg-black" />
           ) : (
+            // Tautan video yang tidak dikenali (bukan YouTube/mp4/webm): tampil sebagai halaman tertanam.
             <iframe src={url} title={title} className="w-full h-full" />
           )}
         </div>

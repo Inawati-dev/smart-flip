@@ -95,9 +95,6 @@ export function UrutkanTopikModal({ open, modules, onClose, onSimpan }: UrutkanT
     <div
       className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
       style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
     >
       <div
         role="dialog"

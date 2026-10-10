@@ -490,9 +490,6 @@ function VideoDosen() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeEdit()
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"

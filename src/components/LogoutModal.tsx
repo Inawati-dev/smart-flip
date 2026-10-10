@@ -13,9 +13,6 @@ export function LogoutModal({
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel()
-      }}
     >
       <div
         className="rounded-2xl p-8 max-w-sm w-full text-center"

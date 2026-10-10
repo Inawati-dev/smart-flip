@@ -200,9 +200,6 @@ export function Akun() {
         <div
           className="fixed inset-0 z-[600] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setEditOpen(false)
-          }}
         >
           <div
             className="bg-ivory rounded-2xl border-2 p-5 max-w-md w-full max-h-[90vh] overflow-y-auto"

@@ -32,6 +32,17 @@ describe('UrutkanTopikModal', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled())
   })
 
+  // Antrean #167: klik di luar kartu tidak boleh menutup modal; hanya Batal yang menutup.
+  it('klik latar tidak menutup modal, tombol Batal menutup', () => {
+    const onClose = vi.fn()
+    render(<UrutkanTopikModal open modules={MODULES} onClose={onClose} onSimpan={async () => {}} />)
+    const latar = screen.getByRole('dialog').parentElement!
+    fireEvent.click(latar)
+    expect(onClose).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByText('Batal'))
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   it('first row cannot go up, last row cannot go down', () => {
     render(<UrutkanTopikModal open modules={MODULES} onClose={() => {}} onSimpan={async () => {}} />)
     expect((screen.getByLabelText('Naikkan Satu') as HTMLButtonElement).disabled).toBe(true)

@@ -67,7 +67,7 @@ describe('TesKhusus — dosen dialihkan ke tab bank soal', () => {
 })
 
 describe('DosenTesKhususPanel', () => {
-  it('menampilkan tombol "+ Buat sesi tes"', () => {
+  it('menampilkan tombol "+ Buat Sesi Tes"', () => {
     render(
       <QueryClientProvider client={newQueryClient()}>
         <MemoryRouter initialEntries={['/asesmen/bank?tab=khusus']}>
@@ -75,7 +75,7 @@ describe('DosenTesKhususPanel', () => {
         </MemoryRouter>
       </QueryClientProvider>,
     )
-    expect(screen.getByText('+ Buat sesi tes')).toBeTruthy()
+    expect(screen.getByText('+ Buat Sesi Tes')).toBeTruthy()
   })
 })
 

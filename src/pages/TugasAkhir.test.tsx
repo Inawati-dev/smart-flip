@@ -119,10 +119,10 @@ describe('TugasAkhirPanel — dosen', () => {
     expect(await screen.findByText('Laporan proyek akhir')).toBeTruthy()
   })
 
-  it('klik "Lihat kiriman" menampilkan nama mahasiswa', async () => {
+  it('klik "Lihat Kiriman" menampilkan nama mahasiswa', async () => {
     renderPanel()
     await screen.findByText('Laporan proyek akhir')
-    fireEvent.click(screen.getByText('Lihat kiriman'))
+    fireEvent.click(screen.getByText('Lihat Kiriman'))
     await waitFor(() => {
       expect(screen.getByText('Budi Santoso')).toBeTruthy()
       expect(screen.getByText('Sari Dewi')).toBeTruthy()
@@ -132,7 +132,7 @@ describe('TugasAkhirPanel — dosen', () => {
   it('tombol "Nilai" membuka modal berisi nama kriteria rubrik', async () => {
     renderPanel()
     await screen.findByText('Laporan proyek akhir')
-    fireEvent.click(screen.getByText('Lihat kiriman'))
+    fireEvent.click(screen.getByText('Lihat Kiriman'))
     await screen.findByText('Budi Santoso')
     fireEvent.click(screen.getByRole('button', { name: 'Nilai' }))
     await waitFor(() => {

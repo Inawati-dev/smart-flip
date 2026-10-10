@@ -335,9 +335,6 @@ export function DosenModulRak() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'rgba(44,36,32,.55)' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeFormModal()
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
@@ -394,9 +391,6 @@ export function DosenModulRak() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !deleting) setDeleteId(null)
-          }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
@@ -421,9 +415,6 @@ export function DosenModulRak() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'rgba(44,36,32,.55)' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setPdfModalId(null)
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
@@ -609,9 +600,6 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
       <div
         className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
         style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
-        onClick={(e) => {
-          if (e.target === e.currentTarget) onClose()
-        }}
       >
         <div
           className="bg-ivory rounded-2xl p-5 sm:p-6 max-w-full w-[760px] my-6 max-h-[90dvh] overflow-y-auto"
@@ -727,9 +715,6 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !deleting) setDeleteId(null)
-          }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">

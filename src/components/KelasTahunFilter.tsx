@@ -34,9 +34,11 @@ export function KelasTahunFilter({ kelasList, tahun, kelas, onChange }: KelasTah
   }
 
   return (
-    <div className="flex flex-wrap gap-2">
+    // Tanpa pembungkus (antrean #146): kedua pemilih jadi anak langsung bilah pemanggil,
+    // sehingga celah dan gayanya sama dengan kendali lain di bilah itu.
+    <>
       <Select value={tahun == null ? '' : String(tahun)} onChange={handleTahun} options={tahunOptions} size="sm" aria-label="Filter tahun" />
       <Select value={kelas ?? ''} onChange={handleKelas} options={kelasOptions} size="sm" aria-label="Filter kelas" />
-    </div>
+    </>
   )
 }

@@ -188,7 +188,7 @@ export function DosenTesKhususPanel() {
           Hanya tes khusus yang memakai kode. Tes diagnostik awal dan tes formatif tanpa kode.
         </p>
         <button onClick={openCreateModal} className="btn btn-primary btn-sm">
-          + Buat sesi tes
+          + Buat Sesi Tes
         </button>
       </div>
 
@@ -247,7 +247,7 @@ export function DosenTesKhususPanel() {
                             title={s.is_open ? 'Tutup sesi' : 'Buka lagi'}
                             className="btn btn-secondary whitespace-nowrap"
                           >
-                            <IconLock size={13} /> <span className="hidden sm:inline">{s.is_open ? 'Tutup sesi' : 'Buka lagi'}</span>
+                            <IconLock size={13} /> <span className="hidden sm:inline">{s.is_open ? 'Tutup Sesi' : 'Buka Lagi'}</span>
                           </button>
                           <button
                             onClick={() => setHasilSession(s)}
@@ -255,7 +255,7 @@ export function DosenTesKhususPanel() {
                             title="Lihat hasil"
                             className="btn btn-secondary whitespace-nowrap"
                           >
-                            <IconChart size={13} /> <span className="hidden sm:inline">Lihat hasil</span>
+                            <IconChart size={13} /> <span className="hidden sm:inline">Lihat Hasil</span>
                           </button>
                         </div>
                       </td>
@@ -272,18 +272,15 @@ export function DosenTesKhususPanel() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setModalOpen(false)
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] max-h-[90vh] overflow-y-auto my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat sesi tes</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat Sesi Tes</h3>
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
-              Nama sesi
+              Nama Sesi
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -294,12 +291,12 @@ export function DosenTesKhususPanel() {
             </label>
 
             <div className="mb-3">
-              <span className="text-xs font-semibold text-brown-2 block mb-1.5">Sumber soal</span>
+              <span className="text-xs font-semibold text-brown-2 block mb-1.5">Sumber Soal</span>
               <div className="mb-2">
                 <PillGroup
                   options={[
-                    { value: 'post', label: 'Bank soal post-test' },
-                    { value: 'campuran', label: 'Gabungan soal formatif' },
+                    { value: 'post', label: 'Bank Soal Post-test' },
+                    { value: 'campuran', label: 'Gabungan Soal Formatif' },
                   ]}
                   value={kind}
                   onChange={(v) => setKind(v as SessionKind)}
@@ -332,7 +329,7 @@ export function DosenTesKhususPanel() {
                   onChange={(e) => setSemuaKelas(e.target.checked)}
                   className="w-4 h-4 accent-terra"
                 />
-                Semua kelas
+                Semua Kelas
               </label>
               {!semuaKelas && (
                 <div className="flex flex-col gap-2 max-h-40 overflow-y-auto border rounded-lg p-2" style={BORDER}>
@@ -374,7 +371,7 @@ export function DosenTesKhususPanel() {
             <div className="flex gap-4 mb-4">
               <label className="flex items-center gap-2 text-sm text-brown-2 min-h-11">
                 <input type="checkbox" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} className="w-4 h-4 accent-terra" />
-                Acak soal
+                Acak Soal
               </label>
               <label className="flex items-center gap-2 text-sm text-brown-2 min-h-11">
                 <input
@@ -383,19 +380,19 @@ export function DosenTesKhususPanel() {
                   onChange={(e) => setSingleAttempt(e.target.checked)}
                   className="w-4 h-4 accent-terra"
                 />
-                Sekali kerja
+                Sekali Kerja
               </label>
             </div>
 
             <div className="mb-5 text-center p-4 rounded-xl" style={{ background: 'var(--bg3)' }}>
-              <div className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Kode sesi</div>
+              <div className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Kode Sesi</div>
               <div className="font-mono text-2xl font-bold text-brown tracking-[0.3em] mb-2">{previewCode}</div>
               <button
                 onClick={() => setPreviewCode(generateCode())}
                 className="btn btn-ghost btn-sm"
                 style={{ color: 'var(--terra-d)' }}
               >
-                Buat ulang
+                Buat Ulang
               </button>
             </div>
 
@@ -408,7 +405,7 @@ export function DosenTesKhususPanel() {
                 disabled={saving || !name.trim() || (kind === 'campuran' && moduleIds.length === 0)}
                 className="btn btn-primary min-w-[7.5rem]"
               >
-                {saving ? 'Menyimpan…' : 'Buat sesi'}
+                {saving ? 'Menyimpan…' : 'Buat Sesi'}
               </button>
             </div>
           </div>
@@ -420,9 +417,6 @@ export function DosenTesKhususPanel() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setHasilSession(null)
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[560px] max-h-[90vh] overflow-y-auto my-8"
@@ -596,13 +590,13 @@ function MahasiswaTesKhusus() {
   return (
     <Layout>
       <div className="p-4 md:p-6 max-w-xl mx-auto">
-        <h1 className="font-display text-xl font-bold text-brown mb-4">Tes khusus</h1>
+        <h1 className="font-display text-xl font-bold text-brown mb-4">Tes Khusus</h1>
 
         {!session ? (
           <div className="bg-ivory border rounded-2xl p-6" style={BORDER}>
             <div className="flex items-center gap-2 mb-3 text-brown-2">
               <IconTarget size={18} />
-              <h2 className="font-semibold">Masukkan kode tes khusus</h2>
+              <h2 className="font-semibold">Masukkan Kode Tes Khusus</h2>
             </div>
             <input
               value={kodeInput}

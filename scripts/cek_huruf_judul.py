@@ -84,17 +84,20 @@ PENGECUALIAN = {
     ('Login.tsx', 'Progress tersimpan otomatis'): BUTIR,
     ('Login.tsx', 'Sinkron lintas perangkat'): BUTIR,
     ('Ebook.tsx', '§ · ketuk tengah untuk kendali'): 'petunjuk berbentuk kalimat di dalam pil halaman: tetap',
+    ('PembacaPdf.tsx', '§ · ketuk tengah untuk kendali'): 'petunjuk berbentuk kalimat di dalam pil halaman: tetap',
     ('Formatif.tsx', 'Skor terbaik kamu:'): SKOR,
     ('Formatif.tsx', 'Skor terbaik kamu sebelumnya:'): SKOR,
     ('TesKelompok.tsx', 'Skor kamu:'): SKOR,
+    ('TesKhusus.tsx', 'Skor kamu:'): SKOR,
+    ('JadwalModal.tsx', 'Belum ada tanggal mulai'): KETERANGAN,
+    ('JadwalModal.tsx', 'Minggu tidak sah'): KETERANGAN,
     ('AsesmenMhs.tsx', 'Skor post-test:'): SKOR,
     ('analitik.ts', 'Posting baru di Forum Modul §'): 'baris umpan aktivitas berbentuk kalimat: tetap',
 }
 
-# Berkas yang sedang disunting agen lain pada saat sapuan #154 dibuat. Temuannya
-# dicetak terpisah ("ditunda") dan tidak dihitung ke gagal. Kosongkan daftar ini
-# setelah berkas-berkas itu disapu, supaya skrip menghitung semuanya.
-DITUNDA = {'JadwalModal.tsx', 'TesKhusus.tsx', 'TugasAkhir.tsx', 'TanggalInput.tsx'}
+# Berkas yang sedang disunting agen lain; temuannya dicetak terpisah ("ditunda") dan
+# tidak dihitung ke gagal. Kosong = skrip menghitung semuanya (sejak sisa #154 disapu).
+DITUNDA = set()
 
 LABEL_TAGS = {'button', 'h1', 'h2', 'h3', 'h4', 'th', 'label', 'legend', 'option', 'summary'}
 HEADING_TAGS = {'h1', 'h2', 'h3', 'h4'}

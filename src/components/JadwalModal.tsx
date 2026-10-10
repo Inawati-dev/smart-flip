@@ -61,21 +61,18 @@ export function JadwalModal({ course, modules, onClose }: { course: Course; modu
     <div
       className="fixed inset-0 z-[700] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
     >
       <div className="bg-ivory rounded-2xl p-5 max-w-lg w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
-        <h3 className="text-base font-semibold text-brown mb-1">Jadwal kuliah</h3>
+        <h3 className="text-base font-semibold text-brown mb-1">Jadwal Kuliah</h3>
         <p className="text-xs text-brown-3 mb-4">
           {course.name}. Materi topik terbuka di minggu yang ditentukan, tes formatifnya satu minggu sesudah itu dan tetap terbuka bagi yang belum lulus.
           Kosongkan tanggal untuk mematikan kunci tanggal.
         </p>
         <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
-          Tanggal pertemuan pertama
+          Tanggal Pertemuan Pertama
           <TanggalInput ariaLabel="Tanggal pertemuan pertama" min={TANGGAL_MIN} max="2099-12-31" value={mulai} onChange={setMulai} />
         </label>
-        <div className="text-[11px] font-bold uppercase tracking-wide text-brown-3 mb-1">Minggu tiap topik</div>
+        <div className="text-[11px] font-bold uppercase tracking-wide text-brown-3 mb-1">Minggu Tiap Topik</div>
         <ul className="flex flex-col mb-4">
           {urut.map((m, i) => {
             const j = pratinjau?.get(m.id)

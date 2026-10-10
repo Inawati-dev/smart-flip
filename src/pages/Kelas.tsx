@@ -514,9 +514,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setCreateOpen(false)
-          }}
         >
           <form
             onSubmit={handleCreate}
@@ -599,9 +596,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setDeleteTarget(null)
-          }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Kelas "{deleteTarget.name}"?</h3>
@@ -627,9 +621,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setGolTarget(null)
-          }}
         >
           <div className="bg-ivory rounded-2xl p-5 max-w-2xl w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
@@ -685,9 +676,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) tutupDaftar()
-          }}
         >
           <div className="bg-ivory rounded-2xl p-5 max-w-lg w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
@@ -720,9 +708,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[800] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !mereset) setKonfirmasiReset(false)
-          }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Reset Tes Diagnostik {pilih.size} Mahasiswa?</h3>
@@ -748,9 +733,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) closeImport()
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-5 md:p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
@@ -977,9 +959,6 @@ export function KelasPanel() {
         <div
           className="fixed inset-0 z-[800] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setDownloadConfirmOpen(false)
-          }}
         >
           <div
             className="rounded-2xl p-6 max-w-sm w-full text-center"

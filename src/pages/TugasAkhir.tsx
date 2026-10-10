@@ -234,7 +234,7 @@ export function TugasAkhirPanel() {
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
         <p className="text-brown-3 text-sm">Brief proyek untuk mahasiswa dan penilaian rubrik.</p>
         <button onClick={openCreate} className="btn btn-primary btn-sm">
-          + Buat brief
+          + Buat Brief
         </button>
       </div>
 
@@ -274,7 +274,7 @@ export function TugasAkhirPanel() {
                         onClick={() => setSearchParams({ brief: p.id })}
                         className="btn btn-secondary whitespace-nowrap"
                       >
-                        Lihat kiriman
+                        Lihat Kiriman
                       </button>
                       <button
                         onClick={() => openEdit(p)}
@@ -290,7 +290,7 @@ export function TugasAkhirPanel() {
                         title={p.is_open ? 'Tutup brief' : 'Buka lagi'}
                         className="btn btn-secondary whitespace-nowrap"
                       >
-                        <IconLock size={13} /> <span className="hidden sm:inline">{p.is_open ? 'Tutup' : 'Buka lagi'}</span>
+                        <IconLock size={13} /> <span className="hidden sm:inline">{p.is_open ? 'Tutup' : 'Buka Lagi'}</span>
                       </button>
                       <button
                         onClick={() => setDeleteTarget(p)}
@@ -311,7 +311,7 @@ export function TugasAkhirPanel() {
                 <div className="flex items-center justify-between px-4 py-3 border-b flex-wrap gap-2" style={BORDER}>
                   <span className="text-sm font-semibold text-brown">Kiriman · {selectedProject.title}</span>
                   <button onClick={() => setSearchParams({})} className="btn btn-ghost btn-sm">
-                    Tutup panel
+                    Tutup Panel
                   </button>
                 </div>
                 <div className="overflow-x-auto">
@@ -378,13 +378,13 @@ export function TugasAkhirPanel() {
                                   className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                                   style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}
                                 >
-                                  Belum dinilai
+                                  Belum Dinilai
                                 </span>
                               )}
                             </td>
                             <td className="px-3 py-2.5 text-center">
                               <button onClick={() => openGrade(s)} className="btn btn-secondary whitespace-nowrap">
-                                {s.total != null ? 'Ubah nilai' : 'Nilai'}
+                                {s.total != null ? 'Ubah Nilai' : 'Nilai'}
                               </button>
                             </td>
                           </tr>
@@ -403,15 +403,12 @@ export function TugasAkhirPanel() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setModalOpen(false)
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[560px] max-h-[90vh] overflow-y-auto my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">{editing ? 'Ubah brief' : 'Buat brief'}</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">{editing ? 'Ubah Brief' : 'Buat Brief'}</h3>
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
               Judul
@@ -449,7 +446,7 @@ export function TugasAkhirPanel() {
                   onChange={(e) => setSemuaKelas(e.target.checked)}
                   className="w-4 h-4 accent-terra"
                 />
-                Semua kelas
+                Semua Kelas
               </label>
               {!semuaKelas && (
                 <div className="flex flex-col gap-2 max-h-40 overflow-y-auto border rounded-lg p-2" style={BORDER}>
@@ -478,7 +475,7 @@ export function TugasAkhirPanel() {
             </div>
 
             <div className="mb-4">
-              <span className="text-xs font-semibold text-brown-2 block mb-1.5">Rubrik penilaian</span>
+              <span className="text-xs font-semibold text-brown-2 block mb-1.5">Rubrik Penilaian</span>
               <div className="flex flex-col gap-2">
                 {rubric.map((r, i) => (
                   <div key={i} className="flex items-center gap-2">
@@ -536,12 +533,9 @@ export function TugasAkhirPanel() {
         <div
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget && !deleting) setDeleteTarget(null)
-          }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus brief "{deleteTarget.title}"?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Brief "{deleteTarget.title}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">Kiriman mahasiswa untuk brief ini ikut terhapus.</p>
             <div className="flex gap-2.5">
               <button onClick={() => setDeleteTarget(null)} disabled={deleting} className="btn btn-secondary btn-sm flex-1">
@@ -560,15 +554,12 @@ export function TugasAkhirPanel() {
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setGradingSub(null)
-          }}
         >
           <div
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] max-h-[90vh] overflow-y-auto my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">Nilai kiriman {gradingSub.full_name}</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">Nilai Kiriman {gradingSub.full_name}</h3>
 
             <div className="flex flex-col gap-3 mb-4">
               {selectedProject.rubric.map((r, i) => (
@@ -602,7 +593,7 @@ export function TugasAkhirPanel() {
             </div>
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
-              Umpan balik
+              Umpan Balik
               <textarea
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
@@ -621,7 +612,7 @@ export function TugasAkhirPanel() {
                 disabled={gradingSaving || totalPreview == null}
                 className="btn btn-primary min-w-[7.5rem]"
               >
-                {gradingSaving ? 'Menyimpan…' : 'Simpan nilai'}
+                {gradingSaving ? 'Menyimpan…' : 'Simpan Nilai'}
               </button>
             </div>
           </div>

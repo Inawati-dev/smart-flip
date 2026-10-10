@@ -338,7 +338,7 @@ button:not(:disabled):active {
   }
 }
 
-/* Pembaca PDF imersif (src/pages/Ebook.tsx, antrean #148). Panggung gelap
+/* Pembaca PDF imersif (src/components/PembacaPdf.tsx, antrean #148). Panggung gelap
    selayar penuh; lembar dua muka berputar di punggung buku (acuan
    StPageFlip). --pb-balik = lama satu balikan; sengaja pelan. */
 .pembaca {
@@ -357,6 +357,8 @@ button:not(:disabled):active {
   background: var(--pb-bg);
   color: var(--pb-teks);
 }
+/* Pratinjau PDF dosen (antrean #166): di atas modal tertinggi (z-[700]) dan panel kalender (710). */
+.pembaca.di-atas-modal { z-index: 800; }
 .pembaca-redup { color: var(--pb-redup); }
 .pembaca-bilah {
   display: flex;

@@ -80,11 +80,11 @@ export function WelcomeModal({
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose()
-      }}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Sambutan"
         className="rounded-2xl p-7 md:p-8 max-w-md w-full text-center relative"
         style={{
           background: 'var(--ivory)',
@@ -136,6 +136,11 @@ export function WelcomeModal({
           {step > 0 && (
             <button onClick={() => setStep((s) => s - 1)} className="btn btn-secondary flex-1">
               Kembali
+            </button>
+          )}
+          {!isLast && (
+            <button onClick={onClose} className="btn btn-secondary flex-1">
+              Tutup
             </button>
           )}
           <button
