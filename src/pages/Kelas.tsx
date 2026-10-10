@@ -20,6 +20,7 @@ import { FileInput } from '../components/FileInput'
 import { Layout } from '../components/Layout'
 import { StatCard } from '../components/StatCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
+import { PillGroup } from '../components/PillGroup'
 import { ChipRak } from '../components/KartuTopik'
 import { GOLONGAN_LABEL, GOLONGAN_CHIP, AMBANG_MAHIR } from '../lib/golongan'
 import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
@@ -107,8 +108,13 @@ export function KelasPanel() {
   const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: SeksiMahasiswa[] } | null>(null)
   const jumlahGolongan = (g: 'mahir' | 'remedial') =>
     classes.reduce((n, k) => n + (golongan[k.id] ?? []).filter((a) => a.golongan === g).length, 0)
+  // Angkatan jadi pil penyaring di kop daftar (antrean #151), bukan satu kartu
+  // per tahun: jumlah kartu tidak lagi bertambah tiap angkatan baru.
+  const [tahun, setTahun] = useState<number | null>(null)
+  const daftarTahun = Array.from(new Set(classes.map((k) => k.angkatan))).sort((a, b) => b - a)
+  const kelasTersaring = tahun == null ? classes : classes.filter((k) => k.angkatan === tahun)
   const seksiGolongan = (g: 'mahir' | 'remedial'): SeksiMahasiswa[] =>
-    [...classes]
+    [...kelasTersaring]
       .sort((a, b) => b.angkatan - a.angkatan || a.name.localeCompare(b.name))
       .map((k) => ({ judul: `Angkatan ${k.angkatan} · ${k.name}`, baris: (golongan[k.id] ?? []).filter((a) => a.golongan === g) }))
       .filter((x) => x.baris.length > 0)
@@ -119,10 +125,10 @@ export function KelasPanel() {
     setFilterGol((f) => (f === g ? null : g))
     gulirKe('daftar-kelas')
   }
-  function keDaftarKelas(id: string) {
+  function keDaftarKelas() {
     setFilterGol(null)
-    // Bagian per angkatan baru ada sesudah saringan lepas, jadi gulir sesudah render.
-    setTimeout(() => gulirKe(id), 0)
+    setTahun(null)
+    gulirKe('daftar-kelas')
   }
   function bukaKelas(k: KelasWithCount) {
     setDaftar({ judul: `Daftar mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
@@ -275,18 +281,17 @@ export function KelasPanel() {
         Buat kelas, bagikan kode kelas ke mahasiswa, dan pantau jumlah pendaftar per kelas.
       </p>
 
-      {/* Ringkasan agregat — total mahasiswa lintas semua kelas + breakdown per angkatan.
-          auto-fit (bukan grid-cols tetap) supaya kartu angkatan yang jumlahnya
-          berubah-ubah (tergantung berapa angkatan aktif) gak nyisain baris
-          terakhir yang cuma keisi 1-2 kartu ganjil. */}
-      <div className="grid grid-cols-2 sm:[grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] gap-3 mb-5">
-        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={() => keDaftarKelas('daftar-kelas')} />
-        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={() => keDaftarKelas('daftar-kelas')} />
-        <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => pilihGolongan('mahir')} aktif={filterGol === 'mahir'} />
+      {/* Dua baris kartu (antrean #151). Baris 1: dua golongan hasil tes
+          diagnostik, urutannya sama dengan Gambar 1.1 (Belajar mendalam di
+          kiri, Jalur cepat di kanan); klik menyaring daftar di bawah. Baris 2:
+          total kelas dan mahasiswa. Angkatan pindah jadi pil di kop daftar. */}
+      <div className="grid grid-cols-2 gap-3 mb-3">
         <StatCard bar="var(--warning)" val={String(jumlahGolongan('remedial'))} label={GOLONGAN_LABEL.remedial} onClick={() => pilihGolongan('remedial')} aktif={filterGol === 'remedial'} />
-        {summary.byAngkatan.map((a) => (
-          <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} onClick={() => keDaftarKelas(`angkatan-${a.angkatan}`)} />
-        ))}
+        <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => pilihGolongan('mahir')} aktif={filterGol === 'mahir'} />
+      </div>
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={keDaftarKelas} />
+        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={keDaftarKelas} />
       </div>
 
       {/* Daftar kelas, dikelompokkan per angkatan (tahun) */}
@@ -294,7 +299,7 @@ export function KelasPanel() {
       <div id="daftar-kelas" className="bg-ivory rounded-2xl border overflow-hidden scroll-mt-20" style={BORDER}>
         <div className="flex items-center justify-between gap-2 flex-wrap px-4 py-3.5 border-b" style={BORDER}>
           <span className="text-sm font-semibold text-brown">
-            {filterGol ? `Mahasiswa ${GOLONGAN_LABEL[filterGol]} · ${jumlahGolongan(filterGol)}` : 'Daftar kelas'}
+            {filterGol ? `Mahasiswa ${GOLONGAN_LABEL[filterGol]} · ${seksiGolongan(filterGol).reduce((n, x) => n + x.baris.length, 0)}` : 'Daftar kelas'}
           </span>
           <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
             {filterGol && (
@@ -309,6 +314,24 @@ export function KelasPanel() {
           </div>
         </div>
 
+        {daftarTahun.length > 1 && (
+          <div className="px-4 py-2.5 border-b overflow-x-auto" style={BORDER}>
+            <PillGroup
+              size="sm"
+              ariaLabel="Saring angkatan"
+              value={tahun == null ? 'semua' : String(tahun)}
+              onChange={(v) => setTahun(v === 'semua' ? null : parseInt(v, 10))}
+              options={[
+                { value: 'semua', label: 'Semua angkatan', badge: summary.totalStudents },
+                ...daftarTahun.map((t) => ({
+                  value: String(t),
+                  label: `Angkatan ${t}`,
+                  badge: classes.filter((k) => k.angkatan === t).reduce((n, k) => n + k.studentCount, 0),
+                })),
+              ]}
+            />
+          </div>
+        )}
         {isLoading ? (
           <div className="text-center py-8 text-brown-3 text-sm">Memuat…</div>
         ) : classes.length === 0 ? (
@@ -323,8 +346,8 @@ export function KelasPanel() {
             <DaftarSeksi seksi={seksiGolongan(filterGol)} tampilGolongan={false} />
           </div>
         ) : (
-          Array.from(new Set(classes.map((k) => k.angkatan)))
-            .sort((a, b) => b - a)
+          daftarTahun
+            .filter((t) => tahun == null || t === tahun)
             .map((year) => {
               const rows = classes.filter((k) => k.angkatan === year)
               return (
