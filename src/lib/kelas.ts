@@ -460,3 +460,20 @@ export async function cekKodeKelas(kode: string): Promise<HasilKodeKelas> {
     return 'belum_bisa_dicek'
   }
 }
+
+/**
+ * Hapus akun mahasiswa beserta seluruh pengerjaannya (antrean #174). Lewat
+ * fungsi SQL hapus_mahasiswa (migration_v34): hanya dosen, hanya akun
+ * mahasiswa di kelas miliknya. Mengembalikan jumlah akun yang benar-benar
+ * terhapus. Tidak bisa dibatalkan.
+ */
+export async function hapusMahasiswa(userIds: string[]): Promise<number> {
+  if (!isSupabaseConfigured) throw new Error('Menghapus akun butuh koneksi Supabase.')
+  if (userIds.length === 0) return 0
+  const { data, error } = await supabase.rpc('hapus_mahasiswa', { p_ids: userIds })
+  if (error) {
+    const belumAda = error.code === 'PGRST202' || error.code === '42883' || /hapus_mahasiswa/.test(error.message || '')
+    throw new Error(belumAda ? 'Fungsi hapus belum ada di basis data. Jalankan migration_v34_hapus_mahasiswa.sql di Supabase dulu.' : error.message)
+  }
+  return typeof data === 'number' ? data : 0
+}

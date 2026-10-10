@@ -11,6 +11,7 @@ import {
   importMahasiswaCSV,
   fetchGolonganKelas,
   resetDiagnostik,
+  hapusMahasiswa,
   type AnggotaGolongan,
   type KelasWithCount,
   type ParsedImportRow,
@@ -33,8 +34,8 @@ type SeksiMahasiswa = { judul: string | null; baris: AnggotaGolongan[] }
 
 // Daftar mahasiswa per seksi (angkatan dan kelas), dipakai modal daftar kelas
 // dan tampilan tersaring di bawah kartu golongan (antrean #145, #150).
-// `pilih` + `onPilih`: kotak centang untuk mahasiswa yang sudah punya skor
-// (dipakai reset tes diagnostik, antrean #155).
+// `pilih` + `onPilih`: kotak centang di tiap baris, dipakai reset tes
+// diagnostik (antrean #155) dan hapus akun (antrean #174).
 function DaftarSeksi({
   seksi,
   tampilGolongan,
@@ -55,9 +56,9 @@ function DaftarSeksi({
           <ul className="flex flex-col">
             {x.baris.map((a) => (
               <li key={a.id} className="row-divider flex items-center justify-between gap-2 py-1.5 text-sm text-brown-2">
-                {pilih && onPilih && a.skor != null ? (
+                {pilih && onPilih ? (
                   <label className="flex items-center gap-2.5 min-w-0 min-h-11 cursor-pointer">
-                    <input type="checkbox" checked={pilih.has(a.id)} onChange={() => onPilih(a.id)} className="w-5 h-5 flex-shrink-0" />
+                    <input type="checkbox" checked={pilih.has(a.id)} onChange={() => onPilih(a.id)} aria-label={`Pilih ${a.nama}`} className="w-5 h-5 flex-shrink-0" />
                     <span className="truncate min-w-0">{a.nama}</span>
                   </label>
                 ) : (
@@ -156,7 +157,12 @@ export function KelasPanel() {
   const [pilih, setPilih] = useState<Set<string>>(new Set())
   const [konfirmasiReset, setKonfirmasiReset] = useState(false)
   const [mereset, setMereset] = useState(false)
-  const bisaDireset = (daftar?.seksi ?? []).flatMap((x) => x.baris).filter((a) => a.skor != null)
+  const semuaBaris = (daftar?.seksi ?? []).flatMap((x) => x.baris)
+  // Reset hanya berlaku bagi yang sudah punya skor; hapus akun berlaku bagi semua yang dicentang.
+  const dipilihBisaDireset = semuaBaris.filter((a) => a.skor != null && pilih.has(a.id)).map((a) => a.id)
+  // Hapus akun mahasiswa yang dicentang (antrean #174): permanen, jadi lewat modal konfirmasi.
+  const [konfirmasiHapus, setKonfirmasiHapus] = useState(false)
+  const [menghapus, setMenghapus] = useState(false)
   function togglePilih(id: string) {
     setPilih((s) => {
       const n = new Set(s)
@@ -169,15 +175,36 @@ export function KelasPanel() {
     setDaftar(null)
     setPilih(new Set())
     setKonfirmasiReset(false)
+    setKonfirmasiHapus(false)
+  }
+  async function jalankanHapus() {
+    setMenghapus(true)
+    try {
+      const terhapus = await hapusMahasiswa([...pilih])
+      await queryClient.invalidateQueries({ queryKey: ['golongan-kelas'] })
+      await queryClient.invalidateQueries({ queryKey: ['kelas'] })
+      showToast(
+        terhapus > 0
+          ? `${terhapus} akun mahasiswa dihapus`
+          : 'Tidak ada akun yang terhapus. Hanya mahasiswa di kelas Anda sendiri yang bisa dihapus.',
+      )
+      if (terhapus > 0) tutupDaftar()
+      else setKonfirmasiHapus(false)
+    } catch (e) {
+      showToast((e as { message?: string } | null)?.message || 'Gagal menghapus akun')
+      setKonfirmasiHapus(false)
+    } finally {
+      setMenghapus(false)
+    }
   }
   async function jalankanReset() {
     setMereset(true)
     try {
-      const terhapus = await resetDiagnostik([...pilih], courseId)
+      const terhapus = await resetDiagnostik(dipilihBisaDireset, courseId)
       await queryClient.invalidateQueries({ queryKey: ['golongan-kelas'] })
       showToast(
         terhapus > 0
-          ? `Tes diagnostik ${pilih.size} mahasiswa direset`
+          ? `Tes diagnostik ${dipilihBisaDireset.length} mahasiswa direset`
           : 'Tidak ada yang terhapus. Jalankan migration_v28_reset_diagnostik.sql di Supabase dulu.',
       )
       if (terhapus > 0) tutupDaftar()
@@ -685,20 +712,52 @@ export function KelasPanel() {
               </button>
             </div>
             <p className="text-xs text-brown-3 mb-3">{course?.name ? `Tes diagnostik ${course.name}. ` : ''}Angka di kanan = skor tes diagnostik.</p>
-            {bisaDireset.length > 0 && (
-              <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
+            {semuaBaris.length > 0 && (
+              <div className="flex items-center gap-2 flex-wrap mb-3">
                 <button
-                  onClick={() => setPilih(pilih.size === bisaDireset.length ? new Set() : new Set(bisaDireset.map((a) => a.id)))}
+                  onClick={() => setPilih(pilih.size === semuaBaris.length ? new Set() : new Set(semuaBaris.map((a) => a.id)))}
+                  className="btn btn-secondary btn-sm mr-auto"
+                >
+                  {pilih.size === semuaBaris.length ? 'Lepas Semua' : `Pilih Semua (${semuaBaris.length})`}
+                </button>
+                <button
+                  onClick={() => setKonfirmasiReset(true)}
+                  disabled={dipilihBisaDireset.length === 0}
+                  title="Hanya berlaku bagi mahasiswa yang sudah mengerjakan tes diagnostik"
                   className="btn btn-secondary btn-sm"
                 >
-                  {pilih.size === bisaDireset.length ? 'Lepas Semua' : `Pilih Semua yang Sudah Tes (${bisaDireset.length})`}
+                  Reset Tes Diagnostik ({dipilihBisaDireset.length})
                 </button>
-                <button onClick={() => setKonfirmasiReset(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm">
-                  Reset Tes Diagnostik ({pilih.size})
+                <button onClick={() => setKonfirmasiHapus(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm">
+                  Hapus Akun ({pilih.size})
                 </button>
               </div>
             )}
             <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} pilih={pilih} onPilih={togglePilih} />
+          </div>
+        </div>
+      )}
+
+      {/* Konfirmasi hapus akun mahasiswa (antrean #174): permanen */}
+      {konfirmasiHapus && (
+        <div
+          className="fixed inset-0 z-[800] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus {pilih.size} Akun Mahasiswa?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Akun yang dicentang dihapus permanen beserta seluruh pengerjaannya: tes, progres baca, dan kiriman. Mahasiswa itu tidak bisa masuk lagi.
+              Tidak bisa dibatalkan.
+            </p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setKonfirmasiHapus(false)} disabled={menghapus} className="btn btn-secondary flex-1">
+                Batal
+              </button>
+              <button onClick={() => void jalankanHapus()} disabled={menghapus} className="btn btn-danger flex-1">
+                {menghapus ? 'Menghapus…' : 'Ya, Hapus'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -710,7 +769,7 @@ export function KelasPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Reset Tes Diagnostik {pilih.size} Mahasiswa?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Reset Tes Diagnostik {dipilihBisaDireset.length} Mahasiswa?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Skor dan jawaban tes diagnostik mereka{course?.name ? ` di ${course.name}` : ''} dihapus, dan mereka harus mengerjakannya lagi sebelum bisa
               membuka materi. Tidak bisa dibatalkan.
