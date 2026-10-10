@@ -12,7 +12,8 @@ export interface StudentStat {
   jam: number
   kepraktisan: number | null
   status: StudentStatus
-  jalur?: 'cepat' | 'mendalam' | null
+  /** Punya pengerjaan tes diagnostik (quiz_attempts kind 'pre') di mata kuliah mana pun. */
+  sudahDiagnostik?: boolean
   kelas?: string | null
   angkatan?: number | null
 }
@@ -137,12 +138,12 @@ export interface NeedsAttentionStudent {
 // have completed a single module or taken the diagnostic.
 export function computeNeedsAttentionStudents(students: StudentStat[]): NeedsAttentionStudent[] {
   return students
-    .filter((s) => s.modul === 0 || s.jalur == null)
+    .filter((s) => s.modul === 0 || !s.sudahDiagnostik)
     .map((s) => ({
       id: s.id,
       nama: s.nama,
       belumModul: s.modul === 0,
-      belumDiagnostik: s.jalur == null,
+      belumDiagnostik: !s.sudahDiagnostik,
       kelas: s.kelas ?? null,
       angkatan: s.angkatan ?? null,
     }))
@@ -287,9 +288,9 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
       // ambiguous and PostgREST rejects it with PGRST201. Confirmed live in
       // production (2026-07-24): this silently fell back to DUMMY_STUDENTS
       // on every real dosen account until this fix.
-      supabase.from('profiles').select('id, full_name, jalur, classes!profiles_class_id_fkey(name, angkatan)').eq('role', 'mahasiswa'),
+      supabase.from('profiles').select('id, full_name, classes!profiles_class_id_fkey(name, angkatan)').eq('role', 'mahasiswa'),
       supabase.from('user_progress').select('user_id, module_id, status, time_spent'),
-      supabase.from('quiz_attempts').select('user_id, score'),
+      supabase.from('quiz_attempts').select('user_id, score, kind'),
       supabase.from('feedback').select('user_id, rata_rata'),
     ])
     if (studentsRes.error) throw studentsRes.error
@@ -323,7 +324,9 @@ export async function fetchStudentStats(): Promise<StudentStat[] | null> {
         jam,
         kepraktisan,
         status: computeStudentStatus(jam),
-        jalur: (s as { jalur?: 'cepat' | 'mendalam' | null }).jalur ?? null,
+        // Dulu dibaca dari profiles.jalur (tes diagnostik lama), jadi mahasiswa
+        // yang sudah mengerjakan tes diagnostik baru tetap tertanda belum (#144).
+        sudahDiagnostik: quiz.some((q) => q.user_id === s.id && (q as { kind?: string }).kind === 'pre'),
         kelas,
         angkatan,
       }

@@ -85,12 +85,12 @@ describe('computeInactiveStudents', () => {
 })
 
 describe('computeNeedsAttentionStudents', () => {
-  it('flags students with no modules completed and/or no diagnostic jalur', () => {
+  it('flags students with no modules completed and/or no diagnostic attempt', () => {
     const students: StudentStat[] = [
-      { id: 1, nama: 'Sudah Lengkap', modul: 2, kuis: 80, jam: 3, kepraktisan: 4, status: 'aktif', jalur: 'cepat' },
-      { id: 2, nama: 'Belum Modul Saja', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'aktif', jalur: 'mendalam' },
-      { id: 3, nama: 'Belum Diagnostik Saja', modul: 1, kuis: 70, jam: 1, kepraktisan: 3, status: 'aktif', jalur: null },
-      { id: 4, nama: 'Belum Dua-duanya', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', jalur: null },
+      { id: 1, nama: 'Sudah Lengkap', modul: 2, kuis: 80, jam: 3, kepraktisan: 4, status: 'aktif', sudahDiagnostik: true },
+      { id: 2, nama: 'Belum Modul Saja', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'aktif', sudahDiagnostik: true },
+      { id: 3, nama: 'Belum Diagnostik Saja', modul: 1, kuis: 70, jam: 1, kepraktisan: 3, status: 'aktif', sudahDiagnostik: false },
+      { id: 4, nama: 'Belum Dua-duanya', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', sudahDiagnostik: false },
     ]
     const flagged = computeNeedsAttentionStudents(students)
     expect(flagged.map((s) => s.nama)).toEqual(['Belum Modul Saja', 'Belum Diagnostik Saja', 'Belum Dua-duanya'])
@@ -103,8 +103,8 @@ describe('computeNeedsAttentionStudents', () => {
 describe('computeNeedsAttentionStudents: kelas dan angkatan', () => {
   it('membawa kelas dan angkatan dari StudentStat, null kalau tidak ada', () => {
     const flagged = computeNeedsAttentionStudents([
-      { id: 1, nama: 'A', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', jalur: null, kelas: 'Kelas A', angkatan: 2026 },
-      { id: 2, nama: 'B', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', jalur: null },
+      { id: 1, nama: 'A', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', sudahDiagnostik: false, kelas: 'Kelas A', angkatan: 2026 },
+      { id: 2, nama: 'B', modul: 0, kuis: 0, jam: 0, kepraktisan: null, status: 'tidak', sudahDiagnostik: false },
     ])
     expect(flagged[0]).toMatchObject({ kelas: 'Kelas A', angkatan: 2026 })
     expect(flagged[1]).toMatchObject({ kelas: null, angkatan: null })
