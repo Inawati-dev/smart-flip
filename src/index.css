@@ -501,3 +501,6 @@ a:hover .nav-tile-active {
    Bingkai kartu (`border` biasa) TIDAK dipakaikan ini, tetap 1px. */
 .row-divider { border-top: 0.5px solid var(--border); }
 .row-divider-b { border-bottom: 0.5px solid var(--border); }
+/* Garis tegak antarkolom untuk tabel data yang kolomnya berjauhan (Bank soal). */
+.tabel-grid th + th,
+.tabel-grid td + td { border-left: 0.5px solid var(--border); }

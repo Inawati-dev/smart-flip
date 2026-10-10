@@ -321,13 +321,13 @@ function BankSoalTab() {
 
         <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
+            <table className="w-full text-sm border-collapse tabel-grid">
               <thead>
                 <tr className="bg-bg3">
                   <th className="w-11" aria-label="Urutan (seret)" />
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
                   <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kunci</th>
+                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-16">Kunci</th>
                   <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Aksi</th>
                 </tr>
               </thead>
@@ -340,7 +340,6 @@ function BankSoalTab() {
                   </tr>
                 ) : (
                   rows.map((r) => {
-                    const trunc = r.question.length > 46 ? r.question.slice(0, 46) + '…' : r.question
                     const isDragging = dragId === r.id
                     const isDropTarget = dragOverId === r.id && dragId !== r.id
                     return (
@@ -364,8 +363,8 @@ function BankSoalTab() {
                           </div>
                         </td>
                         <td className="px-3 py-2.5 font-semibold text-brown">{r.order_num}</td>
-                        <td className="px-3 py-2.5 text-brown min-w-[200px]">{trunc}</td>
-                        <td className="px-3 py-2.5">
+                        <td className="px-3 py-2.5 text-brown min-w-[200px] break-words">{r.question}</td>
+                        <td className="px-3 py-2.5 text-center">
                           <span
                             className="w-7 h-7 inline-flex items-center justify-center rounded-full text-xs font-bold"
                             style={{ background: 'var(--accent-soft)', color: 'var(--terra-d)' }}

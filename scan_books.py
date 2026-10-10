@@ -33,6 +33,12 @@ def scan():
     else:
         config = {}
 
+    # Daftar sama = jangan tulis ulang. Dulu lastScanned selalu berubah, jadi
+    # tiap jalan menghasilkan commit (1.352 dari 1.623 commit per 10 Okt 2026).
+    if config.get("booksFolder") == BOOKS_FOLDER and config.get("pdfs") == pdfs:
+        print("Daftar buku tidak berubah, config.json dibiarkan.")
+        return
+
     # Update daftar buku
     config["booksFolder"] = BOOKS_FOLDER
     config["pdfs"]        = pdfs

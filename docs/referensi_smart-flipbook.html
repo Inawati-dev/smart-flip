@@ -360,6 +360,26 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
 .pathbar-crumb.current { color: var(--ink); font-weight: 500; transition: opacity 0.2s ease; }
 .pathbar-crumb.current.fading { opacity: 0; }
 .pathbar-sep { opacity: 0.5; }
+/* #99 layar sempit (telepon): jendela penuh layar, daftar isi jadi laci yang dibuka tombol Isi, tabel digulir di wadahnya */
+#isi-toggle { display: none; align-items: center; gap: 4px; flex-shrink: 0; height: 28px; padding: 0 10px; border-radius: var(--radius-pill); border: 1px solid var(--hairline-strong); background: var(--surface-card); color: var(--ink); font: 500 12px var(--font-text); cursor: pointer; }
+#isi-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 860px) {
+  body { padding: 0; }
+  .macwindow { border-radius: 0; border: 0; box-shadow: none; height: 100dvh; max-width: none; }
+  .traffic-lights { display: none; }
+  .titlebar { gap: 8px; padding: 0 10px; }
+  .titlebar-title { margin-right: 0; text-align: left; min-width: 0; }
+  .titlebar-nav { flex-shrink: 0; margin-right: 0; }
+  .titlebar-nav a { font-size: 11px; padding: 3px 7px; }
+  #isi-toggle { display: inline-flex; }
+  .window-body { position: relative; }
+  .sidebar { position: absolute; inset: 0; width: auto; z-index: 5; border-right: 0; transform: translateX(-100%); visibility: hidden; transition: transform 0.25s ease, visibility 0s linear 0.25s; }
+  .macwindow.isi-buka .sidebar { transform: none; visibility: visible; transition: transform 0.25s ease; }
+  .main { padding: 18px 16px 40px; }
+  .main pre { overflow-x: auto; max-width: 100%; }
+  .main :not(pre) > code { overflow-wrap: anywhere; }
+}
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) { .sidebar, .macwindow.isi-buka .sidebar { transition: none; } }
 </style>
 </head>
 <body>
@@ -372,10 +392,11 @@ hr { border: none; border-top: 1px solid var(--hairline); margin: 24px 0; }
     </div>
     <div class="titlebar-title">Referensi Sumber — Smart Flipbook (SMART-FLIP 5.0)</div>
     <div class="titlebar-nav"></div>
+    <button id="isi-toggle" aria-expanded="false" aria-controls="sidebar-isi" title="Daftar isi">☰ Isi</button>
     <button id="theme-toggle" title="Ganti tema terang/gelap">🌙</button>
   </div>
   <div class="window-body">
-    <nav class="sidebar">
+    <nav class="sidebar" id="sidebar-isi" aria-label="Daftar isi">
       <div class="toolbar-search-wrap">
         <div class="search-field">
           <input type="text" id="search" placeholder="Cari...">
@@ -456,7 +477,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 </tr>
 <tr>
 <td>GitHub Actions (<code>scan-books.yml</code>)</td>
-<td>otomasi terjadwal</td>
+<td>otomasi (jadwal 30 menit dibuang 10 Okt 2026, antrean #112)</td>
 <td>repo <code>Inawati-dev/smart-flip</code></td>
 <td>—</td>
 <td><code>config.json</code></td>
@@ -467,10 +488,28 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 <td>Berkas PDF <code>books/</code></td>
 <td>dataset lokal</td>
 <td>berkas repo</td>
-<td>8 / 8 berkas</td>
-<td><code>books/*.pdf</code></td>
+<td>0 berkas; 8 PDF dikeluarkan dari repo 10 Okt 2026 (antrean #110, keputusan Johan)</td>
+<td><code>books/.gitkeep</code></td>
 <td><strong>tidak dibaca aplikasi React</strong></td>
-<td>2026-08-07</td>
+<td>2026-10-10</td>
+</tr>
+<tr>
+<td>Naskah final e-modul "Metode Penelitian dan Pengembangan Proyek"</td>
+<td>dokumen Word dari tim penulis</td>
+<td>berkas lokal dari Johan (10 Okt 2026)</td>
+<td>1 / 1 berkas; 142 halaman, 6 bab, 60 soal pilihan ganda, 94 tabel</td>
+<td><code>kerja nyata/Draf Naskah_Final.docx</code> dan 11 pecahan di <code>kerja nyata/Naskah Final per Bagian/</code> (folder diabaikan git)</td>
+<td>belum dipakai aplikasi; calon isi mata kuliah 1 (antrean #108)</td>
+<td>2026-10-10</td>
+</tr>
+<tr>
+<td>Tugas akhir Prodi Perpustakaan Digital FV UM</td>
+<td>13 PDF di folder Google Drive "2025"</td>
+<td>tautan dari Johan; berkas terunduh tanpa login</td>
+<td>13 / 13 berkas, 116,7 MB, 1.498 halaman</td>
+<td><code>kerja nyata/Tugas Akhir 2025/</code> (diabaikan git)</td>
+<td>peta model pengembangan untuk Bab 5 naskah (antrean #117, #118): Waterfall 3, ADDIE 2, Borg &amp; Gall 2, Agile XP 2, GDLC 2, 4D 1, RAD 1</td>
+<td>2026-10-10</td>
 </tr>
 <tr>
 <td>DOI jurnal (27 tautan)</td>
@@ -1120,6 +1159,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
 
 <ul>
 <li>2026-08-07 — dibuat; sumber: 6; halaman dipetakan: 21; yang belum diputuskan: 5; jahitan: 0. Temuan tambahan saat penyusunan: 6 ruas <code>modules</code> dibaca kode tapi tidak ada di skema (menghambat backlog CPMK), dan cron 883 commit tanpa konsumen.</li>
+<li>2026-10-10: berkas ini baru dilacak git (sejak 7 Agu hanya ada di folder utama, tidak ter-commit). Tambah dua sumber: naskah final dan 13 tugas akhir. <code>books/</code> dikosongkan. Bagian lain belum diverifikasi ulang dan masih bertanggal 7 Agu 2026.</li>
 </ul>
 </div>
 </div></div>
@@ -1130,7 +1170,7 @@ Bangun HTML (tiap berkas ini berubah): <code>python "C:\1-Johan\10. Pengembangan
     </div>
   </div>
   <div class="pathbar" id="pathbar">
-    <span class="pathbar-crumb">📁 Smart Flipbook</span><span class="pathbar-sep">▸</span><span class="pathbar-crumb">docs</span>
+    <span class="pathbar-crumb">📁 strange-mclean-f2e790</span><span class="pathbar-sep">▸</span><span class="pathbar-crumb">docs</span>
     <span class="pathbar-sep">▸</span>
     <span class="pathbar-crumb current" id="pathbar-current">Referensi Sumber — Smart Flipbook (SMART-FLIP 5.0)</span>
   </div>
@@ -1312,6 +1352,12 @@ function enhanceTables() {
   });
 }
 enhanceTables();
+// #99 laci daftar isi di layar sempit: tombol Isi membuka/menutup, memilih bagian menutupnya lagi
+const jendela = document.querySelector('.macwindow'), isiBtn = document.getElementById('isi-toggle');
+function aturIsi(buka) { jendela.classList.toggle('isi-buka', buka); isiBtn.setAttribute('aria-expanded', String(buka)); }
+isiBtn.addEventListener('click', () => aturIsi(!jendela.classList.contains('isi-buka')));
+document.querySelectorAll('.sidebar .nav-link').forEach(a => a.addEventListener('click', () => aturIsi(false)));
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && jendela.classList.contains('isi-buka')) { aturIsi(false); isiBtn.focus(); } });
 </script>
 </body>
 </html>

@@ -17,8 +17,10 @@ Jadi sumber luar proyek ini seluruhnya berupa **layanan infrastruktur** (Supabas
 |---|---|---|---|---|---|---|
 | Supabase (PostgreSQL + Auth + Storage) | API layanan | auth (anon key di env) | 18 / 18 tabel · 3 / 3 bucket | — (data di server) | seluruh halaman aplikasi | 2026-08-07 |
 | Vercel | hosting/deploy | auth (akun Inawati) | — | — | produksi `smart-flips.vercel.app` | 2026-08-07 |
-| GitHub Actions (`scan-books.yml`) | otomasi terjadwal | repo `Inawati-dev/smart-flip` | — | `config.json` | **tidak ada yang membaca** — lihat catatan | 2026-08-07 |
-| Berkas PDF `books/` | dataset lokal | berkas repo | 8 / 8 berkas | `books/*.pdf` | **tidak dibaca aplikasi React** | 2026-08-07 |
+| GitHub Actions (`scan-books.yml`) | otomasi (jadwal 30 menit dibuang 10 Okt 2026, antrean #112) | repo `Inawati-dev/smart-flip` | — | `config.json` | **tidak ada yang membaca** — lihat catatan | 2026-08-07 |
+| Berkas PDF `books/` | dataset lokal | berkas repo | 0 berkas; 8 PDF dikeluarkan dari repo 10 Okt 2026 (antrean #110, keputusan Johan) | `books/.gitkeep` | **tidak dibaca aplikasi React** | 2026-10-10 |
+| Naskah final e-modul "Metode Penelitian dan Pengembangan Proyek" | dokumen Word dari tim penulis | berkas lokal dari Johan (10 Okt 2026) | 1 / 1 berkas; 142 halaman, 6 bab, 60 soal pilihan ganda, 94 tabel | `kerja nyata/Draf Naskah_Final.docx` dan 11 pecahan di `kerja nyata/Naskah Final per Bagian/` (folder diabaikan git) | belum dipakai aplikasi; calon isi mata kuliah 1 (antrean #108) | 2026-10-10 |
+| Tugas akhir Prodi Perpustakaan Digital FV UM | 13 PDF di folder Google Drive "2025" | tautan dari Johan; berkas terunduh tanpa login | 13 / 13 berkas, 116,7 MB, 1.498 halaman | `kerja nyata/Tugas Akhir 2025/` (diabaikan git) | peta model pengembangan untuk Bab 5 naskah (antrean #117, #118): Waterfall 3, ADDIE 2, Borg & Gall 2, Agile XP 2, GDLC 2, 4D 1, RAD 1 | 2026-10-10 |
 | DOI jurnal (27 tautan) | referensi kepustakaan | publik (doi.org) | 0 / 27 sampai ke produksi | `legacy/modules-data.js` | halaman Modul — **selalu kosong** | 2026-08-07 |
 | SAKTI (proyek sendiri) | referensi desain | repo lokal | — | — | pola sidebar & badge logo | 2026-08-07 |
 
@@ -178,3 +180,4 @@ Tidak ada jahitan data di proyek ini: tiap ruas di tiap halaman berasal dari sat
 ## Riwayat
 
 - 2026-08-07 — dibuat; sumber: 6; halaman dipetakan: 21; yang belum diputuskan: 5; jahitan: 0. Temuan tambahan saat penyusunan: 6 ruas `modules` dibaca kode tapi tidak ada di skema (menghambat backlog CPMK), dan cron 883 commit tanpa konsumen.
+- 2026-10-10: berkas ini baru dilacak git (sejak 7 Agu hanya ada di folder utama, tidak ter-commit). Tambah dua sumber: naskah final dan 13 tugas akhir. `books/` dikosongkan. Bagian lain belum diverifikasi ulang dan masih bertanggal 7 Agu 2026.

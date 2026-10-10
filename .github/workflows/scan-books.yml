@@ -4,8 +4,8 @@ on:
   push:
     paths:
       - 'books/**'        # trigger saat ada PDF baru di-push
-  schedule:
-    - cron: '*/30 * * * *'  # scan otomatis setiap 30 menit
+  # Jadwal 30 menit dibuang 10 Okt 2026: isi books/ hanya berubah lewat push,
+  # jadi pemicu push di atas sudah cukup.
   workflow_dispatch:         # bisa dijalankan manual dari GitHub
 
 permissions:
