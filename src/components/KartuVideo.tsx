@@ -29,7 +29,13 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
       className="relative w-full aspect-video rounded-[10px] overflow-hidden grid place-items-center"
       style={{ background: `linear-gradient(140deg, ${dasar}, color-mix(in srgb, ${dasar} 70%, black))`, color: 'var(--cover-ink)' }}
     >
-      {thumb && <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" />}
+      {thumb ? (
+        <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      ) : (
+        <span className="absolute left-3 top-2.5 text-[11px] tracking-[.08em] uppercase opacity-80">
+          Pertemuan {String(nomor).padStart(2, '0')}
+        </span>
+      )}
       <span
         className="relative w-10 h-10 rounded-full grid place-items-center"
         style={{ background: 'color-mix(in srgb, var(--cover-ink) 16%, transparent)', backdropFilter: 'blur(2px)' }}

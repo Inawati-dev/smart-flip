@@ -30,8 +30,10 @@ export function warnaSampul(nomor: number): string {
   return WARNA[(Math.max(1, nomor) - 1) % WARNA.length]
 }
 
-export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi }: KartuTopikProps) {
-  const sampul = (
+// Sampul buku satu topik. Satu-satunya bentuk sampul PDF di aplikasi (antrean
+// #147): rak Modul, halaman topik, dan katalog Ebook memakai komponen ini.
+export function SampulTopik({ nomor, judul, keterangan }: { nomor: number; judul: string; keterangan?: string }) {
+  return (
     <div
       className="w-full aspect-[3/4] flex flex-col justify-between p-3.5 pl-5 rounded-[4px_10px_10px_4px]"
       style={{
@@ -50,6 +52,10 @@ export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terku
       <span className="text-[11px] tracking-[.08em] uppercase opacity-80 tabular-nums">{keterangan ?? ''}</span>
     </div>
   )
+}
+
+export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi }: KartuTopikProps) {
+  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} />
   const bisaKlik = !terkunci && (to || onClick)
   const label = `Buka topik ${nomor}: ${judul}`
   return (

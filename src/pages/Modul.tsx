@@ -8,7 +8,8 @@ import { useTopikStatus } from '../lib/topik'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { DosenModulRak } from './ModulList'
-import { IconBook, IconDocument, IconChart, IconPlay, IconEdit } from '../components/icons'
+import { IconBook, IconChart, IconPlay, IconEdit } from '../components/icons'
+import { SampulTopik } from '../components/KartuTopik'
 
 // progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
 // -- was rendering as-is ("2026-07-24T04:04:55.479+00:00") instead of a
@@ -79,11 +80,8 @@ export default function Modul() {
         <div className="grid md:grid-cols-[1fr_320px] gap-5 mt-6">
           <div className="bg-ivory border rounded-xl p-5" style={{ borderColor: 'var(--border)' }}>
             <div className="flex gap-5 flex-col sm:flex-row">
-              <div
-                className="w-full sm:w-[140px] h-[140px] sm:h-[186px] rounded-xl flex items-center justify-center text-4xl flex-shrink-0"
-                style={{ background: `linear-gradient(135deg, ${modul.color} 0%, var(--bg3) 100%)` }}
-              >
-                <IconDocument size={36} />
+              <div className="w-[140px] flex-shrink-0">
+                <SampulTopik nomor={modul.order_num} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum ada PDF'} />
               </div>
               <div className="flex flex-col gap-2">
                 {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}

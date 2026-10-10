@@ -9,6 +9,7 @@ import { useModules } from '../hooks/useModules'
 import { getReaderStyle, setReaderStyle, type ReaderStyle } from '../lib/readerStyle'
 import { Layout } from '../components/Layout'
 import { PillGroup } from '../components/PillGroup'
+import { SampulTopik } from '../components/KartuTopik'
 import { IconWarning, IconSkipBack, IconSkipForward, IconBook, IconChevronRight } from '../components/icons'
 
 const READER_STYLE_OPTIONS: Array<{ value: ReaderStyle; label: string }> = [
@@ -26,68 +27,6 @@ const ZOOM_MIN = 0.8
 const ZOOM_MAX = 2
 const ZOOM_STEP = 0.1
 const SPREAD_MIN_WIDTH = 900 // below this, "Buka Buku" silently falls back to single-page
-
-// A small first-page-only render used as the catalog card's cover — mirrors
-// legacy/script.js's per-card async cover render, just against pdf.js
-// directly instead of the legacy IndexedDB cache.
-function CoverThumb({ src }: { src: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const [failed, setFailed] = useState(false)
-
-  useEffect(() => {
-    let cancelled = false
-    // Each catalog card loads its own PDFDocumentProxy just to render page 1
-    // as a thumbnail — without destroying it, every catalog render (e.g.
-    // navigating back and forth) piles up undestroyed documents. docRef
-    // tracks this effect run's own doc so the cleanup below can destroy
-    // exactly one, whether cancellation happens before or after it loads.
-    let doc: pdfjsLib.PDFDocumentProxy | null = null
-    setFailed(false)
-    pdfjsLib.getDocument(src).promise.then(
-      async (loadedDoc) => {
-        if (cancelled) {
-          loadedDoc.destroy().catch(() => {})
-          return
-        }
-        doc = loadedDoc
-        const page = await doc.getPage(1)
-        const canvas = canvasRef.current
-        if (!canvas || cancelled) return
-        const baseViewport = page.getViewport({ scale: 1 })
-        const scale = 220 / baseViewport.width
-        const viewport = page.getViewport({ scale })
-        canvas.width = viewport.width
-        canvas.height = viewport.height
-        const ctx = canvas.getContext('2d')
-        if (!ctx) return
-        try {
-          await page.render({ canvasContext: ctx, viewport }).promise
-        } catch {
-          // cancelled by unmount — ignore, matches Ebook's main renderPage
-        }
-      },
-      () => {
-        if (!cancelled) setFailed(true)
-      },
-    )
-    return () => {
-      cancelled = true
-      if (doc) {
-        doc.destroy().catch(() => {})
-        doc = null
-      }
-    }
-  }, [src])
-
-  if (failed) {
-    return (
-      <div className="w-full h-full flex items-center justify-center">
-        <IconBook size={28} className="text-terra-d" />
-      </div>
-    )
-  }
-  return <canvas ref={canvasRef} className="w-full h-full object-contain" />
-}
 
 // Ported (MVP core only) from legacy/ebook.html + legacy/script.js: load the
 // PDF belonging to ?book=<moduleId>, render the current page to a canvas,
@@ -463,16 +402,10 @@ export function Ebook() {
                   <button
                     key={m.id}
                     onClick={() => setSearchParams({ book: String(m.id) })}
-                    className="flex flex-col items-center gap-2 p-3 rounded-2xl border bg-ivory text-center transition-shadow hover:shadow-md"
-                    style={{ borderColor: 'var(--border)' }}
+                    aria-label={`Buka topik ${m.order_num}: ${m.title}`}
+                    className="block w-full text-left rounded-[4px_10px_10px_4px] transition-transform hover:-translate-y-0.5"
                   >
-                    <div
-                      className="w-full aspect-[3/4] rounded-lg overflow-hidden flex items-center justify-center shadow-sm"
-                      style={{ background: 'var(--bg3)' }}
-                    >
-                      <CoverThumb src={m.path || m.pdf_path || ''} />
-                    </div>
-                    <span className="text-xs font-semibold text-brown line-clamp-2">{m.title}</span>
+                    <SampulTopik nomor={m.order_num} judul={m.title} keterangan="PDF" />
                   </button>
                 ))}
               </div>
