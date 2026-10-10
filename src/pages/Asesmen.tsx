@@ -13,6 +13,7 @@ import {
   fetchAsesmenAttempts,
   fetchAttemptsPrePost,
   hitungPeningkatanKelas,
+  pakaiFormatifSebagaiPost,
   rekapPerModul,
   type PeningkatanMahasiswa,
 } from '../lib/asesmen'
@@ -176,7 +177,11 @@ export default function Asesmen() {
     return namaKelasCocok ? rows.filter((r) => r.kelas != null && namaKelasCocok.has(r.kelas)) : rows
   }, [formatifRows, namaKelasCocok])
 
-  const peningkatan = useMemo(() => hitungPeningkatanKelas(prePostFiltered), [prePostFiltered])
+  // Tes formatif menggantikan post-test sebagai pembanding tes diagnostik (antrean #172).
+  const peningkatan = useMemo(
+    () => hitungPeningkatanKelas(pakaiFormatifSebagaiPost(prePostFiltered, formatifFiltered)),
+    [prePostFiltered, formatifFiltered],
+  )
   const rekapFormatif = useMemo(() => rekapPerModul(formatifFiltered, ambang.formatif), [formatifFiltered, ambang.formatif])
 
   const totalKategori = peningkatan.sebaran.tinggi + peningkatan.sebaran.sedang + peningkatan.sebaran.rendah
@@ -247,7 +252,7 @@ export default function Asesmen() {
             </div>
           </div>
           <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Post-test</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Tes Formatif</div>
             <div className="font-display text-2xl font-bold text-brown">{formatSkor(peningkatan.rataPost)}</div>
           </div>
           <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
@@ -265,7 +270,7 @@ export default function Asesmen() {
           </div>
         </div>
         <p className="text-xs text-brown-3 leading-relaxed mb-5">
-          Peningkatan = kenaikan dari tes diagnostik awal ke post-test dibanding ruang naik yang tersisa.
+          Peningkatan = kenaikan dari tes diagnostik awal ke rata-rata skor terbaik tes formatif tiap topik, dibanding ruang naik yang tersisa.
         </p>
 
         {/* SEBARAN PENINGKATAN */}
@@ -323,13 +328,13 @@ export default function Asesmen() {
             {loading && <span className="text-xs font-normal text-brown-3">Memuat…</span>}
           </div>
           {peningkatan.perMahasiswa.length === 0 ? (
-            emptyState('pengerjaan tes diagnostik awal atau post-test yang tercatat')
+            emptyState('pengerjaan tes diagnostik awal atau tes formatif yang tercatat')
           ) : (
             <div className="overflow-x-auto rounded-lg border" style={BORDER}>
               <table className="w-full border-collapse min-w-[820px]">
                 <thead className="bg-cream">
                   <tr>
-                    {['Nama', 'Kelas', 'Pre', 'Golongan', 'Post', 'Peningkatan', 'Kategori', 'Mini Projek'].map((h, i) => (
+                    {['Nama', 'Kelas', 'Diagnostik', 'Golongan', 'Formatif', 'Peningkatan', 'Kategori', 'Mini Projek'].map((h, i) => (
                       <th
                         key={h}
                         className={`px-3 py-2.5 text-xs font-semibold text-brown-2 tracking-wide uppercase ${

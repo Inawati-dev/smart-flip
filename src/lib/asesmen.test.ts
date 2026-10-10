@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { hitungPeningkatanKelas, rekapPerModul, type AsesmenAttempt } from './asesmen'
+import { hitungPeningkatanKelas, rekapPerModul, pakaiFormatifSebagaiPost, type AsesmenAttempt } from './asesmen'
 
 describe('hitungPeningkatanKelas', () => {
   it('pre 55/post 78 → gain 0,51 kategori sedang', () => {
@@ -52,5 +52,33 @@ describe('rekapPerModul', () => {
     const rekap = rekapPerModul(rows, 80)
     expect(rekap[0].lulus).toBe(1)
     expect(rekap[0].persenLulus).toBe(50)
+  })
+})
+
+// Antrean #172: tes formatif menggantikan post-test sebagai pembanding tes diagnostik.
+describe('pakaiFormatifSebagaiPost', () => {
+  const f = (userId: string, moduleId: number, score: number, nama = userId, kelas: string | null = 'A') => ({ userId, nama, kelas, moduleId, score })
+
+  it('pembanding = rata-rata skor terbaik tiap topik yang dikerjakan', () => {
+    const hasil = pakaiFormatifSebagaiPost(
+      [{ userId: 'u1', nama: 'Ani', kelasId: 'A', pre: 40 }],
+      [f('u1', 1, 50), f('u1', 1, 90), f('u1', 2, 70)],
+    )
+    expect(hasil).toEqual([{ userId: 'u1', nama: 'Ani', kelasId: 'A', pre: 40, post: 80 }])
+    const kelas = hitungPeningkatanKelas(hasil)
+    expect(kelas.rataPost).toBe(80)
+    expect(kelas.perMahasiswa[0].peningkatan).toBeCloseTo((80 - 40) / (100 - 40), 5)
+  })
+
+  it('post-test lama diabaikan; tanpa tes formatif pembandingnya kosong', () => {
+    const hasil = pakaiFormatifSebagaiPost([{ userId: 'u1', nama: 'Ani', kelasId: 'A', pre: 40, post: 95 }], [])
+    expect(hasil[0].post).toBeUndefined()
+    expect(hitungPeningkatanKelas(hasil).perMahasiswa[0].peningkatan).toBeNull()
+  })
+
+  it('mahasiswa dengan tes formatif tetapi tanpa tes diagnostik tetap muncul, tanpa angka peningkatan', () => {
+    const hasil = pakaiFormatifSebagaiPost([], [f('u2', 3, 65, 'Budi', 'B')])
+    expect(hasil).toEqual([{ userId: 'u2', nama: 'Budi', kelasId: 'B', pre: undefined, post: 65 }])
+    expect(hitungPeningkatanKelas(hasil).perMahasiswa[0].peningkatan).toBeNull()
   })
 })

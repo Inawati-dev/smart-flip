@@ -22,7 +22,7 @@ const STEPS_MAHASISWA: Step[] = [
   {
     icon: IconCompass,
     title: 'Tes Diagnostik Awal',
-    desc: 'Kerjakan tes diagnostik awal satu kali sebelum materi terbuka. Di akhir mata kuliah ada post-test yang dibuka dosen; selisih keduanya menjadi peningkatan skormu.',
+    desc: 'Kerjakan tes diagnostik awal satu kali sebelum materi terbuka. Sesudah itu tiap topik punya tes formatif; kenaikan dari tes diagnostik ke tes formatif menjadi peningkatan skormu.',
   },
 ]
 

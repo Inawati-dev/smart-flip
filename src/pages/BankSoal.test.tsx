@@ -152,12 +152,23 @@ describe('BankSoal', () => {
     expect(within(tabGroup).queryByText('Tugas Akhir')).toBeNull()
   })
 
-  it('jenis soal tinggal Tes Diagnostik Awal, Formatif, Post-test (tanpa Tes Kelompok)', async () => {
+  // Antrean #172: post-test tidak lagi ditawarkan, tes formatif mengambil perannya.
+  it('jenis soal tinggal Tes Diagnostik Awal dan Tes Formatif (tanpa Post-test dan Tes Kelompok)', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
     const jenisGroup = await screen.findByRole('group', { name: 'Filter jenis soal' })
-    expect(within(jenisGroup).getAllByRole('button').map((b) => b.textContent)).toEqual(['Tes Diagnostik Awal', 'Formatif', 'Post-test'])
+    expect(within(jenisGroup).getAllByRole('button').map((b) => b.textContent)).toEqual(['Tes Diagnostik Awal', 'Tes Formatif'])
     expect(within(jenisGroup).queryByText('Tes Kelompok')).toBeNull()
+    expect(within(jenisGroup).queryByText('Post-test')).toBeNull()
+  })
+
+  it('?jenis=post (tautan lama) jatuh ke Tes Diagnostik Awal tanpa galat', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?tab=soal&jenis=post')
+    await waitFor(() => {
+      expect(mockFetchBankSoal).toHaveBeenCalledWith('pre', undefined, 1)
+    })
+    expect(mockFetchBankSoal).not.toHaveBeenCalledWith('post', expect.anything(), expect.anything())
   })
 
   it('?jenis=kelompok (tautan lama) jatuh ke Tes Diagnostik Awal tanpa galat', async () => {

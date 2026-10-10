@@ -183,6 +183,37 @@ export interface PeningkatanKelas {
   sebaran: { tinggi: number; sedang: number; rendah: number }
 }
 
+/**
+ * Tes formatif menggantikan post-test (antrean #172): skor pembanding tiap
+ * mahasiswa = rata-rata (dibulatkan) skor TERBAIK tes formatif di tiap topik
+ * yang sudah ia kerjakan. Mahasiswa yang punya tes formatif tetapi belum tes
+ * diagnostik tetap muncul, tanpa angka peningkatan.
+ */
+export function pakaiFormatifSebagaiPost(
+  prePost: AttemptPrePostRow[],
+  formatif: Array<Pick<AsesmenAttempt, 'userId' | 'nama' | 'kelas' | 'moduleId' | 'score'>>,
+): AttemptPrePostRow[] {
+  const terbaik = new Map<string, Map<number, number>>()
+  const identitas = new Map<string, { nama: string; kelas: string | null }>()
+  for (const a of formatif) {
+    const perTopik = terbaik.get(a.userId) ?? new Map<number, number>()
+    perTopik.set(a.moduleId, Math.max(perTopik.get(a.moduleId) ?? 0, a.score))
+    terbaik.set(a.userId, perTopik)
+    identitas.set(a.userId, { nama: a.nama, kelas: a.kelas })
+  }
+  const rata = (userId: string): number | undefined => {
+    const perTopik = terbaik.get(userId)
+    if (!perTopik || perTopik.size === 0) return undefined
+    return Math.round([...perTopik.values()].reduce((x, y) => x + y, 0) / perTopik.size)
+  }
+  const hasil = prePost.map((r) => ({ userId: r.userId, nama: r.nama, kelasId: r.kelasId, pre: r.pre, post: rata(r.userId) }))
+  const sudahAda = new Set(prePost.map((r) => r.userId))
+  for (const [userId, id] of identitas) {
+    if (!sudahAda.has(userId)) hasil.push({ userId, nama: id.nama, kelasId: id.kelas, pre: undefined, post: rata(userId) })
+  }
+  return hasil
+}
+
 /** Fungsi murni: dari baris pre/post per mahasiswa, hitung gain+kategori per orang, rata-rata kelas, dan sebaran kategori. */
 export function hitungPeningkatanKelas(rows: AttemptPrePostRow[]): PeningkatanKelas {
   const perMahasiswa: PeningkatanMahasiswa[] = rows.map((r) => {

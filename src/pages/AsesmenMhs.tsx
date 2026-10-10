@@ -118,7 +118,7 @@ function AsesmenDaftar() {
           <h1 className="font-display text-2xl font-bold text-brown">Asesmen</h1>
           <MataKuliahSelect />
         </div>
-        <p className="text-brown-3 mb-4">Tes diagnostik awal, tes formatif tiap topik, post-test, dan mini projek.</p>
+        <p className="text-brown-3 mb-4">Tes diagnostik awal, tes formatif tiap topik, dan mini projek.</p>
         <PertemuanStepper
           current={topikAktif?.id ?? sorted[0]?.id ?? 0}
           basePath="/asesmen/formatif"
@@ -181,7 +181,6 @@ function AsesmenDaftar() {
               title="Tes diagnostik awal"
               value={preSkor != null ? `Skor ${preSkor} · ${GOLONGAN_LABEL[golonganDariSkor(preSkor, ambang.diagnostik)]} · ${course?.name ?? ''}` : `Belum · ${course?.name ?? ''}`}
             />
-            <PanelCard title="Post-test" value="Dibuka oleh dosen" />
             <TugasAkhirMhsCard />
           </div>
         </div>
@@ -208,7 +207,7 @@ function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinj
   const pertama = sorted.find((m) => statusOf(m.id) === 'open')
   const langkah =
     golongan === 'mahir'
-      ? ['Pilih topik mana pun, semuanya sudah terbuka.', `Kerjakan tes formatif tiap topik sampai skor ${ambang.formatif}.`, 'Sesudah semua topik selesai, lanjut ke post-test dan mini projek.']
+      ? ['Pilih topik mana pun, semuanya sudah terbuka.', `Kerjakan tes formatif tiap topik sampai skor ${ambang.formatif}.`, 'Sesudah semua topik selesai, lanjut ke mini projek.']
       : [
           `Mulai dari Topik ${pertama?.order_num ?? 1}: baca modul dan tonton videonya.`,
           `Kerjakan tes formatifnya sampai skor ${ambang.formatif}.`,

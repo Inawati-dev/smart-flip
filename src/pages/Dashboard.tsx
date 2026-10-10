@@ -442,7 +442,7 @@ export function DashboardMhs({
         </div>
         {utama === 'selesai-semua' ? (
           <p className="text-brown-2 text-sm">
-            Semua topik selesai. Menunggu sesi post-test dari dosen.
+            Semua topik selesai. Lanjutkan ke mini projek.
           </p>
         ) : materiDibuka ? (
           <p className="text-brown-2 text-sm">

@@ -35,13 +35,13 @@ const TAB_LABELS: Record<Tab, string> = {
   tugas: 'Mini Projek',
 }
 
-type FilterKind = Exclude<SoalKind, 'vark' | 'kelompok'>
+// Post-test tidak lagi ditawarkan: tes formatif mengambil perannya (antrean #172).
+type FilterKind = Exclude<SoalKind, 'vark' | 'kelompok' | 'post'>
 
-const KIND_ORDER: FilterKind[] = ['pre', 'formatif', 'post']
+const KIND_ORDER: FilterKind[] = ['pre', 'formatif']
 const KIND_LABELS: Record<FilterKind, string> = {
   pre: 'Tes Diagnostik Awal',
-  formatif: 'Formatif',
-  post: 'Post-test',
+  formatif: 'Tes Formatif',
 }
 const LETTERS = ['A', 'B', 'C', 'D'] as const
 

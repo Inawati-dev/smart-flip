@@ -108,9 +108,9 @@ describe('AsesmenMhs — daftar /asesmen tanpa tes khusus dan tes kelompok', () 
     renderAt('/asesmen', queryClient)
 
     expect(await screen.findByText('Mini Projek')).toBeTruthy()
-    expect(screen.getByText('Post-test')).toBeTruthy()
+    expect(screen.queryByText('Post-test')).toBeNull()
     expect(document.querySelector('a[href^="/asesmen/tes"], a[href^="/asesmen/kelompok"]')).toBeNull()
     const teks = document.body.textContent ?? ''
-    expect(teks).not.toMatch(/tes khusus|tes kelompok|tugas akhir/i)
+    expect(teks).not.toMatch(/tes khusus|tes kelompok|tugas akhir|post-test/i)
   })
 })
