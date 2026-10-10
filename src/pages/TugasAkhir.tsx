@@ -30,6 +30,17 @@ import { TanggalInput } from '../components/TanggalInput'
 // lewat ?brief=<id>.
 const BORDER = { borderColor: 'var(--border)' } as const
 
+// Tenggat tersimpan sebagai ISO berzona (UTC). Isian tanggal memakai jam
+// setempat 'YYYY-MM-DDTHH:mm', jadi harus dikonversi, bukan dipotong: memotong
+// teks ISO menampilkan jam UTC sebagai jam setempat, lalu saat disimpan lagi
+// tenggat bergeser sebesar selisih zona (7 jam di WIB) tiap kali (antrean #171).
+export function isoKeLokal(iso: string): string {
+  const t = new Date(iso)
+  if (Number.isNaN(t.getTime())) return ''
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${t.getFullYear()}-${p(t.getMonth() + 1)}-${p(t.getDate())}T${p(t.getHours())}:${p(t.getMinutes())}`
+}
+
 function formatTenggat(deadline: string | null): string {
   if (!deadline) return 'Tanpa tenggat'
   return new Date(deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -99,7 +110,7 @@ export function TugasAkhirPanel() {
     setEditing(p)
     setTitle(p.title)
     setDescription(p.description)
-    setDeadline(p.deadline ? p.deadline.slice(0, 16) : '')
+    setDeadline(p.deadline ? isoKeLokal(p.deadline) : '')
     setSemuaKelas(p.class_ids.length === 0)
     setClassIds(p.class_ids)
     setRubric(p.rubric.length ? p.rubric.map((r) => ({ ...r })) : RUBRIK_BAWAAN.map((r) => ({ ...r })))

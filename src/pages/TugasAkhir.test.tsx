@@ -3,7 +3,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
-import TugasAkhir, { TugasAkhirPanel } from './TugasAkhir'
+import TugasAkhir, { TugasAkhirPanel, isoKeLokal } from './TugasAkhir'
 import { RUBRIK_BAWAAN } from '../lib/tugasAkhir'
 
 afterEach(cleanup)
@@ -97,6 +97,27 @@ function renderPanel() {
 // TugasAkhir.tsx sekarang jadi cangkang tab di BankSoal.tsx (v23, permintaan
 // Johan 16 Sep 2026). /asesmen/tugas-akhir mengalihkan ke
 // /asesmen/bank?tab=tugas; isi lamanya sekarang TugasAkhirPanel.
+// Antrean #171: membuka lalu menyimpan ulang brief tidak boleh menggeser tenggat.
+describe('isoKeLokal', () => {
+  it('bolak-balik simpan: tenggat tidak bergeser, di zona waktu mana pun uji dijalankan', () => {
+    for (const iso of ['2026-10-12T16:59:00.000Z', '2026-12-31T23:30:00.000Z', '2028-02-29T00:05:00.000Z']) {
+      const lokal = isoKeLokal(iso)
+      expect(lokal).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
+      expect(new Date(lokal).toISOString()).toBe(iso)
+    }
+  })
+
+  it('jam yang tampil adalah jam setempat, bukan potongan teks UTC', () => {
+    const iso = '2026-10-12T16:59:00.000Z'
+    const t = new Date(iso)
+    expect(isoKeLokal(iso).slice(11)).toBe(`${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`)
+  })
+
+  it('teks yang bukan tanggal menghasilkan isian kosong', () => {
+    expect(isoKeLokal('bukan tanggal')).toBe('')
+  })
+})
+
 describe('TugasAkhir — dialihkan ke tab bank soal', () => {
   it('membuka /asesmen/tugas-akhir mengalihkan ke /asesmen/bank?tab=tugas', () => {
     render(
