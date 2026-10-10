@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
 import AsesmenMhs from './AsesmenMhs'
@@ -59,6 +59,28 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
 
     expect(await screen.findByText('Skor tes diagnostik awal 70 tersimpan.')).toBeTruthy()
     expect(screen.getByText('Mulai belajar')).toBeTruthy()
+  })
+
+  // Antrean #138: benar/salah tidak muncul saat mengerjakan, baru di akhir.
+  it('jawaban tidak dinilai di layar soal; tinjauan muncul sesudah dikirim', async () => {
+    const queryClient = newQueryClient()
+    queryClient.setQueryData(['bank-soal', 'pre', 1], [
+      { id: 1, kind: 'pre', module_id: null, question: 'Soal uji?', options: ['Salah satu', 'Benar ini', 'Salah dua', 'Salah tiga'], answer_idx: 1, explanation: null, order_num: 1 },
+    ])
+    queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
+    renderAt('/asesmen/pre', queryClient)
+
+    fireEvent.click(await screen.findByText('Mulai'))
+    fireEvent.click(screen.getByText('Salah satu'))
+    expect(document.body.textContent).not.toMatch(/Jawaban kamu|Jawaban benar/)
+    // Pilihan masih boleh diganti sebelum dikirim.
+    fireEvent.click(screen.getByText('Salah dua'))
+    fireEvent.click(screen.getByText('Kirim ✓'))
+
+    expect(await screen.findByText('Skor tes diagnostik awal 0 tersimpan.')).toBeTruthy()
+    expect(screen.getByText('Tinjauan jawaban · benar 0 dari 1')).toBeTruthy()
+    expect(screen.getByText('Jawaban benar').previousElementSibling?.textContent).toBe('Benar ini')
+    expect(screen.getByText('Pilihanmu').previousElementSibling?.textContent).toBe('Salah dua')
   })
 })
 

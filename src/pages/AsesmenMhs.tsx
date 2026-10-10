@@ -11,7 +11,7 @@ import { computeNGain } from '../lib/ngain'
 import { useCourse } from '../contexts/CourseContext'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
-import { SoalRunner } from '../components/SoalRunner'
+import { SoalRunner, TinjauanJawaban } from '../components/SoalRunner'
 import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { ChipRak } from '../components/KartuTopik'
@@ -202,9 +202,11 @@ function PreTest() {
   const [acak, setAcak] = useState<AcakSoalResult | null>(null)
   const [currentQ, setCurrentQ] = useState(0)
   const [jawaban, setJawaban] = useState<Record<number, number>>({})
-  const [submitted, setSubmitted] = useState<Record<number, boolean>>({})
   const [saving, setSaving] = useState(false)
   const [hasilBaru, setHasilBaru] = useState<number | null>(null)
+  // Benar/salah baru ditunjukkan sesudah dikirim (antrean #138). Hanya ada
+  // sampai halaman ditinggalkan; pengerjaan lama tidak punya tinjauan.
+  const [tinjau, setTinjau] = useState<{ soal: AcakSoalResult['tampil']; jawaban: number[] } | null>(null)
 
   if (soalLoading || attemptsLoading) {
     return (
@@ -221,7 +223,6 @@ function PreTest() {
     setAcak(acakSoal(soal))
     setCurrentQ(0)
     setJawaban({})
-    setSubmitted({})
   }
 
   async function lanjutTanpaPreTest() {
@@ -253,6 +254,7 @@ function PreTest() {
       console.warn('[asesmen-pre] saveQuizAttempt gagal:', e)
     }
     setSaving(false)
+    setTinjau({ soal: acak.tampil, jawaban: jawabanTampil })
     setAcak(null)
     setHasilBaru(hasil.score)
   }
@@ -268,30 +270,30 @@ function PreTest() {
             q={acak.tampil[currentQ]}
             currentQ={currentQ}
             selected={jawaban[currentQ] ?? -1}
-            isSubmitted={submitted[currentQ] ?? false}
+            isSubmitted={false}
+            tunda
             saving={saving}
             finishLabel="Kirim ✓"
-            onSelect={(i) => {
-              if (submitted[currentQ]) return
-              setJawaban((a) => ({ ...a, [currentQ]: i }))
-              setSubmitted((s) => ({ ...s, [currentQ]: true }))
-            }}
+            onSelect={(i) => setJawaban((a) => ({ ...a, [currentQ]: i }))}
             onPrev={() => setCurrentQ((c) => Math.max(0, c - 1))}
             onNext={() => setCurrentQ((c) => Math.min(acak.tampil.length - 1, c + 1))}
             onFinish={handleFinish}
           />
         ) : skorFinal != null ? (
-          <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-3">Skor tes diagnostik awal {skorFinal} tersimpan.</p>
-            {/* Golongan pre-test (antrean #105 opsi B, batas 80). */}
-            <div className="flex justify-center mb-2">
-              <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal)]} label={GOLONGAN_LABEL[golonganDariSkor(skorFinal)]} />
+          <>
+            <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
+              <p className="text-brown-2 mb-3">Skor tes diagnostik awal {skorFinal} tersimpan.</p>
+              {/* Golongan pre-test (antrean #105 opsi B, batas 80). */}
+              <div className="flex justify-center mb-2">
+                <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal)]} label={GOLONGAN_LABEL[golonganDariSkor(skorFinal)]} />
+              </div>
+              <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{GOLONGAN_KETERANGAN[golonganDariSkor(skorFinal)]}</p>
+              <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
+                Mulai belajar
+              </button>
             </div>
-            <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{GOLONGAN_KETERANGAN[golonganDariSkor(skorFinal)]}</p>
-            <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
-              Mulai belajar
-            </button>
-          </div>
+            {tinjau && <TinjauanJawaban soal={tinjau.soal} jawaban={tinjau.jawaban} />}
+          </>
         ) : soal.length === 0 ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-5">Dosen belum menyiapkan tes diagnostik awal.</p>
