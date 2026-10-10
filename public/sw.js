@@ -1,49 +1,19 @@
-/* SMART-FLIP 5.0 — Service Worker
-   Cache-first strategy untuk assets statis
-*/
-const CACHE = 'smartflip-v1';
-const PRECACHE = [
-  '/smart-flipbook/',
-  '/smart-flipbook/index.html',
-  '/smart-flipbook/style.css',
-  '/smart-flipbook/modules-data.js',
-  '/smart-flipbook/data-layer.js',
-  '/smart-flipbook/script.js',
-];
+/* SMART-FLIP 5.0: service worker minimal (antrean #135).
+   Tujuannya hanya supaya aplikasi bisa dipasang. Tidak menyimpan apa pun:
+   tiap permintaan diteruskan ke jaringan, jadi versi baru langsung terpakai.
+   Cache peninggalan worker lama (smartflip-v1, alamat /smart-flipbook/ dari
+   masa GitHub Pages) dihapus saat worker ini aktif. */
+self.addEventListener('install', () => self.skipWaiting())
 
-self.addEventListener('install', e => {
+self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(PRECACHE))
-      .then(() => self.skipWaiting())
-      .catch(err => console.error('[sw] precache gagal:', err))
-  );
-});
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
+  )
+})
 
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
-      .catch(err => console.error('[sw] activate gagal:', err))
-  );
-});
-
-self.addEventListener('fetch', e => {
-  // Jangan cache Supabase API atau CDN scripts
-  if (e.request.url.includes('supabase') || e.request.url.includes('cdn')) return;
-
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200) return res;
-        const clone = res.clone();
-        caches.open(CACHE).then(c => c.put(e.request, clone));
-        return res;
-      }).catch(() => cached || new Response('Offline — konten tidak tersedia', {
-        status: 503, statusText: 'Service Unavailable', headers: { 'Content-Type': 'text/plain' }
-      }));
-    })
-  );
-});
+// Pendengar fetch wajib ada supaya peramban menawarkan pemasangan; sengaja
+// tidak memanggil respondWith, jadi peramban mengambil dari jaringan seperti biasa.
+self.addEventListener('fetch', () => {})
