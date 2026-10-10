@@ -137,15 +137,15 @@ export function Akun() {
         <div className="grid grid-cols-3 gap-3 mb-4">
           {isDosen ? (
             <>
-              <StatCard bar="var(--terra)" val={String(dosenSummary.totalStudents)} label="Mahasiswa terdaftar" to="/kelas" />
-              <StatCard bar="var(--sage)" val={`${dosenSummary.avgModulPct}%`} label="Rata-rata progres" to="/dashboard" />
-              <StatCard bar="var(--info)" val={`${dosenSummary.avgKuis}%`} label="Rata-rata skor kuis" to="/asesmen" />
+              <StatCard bar="var(--terra)" val={String(dosenSummary.totalStudents)} label="Mahasiswa Terdaftar" to="/kelas" />
+              <StatCard bar="var(--sage)" val={`${dosenSummary.avgModulPct}%`} label="Rata-rata Progres" to="/dashboard" />
+              <StatCard bar="var(--info)" val={`${dosenSummary.avgKuis}%`} label="Rata-rata Skor Kuis" to="/asesmen" />
             </>
           ) : (
             <>
-              <StatCard bar="var(--terra)" val={`${modulSelesai}/${totalModules}`} label="Topik selesai" to="/modul" />
-              <StatCard bar="var(--sage)" val={String(formatifLulus)} label="Formatif lulus" to="/asesmen" />
-              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Tes diagnostik awal" to="/asesmen" />
+              <StatCard bar="var(--terra)" val={`${modulSelesai}/${totalModules}`} label="Topik Selesai" to="/modul" />
+              <StatCard bar="var(--sage)" val={String(formatifLulus)} label="Formatif Lulus" to="/asesmen" />
+              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Tes Diagnostik Awal" to="/asesmen" />
             </>
           )}
         </div>
@@ -209,14 +209,14 @@ export function Akun() {
             style={{ borderColor: 'var(--terra)', boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="text-sm font-semibold text-brown mb-4 pb-2 border-b" style={BORDER}>
-              Ubah profil
+              Ubah Profil
             </div>
 
             <div className="flex items-center gap-4 mb-4">
               <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {formAvatar ? <img src={formAvatar} alt={formNama} className="w-full h-full object-cover" /> : initialsOf(formNama)}
               </div>
-              <FileInput accept="image/*" label="Pilih foto" maxSizeMb={5} file={null} onChange={handleAvatarPick} />
+              <FileInput accept="image/*" label="Pilih Foto" maxSizeMb={5} file={null} onChange={handleAvatarPick} />
               {formAvatar && (
                 <button type="button" onClick={() => setFormAvatar('')} className="text-xs text-brown-3 underline">
                   Hapus
@@ -226,7 +226,7 @@ export function Akun() {
 
             <div className="flex flex-col gap-3 mb-4">
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-                Nama lengkap
+                Nama Lengkap
                 <input
                   value={formNama}
                   onChange={(e) => setFormNama(e.target.value)}

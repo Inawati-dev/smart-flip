@@ -15,7 +15,7 @@ describe('LogoutModal', () => {
     const html = renderToStaticMarkup(
       <LogoutModal open={true} onCancel={() => {}} onConfirm={() => {}} />,
     )
-    expect(html).toContain('Yakin ingin keluar?')
+    expect(html).toContain('Yakin Ingin Keluar?')
     expect(html).toContain('Batal')
     expect(html).toContain('Keluar')
   })

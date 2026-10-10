@@ -122,7 +122,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
           <div className="bg-ivory rounded-2xl border p-5 min-w-0 flex flex-col" style={BORDER}>
             <div className="flex items-center gap-2.5 mb-1">
               <IconLock size={18} className="text-brown-3" />
-              <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
+              <span className="text-sm font-semibold text-brown">Kode Undangan Dosen</span>
             </div>
             <p className="text-xs text-brown-3 mb-3">
               Kode yang harus diisi calon dosen saat mendaftar. Bagikan hanya ke orang yang memang
@@ -131,7 +131,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
 
             {inviteCode === null ? (
               <button onClick={() => void revealInviteCode()} disabled={inviteLoading} className="btn btn-secondary">
-                {inviteLoading ? 'Memuat…' : 'Tampilkan kode'}
+                {inviteLoading ? 'Memuat…' : 'Tampilkan Kode'}
               </button>
             ) : editingInvite ? (
               <div className="flex flex-col gap-2">
@@ -150,7 +150,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
                     disabled={!isInviteCodeLongEnough(inviteDraft)}
                     className="btn btn-primary"
                   >
-                    Simpan kode baru
+                    Simpan Kode Baru
                   </button>
                   <button
                     onClick={() => {
@@ -183,7 +183,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
                   }}
                   className="btn btn-secondary"
                 >
-                  Ganti kode
+                  Ganti Kode
                 </button>
                 <button onClick={() => setInviteCode(null)} className="btn btn-secondary">
                   Sembunyikan
@@ -228,8 +228,8 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
                   onChange={(v) => setStatus(v as StatusPerhatian)}
                   options={[
                     { value: 'semua', label: `Semua (${sesudahKelas.length})` },
-                    { value: 'modul', label: `Belum mulai modul (${jumlahModul})` },
-                    { value: 'diagnostik', label: `Belum tes diagnostik (${jumlahDiagnostik})` },
+                    { value: 'modul', label: `Belum Mulai Modul (${jumlahModul})` },
+                    { value: 'diagnostik', label: `Belum Tes Diagnostik (${jumlahDiagnostik})` },
                   ]}
                 />
                 <KelasTahunFilter
@@ -256,12 +256,12 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
                     <div className="flex gap-1.5">
                       {s.belumDiagnostik && (
                         <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-terra/20 text-terra-d whitespace-nowrap">
-                          Belum tes diagnostik
+                          Belum Tes Diagnostik
                         </span>
                       )}
                       {s.belumModul && (
                         <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-sage/20 text-sage-d whitespace-nowrap">
-                          Belum mulai modul
+                          Belum Mulai Modul
                         </span>
                       )}
                     </div>
@@ -270,7 +270,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
               </div>
               {tersaring.length > BATAS_DAFTAR && (
                 <button type="button" onClick={() => setTampilSemua((v) => !v)} className="btn btn-ghost btn-sm self-start mt-2">
-                  {tampilSemua ? 'Tampilkan lebih sedikit' : `Tampilkan semua (${tersaring.length})`}
+                  {tampilSemua ? 'Tampilkan Lebih Sedikit' : `Tampilkan Semua (${tersaring.length})`}
                 </button>
               )}
             </>
@@ -293,7 +293,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
             className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center"
             style={{ animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="text-base font-semibold text-brown mb-1.5">Ganti kode undangan?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Ganti Kode Undangan?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Kode lama langsung tidak berlaku. Calon dosen yang sudah terlanjur menerima kode lama
               harus dikirimi kode baru ini. Akun dosen yang sudah ada tidak terpengaruh.

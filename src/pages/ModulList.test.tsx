@@ -133,7 +133,7 @@ describe('ModulList', () => {
     renderModulList(queryClient)
 
     await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
-    expect(screen.getByText(/Tambah topik/)).toBeTruthy()
+    expect(screen.getByText(/Tambah Topik/)).toBeTruthy()
   })
 
   // Antrean #43 (16 Sep 2026): modal Tambah Topik juga menawarkan unggah PDF.
@@ -146,9 +146,9 @@ describe('ModulList', () => {
     renderModulList(queryClient)
 
     await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
-    fireEvent.click(screen.getByText(/\+ Tambah topik/))
+    fireEvent.click(screen.getByText(/\+ Tambah Topik/))
 
-    expect(screen.getByText('PDF topik (opsional)')).toBeTruthy()
+    expect(screen.getByText('PDF Topik (opsional)')).toBeTruthy()
     expect(document.querySelector('input[type="file"][accept="application/pdf,.pdf"]')).toBeTruthy()
   })
 
@@ -163,7 +163,7 @@ describe('ModulList', () => {
     await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     fireEvent.click(screen.getByLabelText('Hapus topik Modul 1'))
 
-    expect(screen.getByText(/Hapus topik/)).toBeTruthy()
+    expect(screen.getByText(/Hapus Topik/)).toBeTruthy()
     expect(screen.getByText(/ikut terhapus/)).toBeTruthy()
     expect(screen.getByText('Ya, Hapus')).toBeTruthy()
   })
@@ -180,14 +180,14 @@ describe('ModulList', () => {
 
     await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
     expect(screen.getByLabelText('Pilih mata kuliah')).toBeTruthy()
-    expect(screen.getByText('Kelola mata kuliah')).toBeTruthy()
+    expect(screen.getByText('Kelola Mata Kuliah')).toBeTruthy()
 
     // Antrean #141: tiap mata kuliah punya sakelar buka-tutup untuk mahasiswa.
-    fireEvent.click(screen.getByText('Kelola mata kuliah'))
+    fireEvent.click(screen.getByText('Kelola Mata Kuliah'))
     const sakelar = screen.getAllByRole('switch')
     expect(sakelar.map((s) => [s.textContent, s.getAttribute('aria-checked'), (s as HTMLButtonElement).disabled])).toEqual([
-      ['Tutup akses', 'true', false],
-      ['Tutup akses', 'true', false],
+      ['Tutup Akses', 'true', false],
+      ['Tutup Akses', 'true', false],
     ])
   })
 })

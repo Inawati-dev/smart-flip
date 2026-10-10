@@ -44,26 +44,26 @@ function renderPage() {
 }
 
 describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
-  it('header tanpa tombol Bank soal (sudah jadi item rel), tanpa Tes khusus/Tes kelompok/Tugas akhir/Unduh CSV', async () => {
+  it('header tanpa tombol Bank Soal (sudah jadi item rel), tanpa Tes Khusus/Tes Kelompok/Tugas Akhir/Unduh CSV', async () => {
     renderPage()
-    expect(await screen.findByText('Hasil kelas')).toBeTruthy()
+    expect(await screen.findByText('Hasil Kelas')).toBeTruthy()
     // Tautan Bank soal hanya boleh ada di rel navigasi, bukan di header halaman.
     const main = document.querySelector('main')!
     expect(main.querySelector('a[href="/asesmen/bank"]')).toBeNull()
-    expect(screen.queryByText('Tes khusus')).toBeFalsy()
-    expect(screen.queryByText('Tes kelompok')).toBeFalsy()
-    expect(screen.queryByText('Tugas akhir')).toBeFalsy()
+    expect(screen.queryByText('Tes Khusus')).toBeFalsy()
+    expect(screen.queryByText('Tes Kelompok')).toBeFalsy()
+    expect(screen.queryByText('Tugas Akhir')).toBeFalsy()
     expect(screen.queryByText('Unduh CSV')).toBeFalsy()
   })
 
-  it('menampilkan dua kartu grafik: rata-rata formatif dan persentase lulus per topik', async () => {
+  it('menampilkan dua kartu grafik: Rata-rata formatif dan persentase lulus per topik', async () => {
     renderPage()
-    expect(await screen.findByText('Rata-rata formatif per topik')).toBeTruthy()
-    expect(screen.getByText('Persentase lulus per topik')).toBeTruthy()
+    expect(await screen.findByText('Rata-rata Formatif per Topik')).toBeTruthy()
+    expect(screen.getByText('Persentase Lulus per Topik')).toBeTruthy()
   })
 
   // Antrean #105 opsi B: golongan pre-test per mahasiswa, batas 80.
-  it('menghitung golongan pre-test: Jalur cepat dan Belajar mendalam per mahasiswa', async () => {
+  it('menghitung golongan pre-test: Jalur Cepat dan Belajar Mendalam per mahasiswa', async () => {
     const queryClient = newQueryClient()
     queryClient.setQueryData(['asesmen-prepost', 1], [
       { userId: 'a', nama: 'Ani', kelasId: 'A', pre: 85, post: 90 },
@@ -78,9 +78,9 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     )
     expect(await screen.findByText('Ani')).toBeTruthy()
     const teks = document.body.textContent ?? ''
-    expect(teks).toContain('Jalur cepat 1 · Belajar mendalam 1')
+    expect(teks).toContain('Jalur Cepat 1 · Belajar Mendalam 1')
     expect(screen.getByText('Golongan')).toBeTruthy()
-    expect(screen.getAllByText('Jalur cepat').length).toBe(1)
-    expect(screen.getAllByText('Belajar mendalam').length).toBe(1)
+    expect(screen.getAllByText('Jalur Cepat').length).toBe(1)
+    expect(screen.getAllByText('Belajar Mendalam').length).toBe(1)
   })
 })

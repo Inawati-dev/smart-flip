@@ -590,3 +590,77 @@ a:hover .nav-tile-active {
 /* Garis tegak antarkolom untuk tabel data yang kolomnya berjauhan (Bank soal). */
 .tabel-grid th + th,
 .tabel-grid td + td { border-left: 0.5px solid var(--border); }
+
+/* Kalender sendiri (src/components/TanggalInput.tsx, antrean #164): pengganti
+   kalender bawaan peramban. Semua warna dari token tema. Sel hari memakai
+   kelas sendiri supaya hover global `button:not(:disabled):hover` (naik 1px)
+   tidak membuat kisi bergetar; spesifisitas (0,3,0) menang atas (0,2,1). */
+.tgl-pemicu:focus-visible {
+  outline: none;
+  border-color: var(--terra);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.tgl-panel {
+  background: var(--ivory);
+  border: 1.5px solid var(--border);
+  border-radius: calc(var(--radius-control) + 2px);
+  box-shadow: var(--shadow-md);
+}
+.tgl-hari {
+  height: 40px;
+  min-width: 0;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--brown);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.tgl-hari.ini { border-color: var(--terra); font-weight: 700; }
+.tgl-hari.pilih { background: var(--btn-bg); border-color: var(--btn-bg); color: var(--btn-text); font-weight: 700; }
+.tgl-hari:not(:disabled):hover { background: var(--accent-soft); transform: none; filter: none; }
+.tgl-hari.pilih:not(:disabled):hover { background: var(--btn-bg); }
+.tgl-hari:not(:disabled):active { transform: none; filter: none; }
+.tgl-hari:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--terra); }
+.tgl-hari:disabled { opacity: .35; cursor: not-allowed; }
+.tgl-jam {
+  width: 4rem;
+  height: 44px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--brown);
+  text-align: center;
+  font: inherit;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.tgl-jam::-webkit-inner-spin-button,
+.tgl-jam::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.tgl-jam:focus { outline: none; border-color: var(--terra); box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* Batang gulir seragam 2 px (antrean #164), satu aturan untuk semua wadah.
+   Chrome/Safari/Edge: ::-webkit-scrollbar. PENTING: di Chrome 121+ menyetel
+   scrollbar-width/scrollbar-color membuat ::-webkit-scrollbar diabaikan
+   (batang jadi ~8 px), maka properti standar hanya diberikan lewat @supports
+   ke peramban tanpa ::-webkit-scrollbar (Firefox: "thin" ~8 px, tidak bisa
+   lebih tipis). Tanpa scrollbar-gutter. */
+::-webkit-scrollbar { width: 2px; height: 2px; }
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--brown3) 70%, transparent);
+  border-radius: 9999px;
+}
+.pembaca::-webkit-scrollbar-thumb,
+.pembaca ::-webkit-scrollbar-thumb { background: var(--pb-redup); }
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--brown3) 70%, transparent) transparent;
+  }
+  .pembaca, .pembaca * { scrollbar-color: var(--pb-redup) transparent; }
+}

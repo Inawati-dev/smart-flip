@@ -211,15 +211,15 @@ describe('Ebook', () => {
     expect(document.querySelectorAll('[data-hal]').length).toBe(3)
   })
 
-  // Antrean #148: di layar lebar buku terbuka dua halaman, sampul sendirian.
-  it('layar lebar: sampul sendiri lalu dua halaman per balikan', async () => {
+  // Antrean #165: satu halaman per layar, juga di layar lebar.
+  it('layar lebar: tetap satu halaman per balikan', async () => {
     lebarLayar(1280)
     renderEbook(1)
     await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
     fireEvent.click(screen.getByTitle('Berikutnya'))
-    await waitFor(() => expect(screen.getAllByText('2-3 / 3').length).toBeGreaterThan(0))
-    expect((screen.getByTitle('Berikutnya') as HTMLButtonElement).disabled).toBe(true)
-    expect(document.querySelector('.pembaca-lembar.balik')).toBeTruthy()
+    await waitFor(() => expect(screen.getAllByText('2 / 3').length).toBeGreaterThan(0))
+    expect((screen.getByTitle('Berikutnya') as HTMLButtonElement).disabled).toBe(false)
+    expect(document.querySelector('.pembaca-lembar.tunggal.balik')).toBeTruthy()
     fireEvent.click(screen.getByTitle('Sebelumnya'))
     await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
   })

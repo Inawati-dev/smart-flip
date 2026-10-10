@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { buangBerkasYatim } from './manajemen'
 
 // Mata kuliah (antrean #68, Johan 16 Sep 2026). Induk dari topik: tiap
 // mata kuliah punya topik 1..n sendiri (modules.course_id), soal pre/post/
@@ -124,6 +125,16 @@ export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code
 /** Hapus mata kuliah beserta topik dan asesmennya (ON DELETE CASCADE di DB). */
 export async function deleteCourse(id: number): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Menghapus mata kuliah butuh koneksi Supabase.')
+  // Topiknya ikut terhapus di DB (cascade), jadi alamat PDF dan videonya
+  // dicatat dulu supaya berkasnya bisa dibuang sesudahnya (antrean #168).
+  let berkas: Array<string | null> = []
+  try {
+    const { data } = await supabase.from('modules').select('pdf_path, video_url').eq('course_id', id)
+    berkas = (data ?? []).flatMap((m) => [m.pdf_path as string | null, m.video_url as string | null])
+  } catch {
+    // tidak bisa membaca daftar topik = tidak ada yang dibersihkan
+  }
   const { error } = await supabase.from('courses').delete().eq('id', id)
   if (error) throw error
+  await buangBerkasYatim(berkas)
 }

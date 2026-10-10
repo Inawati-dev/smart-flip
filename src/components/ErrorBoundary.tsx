@@ -35,7 +35,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <div className="w-11 h-11 rounded-xl bg-[color:var(--accent-soft)] text-terra-d flex items-center justify-center mx-auto mb-4">
               <IconGear size={20} />
             </div>
-            <h1 className="font-display text-xl font-bold text-brown mb-1.5">Terjadi kesalahan</h1>
+            <h1 className="font-display text-xl font-bold text-brown mb-1.5">Terjadi Kesalahan</h1>
             <p className="text-sm text-brown-3 mb-5">
               Maaf, ada yang tidak berjalan sebagaimana mestinya. Coba muat ulang halaman.
             </p>

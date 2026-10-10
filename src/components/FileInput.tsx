@@ -25,7 +25,7 @@ function formatSize(bytes: number): string {
   return `${bytes} B`
 }
 
-export function FileInput({ accept, label = 'Pilih berkas', hint, maxSizeMb, file, onChange, disabled, id }: FileInputProps) {
+export function FileInput({ accept, label = 'Pilih Berkas', hint, maxSizeMb, file, onChange, disabled, id }: FileInputProps) {
   const autoId = useId()
   const inputId = id ?? autoId
   const ref = useRef<HTMLInputElement>(null)

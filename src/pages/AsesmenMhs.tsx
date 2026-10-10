@@ -9,6 +9,7 @@ import { useAmbang } from '../lib/ambang'
 import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
 import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topik'
 import { computeNGain } from '../lib/ngain'
+import { rincianDariBenar, rincianDariPercobaan, type RincianTopik } from '../lib/rincianTopik'
 import { useCourse } from '../contexts/CourseContext'
 import { formatTanggal } from '../lib/jadwal'
 import { Layout } from '../components/Layout'
@@ -17,7 +18,7 @@ import { SoalRunner, TinjauanJawaban } from '../components/SoalRunner'
 import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { ChipRak } from '../components/KartuTopik'
-import { golonganDariSkor, simpanSkorPreDemo, GOLONGAN_LABEL, GOLONGAN_CHIP, keteranganGolongan } from '../lib/golongan'
+import { golonganDariSkor, simpanSkorPreDemo, GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 
 // Asesmen sisi mahasiswa (spec §4, §9 WP6): satu komponen, tiga tampilan
 // dipilih dari path — App.tsx sudah memasang route /asesmen, /asesmen/pre,
@@ -128,7 +129,7 @@ function AsesmenDaftar() {
             {topikAktif ? (
               <div className="bg-ivory rounded-2xl border p-5" style={BORDER}>
                 <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-                  <h2 className="font-semibold text-brown">Tes formatif · {topikAktif.title}</h2>
+                  <h2 className="font-semibold text-brown">Tes Formatif · {topikAktif.title}</h2>
                   {chipAktif && <StatusChip label={chipAktif} />}
                 </div>
                 <p className="text-sm text-brown-3 mb-1">Syarat lulus: skor ≥ {ambang.formatif}</p>
@@ -137,7 +138,7 @@ function AsesmenDaftar() {
                   <p className="text-sm text-brown-2">Tes formatif topik ini dibuka {formatTanggal(tesDibuka)}.</p>
                 ) : (
                   <Link to={`/asesmen/formatif/${topikAktif.id}`} className="btn btn-primary">
-                    {aktifLulus ? 'Lihat hasil' : 'Kerjakan'}
+                    {aktifLulus ? 'Lihat Hasil' : 'Kerjakan'}
                   </Link>
                 )}
               </div>
@@ -184,13 +185,13 @@ function AsesmenDaftar() {
               title="Post-test"
               value="Dibuka dosen lewat tes khusus"
               linkTo="/asesmen/tes"
-              linkLabel="Masukkan kode"
+              linkLabel="Masukkan Kode"
             />
             <PanelCard
               title="Tes kelompok"
               value="Kode dari dosen, dikerjakan per kelompok"
               linkTo="/asesmen/kelompok"
-              linkLabel="Masukkan kode"
+              linkLabel="Masukkan Kode"
             />
             <TugasAkhirMhsCard />
           </div>
@@ -204,6 +205,120 @@ function AsesmenDaftar() {
 // TIDAK mengunci mahasiswa (keputusan sementara — lihat laporan WP6): tombol
 // "Lanjut tanpa pre-test" menandai localStorage sfp_pretest_skip supaya
 // usePreTestDone (lib/topik.ts) menganggap gerbang lolos.
+// Layar hasil tes diagnostik, opsi B "Skor dan Rincian Topik" (antrean #142,
+// pilihan Johan 10 Okt 2026). Kiri: skor, golongan, tiga langkah berikutnya.
+// Kanan: jumlah benar per topik, dari tanda topik tiap soal (migration_v31);
+// soal yang belum ditandai dosen dikumpulkan di baris "Belum Ditandai Topik".
+function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinjauan: boolean; rincian: RincianTopik[] | null }) {
+  const ambang = useAmbang()
+  const { data: modules = [] } = useModules()
+  const { statusOf } = useTopikStatus()
+  const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  const golongan = golonganDariSkor(skor, ambang.diagnostik)
+  const warna = golongan === 'mahir' ? 'var(--success)' : 'var(--warning)'
+  const pertama = sorted.find((m) => statusOf(m.id) === 'open')
+  const langkah =
+    golongan === 'mahir'
+      ? ['Pilih topik mana pun, semuanya sudah terbuka.', `Kerjakan tes formatif tiap topik sampai skor ${ambang.formatif}.`, 'Sesudah semua topik selesai, lanjut ke post-test dan tugas akhir.']
+      : [
+          `Mulai dari Topik ${pertama?.order_num ?? 1}: baca modul dan tonton videonya.`,
+          `Kerjakan tes formatifnya sampai skor ${ambang.formatif}.`,
+          'Topik berikutnya terbuka sesudah itu, begitu seterusnya.',
+        ]
+  const benar = rincian?.reduce((n, r) => n + r.benar, 0) ?? null
+  const total = rincian?.reduce((n, r) => n + r.total, 0) ?? null
+  const bertanda = rincian?.filter((r) => r.topikId != null) ?? []
+  const tanpaTanda = rincian?.find((r) => r.topikId == null)
+  const barisTopik = sorted
+    .map((m) => ({ m, r: bertanda.find((x) => x.topikId === m.id) }))
+    .filter((x): x is { m: (typeof sorted)[number]; r: RincianTopik } => !!x.r)
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] gap-4">
+      <div className="bg-ivory border rounded-xl p-5 md:p-6 flex flex-col gap-4" style={BORDER}>
+        <div className="flex items-center gap-4 flex-wrap">
+          <div
+            className="w-[132px] h-[132px] rounded-full grid place-items-center flex-shrink-0"
+            style={{ background: `conic-gradient(${warna} ${Math.min(100, Math.max(0, skor))}%, var(--border) 0)` }}
+            role="img"
+            aria-label={`Skor ${skor} dari 100, batas ${GOLONGAN_LABEL.mahir} ${ambang.diagnostik}`}
+          >
+            <div className="w-[108px] h-[108px] rounded-full bg-ivory grid place-items-center text-center">
+              <div>
+                <div className="text-xs text-brown-3">Skor Kamu</div>
+                <div className="text-4xl font-bold text-brown leading-none tabular-nums">{skor}</div>
+                <div className="text-[11px] text-brown-3">dari 100</div>
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1.5 items-start">
+            {/* Golongan tes diagnostik (antrean #105 opsi B; batasnya setelan mata kuliah). */}
+            <ChipRak jenis={GOLONGAN_CHIP[golongan]} label={GOLONGAN_LABEL[golongan]} />
+            <span className="text-xs text-brown-3 tabular-nums">
+              {benar != null && total ? `${benar} benar dari ${total} soal · ` : ''}batas {GOLONGAN_LABEL.mahir} {ambang.diagnostik}
+            </span>
+          </div>
+        </div>
+        <ol className="flex flex-col gap-2">
+          {langkah.map((l, n) => (
+            <li key={n} className="flex items-start gap-2.5 text-sm text-brown-2">
+              <span className="w-6 h-6 rounded-full grid place-items-center text-xs font-bold flex-shrink-0 text-brown tabular-nums" style={{ background: 'var(--accent-soft)' }}>
+                {n + 1}
+              </span>
+              <span>{l}</span>
+            </li>
+          ))}
+        </ol>
+        <div className="flex flex-wrap gap-2 mt-auto">
+          <Link to={golongan === 'mahir' || !pertama ? '/modul' : `/modul/${pertama.id}`} className="btn btn-primary">
+            {golongan === 'mahir' || !pertama ? 'Pilih Topik' : `Mulai Topik ${pertama.order_num}`}
+          </Link>
+          {adaTinjauan && (
+            <button onClick={() => document.getElementById('tinjauan-jawaban')?.scrollIntoView?.({ behavior: 'smooth' })} className="btn btn-secondary">
+              Tinjau Jawaban
+            </button>
+          )}
+          <Link to="/dashboard" className="btn btn-secondary">
+            Ke Dashboard
+          </Link>
+        </div>
+      </div>
+
+      <div className="bg-ivory border rounded-xl p-5 md:p-6" style={BORDER}>
+        <h2 className="text-sm font-semibold text-brown mb-1">Benar per Topik</h2>
+        {barisTopik.length === 0 ? (
+          <p className="text-sm text-brown-3">
+            {rincian
+              ? 'Rincian per topik belum tersedia karena soal tes ini belum ditandai topiknya oleh dosen.'
+              : 'Rincian per topik tidak tersedia untuk pengerjaan ini.'}
+          </p>
+        ) : (
+          <ul>
+            {barisTopik.map(({ m, r }) => (
+              <BarisRincian key={m.id} nama={`${m.order_num}. ${m.title}`} benar={r.benar} total={r.total} />
+            ))}
+            {tanpaTanda && <BarisRincian nama="Belum Ditandai Topik" benar={tanpaTanda.benar} total={tanpaTanda.total} />}
+          </ul>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function BarisRincian({ nama, benar, total }: { nama: string; benar: number; total: number }) {
+  const p = total ? benar / total : 0
+  return (
+    <li className="row-divider flex items-center gap-2.5 py-2">
+      <span className="flex-1 min-w-0 text-[13px] text-brown-2">{nama}</span>
+      <span className="w-[86px] h-1.5 rounded-full overflow-hidden flex-shrink-0" style={{ background: 'var(--border)' }} aria-hidden="true">
+        <span className="block h-full rounded-full" style={{ width: `${p * 100}%`, background: p >= 0.75 ? 'var(--success)' : p >= 0.5 ? 'var(--warning)' : 'var(--danger)' }} />
+      </span>
+      <span className="w-9 text-right text-[13px] text-brown tabular-nums">
+        {benar}/{total}
+      </span>
+    </li>
+  )
+}
+
 // Ganti mata kuliah = tes lain: hasil dan tinjauan mata kuliah sebelumnya
 // tidak boleh terbawa, jadi komponennya dipasang ulang (antrean #141).
 function PreTestPerMataKuliah() {
@@ -242,8 +357,15 @@ function PreTest() {
     )
   }
 
-  const skorTersimpan = attempts.length ? attempts[attempts.length - 1].score : null
+  const terakhir = attempts.length ? attempts[attempts.length - 1] : null
+  const skorTersimpan = terakhir ? terakhir.score : null
   const skorFinal = hasilBaru ?? skorTersimpan
+  // Benar per topik (antrean #142 opsi B): dari pengerjaan yang baru dikirim, atau dari percobaan tersimpan.
+  const rincian = tinjau
+    ? rincianDariBenar(soal, new Map(tinjau.soal.map((s, n) => [s.id, s.kunciTampil != null && tinjau.jawaban[n] === s.kunciTampil])))
+    : terakhir
+      ? rincianDariPercobaan(soal, terakhir.answers, terakhir.questionOrder)
+      : null
 
   function mulai() {
     setAcak(acakSoal(soal))
@@ -291,7 +413,7 @@ function PreTest() {
         {/* Pemilih mata kuliah disembunyikan selama mengerjakan; di luar itu ia
             jalan keluar bagi yang salah memilih mata kuliah (antrean #141). */}
         <div className="flex items-center gap-3 flex-wrap mb-4">
-          <h1 className="font-display text-xl font-bold text-brown">Tes diagnostik awal</h1>
+          <h1 className="font-display text-xl font-bold text-brown">Tes Diagnostik Awal</h1>
           {!acak && <MataKuliahSelect />}
         </div>
 
@@ -312,24 +434,18 @@ function PreTest() {
           />
         ) : skorFinal != null ? (
           <>
-            <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-              <p className="text-brown-2 mb-3">Skor tes diagnostik awal {skorFinal} tersimpan.</p>
-              {/* Golongan tes diagnostik (antrean #105 opsi B; batasnya setelan mata kuliah). */}
-              <div className="flex justify-center mb-2">
-                <ChipRak jenis={GOLONGAN_CHIP[golonganDariSkor(skorFinal, ambang.diagnostik)]} label={GOLONGAN_LABEL[golonganDariSkor(skorFinal, ambang.diagnostik)]} />
+            <HasilDiagnostik skor={skorFinal} adaTinjauan={!!tinjau} rincian={rincian} />
+            {tinjau && (
+              <div id="tinjauan-jawaban">
+                <TinjauanJawaban soal={tinjau.soal} jawaban={tinjau.jawaban} />
               </div>
-              <p className="text-sm text-brown-3 mb-5 max-w-md mx-auto">{keteranganGolongan(golonganDariSkor(skorFinal, ambang.diagnostik), ambang.formatif)}</p>
-              <button onClick={() => navigate('/dashboard')} className="btn btn-primary">
-                Mulai belajar
-              </button>
-            </div>
-            {tinjau && <TinjauanJawaban soal={tinjau.soal} jawaban={tinjau.jawaban} />}
+            )}
           </>
         ) : soal.length === 0 ? (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-5">Dosen belum menyiapkan tes diagnostik awal.</p>
             <button onClick={lanjutTanpaPreTest} className="btn btn-primary">
-              Lanjut tanpa tes diagnostik awal
+              Lanjut Tanpa Tes Diagnostik Awal
             </button>
           </div>
         ) : (

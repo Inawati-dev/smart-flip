@@ -128,6 +128,13 @@ Sumber: `kemampuan-web-dev.md` §128–§129. Berlaku semua halaman React (`src/
    Backdrop: `animation:'fadeInBg 0.15-0.2s ease'`. Card: `animation:'slideUpModal 0.2-0.25s ease'`. Deklarasikan `@keyframes` sekali di `src/index.css` (bukan diulang per komponen modal).
 3. **Audit cepat komponen mana yang belum dikasih animasi:** cek tiap file yang punya backdrop `position:'fixed'`/`.fixed` apakah pasangan `animation:` fadeInBg/slideUpModal-nya ada. Jangan asumsikan komponen "generik" (`LogoutModal`, dsb) pasti sudah dikasih — cek eksplisit.
 
+## Batang Gulir Seragam (WAJIB, antrean #164, 10 Okt 2026)
+Kata Johan: "gutter nya seragam pakai 2px seragamkan dengan desain web".
+- Semua wadah bergulir memakai batang gulir setebal **2 px** berwarna token tema, lewat SATU aturan global di `src/index.css` (`::-webkit-scrollbar` dan `scrollbar-width`/`scrollbar-color`). Jangan memberi gaya batang gulir per komponen.
+- Wadah bergulir baru cukup memakai `overflow-auto`/`overflow-y-auto`; ia ikut aturan global itu. Jangan memakai `scrollbar-gutter`.
+- Isian tanggal memakai `src/components/TanggalInput.tsx`, bukan `<input type="date">` atau `datetime-local` bawaan peramban.
+- Cek: `grep -rn "scrollbar" src --include=*.tsx --include=*.css` hanya menemukan aturan global di `src/index.css`; `grep -rn 'type="date"\|type="datetime-local"' src --include=*.tsx | grep -v test` kosong.
+
 ## Design Tokens (CSS Variables)
 ```css
 --cream:#F5F2E9   /* background utama */

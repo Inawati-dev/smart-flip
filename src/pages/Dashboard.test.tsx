@@ -38,7 +38,7 @@ vi.mock('../lib/aktivitas', async () => {
     ...actual,
     fetchSumberAktivitas: async () => SUMBER_KOSONG,
     perluPerhatian: () => [
-      { judul: 'Ani', keterangan: 'Belum mengerjakan pre-test', tautan: '/analitik' },
+      { judul: 'Ani', keterangan: 'Belum mengerjakan tes diagnostik awal', tautan: '/analitik' },
       { judul: 'Budi', keterangan: 'Tidak aktif lebih dari 7 hari', tautan: '/analitik' },
     ],
     matriksProgres: () => [{ userId: 'u1', nama: 'Ani', sel: [{ moduleId: 1, orderNum: 1, status: 'L' as const }] }],
@@ -90,18 +90,18 @@ describe('Dashboard', () => {
 describe('DashboardMhs', () => {
   const modules = [fakeModule(1), fakeModule(2)]
 
-  it('belum baca modul 1: tombol utama "Baca modul 1"', () => {
+  it('belum baca modul 1: tombol utama "Baca Modul 1"', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <DashboardMhs modules={modules} progress={{}} attempts={[]} />
       </MemoryRouter>,
     )
-    expect(html).toContain('Langkah berikutnya')
-    expect(html).toContain('Baca topik 1')
+    expect(html).toContain('Langkah Berikutnya')
+    expect(html).toContain('Baca Topik 1')
     expect(html).toContain('Topik 1 dari 2')
   })
 
-  it('modul 1 sudah dibaca penuh: tombol utama "Kerjakan tes formatif 1"', () => {
+  it('modul 1 sudah dibaca penuh: tombol utama "Kerjakan Tes Formatif 1"', () => {
     const html = renderToStaticMarkup(
       <MemoryRouter>
         <DashboardMhs
@@ -111,7 +111,7 @@ describe('DashboardMhs', () => {
         />
       </MemoryRouter>,
     )
-    expect(html).toContain('Kerjakan tes formatif 1')
+    expect(html).toContain('Kerjakan Tes Formatif 1')
   })
 
   // Antrean #153: tes yang belum waktunya tidak ditawarkan; topik yang belum dibuka menampilkan tanggalnya.
@@ -123,15 +123,15 @@ describe('DashboardMhs', () => {
         <DashboardMhs modules={modules} progress={progress} attempts={[]} formatifPada={() => nanti} />
       </MemoryRouter>,
     )
-    expect(tesNanti).not.toContain('Kerjakan tes formatif 1')
-    expect(tesNanti).toContain('Baca topik 1')
+    expect(tesNanti).not.toContain('Kerjakan Tes Formatif 1')
+    expect(tesNanti).toContain('Baca Topik 1')
     const topikNanti = renderToStaticMarkup(
       <MemoryRouter>
         <DashboardMhs modules={modules} progress={progress} attempts={[]} bukaPada={() => nanti} formatifPada={() => nanti} />
       </MemoryRouter>,
     )
     expect(topikNanti).toContain('Topik 1 dibuka')
-    expect(topikNanti).not.toContain('Baca topik 1')
+    expect(topikNanti).not.toContain('Baca Topik 1')
   })
 
   // Antrean #143: kepala memuat nama, kelas, angkatan, dan golongan.
@@ -147,10 +147,10 @@ describe('DashboardMhs', () => {
         />
       </MemoryRouter>,
     )
-    expect(html).toContain('Selamat datang, Budi')
+    expect(html).toContain('Selamat Datang, Budi')
     expect(html).toContain('Kelas A · Angkatan 2026')
-    expect(html).toContain('Belajar mendalam')
-    expect(html).not.toContain('Tes diagnostik awal · ')
+    expect(html).toContain('Belajar Mendalam')
+    expect(html).not.toContain('Tes Diagnostik Awal · ')
   })
 })
 
@@ -169,16 +169,16 @@ describe('DosenHome', () => {
     )
   }
 
-  it('menampilkan tiga tab: Aktivitas, Perlu perhatian, Progres', async () => {
+  it('menampilkan tiga tab: Aktivitas, Perlu Perhatian, Progres', async () => {
     renderDosenHome()
     expect(await screen.findByRole('button', { name: /Aktivitas/ })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /Perlu perhatian/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Perlu Perhatian/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Progres/ })).toBeTruthy()
   })
 
-  it('badge tab "Perlu perhatian" menampilkan jumlah baris dari data mock (2)', async () => {
+  it('badge tab "Perlu Perhatian" menampilkan jumlah baris dari data mock (2)', async () => {
     renderDosenHome()
-    const tabPerhatian = await screen.findByRole('button', { name: /Perlu perhatian/ })
+    const tabPerhatian = await screen.findByRole('button', { name: /Perlu Perhatian/ })
     await waitFor(() => expect(tabPerhatian.textContent).toContain('2'))
   })
 

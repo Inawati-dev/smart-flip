@@ -21,6 +21,7 @@ import {
   type SubmissionDosenRow,
 } from '../lib/tugasAkhir'
 import { IconEdit, IconTrash, IconLock, IconLink, IconDocument } from '../components/icons'
+import { TanggalInput } from '../components/TanggalInput'
 
 // Tugas akhir sisi dosen (antrean #57 opsi A). Pola daftar + modal ditiru
 // dari TesKhusus.tsx (DosenTesKhusus): kartu bukan tabel untuk daftar brief
@@ -436,13 +437,7 @@ export function TugasAkhirPanel() {
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
               Tenggat (opsional)
-              <input
-                type="datetime-local"
-                value={deadline}
-                onChange={(e) => setDeadline(e.target.value)}
-                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                style={BORDER}
-              />
+              <TanggalInput denganJam ariaLabel="Tenggat" value={deadline} onChange={setDeadline} />
             </label>
 
             <div className="mb-3">

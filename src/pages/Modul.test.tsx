@@ -61,7 +61,7 @@ describe('Modul', () => {
     mockAuth.loading = false
   })
 
-  it('renders the stepper and a "Baca modul" button when a PDF is set', () => {
+  it('renders the stepper and a "Baca Modul" button when a PDF is set', () => {
     const withPdf = { ...FAKE_MODULE, pdf_path: 'https://example.test/modul-pdf/modul-1.pdf' }
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 1], withPdf)
@@ -71,7 +71,7 @@ describe('Modul', () => {
 
     const html = renderModul(queryClient)
     expect(html).toContain('tablist') // PertemuanStepper's role="tablist"
-    expect(html).toContain('Baca modul')
+    expect(html).toContain('Baca Modul')
     expect(html).not.toContain('belum mengunggah')
   })
 
@@ -84,7 +84,7 @@ describe('Modul', () => {
 
     const html = renderModul(queryClient)
     expect(html).toContain('belum mengunggah')
-    expect(html).not.toContain('Baca modul')
+    expect(html).not.toContain('Baca Modul')
   })
 
   it('renders the dosen module table instead of the reading layout for role=dosen', () => {
@@ -95,8 +95,8 @@ describe('Modul', () => {
     queryClient.setQueryData(['manajemen', 'customs', [1]], {})
 
     const html = renderModul(queryClient)
-    expect(html).toContain('Ubah topik')
-    expect(html).not.toContain('Baca modul')
+    expect(html).toContain('Ubah Topik')
+    expect(html).not.toContain('Baca Modul')
   })
 
   it('formats a valid ISO date and falls back to em dash for missing/invalid input', () => {

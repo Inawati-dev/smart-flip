@@ -37,7 +37,7 @@ describe('Register', () => {
     expect(html).toContain('type="text"')
     expect(html).toContain('type="email"')
     expect(html).toContain('type="password"')
-    expect(html).toContain('Buat akun baru')
+    expect(html).toContain('Buat Akun Baru')
   })
 
   it('does not render the Dosen invite code field for the default "mahasiswa" role', () => {
@@ -46,7 +46,7 @@ describe('Register', () => {
         <Register />
       </MemoryRouter>,
     )
-    expect(html).not.toContain('Kode undangan dosen')
+    expect(html).not.toContain('Kode Undangan Dosen')
   })
 })
 
@@ -78,13 +78,13 @@ describe('Register — Dosen invite code field (interactive)', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.queryByLabelText('Kode undangan dosen')).toBeNull()
+    expect(screen.queryByLabelText('Kode Undangan Dosen')).toBeNull()
 
     fireEvent.click(screen.getByRole('button', { name: 'Dosen' }))
-    expect(screen.getByLabelText('Kode undangan dosen')).toBeTruthy()
+    expect(screen.getByLabelText('Kode Undangan Dosen')).toBeTruthy()
 
     fireEvent.click(screen.getByRole('button', { name: 'Mahasiswa' }))
-    expect(screen.queryByLabelText('Kode undangan dosen')).toBeNull()
+    expect(screen.queryByLabelText('Kode Undangan Dosen')).toBeNull()
   })
 })
 
@@ -128,10 +128,10 @@ describe('Register — tautan konfirmasi email', () => {
         <Register />
       </MemoryRouter>,
     )
-    fireEvent.change(screen.getByLabelText('Nama lengkap'), { target: { value: 'Budi' } })
+    fireEvent.change(screen.getByLabelText('Nama Lengkap'), { target: { value: 'Budi' } })
     fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
-    fireEvent.change(screen.getByLabelText('Kata sandi'), { target: { value: 'rahasia123' } })
+    fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
     fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
 
     await waitFor(() => expect(mockSupabase.signUp).toHaveBeenCalledTimes(1))

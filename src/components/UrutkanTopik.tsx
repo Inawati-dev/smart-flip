@@ -106,7 +106,7 @@ export function UrutkanTopikModal({ open, modules, onClose, onSimpan }: UrutkanT
         style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
       >
         <h3 id="urutkan-topik-judul" className="font-display text-lg font-bold text-brown mb-1">
-          Urutkan topik
+          Urutkan Topik
         </h3>
         <p className="text-xs text-brown-3 mb-4">Seret baris atau pakai panah. Urutan berlaku untuk Modul dan Video.</p>
         <ol className="flex flex-col gap-1.5 mb-4">
@@ -163,7 +163,7 @@ export function UrutkanTopikModal({ open, modules, onClose, onSimpan }: UrutkanT
             Batal
           </button>
           <button type="button" onClick={() => void simpan()} disabled={saving} className="btn btn-primary min-w-[7.5rem]">
-            {saving ? 'Menyimpan…' : 'Simpan urutan'}
+            {saving ? 'Menyimpan…' : 'Simpan Urutan'}
           </button>
         </div>
       </div>

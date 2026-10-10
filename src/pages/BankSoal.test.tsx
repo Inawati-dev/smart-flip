@@ -138,24 +138,24 @@ describe('BankSoal', () => {
     renderBankSoal('/asesmen/bank?jenis=formatif&modul=1')
     const delBtn = await screen.findByLabelText(/Hapus soal urutan/)
     fireEvent.click(delBtn)
-    expect(screen.getByText(/Hapus soal nomor/)).toBeTruthy()
+    expect(screen.getByText(/Hapus Soal Nomor/)).toBeTruthy()
   })
 
-  it('shows all four tabs (Soal, Tes khusus, Tes kelompok, Tugas akhir)', async () => {
+  it('shows all four tabs (Soal, Tes Khusus, Tes Kelompok, Tugas Akhir)', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
     const tabGroup = await screen.findByRole('tablist', { name: 'Tab bank soal' })
     expect(within(tabGroup).getByText('Soal')).toBeTruthy()
-    expect(within(tabGroup).getByText('Tes khusus')).toBeTruthy()
-    expect(within(tabGroup).getByText('Tes kelompok')).toBeTruthy()
-    expect(within(tabGroup).getByText('Tugas akhir')).toBeTruthy()
+    expect(within(tabGroup).getByText('Tes Khusus')).toBeTruthy()
+    expect(within(tabGroup).getByText('Tes Kelompok')).toBeTruthy()
+    expect(within(tabGroup).getByText('Tugas Akhir')).toBeTruthy()
   })
 
-  it('clicking the "Tes kelompok" jenis pill (not the outer tab) calls fetchBankSoal with kind "kelompok"', async () => {
+  it('clicking the "Tes Kelompok" jenis pill (not the outer tab) calls fetchBankSoal with kind "kelompok"', async () => {
     mockFetchBankSoal.mockResolvedValue([])
     renderBankSoal('/asesmen/bank?jenis=pre')
     const jenisGroup = await screen.findByRole('group', { name: 'Filter jenis soal' })
-    fireEvent.click(within(jenisGroup).getByText('Tes kelompok'))
+    fireEvent.click(within(jenisGroup).getByText('Tes Kelompok'))
     await waitFor(() => {
       expect(mockFetchBankSoal).toHaveBeenCalledWith('kelompok', undefined, 1)
     })

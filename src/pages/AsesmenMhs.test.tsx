@@ -45,7 +45,7 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
     queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
     renderAt('/asesmen/pre', queryClient)
 
-    expect(await screen.findByText('Lanjut tanpa tes diagnostik awal')).toBeTruthy()
+    expect(await screen.findByText('Lanjut Tanpa Tes Diagnostik Awal')).toBeTruthy()
     expect(screen.getByText('Dosen belum menyiapkan tes diagnostik awal.')).toBeTruthy()
   })
 
@@ -57,8 +57,9 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
     ])
     renderAt('/asesmen/pre', queryClient)
 
-    expect(await screen.findByText('Skor tes diagnostik awal 70 tersimpan.')).toBeTruthy()
-    expect(screen.getByText('Mulai belajar')).toBeTruthy()
+    expect(await screen.findByText('Skor Kamu')).toBeTruthy()
+    expect(screen.getByText('70')).toBeTruthy()
+    expect(screen.getByText('Ke Dashboard')).toBeTruthy()
   })
 
   // Antrean #138: benar/salah tidak muncul saat mengerjakan, baru di akhir.
@@ -77,7 +78,8 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
     fireEvent.click(screen.getByText('Salah dua'))
     fireEvent.click(screen.getByText('Kirim ✓'))
 
-    expect(await screen.findByText('Skor tes diagnostik awal 0 tersimpan.')).toBeTruthy()
+    expect(await screen.findByText('Skor Kamu')).toBeTruthy()
+    expect(screen.getByText('0')).toBeTruthy()
     expect(screen.getByText('Tinjauan jawaban · benar 0 dari 1')).toBeTruthy()
     expect(screen.getByText('Jawaban benar').previousElementSibling?.textContent).toBe('Benar ini')
     expect(screen.getByText('Pilihanmu').previousElementSibling?.textContent).toBe('Salah dua')

@@ -191,7 +191,7 @@ export function KelasPanel() {
   }
   function bukaKelas(k: KelasWithCount) {
     setPilih(new Set())
-    setDaftar({ judul: `Daftar mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
+    setDaftar({ judul: `Daftar Mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
   }
 
   const [createOpen, setCreateOpen] = useState(false)
@@ -350,8 +350,8 @@ export function KelasPanel() {
         <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => pilihGolongan('mahir')} aktif={filterGol === 'mahir'} />
       </div>
       <div className="grid grid-cols-2 gap-3 mb-5">
-        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={keDaftarKelas} />
-        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={keDaftarKelas} />
+        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total Kelas" onClick={keDaftarKelas} />
+        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total Mahasiswa" onClick={keDaftarKelas} />
       </div>
 
       {/* Daftar kelas, dikelompokkan per angkatan (tahun) */}
@@ -359,17 +359,17 @@ export function KelasPanel() {
       <div id="daftar-kelas" className="bg-ivory rounded-2xl border overflow-hidden scroll-mt-20" style={BORDER}>
         <div className="flex items-center justify-between gap-2 flex-wrap px-4 py-3.5 border-b" style={BORDER}>
           <span className="text-sm font-semibold text-brown">
-            {filterGol ? `Mahasiswa ${GOLONGAN_LABEL[filterGol]} · ${seksiGolongan(filterGol).reduce((n, x) => n + x.baris.length, 0)}` : 'Daftar kelas'}
+            {filterGol ? `Mahasiswa ${GOLONGAN_LABEL[filterGol]} · ${seksiGolongan(filterGol).reduce((n, x) => n + x.baris.length, 0)}` : 'Daftar Kelas'}
           </span>
           <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
             {filterGol && (
               <button onClick={() => setFilterGol(null)} className="btn btn-secondary btn-sm whitespace-nowrap">
-                Tampilkan semua kelas
+                Tampilkan Semua Kelas
               </button>
             )}
             <MataKuliahSelect size="sm" />
             <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
-              + Buat kelas baru
+              + Buat Kelas Baru
             </button>
           </div>
         </div>
@@ -382,7 +382,7 @@ export function KelasPanel() {
               value={tahun == null ? 'semua' : String(tahun)}
               onChange={(v) => setTahun(v === 'semua' ? null : parseInt(v, 10))}
               options={[
-                { value: 'semua', label: 'Semua angkatan', badge: summary.totalStudents },
+                { value: 'semua', label: 'Semua Angkatan', badge: summary.totalStudents },
                 ...daftarTahun.map((t) => ({
                   value: String(t),
                   label: `Angkatan ${t}`,
@@ -422,7 +422,7 @@ export function KelasPanel() {
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Nama Kelas</th>
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kode Kelas</th>
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Mahasiswa</th>
-                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-52">Tes diagnostik</th>
+                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-52">Tes Diagnostik</th>
                           <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
                         </tr>
                       </thead>
@@ -525,7 +525,7 @@ export function KelasPanel() {
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-semibold text-brown inline-flex items-center gap-1.5">
-                <IconUsers size={16} /> Buat kelas baru
+                <IconUsers size={16} /> Buat Kelas Baru
               </span>
               <button
                 type="button"
@@ -604,7 +604,7 @@ export function KelasPanel() {
           }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus kelas "{deleteTarget.name}"?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Kelas "{deleteTarget.name}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.studentCount > 0
                 ? `Kelas ini punya ${deleteTarget.studentCount} mahasiswa terdaftar. Mereka TIDAK akan terhapus, hanya keluar dari kelas ini (class_id jadi kosong).`
@@ -634,7 +634,7 @@ export function KelasPanel() {
           <div className="bg-ivory rounded-2xl p-5 max-w-2xl w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
               <h3 className="text-base font-semibold text-brown min-w-0">
-                Hasil tes diagnostik · {golTarget.name} ({golTarget.angkatan})
+                Hasil Tes Diagnostik · {golTarget.name} ({golTarget.angkatan})
               </h3>
               <button onClick={() => setGolTarget(null)} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
                 <IconX size={15} />
@@ -703,10 +703,10 @@ export function KelasPanel() {
                   onClick={() => setPilih(pilih.size === bisaDireset.length ? new Set() : new Set(bisaDireset.map((a) => a.id)))}
                   className="btn btn-secondary btn-sm"
                 >
-                  {pilih.size === bisaDireset.length ? 'Lepas semua' : `Pilih semua yang sudah tes (${bisaDireset.length})`}
+                  {pilih.size === bisaDireset.length ? 'Lepas Semua' : `Pilih Semua yang Sudah Tes (${bisaDireset.length})`}
                 </button>
                 <button onClick={() => setKonfirmasiReset(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm">
-                  Reset tes diagnostik ({pilih.size})
+                  Reset Tes Diagnostik ({pilih.size})
                 </button>
               </div>
             )}
@@ -725,7 +725,7 @@ export function KelasPanel() {
           }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Reset tes diagnostik {pilih.size} mahasiswa?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Reset Tes Diagnostik {pilih.size} Mahasiswa?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Skor dan jawaban tes diagnostik mereka{course?.name ? ` di ${course.name}` : ''} dihapus, dan mereka harus mengerjakannya lagi sebelum bisa
               membuka materi. Tidak bisa dibatalkan.
@@ -735,7 +735,7 @@ export function KelasPanel() {
                 Batal
               </button>
               <button onClick={() => void jalankanReset()} disabled={mereset} className="btn btn-danger flex-1">
-                {mereset ? 'Mereset…' : 'Ya, reset'}
+                {mereset ? 'Mereset…' : 'Ya, Reset'}
               </button>
             </div>
           </div>

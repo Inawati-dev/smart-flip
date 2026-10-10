@@ -62,9 +62,9 @@ describe('Akun', () => {
     seedQueryCache(queryClient)
     renderAkun(queryClient)
 
-    expect(screen.queryByText('Ubah profil')).toBeNull()
+    expect(screen.queryByText('Ubah Profil')).toBeNull()
     fireEvent.click(screen.getByText('Ubah'))
-    expect(screen.getByText('Ubah profil')).toBeTruthy()
+    expect(screen.getByText('Ubah Profil')).toBeTruthy()
     expect(screen.getByDisplayValue('Ahmad Rizki')).toBeTruthy()
   })
 
@@ -112,24 +112,24 @@ describe('Akun', () => {
   })
 
   // Kartu angka dosen: mahasiswa terdaftar, rata-rata progres, rata-rata skor kuis.
-  it('dosen melihat kartu angka Mahasiswa terdaftar/Rata-rata progres/Rata-rata skor kuis', () => {
+  it('dosen melihat kartu angka Mahasiswa Terdaftar/Rata-rata Progres/Rata-rata Skor Kuis', () => {
     mockAuth.profile = { full_name: 'Dr. Ahmad Fauzi', role: 'dosen', nim_nidn: '0012345678', avatar_url: null }
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
     renderAkun(queryClient)
-    expect(screen.getByText('Mahasiswa terdaftar')).toBeTruthy()
-    expect(screen.getByText('Rata-rata progres')).toBeTruthy()
-    expect(screen.getByText('Rata-rata skor kuis')).toBeTruthy()
+    expect(screen.getByText('Mahasiswa Terdaftar')).toBeTruthy()
+    expect(screen.getByText('Rata-rata Progres')).toBeTruthy()
+    expect(screen.getByText('Rata-rata Skor Kuis')).toBeTruthy()
   })
 
   // Kartu angka mahasiswa: topik selesai, formatif lulus, pre-test.
-  it('mahasiswa melihat kartu angka Topik selesai/Formatif lulus/Tes diagnostik awal', () => {
+  it('mahasiswa melihat kartu angka Topik Selesai/Formatif Lulus/Tes Diagnostik Awal', () => {
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)
     renderAkun(queryClient)
-    expect(screen.getByText('Topik selesai')).toBeTruthy()
-    expect(screen.getByText('Formatif lulus')).toBeTruthy()
-    expect(screen.getByText('Tes diagnostik awal')).toBeTruthy()
+    expect(screen.getByText('Topik Selesai')).toBeTruthy()
+    expect(screen.getByText('Formatif Lulus')).toBeTruthy()
+    expect(screen.getByText('Tes Diagnostik Awal')).toBeTruthy()
   })
 })

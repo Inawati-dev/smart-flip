@@ -60,7 +60,7 @@ export function SampulTopik({ nomor, judul, keterangan, adaPdf }: { nomor: numbe
           style={adaPdf ? { background: 'var(--success)', color: 'var(--ivory)' } : { border: '1px dashed currentColor', opacity: 0.85 }}
         >
           {adaPdf && <span aria-hidden="true">✓</span>}
-          <span>{keterangan ?? (adaPdf ? 'PDF' : 'Belum ada PDF')}</span>
+          <span>{keterangan ?? (adaPdf ? 'PDF' : 'Belum Ada PDF')}</span>
         </span>
       )}
     </div>

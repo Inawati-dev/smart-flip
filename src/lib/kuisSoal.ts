@@ -20,6 +20,8 @@ export interface KuisSoal {
   module_id: number | null
   /** Mata kuliah (v23) untuk pre/post/kelompok/vark; formatif ikut module_id, boleh null. */
   course_id?: number | null
+  /** Topik yang diuji soal pre-test (v31, antrean #142 opsi B); hanya untuk rincian hasil per topik. */
+  topik_id?: number | null
   question: string
   options: string[]
   answer_idx: number | null
@@ -88,15 +90,21 @@ function demoWriteAll(kind: SoalKind, moduleId: number | null, soal: KuisSoal[])
 export async function fetchBankSoal(kind: SoalKind, moduleId?: number, courseId?: number): Promise<KuisSoal[]> {
   if (isSupabaseConfigured) {
     try {
-      const base = () =>
+      // topik_id (v31) hanya dipakai soal tes diagnostik. Kalau kolomnya belum
+      // ada di basis data, ulang tanpa kolom itu supaya bank soal tetap terbaca.
+      const base = (denganTopik: boolean) =>
         supabase
           .from('quiz_questions')
-          .select('id, kind, module_id, course_id, question, options, answer_idx, explanation, order_num')
+          .select(`id, kind, module_id, course_id, question, options, answer_idx, explanation, order_num${denganTopik ? ', topik_id' : ''}`)
           .eq('kind', kind)
-      let query = base()
-      if (moduleId != null) query = query.eq('module_id', moduleId)
-      if (courseId != null && moduleId == null) query = query.eq('course_id', courseId)
-      let { data, error }: { data: KuisSoal[] | null; error: { code?: string; message: string } | null } = await query.order('order_num')
+      const jalankan = (denganTopik: boolean) => {
+        let query = base(denganTopik)
+        if (moduleId != null) query = query.eq('module_id', moduleId)
+        if (courseId != null && moduleId == null) query = query.eq('course_id', courseId)
+        return query.order('order_num') as unknown as Promise<{ data: KuisSoal[] | null; error: { code?: string; message: string } | null }>
+      }
+      let { data, error } = await jalankan(true)
+      if (error && /topik_id/.test(error.message)) ({ data, error } = await jalankan(false))
       if (error && (error.code === '42703' || /course_id/.test(error.message))) {
         let q2 = supabase
           .from('quiz_questions')

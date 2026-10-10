@@ -66,11 +66,11 @@ function chipMahasiswa(
   seconds: number,
   done: boolean,
 ): { jenis: ChipJenis; label: string } {
-  if (!hasVideo) return { jenis: 'todo', label: 'Belum ada video' }
+  if (!hasVideo) return { jenis: 'todo', label: 'Belum Ada Video' }
   if (status === 'locked') return { jenis: 'todo', label: 'Terkunci' }
   if (done) return { jenis: 'ok', label: 'Selesai' }
-  if (seconds > 0) return { jenis: 'now', label: 'Sedang ditonton' }
-  return { jenis: 'now', label: 'Siap ditonton' }
+  if (seconds > 0) return { jenis: 'now', label: 'Sedang Ditonton' }
+  return { jenis: 'now', label: 'Siap Ditonton' }
 }
 
 function VideoMahasiswa() {
@@ -163,7 +163,7 @@ function VideoMahasiswa() {
     <Layout>
       <div className="p-4 md:p-6">
         <Link to="/video" className="text-terra text-xs font-semibold inline-flex items-center min-h-11 mb-1">
-          ← Semua video
+          ← Semua Video
         </Link>
         <div className="flex items-center gap-3 flex-wrap mb-4">
           <h1 className="text-2xl font-bold text-brown">
@@ -272,7 +272,7 @@ function VideoPlayer({ modul }: { modul: ModuleRow }) {
           disabled={marking || done}
           className="btn btn-secondary mt-3 min-w-[7.5rem]"
         >
-          {done ? 'Video ditandai selesai' : marking ? 'Menyimpan…' : 'Tandai selesai ditonton'}
+          {done ? 'Video Ditandai Selesai' : marking ? 'Menyimpan…' : 'Tandai Selesai Ditonton'}
         </button>
       )}
     </div>
@@ -287,16 +287,16 @@ function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: num
   return (
     <div className="bg-ivory rounded-xl border p-4 flex flex-col gap-4" style={BORDER}>
       <div>
-        <h2 className="font-semibold text-brown mb-2 text-sm">Setelah video ini</h2>
+        <h2 className="font-semibold text-brown mb-2 text-sm">Setelah Video Ini</h2>
         <div className="flex flex-col gap-2">
           <Link to={`/modul/${current}`} className="btn btn-secondary">
-            Baca topik {idx + 1}
+            Baca Topik {idx + 1}
           </Link>
           {tesDibuka ? (
             <p className="text-xs text-brown-3">Tes formatif dibuka {formatTanggal(tesDibuka)}.</p>
           ) : (
             <Link to={`/asesmen/formatif/${current}`} className="btn btn-primary">
-              {lulus ? 'Lihat hasil tes formatif' : 'Kerjakan tes formatif'}
+              {lulus ? 'Lihat Hasil Tes Formatif' : 'Kerjakan Tes Formatif'}
             </Link>
           )}
         </div>
@@ -304,7 +304,7 @@ function SetelahVideoPanel({ current, idx, sorted }: { current: number; idx: num
 
       {next.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold text-brown-3 uppercase mb-2">Pertemuan berikutnya</h3>
+          <h3 className="text-xs font-semibold text-brown-3 uppercase mb-2">Pertemuan Berikutnya</h3>
           <div className="flex flex-col gap-2">
             {next.map((m) => (
               <Link key={m.id} to={`/video/${m.id}`} className="btn btn-secondary">
@@ -441,10 +441,10 @@ function VideoDosen() {
               const url = m.video_url || ''
               const parsed = parseVideoUrl(url)
               const chip: { jenis: ChipJenis; label: string } = !url
-                ? { jenis: 'todo', label: 'Belum ada video' }
+                ? { jenis: 'todo', label: 'Belum Ada Video' }
                 : parsed
                   ? { jenis: 'ok', label: 'Tayang' }
-                  : { jenis: 'warn', label: 'Tautan tidak dikenal' }
+                  : { jenis: 'warn', label: 'Tautan Tidak Dikenal' }
               return (
                 <div key={m.id} {...seretProps(m.id)}>
                 <KartuVideo
@@ -459,11 +459,11 @@ function VideoDosen() {
                     <>
                       <button
                         onClick={() => openEdit(m)}
-                        aria-label={url ? 'Ubah video' : 'Tambah video'}
-                        title={url ? 'Ubah video' : 'Tambah video'}
+                        aria-label={url ? 'Ubah Video' : 'Tambah Video'}
+                        title={url ? 'Ubah Video' : 'Tambah Video'}
                         className={`btn btn-secondary btn-sm w-full whitespace-nowrap ${url ? '' : 'col-span-2'}`}
                       >
-                        <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah video' : 'Tambah video'}</span>
+                        <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah Video' : 'Tambah Video'}</span>
                       </button>
                       {url && (
                         <button
@@ -498,12 +498,12 @@ function VideoDosen() {
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url ? 'Ubah video' : 'Tambah video'}</h3>
+            <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url ? 'Ubah Video' : 'Tambah Video'}</h3>
             <p className="text-xs text-brown-3 mb-4">{editModul.title}</p>
 
             {/* Bagian 1: tautan. Pola sama dengan modal Ganti PDF (antrean #67):
                 subjudul kecil, isi di kiri, aksi di kanan, tanpa flex-wrap. */}
-            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Tempel tautan</p>
+            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Tempel Tautan</p>
             <input
               value={urlInput}
               onChange={(e) => {
@@ -557,11 +557,11 @@ function VideoDosen() {
 
             {/* Bagian 2: unggah berkas */}
             <div className="pt-4 mt-1 border-t" style={BORDER}>
-              <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Atau unggah berkas</p>
+              <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Atau Unggah Berkas</p>
               <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
                 <FileInput
                   accept="video/mp4,video/webm,.mp4,.webm"
-                  label="Pilih video"
+                  label="Pilih Video"
                   hint="MP4 atau WebM, maks 100 MB"
                   maxSizeMb={100}
                   file={videoFile}

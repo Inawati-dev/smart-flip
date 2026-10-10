@@ -105,7 +105,7 @@ export function gabungKejadian(sumber: SumberAktivitas): Kejadian[] {
     if (a.sessionId) {
       items.push({ ...base, jenis: 'tes-khusus', keterangan: `Tes khusus selesai · skor ${a.score}` })
     } else if (a.kind === 'pre') {
-      items.push({ ...base, jenis: 'pre', keterangan: `Pre-test selesai · skor ${a.score}` })
+      items.push({ ...base, jenis: 'pre', keterangan: `Tes diagnostik awal selesai · skor ${a.score}` })
     } else if (a.kind === 'post') {
       items.push({ ...base, jenis: 'post', keterangan: `Post-test selesai · skor ${a.score}` })
     } else {
@@ -263,7 +263,7 @@ export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {
   const sudahPre = new Set(sumber.attempts.filter((a) => a.kind === 'pre').map((a) => a.userId))
   for (const p of sumber.profiles) {
     if (!sudahPre.has(p.id)) {
-      items.push({ judul: p.fullName, keterangan: 'Belum mengerjakan pre-test', tautan: TAUTAN_MAHASISWA })
+      items.push({ judul: p.fullName, keterangan: 'Belum mengerjakan tes diagnostik awal', tautan: TAUTAN_MAHASISWA })
     }
   }
 

@@ -16,9 +16,9 @@ export function golonganDariSkor(skor: number | null | undefined, ambang: number
 }
 
 export const GOLONGAN_LABEL: Record<Golongan, string> = {
-  mahir: 'Jalur cepat',
-  remedial: 'Belajar mendalam',
-  belum: 'Belum dipetakan',
+  mahir: 'Jalur Cepat',
+  remedial: 'Belajar Mendalam',
+  belum: 'Belum Dipetakan',
 }
 
 /** Jenis chip `ChipRak` per golongan. */

@@ -91,7 +91,7 @@ function BatasSkorModal({ course, onClose }: { course: Course; onClose: () => vo
       }}
     >
       <div className="bg-ivory rounded-2xl p-5 max-w-md w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
-        <h3 className="text-base font-semibold text-brown mb-1">Batas skor</h3>
+        <h3 className="text-base font-semibold text-brown mb-1">Batas Skor</h3>
         <p className="text-xs text-brown-3 mb-4">{course.name}. Berlaku juga untuk pengerjaan yang sudah ada.</p>
         <div className="flex flex-col gap-3 mb-4">
           <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
@@ -216,7 +216,7 @@ export default function Asesmen() {
         <div className="mb-5 pb-4 border-b flex items-start justify-between gap-3 flex-wrap" style={BORDER}>
           <div>
             <h1 className="font-display text-xl sm:text-2xl font-bold text-brown mb-1">Asesmen</h1>
-            <p className="text-sm text-brown-3 leading-relaxed">Hasil kelas</p>
+            <p className="text-sm text-brown-3 leading-relaxed">Hasil Kelas</p>
           </div>
         </div>
 
@@ -225,7 +225,7 @@ export default function Asesmen() {
           <MataKuliahSelect size="sm" />
           {course && (
             <button onClick={() => setBatasOpen(true)} className="btn btn-secondary btn-sm whitespace-nowrap">
-              Batas skor: {ambang.diagnostik} dan {ambang.formatif}
+              Batas Skor: {ambang.diagnostik} dan {ambang.formatif}
             </button>
           )}
           <KelasTahunFilter
@@ -242,7 +242,7 @@ export default function Asesmen() {
         {/* TIGA ANGKA */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
           <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Pre-test</div>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Tes Diagnostik Awal</div>
             <div className="font-display text-2xl font-bold text-brown">{formatSkor(peningkatan.rataPre)}</div>
             <div className="text-xs text-brown-3 mt-1 tabular-nums">
               {GOLONGAN_LABEL.mahir} {jumlahGolongan.mahir} · {GOLONGAN_LABEL.remedial} {jumlahGolongan.remedial}
@@ -268,12 +268,12 @@ export default function Asesmen() {
           </div>
         </div>
         <p className="text-xs text-brown-3 leading-relaxed mb-5">
-          Peningkatan = kenaikan dari pre-test ke post-test dibanding ruang naik yang tersisa.
+          Peningkatan = kenaikan dari tes diagnostik awal ke post-test dibanding ruang naik yang tersisa.
         </p>
 
         {/* SEBARAN PENINGKATAN */}
         <div className="bg-ivory border rounded-xl p-4 md:p-6 mb-5" style={BORDER}>
-          <div className="font-display text-base font-semibold text-brown mb-3">Sebaran peningkatan</div>
+          <div className="font-display text-base font-semibold text-brown mb-3">Sebaran Peningkatan</div>
           <div className="h-3 rounded-full overflow-hidden flex" style={{ background: 'var(--border)' }}>
             {totalKategori === 0 ? null : (
               <>
@@ -293,7 +293,7 @@ export default function Asesmen() {
         {/* GRAFIK FORMATIF PER TOPIK */}
         <div className="grid md:grid-cols-2 gap-4 mb-5">
           <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
-            <div className="font-display text-base font-semibold text-brown mb-3">Rata-rata formatif per topik</div>
+            <div className="font-display text-base font-semibold text-brown mb-3">Rata-rata Formatif per Topik</div>
             <div className="overflow-x-auto">
               <GrafikBatang
                 data={grafikFormatif}
@@ -306,7 +306,7 @@ export default function Asesmen() {
             <p className="text-xs text-brown-3 mt-2">Garis putus-putus = ambang lulus {ambang.formatif}.</p>
           </div>
           <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
-            <div className="font-display text-base font-semibold text-brown mb-3">Persentase lulus per topik</div>
+            <div className="font-display text-base font-semibold text-brown mb-3">Persentase Lulus per Topik</div>
             <div className="overflow-x-auto">
               <GrafikBatang
                 data={grafikLulus}
@@ -326,13 +326,13 @@ export default function Asesmen() {
             {loading && <span className="text-xs font-normal text-brown-3">Memuat…</span>}
           </div>
           {peningkatan.perMahasiswa.length === 0 ? (
-            emptyState('pengerjaan pre-test atau post-test yang tercatat')
+            emptyState('pengerjaan tes diagnostik awal atau post-test yang tercatat')
           ) : (
             <div className="overflow-x-auto rounded-lg border" style={BORDER}>
               <table className="w-full border-collapse min-w-[820px]">
                 <thead className="bg-cream">
                   <tr>
-                    {['Nama', 'Kelas', 'Pre', 'Golongan', 'Post', 'Peningkatan', 'Kategori', 'Tugas akhir'].map((h, i) => (
+                    {['Nama', 'Kelas', 'Pre', 'Golongan', 'Post', 'Peningkatan', 'Kategori', 'Tugas Akhir'].map((h, i) => (
                       <th
                         key={h}
                         className={`px-3 py-2.5 text-xs font-semibold text-brown-2 tracking-wide uppercase ${

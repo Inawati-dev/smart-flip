@@ -152,7 +152,7 @@ describe('perluPerhatian', () => {
     }
     const hasil = perluPerhatian(sumber, { now: NOW })
     const keterangan = hasil.map((h) => h.keterangan)
-    expect(keterangan).toContain('Belum mengerjakan pre-test')
+    expect(keterangan).toContain('Belum mengerjakan tes diagnostik awal')
     expect(keterangan.some((k) => k.includes('Tidak aktif'))).toBe(true)
   })
 

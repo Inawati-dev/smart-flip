@@ -119,16 +119,16 @@ describe('Video (dosen)', () => {
     mockAuth.role = 'dosen'
   })
 
-  it('shows "Tambah video" for a module without a URL', async () => {
+  it('shows "Tambah Video" for a module without a URL', async () => {
     renderVideo(2)
     await waitFor(() => expect(screen.getByText('Modul 2')).toBeTruthy())
-    expect(screen.getByText('Tambah video')).toBeTruthy()
+    expect(screen.getByText('Tambah Video')).toBeTruthy()
   })
 
   it('shows a preview button for a module with a URL', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
-    expect(screen.getByText('Ubah video')).toBeTruthy()
+    expect(screen.getByText('Ubah Video')).toBeTruthy()
     const preview = document.querySelector('button[aria-label*="Putar video"]')
     expect(preview).toBeTruthy()
   })
@@ -145,17 +145,17 @@ describe('Video (dosen)', () => {
   it('shows a video file input in the Ubah tautan modal', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
-    fireEvent.click(screen.getByText('Ubah video'))
+    fireEvent.click(screen.getByText('Ubah Video'))
     const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm,.mp4,.webm"]')
     expect(input).toBeTruthy()
   })
 
   // Antrean #85: kartu Rak per topik punya tombol Ubah/Tambah video sendiri
   // (bukan tabel).
-  it('shows "Ubah video"/"Tambah video" buttons per card', async () => {
+  it('shows "Ubah Video"/"Tambah Video" buttons per card', async () => {
     renderVideoRak()
     await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
-    expect(screen.getByText('Ubah video')).toBeTruthy()
-    expect(screen.getByText('Tambah video')).toBeTruthy()
+    expect(screen.getByText('Ubah Video')).toBeTruthy()
+    expect(screen.getByText('Tambah Video')).toBeTruthy()
   })
 })

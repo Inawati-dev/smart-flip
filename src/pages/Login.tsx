@@ -163,7 +163,7 @@ export function Login() {
 
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight">
-          Lupa kata sandi
+          Lupa Kata Sandi
         </h1>
         <p className="text-sm text-brown-3">Masukkan email untuk menerima link reset password</p>
       </div>
@@ -267,7 +267,7 @@ export function Login() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="password" className="text-[0.78rem] font-semibold text-brown-2">
-            Kata sandi
+            Kata Sandi
           </label>
           <input
             id="password"
@@ -288,7 +288,7 @@ export function Login() {
             onClick={() => setForgotMode(true)}
             className="text-[13px] font-medium text-sage-d hover:underline"
           >
-            Lupa kata sandi?
+            Lupa Kata Sandi?
           </button>
         </div>
 

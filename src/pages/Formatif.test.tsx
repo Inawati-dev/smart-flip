@@ -126,7 +126,7 @@ describe('Formatif', () => {
     fireEvent.click(await screen.findByText('Salah 4'))
     fireEvent.click(screen.getByText('Lihat Hasil ✓'))
 
-    expect(await screen.findByText('Selamat, skor 80')).toBeTruthy()
+    expect(await screen.findByText('Selamat, Skor 80')).toBeTruthy()
     expect(saveQuizAttemptMock).toHaveBeenCalledWith(
       1,
       expect.objectContaining({ score: 80, kind: 'formatif' }),
@@ -151,6 +151,6 @@ describe('Formatif', () => {
     fireEvent.click(await screen.findByText('Salah 4'))
     fireEvent.click(screen.getByText('Lihat Hasil ✓'))
 
-    expect(await screen.findByText('Belum lulus, skor 60')).toBeTruthy()
+    expect(await screen.findByText('Belum Lulus, Skor 60')).toBeTruthy()
   })
 })

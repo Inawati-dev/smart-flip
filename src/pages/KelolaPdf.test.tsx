@@ -73,7 +73,7 @@ describe('KelolaPdf', () => {
     expect(await screen.findByText('modul-1-111.pdf')).toBeTruthy()
     expect(screen.getByText('modul-2-222.pdf')).toBeTruthy()
     expect(screen.getByText('Topik Satu')).toBeTruthy()
-    expect(screen.getByText('Belum terpakai')).toBeTruthy()
+    expect(screen.getByText('Belum Terpakai')).toBeTruthy()
   })
 
   // Kolom sama di kedua tab (spec #73): No, Nama berkas, Ukuran, Tanggal
@@ -86,10 +86,10 @@ describe('KelolaPdf', () => {
 
     await screen.findByText('modul-1-111.pdf')
     expect(screen.getByText('No')).toBeTruthy()
-    expect(screen.getByText('Nama berkas')).toBeTruthy()
+    expect(screen.getByText('Nama Berkas')).toBeTruthy()
     expect(screen.getByText('Ukuran')).toBeTruthy()
-    expect(screen.getByText('Tanggal unggah')).toBeTruthy()
-    expect(screen.getByText('Dipakai topik')).toBeTruthy()
+    expect(screen.getByText('Tanggal Unggah')).toBeTruthy()
+    expect(screen.getByText('Dipakai Topik')).toBeTruthy()
     expect(screen.getByText('500 KB')).toBeTruthy()
   })
 
@@ -101,7 +101,7 @@ describe('KelolaPdf', () => {
     await screen.findByText('modul-1-111.pdf')
     fireEvent.click(screen.getByLabelText('Hapus berkas modul-1-111.pdf'))
 
-    expect(screen.getByText('Hapus berkas modul-1-111.pdf?')).toBeTruthy()
+    expect(screen.getByText('Hapus Berkas modul-1-111.pdf?')).toBeTruthy()
     expect(screen.getByText('Topik Topik Satu akan kehilangan PDF-nya.')).toBeTruthy()
     expect(mockDeleteModulPdfFile).not.toHaveBeenCalled()
 
@@ -109,13 +109,13 @@ describe('KelolaPdf', () => {
     await waitFor(() => expect(mockDeleteModulPdfFile).toHaveBeenCalledWith('modul-1-111.pdf'))
   })
 
-  it('klik tab "Video topik" menampilkan nama berkas video', async () => {
+  it('klik tab "Video Topik" menampilkan nama berkas video', async () => {
     mockListModulPdfFiles.mockResolvedValue(PDF_FILES)
     mockListModulVideoFiles.mockResolvedValue(VIDEO_FILES)
     renderPage()
 
     await screen.findByText('modul-1-111.pdf')
-    fireEvent.click(screen.getByText(/Video topik/))
+    fireEvent.click(screen.getByText(/Video Topik/))
 
     expect(await screen.findByText('modul-1-333.mp4')).toBeTruthy()
     expect(screen.getByText('5.0 MB')).toBeTruthy()

@@ -35,7 +35,7 @@ export function TugasAkhirMhsCard() {
   })
   return (
     <div className="bg-ivory rounded-xl border p-4" style={BORDER}>
-      <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Tugas akhir</div>
+      <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-1.5">Tugas Akhir</div>
       {isLoading ? (
         <p className="text-sm text-brown-3">Memuat…</p>
       ) : projects.length === 0 ? (
@@ -126,7 +126,7 @@ function BriefItem({ project }: { project: FinalProject }) {
                 className="text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap"
                 style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}
               >
-                Lewat tenggat
+                Lewat Tenggat
               </span>
             )}
           </p>
@@ -175,20 +175,20 @@ function BriefItem({ project }: { project: FinalProject }) {
                 className="text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                 style={{ background: 'var(--bg3)', color: 'var(--brown2)' }}
               >
-                Belum kirim
+                Belum Kirim
               </span>
             </div>
           )}
 
           {submission?.file_path && (
             <button type="button" onClick={() => void bukaBerkas()} className="btn btn-secondary btn-sm mb-2">
-              Buka berkas
+              Buka Berkas
             </button>
           )}
 
           {submission?.total == null && (
             <button type="button" onClick={openModal} className="btn btn-primary btn-sm">
-              {submission ? 'Kirim ulang' : 'Kirim tugas'}
+              {submission ? 'Kirim Ulang' : 'Kirim Tugas'}
             </button>
           )}
         </>
@@ -207,14 +207,14 @@ function BriefItem({ project }: { project: FinalProject }) {
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">
-              {submission ? 'Kirim ulang tugas akhir' : 'Kirim tugas akhir'}
+              {submission ? 'Kirim Ulang Tugas Akhir' : 'Kirim Tugas Akhir'}
             </h3>
 
             <div className="mb-3">
               <span className="block text-xs font-semibold text-brown-2 mb-1.5">Berkas</span>
               <FileInput
                 accept={BERKAS_ACCEPT}
-                label="Pilih berkas"
+                label="Pilih Berkas"
                 hint="PDF atau DOCX, maks 20 MB"
                 maxSizeMb={BERKAS_MAKS_MB}
                 file={file}

@@ -27,7 +27,7 @@ describe('UrutkanTopikModal', () => {
     const onClose = vi.fn()
     render(<UrutkanTopikModal open modules={MODULES} onClose={onClose} onSimpan={onSimpan} />)
     fireEvent.click(screen.getByLabelText('Turunkan Satu'))
-    fireEvent.click(screen.getByText('Simpan urutan'))
+    fireEvent.click(screen.getByText('Simpan Urutan'))
     await waitFor(() => expect(onSimpan).toHaveBeenCalledWith([2, 1, 3]))
     await waitFor(() => expect(onClose).toHaveBeenCalled())
   })

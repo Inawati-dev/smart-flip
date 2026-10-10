@@ -26,6 +26,7 @@ import {
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
 import { PillGroup } from '../components/PillGroup'
+import { TanggalInput } from '../components/TanggalInput'
 import { IconTarget, IconLock, IconChart } from '../components/icons'
 
 // Tes khusus berkode (spec §4.6, §9 WP6b) - satu-satunya tes mahasiswa yang
@@ -184,7 +185,7 @@ export function DosenTesKhususPanel() {
     <>
       <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
         <p className="text-brown-3 text-sm">
-          Hanya tes khusus yang memakai kode. Pre-test dan tes formatif tanpa kode.
+          Hanya tes khusus yang memakai kode. Tes diagnostik awal dan tes formatif tanpa kode.
         </p>
         <button onClick={openCreateModal} className="btn btn-primary btn-sm">
           + Buat sesi tes
@@ -362,23 +363,11 @@ export function DosenTesKhususPanel() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
                 Dari
-                <input
-                  type="datetime-local"
-                  value={openFrom}
-                  onChange={(e) => setOpenFrom(e.target.value)}
-                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                  style={BORDER}
-                />
+                <TanggalInput denganJam ariaLabel="Dibuka dari" value={openFrom} onChange={setOpenFrom} />
               </label>
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
                 Sampai
-                <input
-                  type="datetime-local"
-                  value={openUntil}
-                  onChange={(e) => setOpenUntil(e.target.value)}
-                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                  style={BORDER}
-                />
+                <TanggalInput denganJam ariaLabel="Ditutup sampai" value={openUntil} onChange={setOpenUntil} />
               </label>
             </div>
 

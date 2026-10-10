@@ -185,11 +185,11 @@ export function DosenTesKelompokPanel() {
           Buat sesi, bagikan kode tiap kelompok, lihat skor per orang dan rata-rata kelompok.
         </p>
         <button onClick={openCreateModal} className="btn btn-primary btn-sm">
-          + Buat sesi
+          + Buat Sesi
         </button>
       </div>
       <Link to="/asesmen/bank?tab=soal&jenis=kelompok" className="text-xs inline-block mb-5" style={{ color: 'var(--terra-d)' }}>
-        Kelola soal
+        Kelola Soal
       </Link>
 
         {!isSupabaseConfigured ? (
@@ -240,15 +240,15 @@ export function DosenTesKelompokPanel() {
                 </div>
 
                 <div className="flex items-center justify-center gap-1.5 flex-wrap pt-3 border-t" style={BORDER}>
-                  <button onClick={() => bukaHasil(s.id)} title="Lihat hasil" className="btn btn-secondary whitespace-nowrap">
-                    <IconChart size={13} /> <span className="hidden sm:inline">Lihat hasil</span>
+                  <button onClick={() => bukaHasil(s.id)} title="Lihat Hasil" className="btn btn-secondary whitespace-nowrap">
+                    <IconChart size={13} /> <span className="hidden sm:inline">Lihat Hasil</span>
                   </button>
                   <button
                     onClick={() => void toggleOpen(s)}
-                    title={s.is_open ? 'Tutup sesi' : 'Buka lagi'}
+                    title={s.is_open ? 'Tutup Sesi' : 'Buka Lagi'}
                     className="btn btn-secondary whitespace-nowrap"
                   >
-                    <IconLock size={13} /> <span className="hidden sm:inline">{s.is_open ? 'Tutup sesi' : 'Buka lagi'}</span>
+                    <IconLock size={13} /> <span className="hidden sm:inline">{s.is_open ? 'Tutup Sesi' : 'Buka Lagi'}</span>
                   </button>
                   <button
                     onClick={() => setDeleteTarget(s)}
@@ -277,10 +277,10 @@ export function DosenTesKelompokPanel() {
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[440px] max-h-[90vh] overflow-y-auto my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat sesi tes kelompok</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat Sesi Tes Kelompok</h3>
 
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
-              Nama sesi
+              Nama Sesi
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -292,7 +292,7 @@ export function DosenTesKelompokPanel() {
 
             <div className="grid grid-cols-2 gap-3 mb-3">
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-                Jumlah kelompok
+                Jumlah Kelompok
                 <input
                   type="number"
                   min={1}
@@ -304,7 +304,7 @@ export function DosenTesKelompokPanel() {
                 />
               </label>
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-                Ukuran kelompok
+                Ukuran Kelompok
                 <input
                   type="number"
                   min={2}
@@ -319,7 +319,7 @@ export function DosenTesKelompokPanel() {
 
             <label className="flex items-center gap-2 text-sm text-brown-2 min-h-11 mb-2">
               <input type="checkbox" checked={shuffle} onChange={(e) => setShuffle(e.target.checked)} className="w-4 h-4 accent-terra" />
-              Acak urutan soal
+              Acak Urutan Soal
             </label>
 
             <p className="text-xs text-brown-3 mb-4">
@@ -340,7 +340,7 @@ export function DosenTesKelompokPanel() {
                 disabled={saving || !name.trim() || soalKelompok.length === 0}
                 className="btn btn-primary min-w-[7.5rem]"
               >
-                {saving ? 'Menyimpan…' : 'Buat sesi'}
+                {saving ? 'Menyimpan…' : 'Buat Sesi'}
               </button>
             </div>
           </div>
@@ -357,7 +357,7 @@ export function DosenTesKelompokPanel() {
           }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[384px] max-h-[90vh] overflow-y-auto text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus sesi "{deleteTarget.name}"?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Sesi "{deleteTarget.name}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">Sesi dan semua kelompoknya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
             <div className="flex gap-2.5">
               <button onClick={() => setDeleteTarget(null)} className="btn btn-secondary flex-1">
@@ -398,7 +398,7 @@ export function DosenTesKelompokPanel() {
                 {kelompokHasil.map((g) => (
                   <div key={g.number} className="mb-4">
                     <h4 className="text-sm font-semibold text-brown mb-2">
-                      Kelompok {g.number} · {g.code} · {g.rata != null ? `rata-rata ${g.rata}` : 'belum ada skor'}
+                      Kelompok {g.number} · {g.code} · {g.rata != null ? `Rata-rata ${g.rata}` : 'Belum Ada Skor'}
                     </h4>
                     {g.anggota.length === 0 ? (
                       <p className="text-sm text-brown-3">Belum ada yang gabung.</p>
@@ -572,7 +572,7 @@ function MahasiswaTesKelompok() {
   return (
     <Layout>
       <div className="p-4 md:p-6 max-w-xl mx-auto">
-        <h1 className="font-display text-xl font-bold text-brown mb-4">Tes kelompok</h1>
+        <h1 className="font-display text-xl font-bold text-brown mb-4">Tes Kelompok</h1>
 
         {!isSupabaseConfigured ? (
           <div className="bg-ivory border rounded-2xl p-6 text-sm text-brown-3 text-center" style={BORDER}>
@@ -582,7 +582,7 @@ function MahasiswaTesKelompok() {
           <div className="bg-ivory border rounded-2xl p-6" style={BORDER}>
             <div className="flex items-center gap-2 mb-3 text-brown-2">
               <IconUsers size={18} />
-              <h2 className="font-semibold">Masukkan kode kelompok</h2>
+              <h2 className="font-semibold">Masukkan Kode Kelompok</h2>
             </div>
             <input
               value={kodeInput}
@@ -643,7 +643,7 @@ function MahasiswaTesKelompok() {
             {!joined ? (
               <>
                 <button onClick={doJoin} disabled={joining} className="btn btn-primary w-full">
-                  {joining ? 'Menggabungkan…' : 'Gabung kelompok'}
+                  {joining ? 'Menggabungkan…' : 'Gabung Kelompok'}
                 </button>
                 {joinError && <p className="text-sm text-danger mt-3">{joinError}</p>}
               </>

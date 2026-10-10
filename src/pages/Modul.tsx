@@ -84,14 +84,14 @@ export default function Modul() {
           <div className="bg-ivory border rounded-xl p-5" style={{ borderColor: 'var(--border)' }}>
             <div className="flex gap-5 flex-col sm:flex-row">
               <div className="w-[140px] flex-shrink-0">
-                <SampulTopik nomor={modul.order_num} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum ada PDF'} adaPdf={hasPdf} />
+                <SampulTopik nomor={modul.order_num} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum Ada PDF'} adaPdf={hasPdf} />
               </div>
               <div className="flex flex-col gap-2">
                 {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
                 {modul.description && <p className="text-sm text-brown-2 leading-relaxed">{modul.description}</p>}
                 {hasPdf ? (
                   <Link to={`/ebook?book=${modul.id}`} className="btn btn-primary mt-2 w-fit">
-                    <IconBook size={16} /> Baca modul
+                    <IconBook size={16} /> Baca Modul
                   </Link>
                 ) : (
                   <p className="text-sm text-brown-3 mt-2">Dosen belum mengunggah PDF.</p>
@@ -103,7 +103,7 @@ export default function Modul() {
           <div className="bg-ivory border rounded-xl p-5 flex flex-col gap-4 h-fit" style={{ borderColor: 'var(--border)' }}>
             <div>
               <h2 className="font-bold text-brown mb-2 flex items-center gap-2 text-sm">
-                <IconChart size={16} /> Posisi baca
+                <IconChart size={16} /> Posisi Baca
               </h2>
               <div className="flex items-center gap-2.5">
                 <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
@@ -119,16 +119,16 @@ export default function Modul() {
               </p>
             </div>
             <div>
-              <h2 className="font-bold text-brown mb-2 text-sm">Langkah berikutnya</h2>
+              <h2 className="font-bold text-brown mb-2 text-sm">Langkah Berikutnya</h2>
               <div className="flex flex-col gap-2">
                 <Link to={`/video/${modul.id}`} className="btn btn-secondary">
-                  <IconPlay size={14} /> Tonton video {modul.order_num}
+                  <IconPlay size={14} /> Tonton Video {modul.order_num}
                 </Link>
                 {formatifPada(modul.id) && status !== 'done' ? (
                   <p className="text-xs text-brown-3">Tes formatif dibuka {formatTanggal(formatifPada(modul.id)!)}.</p>
                 ) : (
                   <Link to={`/asesmen/formatif/${modul.id}`} className="btn btn-secondary">
-                    <IconEdit size={14} /> {status === 'done' ? 'Lihat hasil tes formatif' : 'Kerjakan tes formatif'}
+                    <IconEdit size={14} /> {status === 'done' ? 'Lihat Hasil Tes Formatif' : 'Kerjakan Tes Formatif'}
                   </Link>
                 )}
               </div>
@@ -137,23 +137,23 @@ export default function Modul() {
         </div>
 
         <div className="bg-ivory border rounded-xl p-4 mt-5" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="font-bold text-brown mb-3 text-sm">Riwayat belajar</h2>
+          <h2 className="font-bold text-brown mb-3 text-sm">Riwayat Belajar</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="bg-bg3 rounded-lg p-3">
               <div className="text-lg font-bold text-brown">{pct}%</div>
-              <div className="text-xs text-brown-3 mt-0.5">Progress baca</div>
+              <div className="text-xs text-brown-3 mt-0.5">Progress Baca</div>
             </div>
             <div className="bg-bg3 rounded-lg p-3">
               <div className="text-lg font-bold text-brown">{bestScore !== null ? `${bestScore}%` : '—'}</div>
-              <div className="text-xs text-brown-3 mt-0.5">Skor kuis terbaik</div>
+              <div className="text-xs text-brown-3 mt-0.5">Skor Kuis Terbaik</div>
             </div>
             <div className="bg-bg3 rounded-lg p-3">
               <div className="text-lg font-bold text-brown">{formatLastOpened(prog?.lastOpened)}</div>
-              <div className="text-xs text-brown-3 mt-0.5">Terakhir dibuka</div>
+              <div className="text-xs text-brown-3 mt-0.5">Terakhir Dibuka</div>
             </div>
             <div className="bg-bg3 rounded-lg p-3">
               <div className="text-lg font-bold text-brown">—</div>
-              <div className="text-xs text-brown-3 mt-0.5">Waktu belajar</div>
+              <div className="text-xs text-brown-3 mt-0.5">Waktu Belajar</div>
             </div>
           </div>
         </div>

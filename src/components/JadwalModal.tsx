@@ -4,6 +4,7 @@ import type { Course } from '../lib/courses'
 import { isMissingCourseSchema } from '../lib/courses'
 import type { ModuleRow } from '../lib/modules'
 import { jadwalTopik, mingguBawaan, simpanJadwal } from '../lib/jadwal'
+import { TanggalInput } from './TanggalInput'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 const KOTAK = 'h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown tabular-nums'
@@ -72,7 +73,7 @@ export function JadwalModal({ course, modules, onClose }: { course: Course; modu
         </p>
         <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
           Tanggal pertemuan pertama
-          <input type="date" min={TANGGAL_MIN} max="2099-12-31" value={mulai} onChange={(e) => setMulai(e.target.value)} className={`${KOTAK} w-full`} style={BORDER} />
+          <TanggalInput ariaLabel="Tanggal pertemuan pertama" min={TANGGAL_MIN} max="2099-12-31" value={mulai} onChange={setMulai} />
         </label>
         <div className="text-[11px] font-bold uppercase tracking-wide text-brown-3 mb-1">Minggu tiap topik</div>
         <ul className="flex flex-col mb-4">

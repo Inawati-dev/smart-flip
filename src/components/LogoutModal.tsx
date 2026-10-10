@@ -26,7 +26,7 @@ export function LogoutModal({
         }}
       >
         <h3 className="font-display text-lg font-bold text-brown mb-2">
-          Yakin ingin keluar?
+          Yakin Ingin Keluar?
         </h3>
         <p className="text-sm text-brown-2 mb-6 opacity-75">
           Progres belajar kamu tersimpan otomatis.

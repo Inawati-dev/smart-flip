@@ -114,7 +114,7 @@ export function Register() {
     <AuthShell>
       <div className="flex flex-col gap-1">
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight">
-          Buat akun baru
+          Buat Akun Baru
         </h1>
         <p className="text-sm text-brown-3">Lengkapi data diri Anda untuk mendaftar</p>
       </div>
@@ -158,7 +158,7 @@ export function Register() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="flex flex-col gap-1.5">
           <label htmlFor="fullName" className="text-[0.78rem] font-semibold text-brown-2">
-            Nama lengkap
+            Nama Lengkap
           </label>
           <input
             id="fullName"
@@ -191,7 +191,7 @@ export function Register() {
         {role === 'dosen' && (
           <div className="flex flex-col gap-1.5">
             <label htmlFor="inviteCode" className="text-[0.78rem] font-semibold text-brown-2">
-              Kode undangan dosen
+              Kode Undangan Dosen
             </label>
             <input
               id="inviteCode"
@@ -248,7 +248,7 @@ export function Register() {
 
         <div className="flex flex-col gap-1.5">
           <label htmlFor="password" className="text-[0.78rem] font-semibold text-brown-2">
-            Kata sandi
+            Kata Sandi
           </label>
           <input
             id="password"

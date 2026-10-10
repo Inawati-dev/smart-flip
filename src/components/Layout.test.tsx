@@ -85,15 +85,16 @@ describe('Layout', () => {
     expect(hrefs).not.toContain('/kelas')
   })
 
-  it('dosen melihat 7 tautan menu, termasuk /akun/pdf dan /kelas', () => {
+  // Antrean #168: menu Berkas (/akun/pdf) disembunyikan.
+  it('dosen melihat 6 tautan menu, termasuk /kelas, tanpa /akun/pdf', () => {
     mockIsSupabaseConfigured.value = false
     mockAuth.user = { id: 'u2', email: 'dos@test.local' }
     mockAuth.role = 'dosen'
     mockAuth.profile = { full_name: 'Dosen Test', avatar_url: null }
     const html = renderLayout()
     const hrefs = presentNavHrefs(html)
-    expect(hrefs).toHaveLength(7)
-    expect(hrefs).toContain('/akun/pdf')
+    expect(hrefs).toHaveLength(6)
+    expect(hrefs).not.toContain('/akun/pdf')
     expect(hrefs).toContain('/kelas')
   })
 

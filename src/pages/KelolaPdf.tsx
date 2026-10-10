@@ -62,10 +62,10 @@ function BerkasTable({
           <thead>
             <tr className="bg-bg3">
               <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3 w-10">No</th>
-              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama berkas</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Nama Berkas</th>
               <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Ukuran</th>
-              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal unggah</th>
-              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Dipakai topik</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Tanggal Unggah</th>
+              <th className="text-left px-4 py-2 text-xs font-semibold text-brown-3">Dipakai Topik</th>
               <th className="text-center px-4 py-2 text-xs font-semibold text-brown-3 w-36">Aksi</th>
             </tr>
           </thead>
@@ -95,7 +95,7 @@ function BerkasTable({
                         className="text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap"
                         style={{ background: 'var(--bg3)', color: 'var(--brown2)' }}
                       >
-                        Belum terpakai
+                        Belum Terpakai
                       </span>
                     )}
                   </td>
@@ -198,8 +198,8 @@ export function KelolaPdf() {
                 value={tab}
                 onChange={(v) => setSearchParams(v === 'video' ? { tab: 'video' } : {})}
                 options={[
-                  { value: 'pdf', label: 'PDF topik', badge: pdfFiles.length },
-                  { value: 'video', label: 'Video topik', badge: videoFiles.length },
+                  { value: 'pdf', label: 'PDF Topik', badge: pdfFiles.length },
+                  { value: 'video', label: 'Video Topik', badge: videoFiles.length },
                 ]}
               />
             </div>
@@ -232,7 +232,7 @@ export function KelolaPdf() {
           }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus berkas {deleteTarget.name}?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Berkas {deleteTarget.name}?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.usedBy
                 ? `Topik ${deleteTarget.usedBy} akan kehilangan ${deleteTarget.kind === 'pdf' ? 'PDF-nya' : 'videonya'}.`

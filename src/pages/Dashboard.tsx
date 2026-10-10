@@ -159,7 +159,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
       {/* Judul + lencana perlu perhatian */}
       <div className="flex items-center justify-between gap-2 flex-wrap -mt-1 mb-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-brown-3">Dashboard dosen</p>
+          <p className="text-brown-3">Dashboard Dosen</p>
           {perhatian.length > 0 && (
             <Link
               to="?tab=perhatian"
@@ -190,21 +190,21 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
         <StatCard
           icon={IconUsers}
           val={ringkas ? `${ringkas.aktif7Hari}/${ringkas.totalMhs}` : '—'}
-          label="Mahasiswa aktif 7 hari"
+          label="Mahasiswa Aktif 7 hari"
           bar="var(--sage)"
           to="/kelas"
         />
         <StatCard
           icon={IconCheck}
           val={ringkas ? `${ringkas.preSelesai}/${ringkas.totalMhs}` : '—'}
-          label="Pre-test selesai"
+          label="Tes Diagnostik Awal Selesai"
           bar="var(--terra)"
           to="/asesmen"
         />
-        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik rata-rata kelas" bar="var(--info)" to="/asesmen" />
-        <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata formatif" bar="var(--sage)" to="/asesmen" />
+        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik Rata-rata Kelas" bar="var(--info)" to="/asesmen" />
+        <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata Formatif" bar="var(--sage)" to="/asesmen" />
         <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" to="/asesmen" />
-        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="var(--info)" to="/asesmen/bank?tab=khusus" />
+        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi Tes Khusus Aktif" bar="var(--info)" to="/asesmen/bank?tab=khusus" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
@@ -214,7 +214,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
         onChange={pindahTab}
         options={[
           { value: 'aktivitas', label: 'Aktivitas', badge: kejadian.length },
-          { value: 'perhatian', label: 'Perlu perhatian', badge: perhatian.length, badgeTone: 'danger' },
+          { value: 'perhatian', label: 'Perlu Perhatian', badge: perhatian.length, badgeTone: 'danger' },
           { value: 'progres', label: 'Progres', badge: matriks.length },
         ]}
       />
@@ -317,9 +317,9 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
 // `hasil.langkah`, dua sisanya jadi tombol sekunder di kartu yang sama.
 function langkahActions(topikId: number, orderNum: number): Record<Exclude<Langkah, 'selesai-semua'>, { label: string; to: string }> {
   return {
-    baca: { label: `Baca topik ${orderNum}`, to: `/modul/${topikId}` },
-    video: { label: `Tonton video ${orderNum}`, to: `/video/${topikId}` },
-    formatif: { label: `Kerjakan tes formatif ${orderNum}`, to: `/asesmen/formatif/${topikId}` },
+    baca: { label: `Baca Topik ${orderNum}`, to: `/modul/${topikId}` },
+    video: { label: `Tonton Video ${orderNum}`, to: `/video/${topikId}` },
+    formatif: { label: `Kerjakan Tes Formatif ${orderNum}`, to: `/asesmen/formatif/${topikId}` },
   }
 }
 
@@ -425,7 +425,7 @@ export function DashboardMhs({
           pemilih mata kuliah di kanan (antrean #143). */}
       <div className="flex items-start justify-between gap-x-4 gap-y-3 flex-wrap mb-4">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold text-brown">Selamat datang, {identitas?.nama || 'Mahasiswa'}</h1>
+          <h1 className="text-2xl font-bold text-brown">Selamat Datang, {identitas?.nama || 'Mahasiswa'}</h1>
           <div className="flex items-center gap-2 flex-wrap mt-1.5">
             {pre && <ChipRak jenis={GOLONGAN_CHIP[pre.golongan]} label={GOLONGAN_LABEL[pre.golongan]} />}
             <span className="text-sm text-brown-3">
@@ -441,7 +441,7 @@ export function DashboardMhs({
 
       <div className="bg-ivory rounded-2xl border p-5 mb-4" style={BORDER}>
         <div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-3">
-          Langkah berikutnya
+          Langkah Berikutnya
         </div>
         {utama === 'selesai-semua' ? (
           <p className="text-brown-2 text-sm">
@@ -466,14 +466,14 @@ export function DashboardMhs({
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik selesai" bar="var(--sage)" to="/modul" />
+        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik Selesai" bar="var(--sage)" to="/modul" />
         <StatCard
           icon={IconTrendingUp}
           val={hasil.skorTerakhir ? `${hasil.skorTerakhir.score}%` : '—'}
           label={
             hasil.skorTerakhir
-              ? `Formatif terakhir · ${hasil.skorTerakhir.lulus ? 'Lulus' : 'Remedial'}`
-              : 'Formatif terakhir'
+              ? `Formatif Terakhir · ${hasil.skorTerakhir.lulus ? 'Lulus' : 'Remedial'}`
+              : 'Formatif Terakhir'
           }
           bar="var(--terra)"
           to="/asesmen"
@@ -481,7 +481,7 @@ export function DashboardMhs({
         <StatCard
           icon={IconFolder}
           val={pre?.skor != null ? String(pre.skor) : '—'}
-          label="Tes diagnostik awal"
+          label="Tes Diagnostik Awal"
           bar="var(--info)"
           to="/asesmen"
         />
@@ -489,11 +489,11 @@ export function DashboardMhs({
 
       <div className="bg-ivory rounded-2xl border p-4" style={BORDER}>
         <div className="text-sm font-semibold text-brown mb-1 flex items-center gap-1.5">
-          <IconBook size={15} /> Tes khusus dari dosen
+          <IconBook size={15} /> Tes Khusus dari Dosen
         </div>
         <p className="text-xs text-brown-3 mb-3">Punya kode dari dosen? Masukkan di sini.</p>
         <Link to="/asesmen/tes" className="btn btn-secondary btn-sm">
-          Masukkan kode
+          Masukkan Kode
         </Link>
       </div>
     </>

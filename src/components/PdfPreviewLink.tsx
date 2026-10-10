@@ -66,7 +66,7 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
             {fileName}
           </span>
           <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
-            Buka di tab baru
+            Buka di Tab Baru
           </a>
           <button type="button" onClick={onClose} aria-label="Tutup pratinjau" className="btn btn-secondary btn-icon">
             <IconX size={16} />

@@ -267,7 +267,7 @@ export function DosenModulRak() {
             Urutkan
           </button>
           <button onClick={openCreate} className="btn btn-primary btn-sm">
-            + Tambah topik
+            + Tambah Topik
           </button>
         </div>
       </div>
@@ -287,7 +287,7 @@ export function DosenModulRak() {
               <KartuTopik
                 nomor={m.order_num}
                 judul={judul}
-                keterangan={fileName ? 'PDF' : 'Belum ada PDF'}
+                keterangan={fileName ? 'PDF' : 'Belum Ada PDF'}
                 adaPdf={!!fileName}
                 aksi={
                   <>
@@ -302,10 +302,10 @@ export function DosenModulRak() {
                     <button
                       onClick={() => openEdit(m.id)}
                       aria-label="Ubah topik"
-                      title="Ubah topik"
+                      title="Ubah Topik"
                       className="btn btn-secondary btn-sm w-full whitespace-nowrap"
                     >
-                      <IconEdit size={13} /> <span className="hidden sm:inline">Ubah topik</span>
+                      <IconEdit size={13} /> <span className="hidden sm:inline">Ubah Topik</span>
                     </button>
                     {m.pdf_path ? (
                       <PdfPreviewLink url={m.pdf_path} label="Pratinjau" compact />
@@ -365,7 +365,7 @@ export function DosenModulRak() {
             </label>
             {creatingNew && (
               <div className="mb-4">
-                <span className="block text-xs font-semibold text-brown-2 mb-1">PDF topik (opsional)</span>
+                <span className="block text-xs font-semibold text-brown-2 mb-1">PDF Topik (opsional)</span>
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
                   <FileInput
                     accept="application/pdf,.pdf"
@@ -400,7 +400,7 @@ export function DosenModulRak() {
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
-              Hapus topik "{customs[deleteId]?.judul || modules.find((m) => m.id === deleteId)?.title || ''}"?
+              Hapus Topik "{customs[deleteId]?.judul || modules.find((m) => m.id === deleteId)?.title || ''}"?
             </h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Progres, soal formatif, dan PDF yang terpasang ikut terhapus.
@@ -429,9 +429,9 @@ export function DosenModulRak() {
             className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">Ganti PDF topik</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-4">Ganti PDF Topik</h3>
 
-            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah berkas baru</p>
+            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah Berkas Baru</p>
             <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
               <FileInput
                 accept="application/pdf,.pdf"
@@ -457,7 +457,7 @@ export function DosenModulRak() {
             {isSupabaseConfigured && pdfFiles.length > 0 && (
               <div className="pt-4 mt-4 border-t" style={BORDER}>
                 <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
-                  Atau pakai berkas yang sudah ada
+                  Atau Pakai Berkas yang Sudah Ada
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
                   <div className="flex items-center gap-2 min-w-0">
@@ -472,7 +472,7 @@ export function DosenModulRak() {
                         label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
                       }))}
                     />
-                    {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau berkas yang dipilih" />}
+                    {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau Berkas yang Dipilih" />}
                   </div>
                   <button
                     type="button"
@@ -617,7 +617,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
           className="bg-ivory rounded-2xl p-5 sm:p-6 max-w-full w-[760px] my-6 max-h-[90dvh] overflow-y-auto"
           style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
         >
-          <h3 className="font-display text-lg font-semibold text-brown mb-4">Kelola mata kuliah</h3>
+          <h3 className="font-display text-lg font-semibold text-brown mb-4">Kelola Mata Kuliah</h3>
 
           <div className="flex flex-col gap-2 mb-4">
             {courses.length === 0 ? (
@@ -646,7 +646,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
                       disabled={togglingId != null || (c.is_active && jumlahDibuka <= 1)}
                       className="btn btn-secondary min-w-[6.5rem]"
                     >
-                      {c.is_active ? 'Tutup akses' : 'Buka akses'}
+                      {c.is_active ? 'Tutup Akses' : 'Buka Akses'}
                     </button>
                     <button onClick={() => setJadwalCourse(c)} className="btn btn-secondary min-w-[4.5rem]">
                       Jadwal
@@ -671,7 +671,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
 
           <div className="pt-4 border-t" style={BORDER}>
             <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
-              {editId != null ? 'Ubah mata kuliah' : 'Tambah mata kuliah'}
+              {editId != null ? 'Ubah Mata Kuliah' : 'Tambah Mata Kuliah'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-[140px_minmax(0,1fr)] gap-2 mb-2">
               <input
@@ -700,7 +700,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
             <div className="flex gap-2.5 justify-end">
               {editId != null && (
                 <button onClick={resetForm} className="btn btn-secondary btn-sm">
-                  Batal ubah
+                  Batal Ubah
                 </button>
               )}
               <button
@@ -733,7 +733,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
-              Hapus mata kuliah "{courses.find((c) => c.id === deleteId)?.name || ''}"?
+              Hapus Mata Kuliah "{courses.find((c) => c.id === deleteId)?.name || ''}"?
             </h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Semua topik, soal, dan hasil tes mata kuliah ini ikut terhapus.
@@ -784,7 +784,7 @@ export function ModulList() {
           <MataKuliahSelect />
           {role === 'dosen' && (
             <button onClick={() => setKelolaOpen(true)} className="btn btn-secondary btn-sm" title="Tambah, ubah, atau hapus mata kuliah">
-              <IconGear size={14} /> Kelola mata kuliah
+              <IconGear size={14} /> Kelola Mata Kuliah
             </button>
           )}
         </div>
@@ -795,7 +795,7 @@ export function ModulList() {
             <p className="text-sm text-brown-3 mb-4">{sorted.length} topik · dibaca sebagai flipbook</p>
             {lanjut && statusOf(lanjut.id) !== 'locked' && (
               <Link to={`/modul/${lanjut.id}`} className="btn btn-primary btn-sm inline-block mb-4">
-                Lanjutkan membaca
+                Lanjutkan Membaca
               </Link>
             )}
             {sorted.length === 0 ? (
@@ -820,16 +820,16 @@ export function ModulList() {
                       <ChipRak jenis="todo" label="Terkunci" />
                     ) : pct >= 100 ? (
                       // Antrean #161: halaman habis dibaca = "Sudah dibaca"; "Selesai" tetap berarti tes formatif lulus.
-                      <ChipRak jenis="ok" label="Sudah dibaca" />
+                      <ChipRak jenis="ok" label="Sudah Dibaca" />
                     ) : (
-                      <ChipRak jenis="now" label={pct > 0 ? 'Sedang dibaca' : 'Siap dibaca'} />
+                      <ChipRak jenis="now" label={pct > 0 ? 'Sedang Dibaca' : 'Siap Dibaca'} />
                     )
                   return (
                     <KartuTopik
                       key={m.id}
                       nomor={m.order_num}
                       judul={m.title}
-                      keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum ada PDF'}
+                      keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}
                       adaPdf={!!m.pdf_path}
                       persen={pct}
                       kaki={kaki}

@@ -30,7 +30,7 @@ const STEPS_DOSEN: Step[] = [
   {
     icon: IconUsers,
     title: 'Selamat Datang!',
-    desc: 'Panel kelas untuk mata kuliah Metode Penelitian & Pengembangan. Dashboard menampilkan seluruh aktivitas kelas: pre-test, tes formatif, modul dibaca, video ditonton.',
+    desc: 'Panel kelas untuk mata kuliah Metode Penelitian & Pengembangan. Dashboard menampilkan seluruh aktivitas kelas: tes diagnostik awal, tes formatif, modul dibaca, video ditonton.',
   },
   {
     icon: IconLightbulb,

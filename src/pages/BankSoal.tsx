@@ -28,19 +28,19 @@ const TAB_ORDER = ['soal', 'khusus', 'kelompok', 'tugas'] as const
 type Tab = (typeof TAB_ORDER)[number]
 const TAB_LABELS: Record<Tab, string> = {
   soal: 'Soal',
-  khusus: 'Tes khusus',
-  kelompok: 'Tes kelompok',
-  tugas: 'Tugas akhir',
+  khusus: 'Tes Khusus',
+  kelompok: 'Tes Kelompok',
+  tugas: 'Tugas Akhir',
 }
 
 type FilterKind = Exclude<SoalKind, 'vark'>
 
 const KIND_ORDER: FilterKind[] = ['pre', 'formatif', 'post', 'kelompok']
 const KIND_LABELS: Record<FilterKind, string> = {
-  pre: 'Pre-test',
+  pre: 'Tes Diagnostik Awal',
   formatif: 'Formatif',
   post: 'Post-test',
-  kelompok: 'Tes kelompok',
+  kelompok: 'Tes Kelompok',
 }
 const LETTERS = ['A', 'B', 'C', 'D'] as const
 
@@ -53,6 +53,8 @@ interface Row {
   answer_idx: number | null
   order_num: number
   module_id: number | null
+  /** Topik yang diuji soal tes diagnostik (v31, antrean #142 opsi B). */
+  topik_id: number | null
 }
 
 export function BankSoal() {
@@ -72,7 +74,7 @@ export function BankSoal() {
     <Layout>
       <div className="p-4 md:p-6 pb-16">
         <div className="flex items-center gap-3 flex-wrap mb-4">
-          <h1 className="font-display text-2xl font-bold text-brown">Bank soal</h1>
+          <h1 className="font-display text-2xl font-bold text-brown">Bank Soal</h1>
           <MataKuliahSelect size="sm" />
         </div>
         {/* Tingkat 1: tab bergaris bawah; tingkat 2 (jenis soal) tetap pil kecil (antrean #102 opsi A). */}
@@ -125,6 +127,7 @@ function BankSoalTab() {
         answer_idx: q.answer_idx,
         order_num: q.order_num,
         module_id: q.module_id,
+        topik_id: q.topik_id ?? null,
       }))
       .sort((a, b) => a.order_num - b.order_num)
   }, [bankQuery.data])
@@ -168,6 +171,7 @@ function BankSoalTab() {
   const [opsi, setOpsi] = useState<string[]>(['', '', '', ''])
   const [jawaban, setJawaban] = useState(0)
   const [modalModuleId, setModalModuleId] = useState<number | null>(null)
+  const [modalTopikId, setModalTopikId] = useState<number | null>(null)
   const [nextOrderNum, setNextOrderNum] = useState(1)
   const [saving, setSaving] = useState(false)
 
@@ -178,6 +182,7 @@ function BankSoalTab() {
     setOpsi(['', '', '', ''])
     setJawaban(0)
     setModalModuleId(modulId ?? modules[0]?.id ?? null)
+    setModalTopikId(null)
     setNextOrderNum(maxOrder + 1)
   }
 
@@ -187,6 +192,7 @@ function BankSoalTab() {
     setOpsi(r.options.length === 4 ? [...r.options] : [...r.options, '', '', '', ''].slice(0, 4))
     setJawaban(r.answer_idx ?? 0)
     setModalModuleId(r.module_id ?? modulId ?? modules[0]?.id ?? null)
+    setModalTopikId(r.topik_id)
   }
 
   function closeModal() {
@@ -198,6 +204,9 @@ function BankSoalTab() {
   }
 
   const isFormatif = jenis === 'formatif'
+  // Tanda topik hanya untuk soal tes diagnostik: dipakai rincian "Benar per Topik" di layar hasil mahasiswa.
+  const isPre = jenis === 'pre'
+  const tandaTopik = isPre ? { topik_id: modalTopikId } : {}
 
   async function saveQuestion() {
     const question = pertanyaan.trim()
@@ -217,9 +226,10 @@ function BankSoalTab() {
           answer_idx: jawaban,
           explanation: null,
           order_num: nextOrderNum,
+          ...tandaTopik,
         })
       } else if (modalOpen != null) {
-        await updateKuisSoal(modalOpen, { kind: jenis, module_id, question, options, answer_idx: jawaban })
+        await updateKuisSoal(modalOpen, { kind: jenis, module_id, question, options, answer_idx: jawaban, ...tandaTopik })
       }
       await invalidate()
       showToast(modalOpen === 'new' ? 'Soal ditambahkan' : 'Soal disimpan')
@@ -312,7 +322,7 @@ function BankSoalTab() {
           )}
         </div>
         <button onClick={openAddModal} className="btn btn-primary btn-sm">
-          + Tambah soal
+          + Tambah Soal
         </button>
       </div>
       <p className="text-sm text-brown-3 mb-3">
@@ -377,15 +387,15 @@ function BankSoalTab() {
                             <button
                               onClick={() => openEditModal(r)}
                               aria-label={`Ubah soal urutan ${r.order_num}`}
-                              title="Ubah soal"
+                              title="Ubah Soal"
                               className="btn btn-secondary whitespace-nowrap"
                             >
-                              <IconEdit size={15} /> <span className="hidden sm:inline">Ubah soal</span>
+                              <IconEdit size={15} /> <span className="hidden sm:inline">Ubah Soal</span>
                             </button>
                             <button
                               onClick={() => setDeleteId(r.id)}
                               aria-label={`Hapus soal urutan ${r.order_num}`}
-                              title="Hapus soal"
+                              title="Hapus Soal"
                               className="btn btn-danger btn-icon flex-shrink-0"
                             >
                               <IconTrash size={15} />
@@ -422,6 +432,19 @@ function BankSoalTab() {
                 ×
               </button>
             </div>
+
+            {isPre && (
+              <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
+                Topik yang Diuji
+                <Select
+                  value={String(modalTopikId ?? '')}
+                  onChange={(v) => setModalTopikId(v ? parseInt(v, 10) : null)}
+                  aria-label="Pilih topik yang diuji soal ini"
+                  options={[{ value: '', label: 'Belum Ditandai' }, ...modules.map((m) => ({ value: String(m.id), label: `${m.order_num}. ${m.title}` }))]}
+                />
+                <span className="font-normal text-brown-3">Dipakai untuk menampilkan jumlah benar per topik di hasil mahasiswa. Boleh dikosongkan.</span>
+              </label>
+            )}
 
             {isFormatif && (
               <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
@@ -498,7 +521,7 @@ function BankSoalTab() {
           }}
         >
           <div className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[384px] max-h-[90vh] overflow-y-auto text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus soal nomor {deleteRow?.order_num ?? ''}?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Soal Nomor {deleteRow?.order_num ?? ''}?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">Soal ini akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
             <div className="flex gap-2.5">
               <button onClick={() => setDeleteId(null)} className="btn btn-secondary flex-1">

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import { useQuery } from '@tanstack/react-query'
 import { fetchCourses, getSavedCourseId, saveCourseId, type Course } from '../lib/courses'
 import { useAuth } from './AuthContext'
+import { isSupabaseConfigured } from '../lib/supabase'
 
 // Mata kuliah yang sedang dipilih, dipakai semua halaman (Modul, Video,
 // Asesmen, Dashboard) lewat useCourse(). Pilihan tersimpan di localStorage
@@ -24,9 +25,16 @@ const CourseContext = createContext<CourseContextValue>({
 
 export function CourseProvider({ children }: { children: ReactNode }) {
   // Dosen melihat juga mata kuliah yang ditutup (antrean #141); mahasiswa tidak.
-  const { role, loading: authLoading } = useAuth()
+  const { user, role, loading: authLoading } = useAuth()
   const dosen = role === 'dosen'
-  const { data: courses = [], isLoading } = useQuery({ queryKey: ['courses', dosen], queryFn: () => fetchCourses(dosen), staleTime: 5 * 60 * 1000 })
+  // Daftar baru diambil sesudah ada sesi: tabel `courses` menolak pengunjung tanpa login,
+  // jadi halaman login dulu memunculkan galat 401 di konsol (Papan #2).
+  const { data: courses = [], isLoading } = useQuery({
+    queryKey: ['courses', dosen],
+    queryFn: () => fetchCourses(dosen),
+    staleTime: 5 * 60 * 1000,
+    enabled: !isSupabaseConfigured || !!user,
+  })
   const [courseId, setCourseIdState] = useState<number>(() => getSavedCourseId() ?? 1)
 
   // Kalau pilihan tersimpan tidak ada di daftar (mata kuliah dihapus atau

@@ -22,6 +22,10 @@ const ZOOM_MIN = 0.8
 const ZOOM_MAX = 2
 const ZOOM_STEP = 0.1
 const SPREAD_MIN_WIDTH = 900 // di bawah ini buku tampil satu halaman, bukan dua
+// Antrean #165 (Johan, 10 Okt 2026): "munculkan 1 page 1 page saja". Tampilan dua
+// halaman dimatikan; jalurnya dibiarkan supaya bisa dinyalakan lagi dari sini.
+const DUA_HALAMAN = false
+const LEBAR_BACA = 760 // lebar minimal satu halaman di layar lebar supaya teks terbaca; halaman boleh lebih tinggi dari layar
 // ponytail: tiap halaman dirender sekali pada lebar tetap lalu diskalakan CSS;
 // kalau zoom 200% di layar besar terlihat buram, render ulang per tingkat zoom.
 const LEBAR_RENDER = 1200
@@ -111,7 +115,10 @@ export function Ebook() {
   const [penuh, setPenuh] = useState(false)
   const [rasio, setRasio] = useState(0.707) // lebar / tinggi halaman pertama; A4 sampai PDF terbaca
   const [gambar, setGambar] = useState<Record<number, string>>({})
-  const [ukuran, setUkuran] = useState({ w: 800, h: 600 })
+  // Tebakan awal dari jendela (dikurangi kira-kira tinggi dua bilah) sampai ResizeObserver melapor.
+  const [ukuran, setUkuran] = useState(() =>
+    typeof window === 'undefined' ? { w: 800, h: 600 } : { w: window.innerWidth - 32, h: Math.max(240, window.innerHeight - 180) },
+  )
   const [isWide, setIsWide] = useState(() => typeof window !== 'undefined' && window.innerWidth >= SPREAD_MIN_WIDTH)
 
   useEffect(() => {
@@ -215,7 +222,7 @@ export function Ebook() {
   // terlihat halaman 2s (kiri) dan 2s+1 (kanan). Layar sempit: satu halaman
   // per lembar, s = halaman - 1.
   const N = totalPages
-  const dua = mode === 'flip' && isWide
+  const dua = DUA_HALAMAN && mode === 'flip' && isWide
   const s = dua ? Math.floor(currentPage / 2) : currentPage - 1
   const sMaks = dua ? Math.floor(N / 2) : Math.max(0, N - 1)
   const jumlahLembar = dua ? Math.ceil(N / 2) : N
@@ -350,7 +357,9 @@ export function Ebook() {
   const lebarHal =
     mode === 'gulir'
       ? Math.max(160, Math.min(ukuran.w - 24, 900)) * zoom
-      : Math.max(120, Math.min((ukuran.w - 32) / kolom, (ukuran.h - 44) * rasio)) * zoom
+      : dua
+        ? Math.max(120, Math.min((ukuran.w - 32) / kolom, (ukuran.h - 44) * rasio)) * zoom
+        : Math.max(120, Math.min(ukuran.w - 32, Math.max((ukuran.h - 44) * rasio, LEBAR_BACA))) * zoom
   const tinggiHal = lebarHal / rasio
   const lembarTampil: number[] = []
   for (let i = Math.max(0, s - 2); i <= Math.min(jumlahLembar - 1, s + 1); i++) lembarTampil.push(i)
@@ -399,7 +408,7 @@ export function Ebook() {
                 <div className="text-lg font-bold text-brown leading-tight">
                   {catalog.length}/{modules.length}
                 </div>
-                <div className="text-xs text-brown-3">Topik sudah diunggah</div>
+                <div className="text-xs text-brown-3">Topik Sudah Diunggah</div>
               </div>
             </div>
             {catalog.length === 0 ? (
@@ -537,7 +546,7 @@ export function Ebook() {
                   </button>
                   {bisaPenuh && (
                     <button onClick={gantiPenuh} aria-pressed={penuh} className={`pembaca-tb ${penuh ? 'on' : ''} !hidden md:!inline-flex`}>
-                      {penuh ? 'Keluar layar penuh' : 'Layar penuh'}
+                      {penuh ? 'Keluar Layar Penuh' : 'Layar Penuh'}
                     </button>
                   )}
                   <button onClick={goNext} disabled={nextDisabled} title="Berikutnya" aria-label="Berikutnya" className="pembaca-tb kotak on">

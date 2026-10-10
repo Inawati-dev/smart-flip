@@ -15,11 +15,11 @@ interface KelasTahunFilterProps {
 // kelas terpilih tidak lagi ada di tahun itu mengosongkan kelas.
 export function KelasTahunFilter({ kelasList, tahun, kelas, onChange }: KelasTahunFilterProps) {
   const tahunOptions = [
-    { value: '', label: 'Semua tahun' },
+    { value: '', label: 'Semua Tahun' },
     ...tahunUnik(kelasList).map((t) => ({ value: String(t), label: String(t) })),
   ]
   const kelasOptions = [
-    { value: '', label: 'Semua kelas' },
+    { value: '', label: 'Semua Kelas' },
     ...namaKelasUnik(kelasList, tahun).map((n) => ({ value: n, label: n })),
   ]
 

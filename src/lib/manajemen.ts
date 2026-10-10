@@ -78,6 +78,13 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
 // durationSec (v26): durasi video dalam detik; undefined = jangan ubah, null = kosongkan.
 export async function saveVideoUrl(moduleId: number, url: string, durationSec?: number | null): Promise<void> {
   if (isSupabaseConfigured) {
+    let lama: string | null = null
+    try {
+      const { data } = await supabase.from('modules').select('video_url').eq('id', moduleId).maybeSingle()
+      lama = (data?.video_url as string | null) ?? null
+    } catch {
+      // tidak bisa membaca alamat lama = tidak ada yang dibersihkan
+    }
     try {
       const patch: Record<string, unknown> = { video_url: url }
       if (durationSec !== undefined) patch.duration_sec = durationSec
@@ -86,6 +93,7 @@ export async function saveVideoUrl(moduleId: number, url: string, durationSec?: 
         ;({ error } = await supabase.from('modules').update({ video_url: url }).eq('id', moduleId))
       }
       if (error) throw error
+      if (lama && lama !== url) await buangBerkasYatim([lama])
       return
     } catch (e) {
       console.warn('[manajemen] saveVideoUrl → Supabase gagal, fallback localStorage:', e)
@@ -193,7 +201,35 @@ function storageObjectName(publicUrl: string | null | undefined): string | null 
   return name ? decodeURIComponent(name) : null
 }
 
-// Hapus modul beserta file PDF-nya di Storage.
+// Buang berkas Storage (PDF atau video) yang sudah tidak ditunjuk topik mana
+// pun (antrean #168: halaman Berkas disembunyikan, jadi berkas tidak boleh
+// menumpuk tanpa pemilik). Dipanggil SESUDAH baris topik dihapus atau diganti
+// tautannya. Berkas yang masih dipakai topik lain dibiarkan, karena modal
+// "Ganti PDF" mengizinkan dua topik memakai berkas yang sama. Alamat di luar
+// dua bucket ini (YouTube, /books/...) diabaikan. Tidak pernah melempar galat:
+// gagal bersih-bersih tidak boleh membatalkan aksi utamanya.
+export async function buangBerkasYatim(urls: Array<string | null | undefined>): Promise<void> {
+  if (!isSupabaseConfigured) return
+  for (const url of new Set(urls.filter((u): u is string => !!u))) {
+    try {
+      const pdf = storageObjectName(url)
+      const video = pdf ? null : videoStorageObjectName(url)
+      const nama = pdf ?? video
+      if (!nama) continue
+      const { count, error } = await supabase
+        .from('modules')
+        .select('id', { count: 'exact', head: true })
+        .eq(pdf ? 'pdf_path' : 'video_url', url)
+      // Ragu = jangan hapus: hitungan gagal dibaca diperlakukan sebagai "masih dipakai".
+      if (error || count == null || count > 0) continue
+      await supabase.storage.from(pdf ? 'modul-pdf' : 'modul-video').remove([nama])
+    } catch (e) {
+      console.warn('[manajemen] buangBerkasYatim gagal untuk', url, e)
+    }
+  }
+}
+
+// Hapus modul beserta file PDF dan videonya di Storage.
 //
 // Tabel turunan (user_progress, quiz_questions, quiz_attempts, forum_posts,
 // workshop_content) sudah ON DELETE CASCADE di schema, jadi ikut terhapus
@@ -206,11 +242,11 @@ export async function deleteModul(moduleId: number): Promise<void> {
     throw new Error('deleteModul membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
   }
 
-  // Ambil pdf_path SEBELUM baris hilang, supaya file Storage-nya bisa ikut
-  // dibersihkan dan tidak menumpuk jadi orphan di bucket.
+  // Ambil alamat berkas SEBELUM baris hilang, supaya PDF dan video di Storage
+  // ikut dibersihkan dan tidak menumpuk tanpa pemilik di bucket.
   const { data: row } = await supabase
     .from('modules')
-    .select('pdf_path')
+    .select('pdf_path, video_url')
     .eq('id', moduleId)
     .maybeSingle()
 
@@ -224,16 +260,7 @@ export async function deleteModul(moduleId: number): Promise<void> {
     throw error
   }
 
-  const objectName = storageObjectName(row?.pdf_path as string | undefined)
-  if (objectName) {
-    try {
-      await supabase.storage.from('modul-pdf').remove([objectName])
-    } catch (cleanupError) {
-      // Baris DB sudah hilang — kegagalan bersih-bersih file jangan sampai
-      // memunculkan error seolah penghapusan modulnya gagal.
-      console.warn('[manajemen] deleteModul → gagal menghapus PDF di Storage:', cleanupError)
-    }
-  }
+  await buangBerkasYatim([row?.pdf_path as string | undefined, row?.video_url as string | undefined])
 
   try {
     localStorage.removeItem(customKey(moduleId))
@@ -435,8 +462,16 @@ export async function assignModulPdf(moduleId: number, url: string): Promise<voi
   if (!isSupabaseConfigured) {
     throw new Error('assignModulPdf membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
   }
+  let lama: string | null = null
+  try {
+    const { data } = await supabase.from('modules').select('pdf_path').eq('id', moduleId).maybeSingle()
+    lama = (data?.pdf_path as string | null) ?? null
+  } catch {
+    // tidak bisa membaca alamat lama = tidak ada yang dibersihkan
+  }
   const { error } = await supabase.from('modules').update({ pdf_path: url }).eq('id', moduleId)
   if (error) throw error
+  if (lama && lama !== url) await buangBerkasYatim([lama])
 }
 
 // Hapus satu berkas di bucket `modul-pdf` (dipanggil dari /akun/pdf, WP-C).

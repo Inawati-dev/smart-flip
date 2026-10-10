@@ -145,7 +145,7 @@ export function ResetPassword() {
     <AuthShell>
       <div className="page-fadein">
         <h1 className="font-display text-2xl sm:text-[1.75rem] font-bold text-brown tracking-tight mb-1">
-          {view === 'error' ? errorTitle : 'Buat password baru'}
+          {view === 'error' ? errorTitle : 'Buat Password Baru'}
         </h1>
         {view === 'form' && (
           <p className="text-brown-3 text-sm mb-4">
@@ -179,7 +179,7 @@ export function ResetPassword() {
 
             {submitError && <div className="text-red mb-3 text-sm">{submitError}</div>}
 
-            <label htmlFor="pw1">Password baru</label>
+            <label htmlFor="pw1">Password Baru</label>
             <div className="relative">
               <input
                 id="pw1"
@@ -213,7 +213,7 @@ export function ResetPassword() {
             {pw1Error && <div className="text-red text-[13px] mb-2">{pw1Error}</div>}
 
             <label htmlFor="pw2" className="mt-2 block">
-              Konfirmasi password
+              Konfirmasi Password
             </label>
             <div className="relative">
               <input

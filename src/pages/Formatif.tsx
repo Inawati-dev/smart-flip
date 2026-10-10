@@ -109,7 +109,7 @@ export default function Formatif() {
     <Layout>
       <div className="p-4 md:p-6">
         <h1 className="font-display text-xl font-bold text-brown mb-4">
-          Tes formatif · Pertemuan {modul.order_num} · {modul.title}
+          Tes Formatif · Pertemuan {modul.order_num} · {modul.title}
         </h1>
         <PertemuanStepper current={moduleId} basePath="/asesmen/formatif" statusOf={statusOf} />
 
@@ -136,7 +136,7 @@ export default function Formatif() {
               <p className="text-sm text-brown-3 mb-5">Tes formatif topik ini sudah tertutup untukmu.</p>
               {nextModul && (
                 <Link to={`/modul/${nextModul.id}`} className="btn btn-primary">
-                  Lanjut ke topik {idx + 2}
+                  Lanjut ke Topik {idx + 2}
                 </Link>
               )}
             </div>
@@ -146,7 +146,7 @@ export default function Formatif() {
               <p className="text-brown-2 mb-1 text-sm">Tes formatif topik ini dibuka {formatTanggal(formatifPada(moduleId)!)}.</p>
               <p className="text-brown-3 mb-3 text-xs">Tes dibuka di pertemuan kedua topik. Baca modul dan tonton videonya dulu.</p>
               <Link to={`/modul/${moduleId}`} className="btn btn-secondary">
-                Baca topik {modul.order_num}
+                Baca Topik {modul.order_num}
               </Link>
             </div>
           ) : soal.length === 0 ? (
@@ -180,7 +180,7 @@ export default function Formatif() {
                 </p>
               )}
               <button onClick={mulai} className="btn btn-primary min-w-[7.5rem]">
-                {bestScore != null ? 'Kerjakan ulang' : 'Mulai'}
+                {bestScore != null ? 'Kerjakan Ulang' : 'Mulai'}
               </button>
             </div>
           )}
@@ -198,7 +198,7 @@ export default function Formatif() {
           >
             {modal.kind === 'apresiasi' ? (
               <>
-                <h3 className="font-display text-lg font-bold text-brown mb-2">Selamat, skor {modal.score}</h3>
+                <h3 className="font-display text-lg font-bold text-brown mb-2">Selamat, Skor {modal.score}</h3>
                 <p className="text-sm text-brown-2 mb-6">
                   {nextModul
                     ? `Topik ${idx + 2} ${nextModul.title} sekarang terbuka.`
@@ -210,23 +210,23 @@ export default function Formatif() {
                   </button>
                   {nextModul && (
                     <button onClick={() => navigate(`/modul/${nextModul.id}`)} className="btn btn-primary flex-1">
-                      Lanjut ke topik {idx + 2}
+                      Lanjut ke Topik {idx + 2}
                     </button>
                   )}
                 </div>
               </>
             ) : (
               <>
-                <h3 className="font-display text-lg font-bold text-brown mb-2">Belum lulus, skor {modal.score}</h3>
+                <h3 className="font-display text-lg font-bold text-brown mb-2">Belum Lulus, Skor {modal.score}</h3>
                 <p className="text-sm text-brown-2 mb-6">
                   Syarat lulus {ambang.formatif}. Kerjakan ulang; urutan soal dan opsi diacak lagi.
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
                   <button onClick={() => navigate(`/modul/${moduleId}`)} className="btn btn-secondary flex-1">
-                    Baca topik lagi
+                    Baca Topik Lagi
                   </button>
                   <button onClick={mulai} className="btn btn-primary flex-1">
-                    Kerjakan ulang
+                    Kerjakan Ulang
                   </button>
                 </div>
               </>

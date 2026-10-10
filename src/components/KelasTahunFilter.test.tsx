@@ -41,7 +41,7 @@ describe('KelasTahunFilter', () => {
     const [, kelasTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(kelasTrigger)
     const options = screen.getAllByRole('option').map((o) => o.textContent)
-    expect(options).toEqual(['Semua kelas', 'Kelas A', 'Kelas B', 'Kelas D'])
+    expect(options).toEqual(['Semua Kelas', 'Kelas A', 'Kelas B', 'Kelas D'])
   })
 
   it('changing tahun narrows kelas options to that year only', () => {
@@ -56,7 +56,7 @@ describe('KelasTahunFilter', () => {
     const [, kelasTrigger] = screen.getAllByRole('combobox')
     fireEvent.click(kelasTrigger)
     const options = screen.getAllByRole('option').map((o) => o.textContent)
-    expect(options).toEqual(['Semua kelas', 'Kelas B', 'Kelas D'])
+    expect(options).toEqual(['Semua Kelas', 'Kelas B', 'Kelas D'])
   })
 
   it('changing tahun away from a year that had the selected kelas clears the kelas filter', () => {
