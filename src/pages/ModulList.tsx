@@ -5,7 +5,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
-import { createCourse, updateCourse, deleteCourse, type Course } from '../lib/courses'
+import { createCourse, updateCourse, deleteCourse, isMissingCourseSchema, type Course } from '../lib/courses'
 import { useTopikStatus } from '../lib/topik'
 import { moduleIdToPath } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
@@ -29,8 +29,9 @@ import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
-import { formatTanggal } from '../lib/jadwal'
+import { formatTanggal, tanggalLokal } from '../lib/jadwal'
 import { JadwalModal } from '../components/JadwalModal'
+import { fetchModules } from '../lib/modules'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -54,6 +55,26 @@ export function DosenModulRak() {
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 2800)
+  }
+
+  // Watermark pembaca PDF per mata kuliah (antrean #157).
+  const [capSibuk, setCapSibuk] = useState(false)
+  async function gantiWatermark() {
+    if (!course) return
+    setCapSibuk(true)
+    try {
+      await updateCourse(course.id, { watermark_pdf: !course.watermark_pdf })
+      await queryClient.invalidateQueries({ queryKey: ['courses'] })
+      showToast(course.watermark_pdf ? 'Watermark PDF dimatikan' : 'Watermark PDF dinyalakan')
+    } catch (e) {
+      showToast(
+        isMissingCourseSchema(e)
+          ? 'Kolom watermark belum ada. Jalankan migration_v30_watermark_pdf.sql di Supabase dulu.'
+          : (e as { message?: string } | null)?.message || 'Gagal mengubah watermark',
+      )
+    } finally {
+      setCapSibuk(false)
+    }
   }
 
   const [editId, setEditId] = useState<number | null>(null)
@@ -229,7 +250,16 @@ export function DosenModulRak() {
         <p className="text-sm text-brown-3">
           {sorted.length} topik · {jumlahPdf} punya PDF
         </p>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            aria-pressed={!!course?.watermark_pdf}
+            onClick={() => void gantiWatermark()}
+            disabled={!course || capSibuk}
+            title="Nama dan NIM pembaca ditumpangkan di tiap halaman PDF"
+            className="btn btn-secondary btn-sm"
+          >
+            Watermark PDF: {course?.watermark_pdf ? 'Aktif' : 'Mati'}
+          </button>
           <button onClick={() => setJadwalOpen(true)} disabled={!course || sorted.length === 0} className="btn btn-secondary btn-sm">
             Jadwal
           </button>
@@ -258,6 +288,7 @@ export function DosenModulRak() {
                 nomor={m.order_num}
                 judul={judul}
                 keterangan={fileName ? 'PDF' : 'Belum ada PDF'}
+                adaPdf={!!fileName}
                 aksi={
                   <>
                     <button
@@ -473,6 +504,13 @@ export function DosenModulRak() {
   )
 }
 
+// Modal jadwal untuk mata kuliah yang belum tentu sedang dipilih: topiknya diambil sendiri (antrean #159).
+function JadwalMataKuliah({ course, onClose }: { course: Course; onClose: () => void }) {
+  const { data: modules } = useQuery({ queryKey: ['modules', 'course', course.id], queryFn: () => fetchModules(course.id) })
+  if (!modules) return null
+  return <JadwalModal course={course} modules={modules} onClose={onClose} />
+}
+
 // Modal "Kelola mata kuliah" (antrean #68) — dosen daftar, ubah, hapus, dan
 // menambah mata kuliah. Dibuka dari tombol di samping MataKuliahSelect di
 // ModulList().
@@ -548,6 +586,8 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
 
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
+  // Jadwal mata kuliah mana pun bisa diatur dari modal ini (antrean #159).
+  const [jadwalCourse, setJadwalCourse] = useState<Course | null>(null)
 
   async function confirmDelete() {
     if (deleteId == null) return
@@ -574,7 +614,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
         }}
       >
         <div
-          className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
+          className="bg-ivory rounded-2xl p-5 sm:p-6 max-w-full w-[760px] my-6 max-h-[90dvh] overflow-y-auto"
           style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
         >
           <h3 className="font-display text-lg font-semibold text-brown mb-4">Kelola mata kuliah</h3>
@@ -585,12 +625,15 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
             ) : (
               courses.map((c) => (
                 <div key={c.id} className="flex items-center justify-between gap-2 flex-wrap row-divider py-2">
-                  <div className="min-w-0 flex-1 basis-40">
-                    <div className="text-sm font-semibold text-brown truncate">
+                  <div className="min-w-0 flex-1 basis-56">
+                    <div className="text-sm font-semibold text-brown break-words">
                       {c.code} · {c.name}
                     </div>
                     <div className="text-[11px] text-brown-3">
                       {c.is_active ? 'Dibuka untuk mahasiswa' : 'Ditutup, mahasiswa tidak melihatnya'}
+                    </div>
+                    <div className="text-[11px] text-brown-3">
+                      {c.mulai_kuliah ? `Mulai kuliah: ${formatTanggal(tanggalLokal(c.mulai_kuliah))}` : 'Tanggal mulai kuliah belum diatur'}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -604,6 +647,9 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
                       className="btn btn-secondary min-w-[6.5rem]"
                     >
                       {c.is_active ? 'Tutup akses' : 'Buka akses'}
+                    </button>
+                    <button onClick={() => setJadwalCourse(c)} className="btn btn-secondary min-w-[4.5rem]">
+                      Jadwal
                     </button>
                     <button onClick={() => openEdit(c)} className="btn btn-secondary min-w-[4.5rem]">
                       Ubah
@@ -647,7 +693,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
               value={formDeskripsi}
               onChange={(e) => setFormDeskripsi(e.target.value.slice(0, 200))}
               placeholder="Deskripsi (opsional)"
-              rows={2}
+              rows={3}
               className="w-full rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y mb-3"
               style={BORDER}
             />
@@ -674,6 +720,8 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
           </div>
         </div>
       </div>
+
+      {jadwalCourse && <JadwalMataKuliah course={jadwalCourse} onClose={() => setJadwalCourse(null)} />}
 
       {deleteId != null && (
         <div
@@ -770,6 +818,9 @@ export function ModulList() {
                       <ChipRak jenis="ok" label="Selesai" />
                     ) : status === 'locked' ? (
                       <ChipRak jenis="todo" label="Terkunci" />
+                    ) : pct >= 100 ? (
+                      // Antrean #161: halaman habis dibaca = "Sudah dibaca"; "Selesai" tetap berarti tes formatif lulus.
+                      <ChipRak jenis="ok" label="Sudah dibaca" />
                     ) : (
                       <ChipRak jenis="now" label={pct > 0 ? 'Sedang dibaca' : 'Siap dibaca'} />
                     )
@@ -779,6 +830,7 @@ export function ModulList() {
                       nomor={m.order_num}
                       judul={m.title}
                       keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum ada PDF'}
+                      adaPdf={!!m.pdf_path}
                       persen={pct}
                       kaki={kaki}
                       chip={chip}

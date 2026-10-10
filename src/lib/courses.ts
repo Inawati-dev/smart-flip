@@ -19,6 +19,8 @@ export interface Course {
   ambang_formatif?: number | null
   /** Tanggal pertemuan pertama 'YYYY-MM-DD' (v29, antrean #153); kosong = tanpa kunci tanggal. */
   mulai_kuliah?: string | null
+  /** Watermark nama dan NIM pembaca di pembaca PDF (v30, antrean #157). */
+  watermark_pdf?: boolean | null
 }
 
 export const DEMO_COURSES: Course[] = [
@@ -113,7 +115,7 @@ export async function createCourse(input: { code: string; name: string; descript
   return data as Course
 }
 
-export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active' | 'ambang_diagnostik' | 'ambang_formatif'>>): Promise<void> {
+export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active' | 'ambang_diagnostik' | 'ambang_formatif' | 'watermark_pdf'>>): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Mengubah mata kuliah butuh koneksi Supabase.')
   const { error } = await supabase.from('courses').update(patch).eq('id', id)
   if (error) throw error

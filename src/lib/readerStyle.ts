@@ -4,10 +4,10 @@
 // doesn't work out, this whole file plus the picker UI in Ebook.tsx is the
 // entire surface area to remove.
 
-export type ReaderStyle = 'flip3d' | 'spread' | 'slide'
+export type ReaderStyle = 'flip' | 'gulir'
 
 const KEY = 'sfp_reader_style'
-const VALID: ReaderStyle[] = ['flip3d', 'spread', 'slide']
+const VALID: ReaderStyle[] = ['flip', 'gulir']
 
 export function getReaderStyle(): ReaderStyle {
   try {
@@ -16,7 +16,7 @@ export function getReaderStyle(): ReaderStyle {
   } catch {
     // ignore — falls through to default
   }
-  return 'flip3d'
+  return 'flip'
 }
 
 export function setReaderStyle(style: ReaderStyle): void {

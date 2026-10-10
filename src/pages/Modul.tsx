@@ -84,7 +84,7 @@ export default function Modul() {
           <div className="bg-ivory border rounded-xl p-5" style={{ borderColor: 'var(--border)' }}>
             <div className="flex gap-5 flex-col sm:flex-row">
               <div className="w-[140px] flex-shrink-0">
-                <SampulTopik nomor={modul.order_num} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum ada PDF'} />
+                <SampulTopik nomor={modul.order_num} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum ada PDF'} adaPdf={hasPdf} />
               </div>
               <div className="flex flex-col gap-2">
                 {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
@@ -115,7 +115,7 @@ export default function Modul() {
                 <span className="text-xs font-semibold text-brown-3 flex-shrink-0">{pct}%</span>
               </div>
               <p className="text-xs text-brown-3 mt-1.5">
-                {prog?.currentPage ? `Halaman terakhir: ${prog.currentPage}` : 'Belum mulai membaca'}
+                {pct >= 100 ? 'Sudah dibaca' : prog?.currentPage ? `Halaman terakhir: ${prog.currentPage}` : 'Belum mulai membaca'}
               </p>
             </div>
             <div>

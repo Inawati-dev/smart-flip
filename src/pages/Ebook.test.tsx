@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
+import { render, screen, fireEvent, cleanup, waitFor, act } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, useNavigate } from 'react-router'
 import Ebook from './Ebook'
 
 afterEach(cleanup)
@@ -97,6 +97,16 @@ vi.mock('pdfjs-dist', () => ({
 
 vi.mock('pdfjs-dist/build/pdf.worker.min.js?url', () => ({ default: '' }))
 
+// Setelan watermark mata kuliah (antrean #157) dibaca dari useCourse().
+const setelan = vi.hoisted(() => ({ watermark: false }))
+vi.mock('../contexts/CourseContext', () => ({
+  useCourse: () => ({ courses: [], courseId: 1, course: { id: 1, watermark_pdf: setelan.watermark }, setCourseId: () => {}, isLoading: false }),
+}))
+
+function lebarLayar(px: number) {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, writable: true, value: px })
+}
+
 function renderEbook(moduleId: number | null) {
   const queryClient = new QueryClient()
   const path = moduleId != null ? `/ebook?book=${moduleId}` : '/ebook'
@@ -110,6 +120,13 @@ function renderEbook(moduleId: number | null) {
 }
 
 describe('Ebook', () => {
+  // Bawaan uji: layar sempit, satu halaman per balikan.
+  beforeEach(() => {
+    lebarLayar(500)
+    setelan.watermark = false
+    localStorage.clear() // pilihan gaya baca tersimpan antaruji
+  })
+
   it('shows a loading state before the PDF resolves', () => {
     renderEbook(1)
     expect(screen.getByRole('status')).toBeTruthy()
@@ -184,13 +201,75 @@ describe('Ebook', () => {
     await waitFor(() => expect(screen.getByText(/belum tersedia/)).toBeTruthy())
   })
 
-  it('shows the reading-style picker as a PillGroup and switches style on click', async () => {
+  it('pemilih gaya baca: Flip dan Gulir, pilihan berpindah saat diklik', async () => {
     renderEbook(1)
     await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
-    const group = screen.getByRole('group', { name: 'Gaya baca' })
-    expect(group).toBeTruthy()
-    const spreadPill = screen.getByRole('button', { name: 'Buka buku' })
-    fireEvent.click(spreadPill)
-    expect(spreadPill.getAttribute('aria-pressed')).toBe('true')
+    expect(screen.getByRole('group', { name: 'Gaya baca' })).toBeTruthy()
+    const gulir = screen.getByRole('button', { name: 'Gulir' })
+    fireEvent.click(gulir)
+    expect(gulir.getAttribute('aria-pressed')).toBe('true')
+    expect(document.querySelectorAll('[data-hal]').length).toBe(3)
+  })
+
+  // Antrean #148: di layar lebar buku terbuka dua halaman, sampul sendirian.
+  it('layar lebar: sampul sendiri lalu dua halaman per balikan', async () => {
+    lebarLayar(1280)
+    renderEbook(1)
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    fireEvent.click(screen.getByTitle('Berikutnya'))
+    await waitFor(() => expect(screen.getAllByText('2-3 / 3').length).toBeGreaterThan(0))
+    expect((screen.getByTitle('Berikutnya') as HTMLButtonElement).disabled).toBe(true)
+    expect(document.querySelector('.pembaca-lembar.balik')).toBeTruthy()
+    fireEvent.click(screen.getByTitle('Sebelumnya'))
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+  })
+
+  it('kendali bisa disembunyikan dengan klik tengah halaman dan dimunculkan lagi', async () => {
+    renderEbook(1)
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    const panggung = document.querySelector('.pembaca-panggung') as HTMLElement
+    panggung.getBoundingClientRect = () => ({ left: 0, top: 0, width: 400, height: 600, right: 400, bottom: 600, x: 0, y: 0, toJSON: () => ({}) })
+    fireEvent.click(panggung, { clientX: 200 })
+    expect(screen.queryByTitle('Berikutnya')).toBeNull()
+    fireEvent.click(panggung, { clientX: 390 })
+    fireEvent.click(screen.getByText(/ketuk tengah untuk kendali/))
+    expect(screen.getAllByText('2 / 3').length).toBeGreaterThan(0)
+  })
+
+  // Antrean #157: watermark hanya tampil bila dosen menyalakannya.
+  it('watermark tampil di halaman hanya bila setelan mata kuliah hidup', async () => {
+    renderEbook(1)
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    expect(document.querySelector('.pembaca-cap')).toBeNull()
+    cleanup()
+    setelan.watermark = true
+    renderEbook(1)
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    expect(document.querySelectorAll('.pembaca-cap').length).toBeGreaterThan(0)
+  })
+
+  // Temuan pemeriksa akhir #148: ganti ?book= tidak boleh menulis progres buku lama ke id buku baru.
+  it('ganti buku: progres buku lama tidak tertulis ke buku baru', async () => {
+    const queryClient = new QueryClient()
+    let pindah: (ke: string) => void = () => {}
+    function Pemindah() {
+      pindah = useNavigate()
+      return null
+    }
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/ebook?book=1']}>
+          <Pemindah />
+          <Ebook />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    fireEvent.click(screen.getByTitle('Halaman terakhir'))
+    await waitFor(() => expect(screen.getAllByText('3 / 3').length).toBeGreaterThan(0))
+    saveProgressMock.mockClear()
+    act(() => pindah('/ebook?book=2'))
+    await waitFor(() => expect(screen.getByText(/belum tersedia/)).toBeTruthy())
+    expect(saveProgressMock.mock.calls.filter(([path]) => path === 'books/modul-02.pdf')).toEqual([])
   })
 })

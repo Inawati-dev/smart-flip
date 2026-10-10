@@ -10,6 +10,8 @@ export interface KartuTopikProps {
   judul: string
   /** Teks kecil di kaki sampul, mis. "40 hal" atau "PDF". */
   keterangan?: string
+  /** Sudah punya PDF atau belum (antrean #162); bila diisi, keterangan tampil sebagai lencana dan sampul tanpa PDF dipudarkan. */
+  adaPdf?: boolean
   /** 0..100; bar progres di bawah sampul. Tidak ditampilkan bila undefined. */
   persen?: number
   /** Teks kiri di kaki kartu, mis. "12/30 hal". */
@@ -32,7 +34,7 @@ export function warnaSampul(nomor: number): string {
 
 // Sampul buku satu topik. Satu-satunya bentuk sampul PDF di aplikasi (antrean
 // #147): rak Modul, halaman topik, dan katalog Ebook memakai komponen ini.
-export function SampulTopik({ nomor, judul, keterangan }: { nomor: number; judul: string; keterangan?: string }) {
+export function SampulTopik({ nomor, judul, keterangan, adaPdf }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean }) {
   return (
     <div
       className="w-full aspect-[3/4] flex flex-col justify-between p-3.5 pl-5 rounded-[4px_10px_10px_4px]"
@@ -40,6 +42,7 @@ export function SampulTopik({ nomor, judul, keterangan }: { nomor: number; judul
         background: warnaSampul(nomor),
         color: 'var(--cover-ink)',
         boxShadow: 'inset 8px 0 0 color-mix(in srgb, black 22%, transparent), 0 6px 14px -8px color-mix(in srgb, var(--shadow-color) 35%, transparent)',
+        filter: adaPdf === false ? 'grayscale(.75) brightness(1.08)' : undefined,
       }}
     >
       <span className="text-[11px] tracking-[.08em] uppercase opacity-80">Topik {String(nomor).padStart(2, '0')}</span>
@@ -49,13 +52,23 @@ export function SampulTopik({ nomor, judul, keterangan }: { nomor: number; judul
           {judul}
         </h3>
       </div>
-      <span className="text-[11px] tracking-[.08em] uppercase opacity-80 tabular-nums">{keterangan ?? ''}</span>
+      {adaPdf == null ? (
+        <span className="text-[11px] tracking-[.08em] uppercase opacity-80 tabular-nums">{keterangan ?? ''}</span>
+      ) : (
+        <span
+          className="self-start inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold tracking-[.06em] uppercase tabular-nums"
+          style={adaPdf ? { background: 'var(--success)', color: 'var(--ivory)' } : { border: '1px dashed currentColor', opacity: 0.85 }}
+        >
+          {adaPdf && <span aria-hidden="true">✓</span>}
+          <span>{keterangan ?? (adaPdf ? 'PDF' : 'Belum ada PDF')}</span>
+        </span>
+      )}
     </div>
   )
 }
 
-export function KartuTopik({ nomor, judul, keterangan, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi }: KartuTopikProps) {
-  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} />
+export function KartuTopik({ nomor, judul, keterangan, adaPdf, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi }: KartuTopikProps) {
+  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} />
   const bisaKlik = !terkunci && (to || onClick)
   const label = `Buka topik ${nomor}: ${judul}`
   return (
