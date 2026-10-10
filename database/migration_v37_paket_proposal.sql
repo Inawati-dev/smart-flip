@@ -15,6 +15,9 @@ ALTER TABLE tugas_akhir_briefs ADD COLUMN IF NOT EXISTS bobot INT CHECK (bobot I
 CREATE UNIQUE INDEX IF NOT EXISTS tugas_akhir_briefs_paket_urutan
   ON tugas_akhir_briefs (paket_id, urutan) WHERE paket_id IS NOT NULL;
 
+-- Supaya API langsung mengenali kolom baru (pola v27 dan v33).
+NOTIFY pgrst, 'reload schema';
+
 -- Cek sesudah jalan (harus tiga baris):
 -- select column_name from information_schema.columns
 --   where table_name = 'tugas_akhir_briefs' and column_name in ('paket_id','urutan','bobot');
