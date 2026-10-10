@@ -376,32 +376,26 @@ export function Ebook() {
   return (
     <Layout>
       <div className="flex flex-col items-center p-4 md:p-8 gap-4 min-h-[calc(100vh-58px)] lg:min-h-screen">
-        {/* Lebar header mengikuti konten di bawahnya: katalog memakai w-full
-            (grid banyak kolom), reader memakai max-w-4xl. Kalau header selalu
-            max-w-4xl, di mode katalog dia jadi tersendiri ke tengah sementara
-            grid membentang penuh — tombol "Kembali" terlihat mencong ke kanan. */}
-        <div className={`w-full flex flex-col gap-1 ${moduleId != null ? 'max-w-4xl' : ''}`}>
-          <div className="flex items-center gap-1.5 text-xs text-brown-3">
-            <Link to="/modul" className="hover:underline">Modul</Link>
-            {moduleId != null && currentModule?.title && (
-              <>
-                <IconChevronRight size={12} />
-                <Link to={`/modul/${moduleId}`} className="hover:underline truncate max-w-[160px]">
+        {/* Lebar kop mengikuti konten di bawahnya: katalog w-full, pembaca max-w-4xl. */}
+        {/* Satu baris (antrean #149): remah roti di kiri berakhir di judul topik,
+            tombol kembali di kanan. Judul topik sekaligus h1 halaman. */}
+        <div className={`w-full flex items-center justify-between gap-3 flex-wrap ${moduleId != null ? 'max-w-4xl' : ''}`}>
+          <div className="flex items-center gap-1.5 text-xs text-brown-3 min-w-0">
+            <Link to="/modul" className="hover:underline flex-shrink-0">Modul</Link>
+            <IconChevronRight size={12} className="flex-shrink-0" />
+            <h1 className="text-xs font-semibold text-brown truncate">
+              {moduleId != null && currentModule?.title ? (
+                <Link to={`/modul/${moduleId}`} className="hover:underline">
                   {currentModule.title}
                 </Link>
-              </>
-            )}
-            <IconChevronRight size={12} />
-            <span>Ebook</span>
-          </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="btn btn-secondary">
-              ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
-            </Link>
-            <h1 className="text-sm font-semibold text-brown truncate ml-auto text-right">
-              {moduleId != null ? currentModule?.title || 'Ebook' : 'Ebook'}
+              ) : (
+                'Ebook'
+              )}
             </h1>
           </div>
+          <Link to={moduleId != null ? '/ebook' : '/dashboard'} className="btn btn-secondary flex-shrink-0">
+            ← {moduleId != null ? 'Katalog' : 'Kembali ke Dashboard'}
+          </Link>
         </div>
 
         {moduleId != null && status === 'ready' && (
