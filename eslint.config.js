@@ -9,7 +9,7 @@ export default tseslint.config(
   // `Deno`), not part of this Vite/React app -- same reasoning as
   // tsconfig.app.json's "src"-only include. Linting it with browser globals
   // would misfire on things that are correct Deno code.
-  { ignores: ['dist', 'legacy', 'supabase/functions'] },
+  { ignores: ['dist', 'public', 'supabase/functions'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

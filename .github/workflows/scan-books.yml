@@ -3,7 +3,7 @@ name: Scan & Update Book Catalog
 on:
   push:
     paths:
-      - 'books/**'        # trigger saat ada PDF baru di-push
+      - 'public/books/**'        # trigger saat ada PDF baru di-push
   # Jadwal 30 menit dibuang 10 Okt 2026: isi books/ hanya berubah lewat push,
   # jadi pemicu push di atas sudah cukup.
   workflow_dispatch:         # bisa dijalankan manual dari GitHub
@@ -24,11 +24,11 @@ jobs:
           python-version: '3.11'
 
       - name: Scan books & update config.json
-        run: python scan_books.py
+        run: python scripts/scan_books.py
 
       - name: Commit config.json if changed
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add config.json
+          git add public/config.json
           git diff --staged --quiet && echo "No changes." || (git commit -m "chore: auto-update book catalog [skip ci]" && git pull --rebase origin main && git push)

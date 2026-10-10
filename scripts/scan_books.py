@@ -1,6 +1,7 @@
 """
 scan_books.py
-Scan folder books/ untuk semua PDF, update config.json otomatis.
+Scan folder public/books/ untuk semua PDF, update public/config.json otomatis.
+Dijalankan dari akar repo: python scripts/scan_books.py
 Dijalankan oleh GitHub Actions — tidak perlu dijalankan manual.
 """
 
@@ -8,8 +9,10 @@ import json
 import os
 from pathlib import Path
 
-BOOKS_FOLDER = "books"
-CONFIG_FILE  = "config.json"
+# Isi public/ disalin Vite ke akar situs, jadi alamat PDF tetap books/<nama>.
+BOOKS_FOLDER = "public/books"
+BOOKS_URL    = "books"
+CONFIG_FILE  = "public/config.json"
 
 def scan():
     folder = Path(BOOKS_FOLDER)
@@ -35,12 +38,12 @@ def scan():
 
     # Daftar sama = jangan tulis ulang. Dulu lastScanned selalu berubah, jadi
     # tiap jalan menghasilkan commit (1.352 dari 1.623 commit per 10 Okt 2026).
-    if config.get("booksFolder") == BOOKS_FOLDER and config.get("pdfs") == pdfs:
+    if config.get("booksFolder") == BOOKS_URL and config.get("pdfs") == pdfs:
         print("Daftar buku tidak berubah, config.json dibiarkan.")
         return
 
     # Update daftar buku
-    config["booksFolder"] = BOOKS_FOLDER
+    config["booksFolder"] = BOOKS_URL
     config["pdfs"]        = pdfs
     config["lastScanned"] = __import__("datetime").datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 

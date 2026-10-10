@@ -13,7 +13,9 @@ Stack aktif (sejak v1.0.0): React 19 + Vite + TypeScript + Tailwind v4 + Supabas
 
 **Strangler-fig migration**: aplikasi React (`src/`) adalah sumber kebenaran sekarang — semua 18 route live 100% React Router, nol dead-end ke halaman lama. `legacy/*.html` (daftar Key Files di bawah) dipertahankan sebagai file statis fallback, TIDAK ada navigasi live yang menunjuk ke sana lagi. Struktur React: `src/pages/*.tsx` (1 file per route), `src/components/` (Layout, LogoutModal, AuthShell), `src/lib/*.ts` (data layer dual-mode: Supabase kalau `isSupabaseConfigured`, fallback localStorage `sfp_*`), `src/lib/design-tokens.ts` + `src/index.css` (dua mekanisme token CSS yang harus disinkron manual).
 
-## Key Files (legacy/ — HTML statis, sudah tidak dinavigasi live)
+## Key Files (public/legacy/ — HTML statis, sudah tidak dinavigasi live)
+
+Sejak 10 Okt 2026 (antrean #132) semua isi statis ada di `public/` (`assets/`, `books/`, `legacy/`, `manifest.json`, `sw.js`, `config.json`); Vite menyalinnya ke akar situs, jadi alamatnya tetap `/assets/...`, `/books/...`, `/legacy/...`. `scan_books.py` dan `serve.bat` ada di `scripts/`.
 ```
 index.html          — Login / halaman utama
 register.html       — Registrasi mahasiswa/dosen
@@ -201,7 +203,7 @@ Data layer (data-layer.js) live sejak v0.9.7 — USE_SUPABASE auto-detect via `t
 
 ## Local Dev
 - **React app (src/, yang aktif)**: `pnpm install` lalu `pnpm dev` — buka http://localhost:5173
-- **Legacy statis (legacy/, arsip)**: `serve.bat` (double-click dari Explorer atau jalankan di terminal) — serve folder `legacy/` doang lewat `python -m http.server 8080`, buka http://localhost:8080. Sengaja dipertahankan di root (bukan didalam `legacy/`) biar gampang di-klik dari Explorer.
+- **Legacy statis (public/legacy/, arsip)**: `scripts/serve.bat` (double-click dari Explorer atau jalankan di terminal) — serve folder `public/legacy/` doang lewat `python -m http.server 8080`, buka http://localhost:8080.
 
 <!-- ai-kemampuan-pointer -->
 ## Basis Pengetahuan
