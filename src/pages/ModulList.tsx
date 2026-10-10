@@ -592,7 +592,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
                       aria-label={`Mata kuliah ${c.name} dibuka untuk mahasiswa`}
                       title={c.is_active && jumlahDibuka <= 1 ? 'Minimal satu mata kuliah harus tetap dibuka' : undefined}
                       onClick={() => void toggleBuka(c)}
-                      disabled={togglingId === c.id || (c.is_active && jumlahDibuka <= 1)}
+                      disabled={togglingId != null || (c.is_active && jumlahDibuka <= 1)}
                       className="btn btn-secondary min-w-[6.5rem]"
                     >
                       {c.is_active ? 'Tutup akses' : 'Buka akses'}
@@ -602,8 +602,9 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
                     </button>
                     <button
                       onClick={() => setDeleteId(c.id)}
+                      disabled={c.is_active && jumlahDibuka <= 1}
                       aria-label={`Hapus mata kuliah ${c.name}`}
-                      title="Hapus mata kuliah"
+                      title={c.is_active && jumlahDibuka <= 1 ? 'Minimal satu mata kuliah harus tetap dibuka' : 'Hapus mata kuliah'}
                       className="btn btn-danger btn-icon flex-shrink-0"
                     >
                       <IconTrash size={14} />

@@ -24,19 +24,22 @@ const CourseContext = createContext<CourseContextValue>({
 
 export function CourseProvider({ children }: { children: ReactNode }) {
   // Dosen melihat juga mata kuliah yang ditutup (antrean #141); mahasiswa tidak.
-  const dosen = useAuth().role === 'dosen'
+  const { role, loading: authLoading } = useAuth()
+  const dosen = role === 'dosen'
   const { data: courses = [], isLoading } = useQuery({ queryKey: ['courses', dosen], queryFn: () => fetchCourses(dosen), staleTime: 5 * 60 * 1000 })
   const [courseId, setCourseIdState] = useState<number>(() => getSavedCourseId() ?? 1)
 
   // Kalau pilihan tersimpan tidak ada di daftar (mata kuliah dihapus atau
   // pengguna baru), jatuhkan ke mata kuliah pertama.
+  // Tunggu peran diketahui: sebelum itu daftar hanya berisi yang dibuka, jadi
+  // pilihan dosen pada mata kuliah yang ditutup akan ikut terbuang.
   useEffect(() => {
-    if (courses.length === 0) return
+    if (authLoading || courses.length === 0) return
     if (!courses.some((c) => c.id === courseId)) {
       setCourseIdState(courses[0].id)
       saveCourseId(courses[0].id)
     }
-  }, [courses, courseId])
+  }, [courses, courseId, authLoading])
 
   const value = useMemo<CourseContextValue>(
     () => ({
