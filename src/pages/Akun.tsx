@@ -102,6 +102,10 @@ export function Akun() {
   const [formNidn, setFormNidn] = useState('')
   const [formAvatar, setFormAvatar] = useState('')
   const [saving, setSaving] = useState(false)
+  // NIM mahasiswa: bisa diisi sendiri selama masih kosong, terkunci sesudah
+  // terisi (antrean #180). Akun yang dibuat tanpa NIM dulu tidak punya cara
+  // mengisinya. Kuncinya di layar saja, sama seperti isian hanya-baca sebelumnya.
+  const nimTerkunci = !isDosen && !!profile?.nim_nidn?.trim()
   const [toast, setToast] = useState<string | null>(null)
 
   function showToast(msg: string) {
@@ -143,7 +147,7 @@ export function Akun() {
     try {
       await saveProfilExtra({
         nama: trimmedNama,
-        nim: isDosen ? formNidn.trim() : profile?.nim_nidn || undefined,
+        nim: isDosen ? formNidn.trim() : nimTerkunci ? undefined : formNidn.trim() || undefined,
         avatarUrl: formAvatar,
       })
       await queryClient.invalidateQueries({ queryKey: ['profil'] })
@@ -269,10 +273,15 @@ export function Akun() {
                 <input
                   value={formNidn}
                   onChange={(e) => setFormNidn(e.target.value)}
-                  readOnly={!isDosen}
-                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown read-only:opacity-65"
+                  readOnly={nimTerkunci}
+                  maxLength={30}
+                  inputMode={isDosen ? undefined : 'numeric'}
+                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base font-normal text-brown read-only:opacity-65"
                   style={BORDER}
                 />
+                {!isDosen && !nimTerkunci && (
+                  <span className="text-[13px] font-normal text-brown-3">NIM belum terisi. Isi sekali saja: sesudah disimpan tidak bisa diubah dari sini.</span>
+                )}
               </label>
             </div>
 

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { MemoryRouter, Routes, Route } from 'react-router'
 import { Akun } from './Akun'
@@ -131,5 +131,44 @@ describe('Akun', () => {
     expect(screen.getByText('Topik Selesai')).toBeTruthy()
     expect(screen.getByText('Formatif Lulus')).toBeTruthy()
     expect(screen.getByText('Tes Diagnostik Awal')).toBeTruthy()
+  })
+
+  // Antrean #180: NIM mahasiswa bisa diisi sendiri selama kosong, lalu terkunci.
+  it('mahasiswa yang NIM-nya sudah terisi: isian NIM hanya bisa dibaca', () => {
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    fireEvent.click(screen.getByText('Ubah'))
+    const nim = screen.getByLabelText(/^NIM/) as HTMLInputElement
+    expect(nim.value).toBe('220341600001')
+    expect(nim.readOnly).toBe(true)
+    expect(screen.queryByText(/NIM belum terisi/)).toBeNull()
+  })
+
+  it('mahasiswa yang NIM-nya kosong: bisa mengisi dan nilainya ikut tersimpan', async () => {
+    localStorage.clear()
+    mockAuth.profile = { full_name: 'Mahasiswa Demo', role: 'mahasiswa', nim_nidn: null, avatar_url: null }
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    fireEvent.click(screen.getByText('Ubah'))
+    const nim = screen.getByLabelText(/^NIM/) as HTMLInputElement
+    expect(nim.readOnly).toBe(false)
+    expect(screen.getByText(/NIM belum terisi/)).toBeTruthy()
+    fireEvent.change(nim, { target: { value: '  230512345  ' } })
+    fireEvent.click(screen.getByText('Simpan'))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('sfp_profil') || '{}').nim).toBe('230512345'))
+  })
+
+  it('mahasiswa yang NIM-nya kosong dan tidak mengisinya: NIM tidak dikirim sebagai teks kosong', async () => {
+    localStorage.clear()
+    mockAuth.profile = { full_name: 'Mahasiswa Demo', role: 'mahasiswa', nim_nidn: null, avatar_url: null }
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    fireEvent.click(screen.getByText('Ubah'))
+    fireEvent.click(screen.getByText('Simpan'))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('sfp_profil') || '{}').nama).toBe('Mahasiswa Demo'))
+    expect(JSON.parse(localStorage.getItem('sfp_profil') || '{}')).not.toHaveProperty('nim')
   })
 })
