@@ -90,3 +90,10 @@ Di luar spek ini: isi enam bab, 60 soal, remedial dan pengayaan per bab, multime
 - Di tabel matriks, Sub CPMK 4.1 sampai 4.4 berada di bawah CPMK 3; baris CPMK 4 tidak muncul.
 - Nama mata kuliah ditulis tiga cara: "Metode Penelitian dan Pengembangan Proyek", "... Projek", dan "Metode Pengembangan Proyek".
 - Daftar penulis di sampul revisi (4 nama) berbeda dari naskah final (7 nama); "Violita" di revisi, "Viola" di final.
+
+## 7. Keputusan Johan (10 Okt 2026)
+
+- Keputusan 2 (batas lulus formatif): "untuk ini dosen bisa setup saja, jadi perlu ada halaman yang setting itu". Artinya batas tidak dipatok di kode. WP-2 berubah: batas formatif (dan batas diagnostik) menjadi setelan per mata kuliah yang diisi dosen di satu halaman setelan. Akibat teknis yang perlu dirancang: kolom `quiz_attempts.passed` sekarang dihitung basis data dengan angka tetap (`score >= 80`), jadi harus diganti dengan perbandingan terhadap setelan mata kuliah. SQL-nya dikirim sebagai berkas untuk ditempel Johan di SQL Editor Supabase.
+- Keputusan 5 (tanya dosen): "di abaikan saja dlu". WP-6 ditunda.
+- Keputusan 1, 3, 4, 6, 7 belum dijawab.
+
