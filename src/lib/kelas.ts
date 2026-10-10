@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { golonganDariSkor, type Golongan } from './golongan'
 
 // Mirrors manajemen.ts / forum.ts's dual-mode (Supabase when configured,
 // else localStorage) pattern. Backs src/pages/Kelas.tsx (dosen-only kelas
@@ -371,4 +372,51 @@ export function cocokFilter(k: { name: string; angkatan: number }, filter: Filte
   if (filter.tahun != null && k.angkatan !== filter.tahun) return false
   if (filter.kelas != null && k.name !== filter.kelas) return false
   return true
+}
+
+// ── Dua kelompok hasil tes diagnostik per kelas (antrean #140) ──
+export interface AnggotaGolongan {
+  id: string
+  nama: string
+  skor: number | null
+  golongan: Golongan
+}
+
+// Murni: mahasiswa per kelas dengan skor tes diagnostik TERAKHIR. `attempts`
+// harus urut waktu naik, supaya pengerjaan yang belakangan menimpa yang awal.
+export function kelompokkanGolongan(
+  profil: Array<{ id: string; full_name: string | null; class_id: string | null }>,
+  attempts: Array<{ user_id: string; score: number }>,
+): Record<string, AnggotaGolongan[]> {
+  const skor = new Map<string, number>()
+  for (const a of attempts) skor.set(a.user_id, a.score)
+  const hasil: Record<string, AnggotaGolongan[]> = {}
+  for (const p of profil) {
+    if (!p.class_id) continue
+    const s = skor.get(p.id) ?? null
+    ;(hasil[p.class_id] ??= []).push({ id: p.id, nama: p.full_name || 'Tanpa nama', skor: s, golongan: golonganDariSkor(s) })
+  }
+  for (const daftar of Object.values(hasil)) daftar.sort((a, b) => a.nama.localeCompare(b.nama))
+  return hasil
+}
+
+// Tes diagnostik berlaku per mata kuliah, jadi kelompoknya ikut `courseId`.
+// Mode demo tidak punya akun mahasiswa di kelas (lihat getKelasByDosen): kosong.
+export async function fetchGolonganKelas(classIds: string[], courseId: number): Promise<Record<string, AnggotaGolongan[]>> {
+  if (!isSupabaseConfigured || classIds.length === 0) return {}
+  const [profil, attempts] = await Promise.all([
+    supabase.from('profiles').select('id, full_name, class_id').in('class_id', classIds),
+    supabase
+      .from('quiz_attempts')
+      .select('user_id, score, attempted_at')
+      .eq('kind', 'pre')
+      .eq('course_id', courseId)
+      .order('attempted_at', { ascending: true }),
+  ])
+  if (profil.error) throw profil.error
+  if (attempts.error) throw attempts.error
+  return kelompokkanGolongan(
+    (profil.data ?? []) as Array<{ id: string; full_name: string | null; class_id: string | null }>,
+    (attempts.data ?? []) as Array<{ user_id: string; score: number }>,
+  )
 }

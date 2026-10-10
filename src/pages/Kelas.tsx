@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
+import { useCourse } from '../contexts/CourseContext'
 import { useKelasByDosen } from '../hooks/useKelas'
 import {
   createKelas,
@@ -8,6 +9,7 @@ import {
   summarizeKelas,
   parseImportCsv,
   importMahasiswaCSV,
+  fetchGolonganKelas,
   type KelasWithCount,
   type ParsedImportRow,
   type ImportResult,
@@ -16,6 +18,9 @@ import { downloadCsv } from '../lib/analitik'
 import { FileInput } from '../components/FileInput'
 import { Layout } from '../components/Layout'
 import { StatCard } from '../components/StatCard'
+import { MataKuliahSelect } from '../components/MataKuliahSelect'
+import { ChipRak } from '../components/KartuTopik'
+import { GOLONGAN_LABEL, GOLONGAN_CHIP, AMBANG_MAHIR } from '../lib/golongan'
 import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -57,6 +62,17 @@ export function KelasPanel() {
   const queryClient = useQueryClient()
   const { data: classes = [], isLoading } = useKelasByDosen(user?.id)
   const summary = summarizeKelas(classes)
+
+  // Dua kelompok hasil tes diagnostik per kelas (antrean #140). Tes itu per
+  // mata kuliah, jadi daftar ini ikut mata kuliah yang dipilih.
+  const { courseId, course } = useCourse()
+  const idKelas = classes.map((k) => k.id)
+  const { data: golongan = {} } = useQuery({
+    queryKey: ['golongan-kelas', courseId, idKelas.join(',')],
+    queryFn: () => fetchGolonganKelas(idKelas, courseId),
+    enabled: idKelas.length > 0,
+  })
+  const [golTarget, setGolTarget] = useState<KelasWithCount | null>(null)
 
   const [createOpen, setCreateOpen] = useState(false)
   const [name, setName] = useState('')
@@ -222,9 +238,12 @@ export function KelasPanel() {
       <div id="daftar-kelas" className="bg-ivory rounded-2xl border overflow-hidden scroll-mt-20" style={BORDER}>
         <div className="flex items-center justify-between px-4 py-3.5 border-b" style={BORDER}>
           <span className="text-sm font-semibold text-brown">Daftar kelas</span>
-          <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
-            + Buat kelas baru
-          </button>
+          <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
+            <MataKuliahSelect size="sm" />
+            <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
+              + Buat kelas baru
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -250,12 +269,16 @@ export function KelasPanel() {
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Nama Kelas</th>
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kode Kelas</th>
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Mahasiswa</th>
+                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-52">Tes diagnostik</th>
                           <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map((k) => {
                           const full = k.studentCount >= k.max_students
+                          const anggota = golongan[k.id] ?? []
+                          const cepat = anggota.filter((a) => a.golongan === 'mahir').length
+                          const dalam = anggota.filter((a) => a.golongan === 'remedial').length
                           return (
                             <tr key={k.id} className="row-divider">
                               <td className="px-3 py-2.5 font-medium text-brown min-w-[140px]">{k.name}</td>
@@ -280,6 +303,16 @@ export function KelasPanel() {
                                 >
                                   {k.studentCount}/{k.max_students}
                                 </span>
+                              </td>
+                              <td className="px-3 py-2.5">
+                                <button
+                                  onClick={() => setGolTarget(k)}
+                                  title="Lihat dua kelompok hasil tes diagnostik"
+                                  aria-label={`Hasil tes diagnostik kelas ${k.name}: ${GOLONGAN_LABEL.mahir} ${cepat}, ${GOLONGAN_LABEL.remedial} ${dalam}`}
+                                  className="btn btn-secondary whitespace-nowrap"
+                                >
+                                  Cepat {cepat} · Mendalam {dalam}
+                                </button>
                               </td>
                               <td className="px-3 py-2.5 text-center">
                                 <div className="inline-flex items-center justify-center gap-1.5">
@@ -423,6 +456,64 @@ export function KelasPanel() {
                 {deleting ? 'Menghapus…' : 'Ya, Hapus'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dua kelompok hasil tes diagnostik satu kelas (antrean #140) */}
+      {golTarget && (
+        <div
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setGolTarget(null)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-5 max-w-2xl w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h3 className="text-base font-semibold text-brown min-w-0">
+                Hasil tes diagnostik · {golTarget.name} ({golTarget.angkatan})
+              </h3>
+              <button onClick={() => setGolTarget(null)} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
+                <IconX size={15} />
+              </button>
+            </div>
+            <p className="text-xs text-brown-3 mb-4">
+              {course?.name ? `${course.name}. ` : ''}Skor {AMBANG_MAHIR} ke atas masuk {GOLONGAN_LABEL.mahir}, di bawah itu {GOLONGAN_LABEL.remedial}.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {(['remedial', 'mahir'] as const).map((g) => {
+                const daftar = (golongan[golTarget.id] ?? []).filter((a) => a.golongan === g)
+                return (
+                  <div key={g} className="border rounded-xl p-3 min-w-0" style={BORDER}>
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
+                      <ChipRak jenis={GOLONGAN_CHIP[g]} label={GOLONGAN_LABEL[g]} />
+                      <span className="text-xs text-brown-3">{daftar.length} mahasiswa</span>
+                    </div>
+                    {daftar.length === 0 ? (
+                      <p className="text-xs text-brown-3">Belum ada.</p>
+                    ) : (
+                      <ul className="flex flex-col gap-1">
+                        {daftar.map((a) => (
+                          <li key={a.id} className="flex justify-between gap-2 text-sm text-brown-2">
+                            <span className="truncate">{a.nama}</span>
+                            <span className="tabular-nums text-brown-3 flex-shrink-0">{a.skor}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            {(() => {
+              const belum = (golongan[golTarget.id] ?? []).filter((a) => a.golongan === 'belum')
+              return belum.length > 0 ? (
+                <p className="text-xs text-brown-3 mt-3">
+                  Belum mengerjakan ({belum.length}): {belum.map((a) => a.nama).join(', ')}
+                </p>
+              ) : null
+            })()}
           </div>
         </div>
       )}

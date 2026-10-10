@@ -12,6 +12,7 @@ import {
   tahunUnik,
   namaKelasUnik,
   cocokFilter,
+  kelompokkanGolongan,
   type KelasWithCount,
 } from './kelas'
 
@@ -291,5 +292,34 @@ describe('importMahasiswaCSV (no Supabase configured)', () => {
 
   it('rejects an empty student list too', async () => {
     await expect(importMahasiswaCSV('class-1', [])).rejects.toThrow()
+  })
+})
+
+// Antrean #140: dua kelompok hasil tes diagnostik per kelas, batas 80.
+describe('kelompokkanGolongan', () => {
+  it('memakai skor terakhir, memisah per kelas, dan menandai yang belum tes', () => {
+    const hasil = kelompokkanGolongan(
+      [
+        { id: 'u1', full_name: 'Budi', class_id: 'A' },
+        { id: 'u2', full_name: 'Ani', class_id: 'A' },
+        { id: 'u3', full_name: null, class_id: 'A' },
+        { id: 'u4', full_name: 'Cici', class_id: 'B' },
+        { id: 'u5', full_name: 'Tanpa Kelas', class_id: null },
+      ],
+      [
+        { user_id: 'u1', score: 40 },
+        { user_id: 'u1', score: 80 },
+        { user_id: 'u2', score: 79 },
+        { user_id: 'u4', score: 100 },
+        { user_id: 'orang-luar', score: 90 },
+      ],
+    )
+    expect(Object.keys(hasil).sort()).toEqual(['A', 'B'])
+    expect(hasil.A.map((a) => [a.nama, a.skor, a.golongan])).toEqual([
+      ['Ani', 79, 'remedial'],
+      ['Budi', 80, 'mahir'],
+      ['Tanpa nama', null, 'belum'],
+    ])
+    expect(hasil.B).toEqual([{ id: 'u4', nama: 'Cici', skor: 100, golongan: 'mahir' }])
   })
 })
