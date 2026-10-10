@@ -337,33 +337,38 @@ export function kabarPaket(
   return kabar.sort((a, b) => new Date(b.waktu).getTime() - new Date(a.waktu).getTime())
 }
 
-/** Kabar yang waktunya sesudah `dilihat` (ISO); semua baru bila belum pernah dilihat. */
-export function kabarBaru(kabar: KabarPaket[], dilihat: string | null): KabarPaket[] {
-  if (!dilihat) return kabar
-  const batas = new Date(dilihat).getTime()
-  return kabar.filter((k) => new Date(k.waktu).getTime() > batas)
+/** Kabar yang waktunya sesudah `batas` (ISO); semua baru bila batas kosong atau tidak terbaca sebagai waktu. */
+export function kabarBaru(kabar: KabarPaket[], batas: string | null): KabarPaket[] {
+  const t = batas ? new Date(batas).getTime() : NaN
+  if (Number.isNaN(t)) return kabar
+  return kabar.filter((k) => new Date(k.waktu).getTime() > t)
 }
 
-// ponytail: penanda "sudah dilihat" disimpan per peramban (localStorage). Di perangkat
-// lain kabar lama tampil baru lagi; pindah ke kolom di profiles bila itu mengganggu.
-const KUNCI_DILIHAT = 'sfp_kabar_paket_dilihat'
+// ponytail: penanda disimpan per peramban (localStorage), per pengguna dan mata
+// kuliah. Di perangkat lain kabar lama tampil baru lagi; pindah ke kolom di
+// profiles bila itu mengganggu.
+export type JenisPenanda = 'dilihat' | 'pita'
 
-export function bacaKabarDilihat(): string | null {
+export function kunciPenandaKabar(jenis: JenisPenanda, pemilik: string): string {
+  return `sfp_kabar_paket_${jenis}:${pemilik}`
+}
+
+export function bacaPenandaKabar(jenis: JenisPenanda, pemilik: string): string | null {
   try {
-    return localStorage.getItem(KUNCI_DILIHAT)
+    return localStorage.getItem(kunciPenandaKabar(jenis, pemilik))
   } catch {
     return null
   }
 }
 
-export function simpanKabarDilihat(now: Date = new Date()): string {
-  const iso = now.toISOString()
+/** Simpan waktu kabar terbaru yang sudah dilihat; mengembalikan nilai yang sama untuk dipakai langsung. */
+export function simpanPenandaKabar(jenis: JenisPenanda, pemilik: string, waktuKabar: string): string {
   try {
-    localStorage.setItem(KUNCI_DILIHAT, iso)
+    localStorage.setItem(kunciPenandaKabar(jenis, pemilik), waktuKabar)
   } catch {
     // penyimpanan penuh atau diblokir: penanda hanya berlaku sampai halaman dimuat ulang
   }
-  return iso
+  return waktuKabar
 }
 
 /** Dosen: hapus keempat brief paket dalam satu perintah, jadi tidak bisa terhapus sebagian. */

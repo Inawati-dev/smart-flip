@@ -42,7 +42,7 @@ export function KabarTerbaruCard() {
             <li key={`${k.jenis}-${k.urutan}`} className="rounded-xl border px-3.5 py-3 flex flex-col gap-1" style={{ ...BORDER, background: isBaru ? 'var(--ivory)' : 'var(--bg3)' }}>
               <span className="text-sm font-semibold text-brown">{k.judul}</span>
               <span className="text-[13px] text-brown-2 tabular-nums">{k.ket}</span>
-              <Link to="/mini-projek" className="self-start inline-flex items-center min-h-11 text-sm font-semibold no-underline" style={{ color: 'var(--btn-bg)' }}>
+              <Link to="/mini-projek" className="self-start inline-flex items-center min-h-11 text-sm font-semibold text-brown underline">
                 {k.jenis === 'dinilai' ? 'Lihat Rincian Nilai' : 'Buka Mini Projek'}
               </Link>
             </li>

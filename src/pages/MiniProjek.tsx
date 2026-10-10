@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
@@ -47,9 +47,13 @@ function Lencana({ status, children }: { status: StatusBab; children: ReactNode 
 
 export function MiniProjek() {
   const queryClient = useQueryClient()
-  const { paket, kiriman, memuat, modulesUrut, topikTerbuka, baru, tandaiDilihat } = usePaketMhs()
-  // Pita di atas halaman: nilai terbaru yang belum dilihat (antrean #189).
-  const nilaiBaru = baru.find((k) => k.jenis === 'dinilai') ?? null
+  const { paket, kiriman, memuat, modulesUrut, topikTerbuka, baru, nilaiBaru, tandaiDilihat, tutupPita } = usePaketMhs()
+  // Membuka halaman ini berarti kabarnya sudah dilihat: titik di menu dan lencana
+  // di Dashboard padam. Pita nilai punya penanda sendiri dan bertahan sampai ditutup.
+  const adaKabarBaru = baru.length > 0
+  useEffect(() => {
+    if (adaKabarBaru) tandaiDilihat()
+  }, [adaKabarBaru, tandaiDilihat])
 
   const [kirimUrutan, setKirimUrutan] = useState<number | null>(null)
   const [rincianUrutan, setRincianUrutan] = useState<number | null>(null)
@@ -114,12 +118,12 @@ export function MiniProjek() {
                     className="btn btn-primary btn-sm"
                     onClick={() => {
                       setRincianUrutan(nilaiBaru.urutan)
-                      tandaiDilihat()
+                      tutupPita()
                     }}
                   >
                     Lihat Rincian Nilai
                   </button>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={tandaiDilihat}>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={tutupPita}>
                     Tutup
                   </button>
                 </div>

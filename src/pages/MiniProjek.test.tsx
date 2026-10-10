@@ -94,8 +94,9 @@ beforeEach(() => {
   state.subs = {}
   state.mulai = hariLalu(1)
   state.submit = vi.fn(async () => ({}))
-  // Bawaan: semua kabar sudah dilihat, jadi pita kabar baru tidak tampil.
-  localStorage.setItem('sfp_kabar_paket_dilihat', '2999-01-01T00:00:00.000Z')
+  // Bawaan: semua kabar sudah dilihat dan pita sudah ditutup, jadi pita tidak tampil.
+  localStorage.clear()
+  vi.spyOn(Storage.prototype, 'getItem').mockImplementation((k) => (k.startsWith('sfp_kabar_paket_') ? '2999-01-01T00:00:00.000Z' : null))
 })
 
 describe('MiniProjek', () => {
@@ -179,14 +180,27 @@ describe('MiniProjek', () => {
   })
 
   it('nilai yang belum dilihat memunculkan pita; Tutup menghilangkannya dan menandai sudah dilihat', async () => {
-    localStorage.removeItem('sfp_kabar_paket_dilihat')
+    vi.mocked(Storage.prototype.getItem).mockRestore()
     state.subs = { b1: kirimanContoh('b1', { total: 82, scores: [80, 80, 80, 90, 85], feedback: 'Rapi.', graded_at: '2026-10-08T00:00:00Z' }) }
     tampil()
     const pita = await screen.findByRole('status')
     expect(pita.textContent).toContain('Bab 1 · Pendahuluan sudah dinilai. Nilai 82 dari 100.')
     fireEvent.click(within(pita).getByRole('button', { name: 'Tutup' }))
     await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
-    expect(localStorage.getItem('sfp_kabar_paket_dilihat')).toBeTruthy()
+    // Penanda berisi waktu kabar (jam server), bukan jam perangkat, dan dipisah per pengguna dan mata kuliah.
+    const kunci = Object.keys(localStorage).filter((k) => k.startsWith('sfp_kabar_paket_'))
+    expect(kunci.some((k) => k.startsWith('sfp_kabar_paket_pita:'))).toBe(true)
+    expect(kunci.some((k) => k.startsWith('sfp_kabar_paket_dilihat:'))).toBe(true)
+    expect(kunci.map((k) => localStorage.getItem(k))).toEqual(kunci.map(() => '2026-10-08T00:00:00Z'))
+  })
+
+  it('membuka halaman menandai kabar sudah dilihat walau belum ada nilai (titik di menu padam)', async () => {
+    vi.mocked(Storage.prototype.getItem).mockRestore()
+    tampil() // Topik 1 dibuka kemarin: satu kabar "Bab 1 terbuka", tanpa pita
+    await screen.findByRole('button', { name: 'Kirim Bab 1 (.docx)' })
+    expect(screen.queryByRole('status')).toBeNull()
+    await waitFor(() => expect(Object.keys(localStorage).some((k) => k.startsWith('sfp_kabar_paket_dilihat:'))).toBe(true))
+    expect(Object.keys(localStorage).some((k) => k.startsWith('sfp_kabar_paket_pita:'))).toBe(false)
   })
 
   it('bab terkirim menampilkan Kirim Ulang', async () => {

@@ -159,5 +159,6 @@ describe('kabar paket', () => {
     expect(kabarBaru(kabar, null)).toHaveLength(2)
     expect(kabarBaru(kabar, '2026-10-25T00:00:00.000Z').map((k) => k.urutan)).toEqual([2])
     expect(kabarBaru(kabar, '2026-12-01T00:00:00.000Z')).toEqual([])
+    expect(kabarBaru(kabar, 'abc')).toHaveLength(2) // penanda rusak tidak menyembunyikan kabar
   })
 })
