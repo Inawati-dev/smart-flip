@@ -34,7 +34,12 @@ function writeLocalProfil(data: Partial<ProfilExtra>): void {
   // not clobber an existing stored value, since {...existing, jabatan: undefined}
   // still sets the key, overwriting whatever was there.
   const defined = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined))
-  localStorage.setItem(LS_KEY, JSON.stringify({ ...existing, ...defined }))
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify({ ...existing, ...defined }))
+  } catch {
+    // Penyimpanan peramban penuh atau diblokir: cermin lokal dilewati, supaya
+    // simpan yang sudah masuk basis data tidak dilaporkan gagal (antrean #176).
+  }
 }
 
 // Mirrors legacy/data-layer.js getProfil(). Note: prodi/angkatan/jabatan/fakultas
@@ -90,26 +95,28 @@ export interface SaveProfilInput {
 }
 
 // Mirrors legacy/data-layer.js saveProfil(). Saves the core (real-schema)
-// full_name/nim_nidn fields to Supabase, and always mirrors the full payload to
-// localStorage so prodi/angkatan/jabatan/fakultas survive even when Supabase
-// rejects the unknown columns.
+// full_name/nim_nidn/avatar_url fields to Supabase, and mirrors the payload to
+// localStorage so prodi/angkatan/jabatan/fakultas survive.
+//
+// Antrean #176: dulu memakai upsert tanpa kolom `role`. `role` wajib isi tanpa
+// nilai bawaan (schema.sql), dan Postgres memeriksa wajib-isi pada baris yang
+// diusulkan SEBELUM menangani bentrok kunci, jadi upsert itu selalu ditolak;
+// galatnya tertelan dan layar tetap menulis "berhasil". Baris profil selalu
+// sudah ada (dibuat saat daftar), jadi cukup `update`. Kegagalan dilempar
+// supaya pemanggil menampilkannya apa adanya.
 export async function saveProfilExtra(data: SaveProfilInput): Promise<void> {
   if (isSupabaseConfigured) {
-    try {
-      const { data: userData } = await supabase.auth.getUser()
-      const uid = userData.user?.id
-      if (uid) {
-        const row: { id: string; full_name: string; nim_nidn?: string; avatar_url?: string } = {
-          id: uid,
-          full_name: data.nama,
-          nim_nidn: data.nim,
-        }
-        if (data.avatarUrl !== undefined) row.avatar_url = data.avatarUrl
-        await supabase.from('profiles').upsert(row)
-      }
-    } catch {
-      // ignore — still mirrored to localStorage below
+    const { data: userData } = await supabase.auth.getUser()
+    const uid = userData.user?.id
+    if (!uid) throw new Error('Sesi berakhir. Masuk lagi lalu ulangi.')
+    const row: { full_name: string; nim_nidn?: string; avatar_url?: string } = {
+      full_name: data.nama,
+      nim_nidn: data.nim,
     }
+    if (data.avatarUrl !== undefined) row.avatar_url = data.avatarUrl
+    const { data: berubah, error } = await supabase.from('profiles').update(row).eq('id', uid).select('id')
+    if (error) throw new Error(error.message)
+    if (!berubah || berubah.length === 0) throw new Error('Profil tidak ditemukan, perubahan tidak tersimpan.')
   }
   writeLocalProfil({
     nama: data.nama,

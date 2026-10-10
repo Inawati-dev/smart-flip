@@ -31,7 +31,39 @@ import { IconUser, IconGraduationCap, IconEdit } from '../components/icons'
 // tab Kelas dan Pengaturan (percobaan sebelumnya di hari yang sama) dibuang,
 // ?tab=kelas dialihkan ke halaman /kelas yang baru (lihat Kelas.tsx).
 const BORDER = { borderColor: 'var(--border)' } as const
-const MAX_AVATAR_BYTES = 2 * 1024 * 1024
+const SISI_FOTO = 256
+
+// Foto profil dikecilkan di peramban jadi persegi 256 px JPEG (antrean #176):
+// yang disimpan di kolom profiles.avatar_url adalah teks data URL, dan foto
+// kamera utuh membuatnya berukuran megabita di tiap muat profil. Dipotong di
+// tengah supaya sama dengan tampilan lingkaran (`object-cover`).
+function kecilkanFoto(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    img.onload = () => {
+      URL.revokeObjectURL(url)
+      try {
+        const sisi = Math.min(img.naturalWidth, img.naturalHeight)
+        const kanvas = document.createElement('canvas')
+        kanvas.width = kanvas.height = SISI_FOTO
+        const ctx = kanvas.getContext('2d')
+        if (!ctx || !sisi) return reject(new Error('Gambar tidak bisa dibaca'))
+        ctx.fillStyle = '#fff' // PNG tembus pandang jadi berlatar putih, bukan hitam
+        ctx.fillRect(0, 0, SISI_FOTO, SISI_FOTO)
+        ctx.drawImage(img, (img.naturalWidth - sisi) / 2, (img.naturalHeight - sisi) / 2, sisi, sisi, 0, 0, SISI_FOTO, SISI_FOTO)
+        resolve(kanvas.toDataURL('image/jpeg', 0.85))
+      } catch (e) {
+        reject(e) // kanvas melempar: jangan biarkan pemanggil menggantung
+      }
+    }
+    img.onerror = () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('Gambar tidak bisa dibaca'))
+    }
+    img.src = url
+  })
+}
 
 function initialsOf(name: string | undefined): string {
   if (!name?.trim()) return '?'
@@ -86,21 +118,19 @@ export function Akun() {
 
   // FileInput mengganti input polos (antrean #54): ia sudah menyaring ukuran
   // sendiri lewat maxSizeMb, jadi di sini cukup terima File langsung — dan
-  // karena alurnya langsung baca ke dataURL (bukan disimpan sebagai draft),
-  // file yang dikirim balik ke <FileInput> selalu null.
-  function handleAvatarPick(file: File | null) {
+  // karena alurnya langsung dikecilkan ke dataURL (bukan disimpan sebagai
+  // draft), file yang dikirim balik ke <FileInput> selalu null.
+  async function handleAvatarPick(file: File | null) {
     if (!file) return
     if (!file.type.startsWith('image/')) {
       showToast('File harus berupa gambar')
       return
     }
-    if (file.size > MAX_AVATAR_BYTES) {
-      showToast('Ukuran gambar maksimal 2MB')
-      return
+    try {
+      setFormAvatar(await kecilkanFoto(file))
+    } catch {
+      showToast('Gambar tidak bisa dibaca. Pilih berkas JPG atau PNG lain.')
     }
-    const reader = new FileReader()
-    reader.onload = () => setFormAvatar(String(reader.result))
-    reader.readAsDataURL(file)
   }
 
   async function handleSave() {
@@ -120,6 +150,9 @@ export function Akun() {
       await refreshProfile()
       setEditOpen(false)
       showToast('Profil berhasil disimpan')
+    } catch (e) {
+      // Modal dibiarkan terbuka supaya isian tidak hilang (antrean #176).
+      showToast(`Profil gagal disimpan: ${(e as { message?: string } | null)?.message || 'coba lagi'}`)
     } finally {
       setSaving(false)
     }
@@ -213,7 +246,7 @@ export function Akun() {
               <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {formAvatar ? <img src={formAvatar} alt={formNama} className="w-full h-full object-cover" /> : initialsOf(formNama)}
               </div>
-              <FileInput accept="image/*" label="Pilih Foto" maxSizeMb={5} file={null} onChange={handleAvatarPick} />
+              <FileInput accept="image/*" label="Pilih Foto" maxSizeMb={20} file={null} onChange={(f) => void handleAvatarPick(f)} />
               {formAvatar && (
                 <button type="button" onClick={() => setFormAvatar('')} className="text-xs text-brown-3 underline">
                   Hapus

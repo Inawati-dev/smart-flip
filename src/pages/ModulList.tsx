@@ -5,7 +5,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
-import { createCourse, updateCourse, deleteCourse, isMissingCourseSchema, type Course } from '../lib/courses'
+import { createCourse, updateCourse, deleteCourse, type Course } from '../lib/courses'
 import { useTopikStatus } from '../lib/topik'
 import { moduleIdToPath } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
@@ -31,6 +31,7 @@ import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
 import { formatTanggal, tanggalLokal } from '../lib/jadwal'
 import { JadwalModal } from '../components/JadwalModal'
+import { WatermarkModal, LABEL_CAP, pilihanCap } from '../components/WatermarkModal'
 import { fetchModules } from '../lib/modules'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -57,25 +58,8 @@ export function DosenModulRak() {
     setTimeout(() => setToast(null), 2800)
   }
 
-  // Watermark pembaca PDF per mata kuliah (antrean #157).
-  const [capSibuk, setCapSibuk] = useState(false)
-  async function gantiWatermark() {
-    if (!course) return
-    setCapSibuk(true)
-    try {
-      await updateCourse(course.id, { watermark_pdf: !course.watermark_pdf })
-      await queryClient.invalidateQueries({ queryKey: ['courses'] })
-      showToast(course.watermark_pdf ? 'Watermark PDF dimatikan' : 'Watermark PDF dinyalakan')
-    } catch (e) {
-      showToast(
-        isMissingCourseSchema(e)
-          ? 'Kolom watermark belum ada. Jalankan migration_v30_watermark_pdf.sql di Supabase dulu.'
-          : (e as { message?: string } | null)?.message || 'Gagal mengubah watermark',
-      )
-    } finally {
-      setCapSibuk(false)
-    }
-  }
+  // Watermark pembaca PDF per mata kuliah (antrean #157); isinya dipilih di modal (#177).
+  const [capOpen, setCapOpen] = useState(false)
 
   const [editId, setEditId] = useState<number | null>(null)
   const [creatingNew, setCreatingNew] = useState(false)
@@ -263,13 +247,12 @@ export function DosenModulRak() {
         </p>
         <div className="flex items-center gap-2 flex-wrap">
           <button
-            aria-pressed={!!course?.watermark_pdf}
-            onClick={() => void gantiWatermark()}
-            disabled={!course || capSibuk}
-            title="Nama dan NIM pembaca ditumpangkan di tiap halaman PDF"
+            onClick={() => setCapOpen(true)}
+            disabled={!course}
+            title="Atur isi watermark di tiap halaman PDF: mati, nama dan NIM pembaca, teks, atau gambar"
             className="btn btn-secondary btn-sm"
           >
-            Watermark PDF: {course?.watermark_pdf ? 'Aktif' : 'Mati'}
+            Watermark PDF: {LABEL_CAP[pilihanCap(course)]}
           </button>
           <button onClick={() => setJadwalOpen(true)} disabled={!course || sorted.length === 0} className="btn btn-secondary btn-sm">
             Jadwal
@@ -284,6 +267,7 @@ export function DosenModulRak() {
       </div>
       <UrutkanTopikModal open={urutkanOpen} modules={sorted} onClose={() => setUrutkanOpen(false)} onSimpan={simpanUrutan} />
       {jadwalOpen && course && <JadwalModal course={course} modules={sorted} onClose={() => setJadwalOpen(false)} />}
+      {capOpen && course && <WatermarkModal course={course} onClose={() => setCapOpen(false)} onSaved={showToast} />}
       {sorted.length === 0 ? (
         <p className="text-brown-3">Belum ada topik. Tambah topik pertama.</p>
       ) : (

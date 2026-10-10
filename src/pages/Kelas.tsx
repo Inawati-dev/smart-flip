@@ -22,7 +22,7 @@ import { FileInput } from '../components/FileInput'
 import { Layout } from '../components/Layout'
 import { StatCard } from '../components/StatCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { PillGroup } from '../components/PillGroup'
+import { Select } from '../components/Select'
 import { ChipRak } from '../components/KartuTopik'
 import { GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 import { useAmbang } from '../lib/ambang'
@@ -131,10 +131,13 @@ export function KelasPanel() {
   const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: SeksiMahasiswa[] } | null>(null)
   const jumlahGolongan = (g: 'mahir' | 'remedial') =>
     classes.reduce((n, k) => n + (golongan[k.id] ?? []).filter((a) => a.golongan === g).length, 0)
-  // Angkatan jadi pil penyaring di kop daftar (antrean #151), bukan satu kartu
-  // per tahun: jumlah kartu tidak lagi bertambah tiap angkatan baru.
-  const [tahun, setTahun] = useState<number | null>(null)
+  // Angkatan jadi satu dropdown penyaring di kop daftar (antrean #151, lalu
+  // #175 "dibuat dropdown saja"): bilahnya tidak memanjang tiap angkatan baru.
+  const [tahunDipilih, setTahun] = useState<number | null>(null)
   const daftarTahun = Array.from(new Set(classes.map((k) => k.angkatan))).sort((a, b) => b - a)
+  // Angkatan terpilih yang sudah tidak ada (kelasnya dihapus) dianggap "semua",
+  // supaya daftar tidak kosong tanpa dropdown untuk membatalkannya.
+  const tahun = tahunDipilih != null && daftarTahun.includes(tahunDipilih) ? tahunDipilih : null
   const kelasTersaring = tahun == null ? classes : classes.filter((k) => k.angkatan === tahun)
   const seksiGolongan = (g: 'mahir' | 'remedial'): SeksiMahasiswa[] =>
     [...kelasTersaring]
@@ -371,7 +374,7 @@ export function KelasPanel() {
       {/* Dua baris kartu (antrean #151). Baris 1: dua golongan hasil tes
           diagnostik, urutannya sama dengan Gambar 1.1 (Belajar mendalam di
           kiri, Jalur cepat di kanan); klik menyaring daftar di bawah. Baris 2:
-          total kelas dan mahasiswa. Angkatan pindah jadi pil di kop daftar. */}
+          total kelas dan mahasiswa. Angkatan pindah jadi dropdown di kop daftar. */}
       <div className="grid grid-cols-2 gap-3 mb-3">
         <StatCard bar="var(--warning)" val={String(jumlahGolongan('remedial'))} label={GOLONGAN_LABEL.remedial} onClick={() => pilihGolongan('remedial')} aktif={filterGol === 'remedial'} />
         <StatCard bar="var(--success)" val={String(jumlahGolongan('mahir'))} label={GOLONGAN_LABEL.mahir} onClick={() => pilihGolongan('mahir')} aktif={filterGol === 'mahir'} />
@@ -395,30 +398,27 @@ export function KelasPanel() {
               </button>
             )}
             <MataKuliahSelect size="sm" />
+            {daftarTahun.length > 1 && (
+              <Select
+                size="sm"
+                aria-label="Saring angkatan"
+                value={tahun == null ? 'semua' : String(tahun)}
+                onChange={(v) => setTahun(v === 'semua' ? null : parseInt(v, 10))}
+                options={[
+                  { value: 'semua', label: `Semua Angkatan (${summary.totalStudents})` },
+                  ...daftarTahun.map((t) => ({
+                    value: String(t),
+                    label: `Angkatan ${t} (${classes.filter((k) => k.angkatan === t).reduce((n, k) => n + k.studentCount, 0)})`,
+                  })),
+                ]}
+              />
+            )}
             <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
               + Buat Kelas Baru
             </button>
           </div>
         </div>
 
-        {daftarTahun.length > 1 && (
-          <div className="px-4 py-2.5 border-b overflow-x-auto" style={BORDER}>
-            <PillGroup
-              size="sm"
-              ariaLabel="Saring angkatan"
-              value={tahun == null ? 'semua' : String(tahun)}
-              onChange={(v) => setTahun(v === 'semua' ? null : parseInt(v, 10))}
-              options={[
-                { value: 'semua', label: 'Semua Angkatan', badge: summary.totalStudents },
-                ...daftarTahun.map((t) => ({
-                  value: String(t),
-                  label: `Angkatan ${t}`,
-                  badge: classes.filter((k) => k.angkatan === t).reduce((n, k) => n + k.studentCount, 0),
-                })),
-              ]}
-            />
-          </div>
-        )}
         {isLoading ? (
           <div className="text-center py-8 text-brown-3 text-sm">Memuat…</div>
         ) : classes.length === 0 ? (

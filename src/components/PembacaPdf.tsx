@@ -6,6 +6,7 @@ import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
+import type { Course } from '../lib/courses'
 import { getReaderStyle, setReaderStyle, type ReaderStyle } from '../lib/readerStyle'
 import { IconWarning, IconSkipBack, IconSkipForward } from './icons'
 
@@ -45,18 +46,41 @@ async function renderHalaman(doc: pdfjsLib.PDFDocumentProxy, num: number): Promi
 
 /** Watermark (antrean #157): teks diagonal berulang sebagai latar SVG di atas halaman. */
 export function capAir(teks: string): string {
-  const aman = teks.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  // Karakter kontrol (ikut tertempel dari PDF/Word) tidak sah di XML: satu saja
+  // membuat SVG gagal dibaca dan halaman tampil tanpa watermark (antrean #177).
+  // eslint-disable-next-line no-control-regex
+  const aman = teks.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F￾￿]/g, '').replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
   const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='340' height='220'><text x='170' y='110' text-anchor='middle' transform='rotate(-30 170 110)' font-family='sans-serif' font-size='15' font-weight='600' fill='#000' fill-opacity='0.14'>${aman}</text></svg>`
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`
+}
+
+// Gambar watermark datang dari basis data dan masuk ke CSS `url("...")`, jadi
+// hanya diterima bila bentuknya persis data URL PNG base64 (antrean #177).
+export const POLA_GAMBAR_CAP = /^data:image\/png;base64,[A-Za-z0-9+/]+=*$/
+
+type SetelanCap = Pick<Course, 'watermark_pdf' | 'watermark_jenis' | 'watermark_teks' | 'watermark_gambar'>
+
+/**
+ * Latar watermark sesuai setelan mata kuliah (antrean #157, #177); null bila
+ * dimatikan dosen. Jenis teks atau gambar yang isinya kosong atau tidak sah
+ * jatuh ke nama dan NIM pembaca, supaya halaman tidak tampil tanpa watermark.
+ */
+export function pilihCapAir(course: SetelanCap | null | undefined, namaNim: string): string | null {
+  if (!course?.watermark_pdf) return null
+  if (course.watermark_jenis === 'gambar' && POLA_GAMBAR_CAP.test(course.watermark_gambar ?? '')) return `url("${course.watermark_gambar}")`
+  if (course.watermark_jenis === 'teks' && course.watermark_teks?.trim()) return capAir(course.watermark_teks.trim())
+  return capAir(namaNim || 'SMART-FLIP 5.0')
 }
 
 /** Watermark sesuai setelan mata kuliah dan akun yang masuk; null bila dimatikan dosen. */
 export function useCapAir(): string | null {
   const { profile } = useAuth()
   const { course } = useCourse()
+  const namaNim = [profile?.full_name, profile?.nim_nidn].filter(Boolean).join(' · ')
   return useMemo(
-    () => (course?.watermark_pdf ? capAir([profile?.full_name, profile?.nim_nidn].filter(Boolean).join(' · ') || 'SMART-FLIP 5.0') : null),
-    [course?.watermark_pdf, profile?.full_name, profile?.nim_nidn],
+    () => pilihCapAir(course, namaNim),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [course?.watermark_pdf, course?.watermark_jenis, course?.watermark_teks, course?.watermark_gambar, namaNim],
   )
 }
 
