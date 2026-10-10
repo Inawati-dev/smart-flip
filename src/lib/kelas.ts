@@ -422,3 +422,22 @@ export async function fetchGolonganKelas(classIds: string[], courseId: number, a
     ambang,
   )
 }
+
+// Reset tes diagnostik (antrean #155): hapus pengerjaan kind 'pre' mata kuliah
+// ini untuk mahasiswa terpilih, supaya mereka mengerjakan ulang. Mengembalikan
+// jumlah baris yang benar-benar terhapus: tanpa policy DELETE di
+// database/migration_v28_reset_diagnostik.sql basis data menolak diam-diam
+// (0 baris, tanpa galat), dan pemanggil harus bisa membedakannya.
+export async function resetDiagnostik(userIds: string[], courseId: number): Promise<number> {
+  if (!isSupabaseConfigured) throw new Error('Reset tes diagnostik butuh koneksi Supabase.')
+  if (userIds.length === 0) return 0
+  const { data, error } = await supabase
+    .from('quiz_attempts')
+    .delete()
+    .eq('kind', 'pre')
+    .eq('course_id', courseId)
+    .in('user_id', userIds)
+    .select('id')
+  if (error) throw error
+  return data?.length ?? 0
+}

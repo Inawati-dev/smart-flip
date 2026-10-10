@@ -10,6 +10,7 @@ import {
   parseImportCsv,
   importMahasiswaCSV,
   fetchGolonganKelas,
+  resetDiagnostik,
   type AnggotaGolongan,
   type KelasWithCount,
   type ParsedImportRow,
@@ -32,7 +33,19 @@ type SeksiMahasiswa = { judul: string | null; baris: AnggotaGolongan[] }
 
 // Daftar mahasiswa per seksi (angkatan dan kelas), dipakai modal daftar kelas
 // dan tampilan tersaring di bawah kartu golongan (antrean #145, #150).
-function DaftarSeksi({ seksi, tampilGolongan }: { seksi: SeksiMahasiswa[]; tampilGolongan: boolean }) {
+// `pilih` + `onPilih`: kotak centang untuk mahasiswa yang sudah punya skor
+// (dipakai reset tes diagnostik, antrean #155).
+function DaftarSeksi({
+  seksi,
+  tampilGolongan,
+  pilih,
+  onPilih,
+}: {
+  seksi: SeksiMahasiswa[]
+  tampilGolongan: boolean
+  pilih?: Set<string>
+  onPilih?: (id: string) => void
+}) {
   if (seksi.every((x) => x.baris.length === 0)) return <p className="text-sm text-brown-3">Belum ada mahasiswa.</p>
   return (
     <>
@@ -42,7 +55,14 @@ function DaftarSeksi({ seksi, tampilGolongan }: { seksi: SeksiMahasiswa[]; tampi
           <ul className="flex flex-col">
             {x.baris.map((a) => (
               <li key={a.id} className="row-divider flex items-center justify-between gap-2 py-1.5 text-sm text-brown-2">
-                <span className="truncate min-w-0">{a.nama}</span>
+                {pilih && onPilih && a.skor != null ? (
+                  <label className="flex items-center gap-2.5 min-w-0 min-h-11 cursor-pointer">
+                    <input type="checkbox" checked={pilih.has(a.id)} onChange={() => onPilih(a.id)} className="w-5 h-5 flex-shrink-0" />
+                    <span className="truncate min-w-0">{a.nama}</span>
+                  </label>
+                ) : (
+                  <span className="truncate min-w-0">{a.nama}</span>
+                )}
                 <span className="flex items-center gap-2 flex-shrink-0">
                   <span className="tabular-nums text-brown-3">{a.skor ?? '—'}</span>
                   {tampilGolongan && <ChipRak jenis={GOLONGAN_CHIP[a.golongan]} label={GOLONGAN_LABEL[a.golongan]} />}
@@ -132,7 +152,45 @@ export function KelasPanel() {
     setTahun(null)
     gulirKe('daftar-kelas')
   }
+  // Reset tes diagnostik untuk mahasiswa yang dicentang di daftar kelas.
+  const [pilih, setPilih] = useState<Set<string>>(new Set())
+  const [konfirmasiReset, setKonfirmasiReset] = useState(false)
+  const [mereset, setMereset] = useState(false)
+  const bisaDireset = (daftar?.seksi ?? []).flatMap((x) => x.baris).filter((a) => a.skor != null)
+  function togglePilih(id: string) {
+    setPilih((s) => {
+      const n = new Set(s)
+      if (n.has(id)) n.delete(id)
+      else n.add(id)
+      return n
+    })
+  }
+  function tutupDaftar() {
+    setDaftar(null)
+    setPilih(new Set())
+    setKonfirmasiReset(false)
+  }
+  async function jalankanReset() {
+    setMereset(true)
+    try {
+      const terhapus = await resetDiagnostik([...pilih], courseId)
+      await queryClient.invalidateQueries({ queryKey: ['golongan-kelas'] })
+      showToast(
+        terhapus > 0
+          ? `Tes diagnostik ${pilih.size} mahasiswa direset`
+          : 'Tidak ada yang terhapus. Jalankan migration_v28_reset_diagnostik.sql di Supabase dulu.',
+      )
+      if (terhapus > 0) tutupDaftar()
+      else setKonfirmasiReset(false)
+    } catch (e) {
+      showToast((e as { message?: string } | null)?.message || 'Gagal mereset tes diagnostik')
+      setKonfirmasiReset(false)
+    } finally {
+      setMereset(false)
+    }
+  }
   function bukaKelas(k: KelasWithCount) {
+    setPilih(new Set())
     setDaftar({ judul: `Daftar mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
   }
 
@@ -628,18 +686,58 @@ export function KelasPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setDaftar(null)
+            if (e.target === e.currentTarget) tutupDaftar()
           }}
         >
           <div className="bg-ivory rounded-2xl p-5 max-w-lg w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
               <h3 className="text-base font-semibold text-brown min-w-0">{daftar.judul}</h3>
-              <button onClick={() => setDaftar(null)} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
+              <button onClick={tutupDaftar} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
                 <IconX size={15} />
               </button>
             </div>
             <p className="text-xs text-brown-3 mb-3">{course?.name ? `Tes diagnostik ${course.name}. ` : ''}Angka di kanan = skor tes diagnostik.</p>
-            <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} />
+            {bisaDireset.length > 0 && (
+              <div className="flex items-center justify-between gap-2 flex-wrap mb-3">
+                <button
+                  onClick={() => setPilih(pilih.size === bisaDireset.length ? new Set() : new Set(bisaDireset.map((a) => a.id)))}
+                  className="btn btn-secondary btn-sm"
+                >
+                  {pilih.size === bisaDireset.length ? 'Lepas semua' : `Pilih semua yang sudah tes (${bisaDireset.length})`}
+                </button>
+                <button onClick={() => setKonfirmasiReset(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm">
+                  Reset tes diagnostik ({pilih.size})
+                </button>
+              </div>
+            )}
+            <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} pilih={pilih} onPilih={togglePilih} />
+          </div>
+        </div>
+      )}
+
+      {/* Konfirmasi reset tes diagnostik: menghapus data, tidak bisa dibatalkan */}
+      {konfirmasiReset && (
+        <div
+          className="fixed inset-0 z-[800] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !mereset) setKonfirmasiReset(false)
+          }}
+        >
+          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Reset tes diagnostik {pilih.size} mahasiswa?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Skor dan jawaban tes diagnostik mereka{course?.name ? ` di ${course.name}` : ''} dihapus, dan mereka harus mengerjakannya lagi sebelum bisa
+              membuka materi. Tidak bisa dibatalkan.
+            </p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setKonfirmasiReset(false)} disabled={mereset} className="btn btn-secondary flex-1">
+                Batal
+              </button>
+              <button onClick={() => void jalankanReset()} disabled={mereset} className="btn btn-danger flex-1">
+                {mereset ? 'Mereset…' : 'Ya, reset'}
+              </button>
+            </div>
           </div>
         </div>
       )}
