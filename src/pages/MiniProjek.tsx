@@ -1,14 +1,11 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
-import { useQuery, useQueries, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { useCourse } from '../contexts/CourseContext'
-import { useModules } from '../hooks/useModules'
+import { usePaketMhs } from '../hooks/usePaketMhs'
 import {
-  fetchProjectsMhs,
-  fetchMySubmission,
   submitTugasAkhir,
   signedFileUrl,
   cekBerkasDocx,
@@ -18,17 +15,7 @@ import {
   type FinalProject,
   type FinalSubmission,
 } from '../lib/tugasAkhir'
-import {
-  bobotPaket,
-  babPaket,
-  briefPaket,
-  nilaiMiniProjek,
-  statusBab,
-  tautanSah,
-  topikTerbukaDari,
-  type BabPaket,
-  type StatusBab,
-} from '../lib/paketProposal'
+import { bobotPaket, babPaket, nilaiMiniProjek, statusBab, tautanSah, type BabPaket, type StatusBab } from '../lib/paketProposal'
 
 // Halaman mahasiswa untuk Paket Rancangan Proposal (antrean #179): empat Mini
 // Projek berurutan. Rancangan layar: canvas "Mini Projek Rancangan Proposal".
@@ -60,24 +47,9 @@ function Lencana({ status, children }: { status: StatusBab; children: ReactNode 
 
 export function MiniProjek() {
   const queryClient = useQueryClient()
-  const { courseId, course } = useCourse()
-  const { data: modules = [] } = useModules()
-  const { data: projects = [], isLoading } = useQuery({
-    queryKey: ['final-projects-mhs', courseId],
-    queryFn: () => fetchProjectsMhs(courseId),
-  })
-  const paket = useMemo(() => briefPaket(projects), [projects])
-  const hasil = useQueries({
-    queries: paket.map((b) => ({
-      queryKey: ['final-submission-mhs', b.id],
-      queryFn: () => fetchMySubmission(b.id),
-    })),
-  })
-  const memuatKiriman = hasil.some((h) => h.isPending)
-  const kiriman: Array<FinalSubmission | null> = hasil.map((h) => h.data ?? null)
-
-  const modulesUrut = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
-  const topikTerbuka = useMemo(() => topikTerbukaDari(course?.mulai_kuliah, modulesUrut), [course?.mulai_kuliah, modulesUrut])
+  const { paket, kiriman, memuat, modulesUrut, topikTerbuka, baru, tandaiDilihat } = usePaketMhs()
+  // Pita di atas halaman: nilai terbaru yang belum dilihat (antrean #189).
+  const nilaiBaru = baru.find((k) => k.jenis === 'dinilai') ?? null
 
   const [kirimUrutan, setKirimUrutan] = useState<number | null>(null)
   const [rincianUrutan, setRincianUrutan] = useState<number | null>(null)
@@ -123,7 +95,7 @@ export function MiniProjek() {
         </div>
         <p className="text-brown-3 mb-4">Rancangan proposal dikerjakan per bab, lalu digabung menjadi satu naskah.</p>
 
-        {isLoading || memuatKiriman ? (
+        {memuat ? (
           <p className="text-sm text-brown-3">Memuat…</p>
         ) : paket.length === 0 ? (
           <div className="bg-ivory rounded-2xl border p-5 text-sm text-brown-3" style={BORDER}>
@@ -131,6 +103,28 @@ export function MiniProjek() {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
+            {nilaiBaru && (
+              <div role="status" className="rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-3" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
+                <p className="text-sm flex-1 basis-[18rem] min-w-0 tabular-nums">
+                  <strong>Baru:</strong> {nilaiBaru.judul.replace(' Sudah Dinilai', '')} sudah dinilai. {nilaiBaru.ket}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={() => {
+                      setRincianUrutan(nilaiBaru.urutan)
+                      tandaiDilihat()
+                    }}
+                  >
+                    Lihat Rincian Nilai
+                  </button>
+                  <button type="button" className="btn btn-secondary btn-sm" onClick={tandaiDilihat}>
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="bg-ivory rounded-2xl border px-4 py-3" style={BORDER}>
               <div className="text-sm font-semibold text-brown">{selesai ? 'Mini Projek Selesai' : `${jumlahDinilai} dari 3 bab dinilai`}</div>
               {selesai && (

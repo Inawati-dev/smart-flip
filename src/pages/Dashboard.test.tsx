@@ -11,6 +11,8 @@ import { Dashboard, DashboardMhs, DosenHome } from './Dashboard'
 
 afterEach(cleanup)
 
+// Kartu Kabar Terbaru butuh penyedia kueri dan mata kuliah; uji Dashboard tidak memeriksanya.
+vi.mock('../components/KabarPaket', () => ({ KabarTerbaruCard: () => null }))
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {

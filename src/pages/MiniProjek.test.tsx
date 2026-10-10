@@ -94,6 +94,8 @@ beforeEach(() => {
   state.subs = {}
   state.mulai = hariLalu(1)
   state.submit = vi.fn(async () => ({}))
+  // Bawaan: semua kabar sudah dilihat, jadi pita kabar baru tidak tampil.
+  localStorage.setItem('sfp_kabar_paket_dilihat', '2999-01-01T00:00:00.000Z')
 })
 
 describe('MiniProjek', () => {
@@ -174,6 +176,17 @@ describe('MiniProjek', () => {
     const dialog = screen.getByRole('dialog')
     expect(within(dialog).getByText('Latar Belakang Masalah')).toBeTruthy()
     expect(within(dialog).getByRole('button', { name: 'Tutup' })).toBeTruthy()
+  })
+
+  it('nilai yang belum dilihat memunculkan pita; Tutup menghilangkannya dan menandai sudah dilihat', async () => {
+    localStorage.removeItem('sfp_kabar_paket_dilihat')
+    state.subs = { b1: kirimanContoh('b1', { total: 82, scores: [80, 80, 80, 90, 85], feedback: 'Rapi.', graded_at: '2026-10-08T00:00:00Z' }) }
+    tampil()
+    const pita = await screen.findByRole('status')
+    expect(pita.textContent).toContain('Bab 1 · Pendahuluan sudah dinilai. Nilai 82 dari 100.')
+    fireEvent.click(within(pita).getByRole('button', { name: 'Tutup' }))
+    await waitFor(() => expect(screen.queryByRole('status')).toBeNull())
+    expect(localStorage.getItem('sfp_kabar_paket_dilihat')).toBeTruthy()
   })
 
   it('bab terkirim menampilkan Kirim Ulang', async () => {

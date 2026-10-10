@@ -10,6 +10,8 @@ import {
   statusBab,
   tautanSah,
   bobotPaket,
+  kabarBaru,
+  kabarPaket,
   tenggatBawaan,
   topikTerbukaDari,
 } from './paketProposal'
@@ -129,5 +131,33 @@ describe('jadwal paket', () => {
     expect(new Date(t[0]!).getTime()).toBe(new Date(2026, 9, 19).getTime())
     expect(t[1]).not.toBeNull()
     expect(t[3]).toBeNull()
+  })
+})
+
+describe('kabar paket', () => {
+  const modul = [1, 2, 3, 4, 5, 6].map((id) => ({ id: id * 10 }))
+  const b = (urutan: number): FinalProject => ({
+    id: 'b' + urutan, dosen_id: 'd', title: '', description: '', deadline: null, rubric: [], class_ids: [], is_open: true,
+    created_at: '', paket_id: 'P', urutan,
+  })
+  const paket = [1, 2, 3, 4].map(b)
+  const sekarang = new Date(2026, 10, 3) // minggu ke-9 dari 7 Sep 2026: Topik 4 baru dibuka
+  it('bab dinilai dan bab yang baru terbuka jadi kabar, terbaru dulu; bab terkunci dan terkirim tidak', () => {
+    const kiriman = [{ graded_at: '2026-10-20T00:00:00.000Z', total: 81 }, null, null, null]
+    const kabar = kabarPaket(paket, kiriman, '2026-09-07', modul, sekarang)
+    expect(kabar.map((k) => `${k.jenis}-${k.urutan}`)).toEqual(['terbuka-2', 'dinilai-1'])
+    expect(kabar[1].ket).toBe('Nilai 81 dari 100.')
+    expect(kabarPaket(paket, [{ graded_at: null, total: null }, null, null, null], '2026-09-07', modul, new Date(2026, 8, 20))).toEqual([])
+  })
+  it('tanpa tanggal mulai kuliah hanya nilai yang jadi kabar; Rancangan Proposal terbuka saat Bab 3 dinilai', () => {
+    expect(kabarPaket(paket, [null, null, null, null], null, modul, sekarang)).toEqual([])
+    const kiriman = [null, null, { graded_at: '2026-11-01T00:00:00.000Z', total: 70 }, null]
+    expect(kabarPaket(paket, kiriman, null, modul, sekarang).map((k) => `${k.jenis}-${k.urutan}`)).toEqual(['dinilai-3', 'terbuka-4'])
+  })
+  it('kabarBaru: semua baru bila belum pernah dilihat, lalu hanya yang sesudah waktu dilihat', () => {
+    const kabar = kabarPaket(paket, [{ graded_at: '2026-10-20T00:00:00.000Z', total: 81 }, null, null, null], '2026-09-07', modul, sekarang)
+    expect(kabarBaru(kabar, null)).toHaveLength(2)
+    expect(kabarBaru(kabar, '2026-10-25T00:00:00.000Z').map((k) => k.urutan)).toEqual([2])
+    expect(kabarBaru(kabar, '2026-12-01T00:00:00.000Z')).toEqual([])
   })
 })

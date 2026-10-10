@@ -1,3 +1,4 @@
+import { TitikKabarPaket } from './KabarPaket'
 import { useState, type ComponentType, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
@@ -129,8 +130,9 @@ export function Layout({ children }: { children: ReactNode }) {
                 aria-current={active ? 'page' : undefined}
                 className="group relative flex w-[68px] flex-col items-center gap-1 rounded-xl p-[6px]"
               >
-                <span className={active ? 'nav-tile nav-tile-active' : 'nav-tile'}>
+                <span className={`relative ${active ? 'nav-tile nav-tile-active' : 'nav-tile'}`}>
                   <Icon size={19} />
+                  {item.to === '/mini-projek' && <TitikKabarPaket />}
                 </span>
                 <span
                   className="max-w-full text-center text-[10px] leading-tight tracking-tight font-semibold"
@@ -229,8 +231,9 @@ export function Layout({ children }: { children: ReactNode }) {
               className="flex-1 min-w-11 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold"
               style={{ color: active ? 'var(--nav-tile-active-fg)' : 'var(--brown3)' }}
             >
-              <span className={active ? 'nav-tile nav-tile-active' : 'nav-tile'}>
+              <span className={`relative ${active ? 'nav-tile nav-tile-active' : 'nav-tile'}`}>
                 <Icon size={19} />
+                {item.to === '/mini-projek' && <TitikKabarPaket />}
               </span>
               <span>{item.label}</span>
             </Link>

@@ -1,3 +1,4 @@
+import { KabarTerbaruCard } from '../components/KabarPaket'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
@@ -461,6 +462,8 @@ export function DashboardMhs({
           </div>
         )}
       </div>
+
+      <KabarTerbaruCard />
 
       <div className="grid grid-cols-3 gap-3 mb-4">
         <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik Selesai" bar="var(--sage)" to="/modul" />

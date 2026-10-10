@@ -290,11 +290,90 @@ export async function simpanBobotPaket(briefs: FinalProject[], bobot: number[]):
   if (gagal?.error) throw kolomHilang(gagal.error) ? new Error(PESAN_V37) : gagal.error
 }
 
+// ── Kabar untuk mahasiswa (antrean #189): kartu di Dashboard, titik di menu, pita di halaman ──
+// Kabar dihitung dari data yang sudah ada (waktu dinilai, jadwal topik), tanpa tabel notifikasi.
+
+export interface KabarPaket {
+  jenis: 'dinilai' | 'terbuka'
+  urutan: number
+  judul: string
+  ket: string
+  /** ISO; dipakai mengurutkan dan menentukan baru atau tidak. */
+  waktu: string
+}
+
+/**
+ * Kabar tiap bab, terbaru dulu. "Dinilai" bila kirimannya sudah bernilai;
+ * "terbuka" bila bab belum dikirim dan saat bukanya diketahui dan sudah lewat
+ * (jadwal topik, atau waktu Bab 3 dinilai untuk Rancangan Proposal). Tanpa
+ * tanggal mulai kuliah tidak ada kabar "terbuka" untuk Bab 1 sampai 3.
+ */
+export function kabarPaket(
+  paket: FinalProject[],
+  kiriman: Array<Pick<FinalSubmission, 'graded_at' | 'total'> | null | undefined>,
+  mulai: string | null | undefined,
+  modulesUrut: ModulJadwal[],
+  now: Date = new Date(),
+): KabarPaket[] {
+  const jadwal = jadwalTopik(mulai, modulesUrut)
+  const bab3 = kiriman[paket.findIndex((b) => b.urutan === 3)]
+  const kabar: KabarPaket[] = []
+  paket.forEach((brief, i) => {
+    const bab = babPaket(brief.urutan)
+    if (!bab) return
+    const k = kiriman[i]
+    if (k?.graded_at) {
+      kabar.push({ jenis: 'dinilai', urutan: bab.urutan, judul: `${bab.judul} Sudah Dinilai`, ket: `Nilai ${k.total ?? '?'} dari 100.`, waktu: k.graded_at })
+      return
+    }
+    if (k) return
+    const buka = bab.bukaTopik == null ? bab3?.graded_at ?? null : jadwal?.get(modulesUrut[bab.bukaTopik - 1]?.id)?.materi.toISOString() ?? null
+    if (!buka || new Date(buka).getTime() > now.getTime()) return
+    const tenggat = brief.deadline
+      ? `Tenggat ${new Date(brief.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}.`
+      : 'Belum ada tenggat.'
+    kabar.push({ jenis: 'terbuka', urutan: bab.urutan, judul: `${bab.judul} Terbuka`, ket: tenggat, waktu: buka })
+  })
+  return kabar.sort((a, b) => new Date(b.waktu).getTime() - new Date(a.waktu).getTime())
+}
+
+/** Kabar yang waktunya sesudah `dilihat` (ISO); semua baru bila belum pernah dilihat. */
+export function kabarBaru(kabar: KabarPaket[], dilihat: string | null): KabarPaket[] {
+  if (!dilihat) return kabar
+  const batas = new Date(dilihat).getTime()
+  return kabar.filter((k) => new Date(k.waktu).getTime() > batas)
+}
+
+// ponytail: penanda "sudah dilihat" disimpan per peramban (localStorage). Di perangkat
+// lain kabar lama tampil baru lagi; pindah ke kolom di profiles bila itu mengganggu.
+const KUNCI_DILIHAT = 'sfp_kabar_paket_dilihat'
+
+export function bacaKabarDilihat(): string | null {
+  try {
+    return localStorage.getItem(KUNCI_DILIHAT)
+  } catch {
+    return null
+  }
+}
+
+export function simpanKabarDilihat(now: Date = new Date()): string {
+  const iso = now.toISOString()
+  try {
+    localStorage.setItem(KUNCI_DILIHAT, iso)
+  } catch {
+    // penyimpanan penuh atau diblokir: penanda hanya berlaku sampai halaman dimuat ulang
+  }
+  return iso
+}
+
 /** Dosen: hapus keempat brief paket dalam satu perintah, jadi tidak bisa terhapus sebagian. */
 export async function hapusPaketProposal(paketId: string): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Menghapus paket butuh koneksi Supabase.')
-  const { error } = await supabase.from('tugas_akhir_briefs').delete().eq('paket_id', paketId)
+  if (!paketId) throw new Error('Paket tidak dikenali.')
+  const { data, error } = await supabase.from('tugas_akhir_briefs').delete().eq('paket_id', paketId).select('id')
   if (error) throw error
+  // RLS menolak dengan nol baris, bukan dengan galat.
+  if (!data || data.length === 0) throw new Error('Tidak ada Mini Projek yang terhapus.')
 }
 
 // ── Aktivitas Mandiri per topik (panel di halaman topik) ──

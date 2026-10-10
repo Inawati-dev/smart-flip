@@ -14,6 +14,7 @@ const mockAuth = vi.hoisted(() => ({
   profile: null as { full_name: string; avatar_url: string | null } | null,
 }))
 
+vi.mock('./KabarPaket', () => ({ TitikKabarPaket: () => null }))
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {

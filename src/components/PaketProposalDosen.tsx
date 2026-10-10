@@ -432,8 +432,8 @@ export function PaketProposalDosen({
               <details key={b.id}>
                 <summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-brown">{`Rubrik ${b.title}`}</summary>
                 <ul className="flex flex-col gap-1.5 pb-3 list-none m-0 p-0">
-                  {b.rubric.map((r) => (
-                    <li key={r.nama} className="flex items-start gap-3 rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--bg3)' }}>
+                  {b.rubric.map((r, i) => (
+                    <li key={`${i}-${r.nama}`} className="flex items-start gap-3 rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--bg3)' }}>
                       <span className="flex-1 min-w-0">
                         <span className="font-semibold text-brown block">{r.nama}</span>
                         {r.ukur && <span className="text-[13px] text-brown-2 block">{r.ukur}</span>}
@@ -451,8 +451,8 @@ export function PaketProposalDosen({
               <details key={a.topik}>
                 <summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-brown">{`Topik ${a.topik}, hasilnya dipakai di ${babPaket(a.bab)?.judul ?? `Bab ${a.bab}`}`}</summary>
                 <ol className="pb-3 pl-5 m-0 flex flex-col gap-1 text-sm text-brown-2 list-decimal">
-                  {a.langkah.map((l) => (
-                    <li key={l} className="break-words">{l}</li>
+                  {a.langkah.map((l, i) => (
+                    <li key={i} className="break-words">{l}</li>
                   ))}
                 </ol>
               </details>
