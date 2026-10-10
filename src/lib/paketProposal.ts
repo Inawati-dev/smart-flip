@@ -183,7 +183,7 @@ export function statusBab(
 type ModulJadwal = { id: number; minggu_mulai?: number | null }
 
 /**
- * Pembuat  untuk statusBab: topik ke-n terbuka bila tanggal
+ * Pembuat `topikTerbuka` untuk statusBab: topik ke-n terbuka bila tanggal
  * materinya sudah lewat. Tanpa tanggal mulai kuliah tidak ada kunci tanggal
  * (aturan jadwal.ts), jadi semua topik dianggap terbuka.
  */
