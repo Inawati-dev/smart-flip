@@ -7,10 +7,10 @@ import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { useKelasByDosen } from '../hooks/useKelas'
-import { cocokFilter } from '../lib/kelas'
+import { cocokFilter, fetchMyKelas } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
 import { useTopikStatus } from '../lib/topik'
-import { GOLONGAN_LABEL, type Golongan } from '../lib/golongan'
+import { GOLONGAN_LABEL, GOLONGAN_CHIP, type Golongan } from '../lib/golongan'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
 import type { ModuleRow } from '../lib/modules'
 import type { QuizAttemptWithModule } from '../lib/quizAttempts'
@@ -22,6 +22,7 @@ import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { PillGroup } from '../components/PillGroup'
 import { StatCard } from '../components/StatCard'
+import { ChipRak } from '../components/KartuTopik'
 import { timeAgo } from '../lib/forum'
 import {
   fetchSumberAktivitas,
@@ -322,6 +323,7 @@ export function Dashboard() {
   const { data: progress = {} } = useAllProgress()
   const { data: attempts = [] } = useAllQuizAttempts()
   const { golongan, skorPre } = useTopikStatus()
+  const { data: kelasSaya = null } = useQuery({ queryKey: ['kelas-saya'], queryFn: fetchMyKelas, enabled: role === 'mahasiswa' })
   const [showWelcome, setShowWelcome] = useState(false)
 
   // Gerbang pre-test menggantikan gerbang diagnostik lama (D4 = A, spec §4.1):
@@ -358,7 +360,13 @@ export function Dashboard() {
         ) : modules.length === 0 ? (
           <p className="text-brown-3">{modulesLoading ? 'Memuat…' : 'Belum ada topik. Dosen menambah topik lewat menu Modul.'}</p>
         ) : (
-          <DashboardMhs modules={modules} progress={progress} attempts={attempts} pre={{ skor: skorPre, golongan }} />
+          <DashboardMhs
+            modules={modules}
+            progress={progress}
+            attempts={attempts}
+            pre={{ skor: skorPre, golongan }}
+            identitas={{ nama: profile?.full_name || 'Mahasiswa', kelas: kelasSaya }}
+          />
         )}
       </div>
     </Layout>
@@ -372,12 +380,15 @@ export function DashboardMhs({
   progress,
   attempts,
   pre,
+  identitas,
 }: {
   modules: ModuleRow[]
   progress: ProgressMap
   attempts: QuizAttemptWithModule[]
   /** Skor dan golongan pre-test (antrean #105). */
   pre?: { skor: number | null; golongan: Golongan }
+  /** Nama, kelas, dan angkatan untuk kepala halaman (antrean #143). */
+  identitas?: { nama: string; kelas: { name: string; angkatan: number } | null }
 }) {
   const hasil = hitungLangkah({ modules, progress, attempts })
   const totalModules = modules.length || TOTAL_MODULES
@@ -388,11 +399,21 @@ export function DashboardMhs({
 
   return (
     <>
-      <div className="flex items-center gap-3 flex-wrap mb-1">
-        <h1 className="text-2xl font-bold text-brown">Dashboard</h1>
+      {/* Kepala: sapaan, golongan hasil tes diagnostik, kelas dan angkatan;
+          pemilih mata kuliah di kanan (antrean #143). */}
+      <div className="flex items-start justify-between gap-x-4 gap-y-3 flex-wrap mb-4">
+        <div className="min-w-0">
+          <h1 className="text-2xl font-bold text-brown">Selamat datang, {identitas?.nama || 'Mahasiswa'}</h1>
+          <div className="flex items-center gap-2 flex-wrap mt-1.5">
+            {pre && <ChipRak jenis={GOLONGAN_CHIP[pre.golongan]} label={GOLONGAN_LABEL[pre.golongan]} />}
+            <span className="text-sm text-brown-3">
+              {identitas?.kelas ? `${identitas.kelas.name} · Angkatan ${identitas.kelas.angkatan}` : 'Belum bergabung kelas'}
+            </span>
+          </div>
+        </div>
         <MataKuliahSelect />
       </div>
-      <p className="text-brown-3 mb-6">
+      <p className="text-brown-3 mb-4">
         Topik {hasil.topikAktif.orderNum} dari {totalModules} · {hasil.topikAktif.title}
       </p>
 
@@ -405,18 +426,16 @@ export function DashboardMhs({
             Semua topik selesai. Menunggu sesi post-test dari dosen.
           </p>
         ) : (
-          <>
-            <Link to={actions[hasil.langkah].to} className="btn btn-primary mb-3">
+          <div className="flex flex-wrap gap-2">
+            <Link to={actions[hasil.langkah].to} className="btn btn-primary">
               {actions[hasil.langkah].label}
             </Link>
-            <div className="flex flex-wrap gap-2">
-              {langkahLain.map((k) => (
-                <Link key={k} to={actions[k].to} className="btn btn-secondary">
-                  {actions[k].label}
-                </Link>
-              ))}
-            </div>
-          </>
+            {langkahLain.map((k) => (
+              <Link key={k} to={actions[k].to} className="btn btn-secondary">
+                {actions[k].label}
+              </Link>
+            ))}
+          </div>
         )}
       </div>
 
@@ -436,7 +455,7 @@ export function DashboardMhs({
         <StatCard
           icon={IconFolder}
           val={pre?.skor != null ? String(pre.skor) : '—'}
-          label={pre ? `Tes diagnostik awal · ${GOLONGAN_LABEL[pre.golongan]}` : 'Tes diagnostik awal'}
+          label="Tes diagnostik awal"
           bar="var(--info)"
           to="/asesmen"
         />

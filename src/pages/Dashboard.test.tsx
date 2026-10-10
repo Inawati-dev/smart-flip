@@ -113,6 +113,25 @@ describe('DashboardMhs', () => {
     )
     expect(html).toContain('Kerjakan tes formatif 1')
   })
+
+  // Antrean #143: kepala memuat nama, kelas, angkatan, dan golongan.
+  it('kepala menampilkan nama, kelas, angkatan, dan golongan tes diagnostik', () => {
+    const html = renderToStaticMarkup(
+      <MemoryRouter>
+        <DashboardMhs
+          modules={modules}
+          progress={{}}
+          attempts={[]}
+          pre={{ skor: 30, golongan: 'remedial' }}
+          identitas={{ nama: 'Budi', kelas: { name: 'Kelas A', angkatan: 2026 } }}
+        />
+      </MemoryRouter>,
+    )
+    expect(html).toContain('Selamat datang, Budi')
+    expect(html).toContain('Kelas A · Angkatan 2026')
+    expect(html).toContain('Belajar mendalam')
+    expect(html).not.toContain('Tes diagnostik awal · ')
+  })
 })
 
 // Antrean 16 Sep 2026 (permintaan Johan): tiga bagian dashboard dosen jadi

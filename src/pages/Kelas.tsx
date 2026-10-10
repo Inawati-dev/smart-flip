@@ -236,7 +236,7 @@ export function KelasPanel() {
       {/* Daftar kelas, dikelompokkan per angkatan (tahun) */}
       {/* scroll-mt: kop Layout lengket 58 px, tanpa ini judul tertutup sesudah digulir dari kartu angka */}
       <div id="daftar-kelas" className="bg-ivory rounded-2xl border overflow-hidden scroll-mt-20" style={BORDER}>
-        <div className="flex items-center justify-between px-4 py-3.5 border-b" style={BORDER}>
+        <div className="flex items-center justify-between gap-2 flex-wrap px-4 py-3.5 border-b" style={BORDER}>
           <span className="text-sm font-semibold text-brown">Daftar kelas</span>
           <div className="flex items-center gap-2 flex-wrap justify-end min-w-0">
             <MataKuliahSelect size="sm" />
