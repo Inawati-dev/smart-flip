@@ -16,7 +16,7 @@ export interface StatCardProps {
 }
 
 const DASAR = 'bg-ivory rounded-2xl border p-3.5 relative overflow-hidden'
-// Hover dan fokus meniru ShortcutCard (hover:border-terra) dan .btn:focus-visible
+// Hover memakai hover:border-terra; fokus meniru .btn:focus-visible
 // (cincin --accent-soft). Warna garis pakai kelas, bukan style inline, supaya
 // hover:border-terra tidak tertimpa.
 const KLIK =

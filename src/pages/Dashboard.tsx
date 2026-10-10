@@ -41,29 +41,9 @@ import {
   IconChart,
   IconRefresh,
   IconTarget,
-  IconVideo,
-  IconClipboard,
-  IconGraduationCap,
 } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
-
-function ShortcutCard({ to, icon: Icon, label, desc }: { to: string; icon: typeof IconUsers; label: string; desc: string }) {
-  return (
-    <Link
-      to={to}
-      className="bg-ivory rounded-2xl border border-[color:var(--border)] p-3.5 flex flex-col items-start gap-2 hover:shadow-sm hover:border-terra transition-colors"
-    >
-      <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-terra" style={{ background: 'var(--accent-soft)' }}>
-        <Icon size={18} />
-      </div>
-      <div>
-        <div className="text-sm font-semibold text-brown">{label}</div>
-        <div className="text-[11px] text-brown-3">{desc}</div>
-      </div>
-    </Link>
-  )
-}
 
 const HARI_OPTIONS: Array<{ value: FilterAktivitas['hari']; label: string }> = [
   { value: 7, label: '7 hari' },
@@ -218,14 +198,6 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
         <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata formatif" bar="var(--sage)" to="/asesmen" />
         <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" to="/asesmen" />
         <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="var(--info)" to="/asesmen/bank?tab=khusus" />
-      </div>
-
-      {/* Jalan pintas */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <ShortcutCard to="/asesmen/bank" icon={IconClipboard} label="Bank soal" desc="Soal, tes khusus, tes kelompok, tugas akhir" />
-        <ShortcutCard to="/modul" icon={IconFolder} label="PDF topik" desc="PDF tiap topik" />
-        <ShortcutCard to="/video" icon={IconVideo} label="Video topik" desc="Video tiap topik" />
-        <ShortcutCard to="/kelas" icon={IconGraduationCap} label="Kelas" desc="Kelas dan kode gabung" />
       </div>
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
