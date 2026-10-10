@@ -15,9 +15,14 @@ import {
 import { downloadCsv } from '../lib/analitik'
 import { FileInput } from '../components/FileInput'
 import { Layout } from '../components/Layout'
+import { StatCard } from '../components/StatCard'
 import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
+
+function gulirKe(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 const CURRENT_YEAR = new Date().getFullYear()
 
 type ImportStep = 'pilih' | 'pratinjau' | 'konfirmasi' | 'memproses' | 'hasil'
@@ -205,15 +210,16 @@ export function KelasPanel() {
           berubah-ubah (tergantung berapa angkatan aktif) gak nyisain baris
           terakhir yang cuma keisi 1-2 kartu ganjil. */}
       <div className="grid grid-cols-2 sm:[grid-template-columns:repeat(auto-fit,minmax(150px,1fr))] gap-3 mb-5">
-        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" />
-        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" />
+        <StatCard bar="var(--terra)" val={String(classes.length)} label="Total kelas" onClick={() => gulirKe('daftar-kelas')} />
+        <StatCard bar="var(--sage)" val={String(summary.totalStudents)} label="Total mahasiswa" onClick={() => gulirKe('daftar-kelas')} />
         {summary.byAngkatan.map((a) => (
-          <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} />
+          <StatCard key={a.angkatan} bar="var(--info)" val={String(a.total)} label={`Angkatan ${a.angkatan}`} onClick={() => gulirKe(`angkatan-${a.angkatan}`)} />
         ))}
       </div>
 
       {/* Daftar kelas, dikelompokkan per angkatan (tahun) */}
-      <div className="bg-ivory rounded-2xl border overflow-hidden" style={BORDER}>
+      {/* scroll-mt: kop Layout lengket 58 px, tanpa ini judul tertutup sesudah digulir dari kartu angka */}
+      <div id="daftar-kelas" className="bg-ivory rounded-2xl border overflow-hidden scroll-mt-20" style={BORDER}>
         <div className="flex items-center justify-between px-4 py-3.5 border-b" style={BORDER}>
           <span className="text-sm font-semibold text-brown">Daftar kelas</span>
           <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
@@ -233,7 +239,7 @@ export function KelasPanel() {
             .map((year) => {
               const rows = classes.filter((k) => k.angkatan === year)
               return (
-                <div key={year} className="row-divider">
+                <div key={year} id={`angkatan-${year}`} className="row-divider scroll-mt-20">
                   <div className="px-4 py-2 text-xs font-bold uppercase tracking-wide text-brown-3 bg-bg3">
                     Angkatan {year} <span className="font-normal normal-case">({rows.length} kelas)</span>
                   </div>
@@ -690,19 +696,6 @@ export function KelasPanel() {
         </div>
       )}
     </>
-  )
-}
-
-// Bentuk disamakan dengan StatCard di Dashboard.tsx (rounded-2xl, p-3.5,
-// mt-1.5) — tanpa slot ikon karena pemanggilnya di sini tidak mengirim ikon
-// per kartu dan menambah ikon berarti memilih ikon baru di luar lingkup tugas.
-function StatCard({ bar, val, label }: { bar: string; val: string; label: string }) {
-  return (
-    <div className="bg-ivory rounded-2xl border p-3.5 relative overflow-hidden" style={BORDER}>
-      <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
-      <div className="text-xl font-bold text-brown">{val}</div>
-      <div className="text-[11px] text-brown-3 mt-1.5">{label}</div>
-    </div>
   )
 }
 

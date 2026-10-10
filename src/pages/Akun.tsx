@@ -14,6 +14,7 @@ import { PASS_SCORE } from '../lib/quizAttempts'
 import { TOTAL_MODULES } from '../lib/progress'
 import { Layout } from '../components/Layout'
 import { FileInput } from '../components/FileInput'
+import { StatCard } from '../components/StatCard'
 import { PengaturanSections } from './Pengaturan'
 import { IconUser, IconGraduationCap, IconEdit } from '../components/icons'
 
@@ -135,15 +136,15 @@ export function Akun() {
         <div className="grid grid-cols-3 gap-3 mb-4">
           {isDosen ? (
             <>
-              <StatCard bar="var(--terra)" val={String(dosenSummary.totalStudents)} label="Mahasiswa terdaftar" />
-              <StatCard bar="var(--sage)" val={`${dosenSummary.avgModulPct}%`} label="Rata-rata progres" />
-              <StatCard bar="var(--info)" val={`${dosenSummary.avgKuis}%`} label="Rata-rata skor kuis" />
+              <StatCard bar="var(--terra)" val={String(dosenSummary.totalStudents)} label="Mahasiswa terdaftar" to="/kelas" />
+              <StatCard bar="var(--sage)" val={`${dosenSummary.avgModulPct}%`} label="Rata-rata progres" to="/dashboard" />
+              <StatCard bar="var(--info)" val={`${dosenSummary.avgKuis}%`} label="Rata-rata skor kuis" to="/asesmen" />
             </>
           ) : (
             <>
-              <StatCard bar="var(--terra)" val={`${modulSelesai}/${totalModules}`} label="Topik selesai" />
-              <StatCard bar="var(--sage)" val={String(formatifLulus)} label="Formatif lulus" />
-              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Pre-test" />
+              <StatCard bar="var(--terra)" val={`${modulSelesai}/${totalModules}`} label="Topik selesai" to="/modul" />
+              <StatCard bar="var(--sage)" val={String(formatifLulus)} label="Formatif lulus" to="/asesmen" />
+              <StatCard bar="var(--info)" val={preTestDone ? 'Sudah' : 'Belum'} label="Pre-test" to="/asesmen" />
             </>
           )}
         </div>
@@ -263,19 +264,6 @@ export function Akun() {
         </div>
       )}
     </Layout>
-  )
-}
-
-// Bentuk disamakan dengan StatCard di Dashboard.tsx (garis warna 3px, angka
-// text-xl font-bold, label text-[11px]) -- tanpa slot ikon, sama seperti
-// StatCard lokal Kelas.tsx (pemanggil di sini juga tidak mengirim ikon).
-function StatCard({ bar, val, label }: { bar: string; val: string; label: string }) {
-  return (
-    <div className="bg-ivory rounded-2xl border p-3.5 relative overflow-hidden" style={BORDER}>
-      <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
-      <div className="text-xl font-bold text-brown">{val}</div>
-      <div className="text-[11px] text-brown-3 mt-1.5">{label}</div>
-    </div>
   )
 }
 

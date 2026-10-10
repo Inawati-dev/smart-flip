@@ -21,6 +21,7 @@ import { Select } from '../components/Select'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { PillGroup } from '../components/PillGroup'
+import { StatCard } from '../components/StatCard'
 import { timeAgo } from '../lib/forum'
 import {
   fetchSumberAktivitas,
@@ -46,21 +47,6 @@ import {
 } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
-
-function StatCard({ icon: Icon, val, label, bar }: { icon: typeof IconUsers; val: string; label: string; bar: string }) {
-  return (
-    <div className="bg-ivory rounded-2xl border p-3.5 relative overflow-hidden" style={BORDER}>
-      <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: bar }} />
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-terra" style={{ background: 'var(--accent-soft)' }}>
-          <Icon size={16} />
-        </div>
-        <div className="text-xl font-bold text-brown">{val}</div>
-      </div>
-      <div className="text-[11px] text-brown-3 mt-1.5">{label}</div>
-    </div>
-  )
-}
 
 function ShortcutCard({ to, icon: Icon, label, desc }: { to: string; icon: typeof IconUsers; label: string; desc: string }) {
   return (
@@ -219,17 +205,19 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
           val={ringkas ? `${ringkas.aktif7Hari}/${ringkas.totalMhs}` : '—'}
           label="Mahasiswa aktif 7 hari"
           bar="var(--sage)"
+          to="/kelas"
         />
         <StatCard
           icon={IconCheck}
           val={ringkas ? `${ringkas.preSelesai}/${ringkas.totalMhs}` : '—'}
           label="Pre-test selesai"
           bar="var(--terra)"
+          to="/asesmen"
         />
-        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik rata-rata kelas" bar="var(--info)" />
-        <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata formatif" bar="var(--sage)" />
-        <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" />
-        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="var(--info)" />
+        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik rata-rata kelas" bar="var(--info)" to="/asesmen" />
+        <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata formatif" bar="var(--sage)" to="/asesmen" />
+        <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" to="/asesmen" />
+        <StatCard icon={IconTarget} val={ringkas ? String(ringkas.sesiAktif) : '—'} label="Sesi tes khusus aktif" bar="var(--info)" to="/asesmen/bank?tab=khusus" />
       </div>
 
       {/* Jalan pintas */}
@@ -461,7 +449,7 @@ export function DashboardMhs({
       </div>
 
       <div className="grid grid-cols-3 gap-3 mb-4">
-        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik selesai" bar="var(--sage)" />
+        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik selesai" bar="var(--sage)" to="/modul" />
         <StatCard
           icon={IconTrendingUp}
           val={hasil.skorTerakhir ? `${hasil.skorTerakhir.score}%` : '—'}
@@ -471,12 +459,14 @@ export function DashboardMhs({
               : 'Formatif terakhir'
           }
           bar="var(--terra)"
+          to="/asesmen"
         />
         <StatCard
           icon={IconFolder}
           val={pre?.skor != null ? String(pre.skor) : '—'}
           label={pre ? `Pre-test · ${GOLONGAN_LABEL[pre.golongan]}` : 'Pre-test'}
           bar="var(--info)"
+          to="/asesmen"
         />
       </div>
 

@@ -325,10 +325,10 @@ function BankSoalTab() {
               <thead>
                 <tr className="bg-bg3">
                   <th className="w-11" aria-label="Urutan (seret)" />
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
-                  <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-16">Kunci</th>
-                  <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-36">Aksi</th>
+                  <th className="text-left px-1.5 sm:px-3 py-2.5 text-xs font-semibold text-brown-3 w-10">No</th>
+                  <th className="text-left px-1.5 sm:px-3 py-2.5 text-xs font-semibold text-brown-3">Pertanyaan</th>
+                  <th className="text-center px-1.5 sm:px-3 py-2.5 text-xs font-semibold text-brown-3 w-12 sm:w-16">Kunci</th>
+                  <th className="text-center px-1.5 sm:px-3 py-2.5 text-xs font-semibold text-brown-3 sm:w-36">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -353,7 +353,7 @@ function BankSoalTab() {
                         className="row-divider transition-colors"
                         style={{ opacity: isDragging ? 0.4 : 1, background: isDropTarget ? 'var(--accent-soft)' : undefined }}
                       >
-                        <td className="px-3 py-2.5">
+                        <td className="px-1.5 sm:px-3 py-2.5">
                           <div
                             className="w-11 h-11 flex items-center justify-center text-brown-3 cursor-grab active:cursor-grabbing"
                             title="Seret untuk mengurutkan"
@@ -362,9 +362,9 @@ function BankSoalTab() {
                             <IconGrip size={16} />
                           </div>
                         </td>
-                        <td className="px-3 py-2.5 font-semibold text-brown">{r.order_num}</td>
-                        <td className="px-3 py-2.5 text-brown min-w-[200px] break-words">{r.question}</td>
-                        <td className="px-3 py-2.5 text-center">
+                        <td className="px-1.5 sm:px-3 py-2.5 font-semibold text-brown">{r.order_num}</td>
+                        <td className="px-1.5 sm:px-3 py-2.5 text-brown min-w-[150px] sm:min-w-[200px] break-words">{r.question}</td>
+                        <td className="px-1.5 sm:px-3 py-2.5 text-center">
                           <span
                             className="w-7 h-7 inline-flex items-center justify-center rounded-full text-xs font-bold"
                             style={{ background: 'var(--accent-soft)', color: 'var(--terra-d)' }}
@@ -372,8 +372,8 @@ function BankSoalTab() {
                             {LETTERS[r.answer_idx ?? 0]}
                           </span>
                         </td>
-                        <td className="px-3 py-2.5 text-center">
-                          <div className="inline-flex items-center justify-center gap-1.5">
+                        <td className="px-1.5 sm:px-3 py-2.5 text-center">
+                          <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-1.5">
                             <button
                               onClick={() => openEditModal(r)}
                               aria-label={`Ubah soal urutan ${r.order_num}`}
