@@ -149,7 +149,9 @@ export function Akun() {
           )}
         </div>
 
-        <div className="bg-ivory rounded-2xl border p-5 mb-4 flex items-center gap-4" style={BORDER}>
+        <PengaturanSections
+          kepala={
+        <div className="bg-ivory rounded-2xl border p-5 min-w-0 flex items-center gap-4" style={BORDER}>
               <div className="w-16 h-16 rounded-full bg-terra text-btn-text flex items-center justify-center font-display text-2xl font-bold flex-shrink-0 overflow-hidden">
                 {profile?.avatar_url ? (
                   <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -189,8 +191,8 @@ export function Akun() {
             <IconEdit size={15} /> Ubah
           </button>
         </div>
-
-        <PengaturanSections />
+          }
+        />
       </div>
 
       {editOpen && (

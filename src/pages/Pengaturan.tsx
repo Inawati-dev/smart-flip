@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
 import { useKelasByDosen } from '../hooks/useKelas'
@@ -27,7 +27,8 @@ const BORDER = { borderColor: 'var(--border)' } as const
 // Layout.tsx (rel kiri desktop + topbar mobile), lihat src/hooks/useTheme.ts.
 const BATAS_DAFTAR = 8
 
-export function PengaturanSections() {
+// `kepala` = kartu profil dari Akun.tsx; ditaruh sebaris dengan Kode undangan.
+export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
   const [tampilSemua, setTampilSemua] = useState(false)
   const { role, user } = useAuth()
   const isDosen = role === 'dosen'
@@ -110,11 +111,15 @@ export function PengaturanSections() {
       {/* Dua baris penuh lebar (antrean #95): Kode undangan pendek, Notifikasi
           bisa panjang, jadi tidak lagi dipaksa sama tinggi berdampingan. */}
       <div className="flex flex-col gap-4">
+        {/* Profil + Kode undangan: satu baris dua kolom di >=768px (antrean
+            #134). Mahasiswa tidak punya kartu kode, jadi profil selebar penuh. */}
+        <div className={`grid grid-cols-1 gap-4${isDosen ? ' md:grid-cols-2' : ''}`}>
+        {kepala}
         {/* Kode undangan dosen — hanya untuk dosen. Ini yang diminta calon
             dosen saat mendaftar di halaman Registrasi; tanpa kode yang cocok,
             pendaftaran tetap jadi (tapi turun jadi peran mahasiswa). */}
         {isDosen && (
-          <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
+          <div className="bg-ivory rounded-2xl border p-5 min-w-0 flex flex-col" style={BORDER}>
             <div className="flex items-center gap-2.5 mb-1">
               <IconLock size={18} className="text-brown-3" />
               <span className="text-sm font-semibold text-brown">Kode undangan dosen</span>
@@ -196,6 +201,7 @@ export function PengaturanSections() {
             {inviteMsg && <p className="text-xs text-sage-d mt-2.5">{inviteMsg}</p>}
           </div>
         )}
+        </div>
 
         <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
           <div className="flex items-center gap-2.5 mb-1">
