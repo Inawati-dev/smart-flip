@@ -60,8 +60,9 @@ function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat }: { sr
         src={versi ? `${src}?v=${versi}` : src}
         alt=""
         loading="lazy"
-        className="block w-full aspect-[3/4] object-cover object-top rounded-[4px_10px_10px_4px] bg-ivory"
-        style={{ boxShadow: '0 6px 14px -8px color-mix(in srgb, var(--shadow-color) 35%, transparent), 0 0 0 1px var(--border)' }}
+        className="block w-full aspect-[3/4] object-contain rounded-[4px_10px_10px_4px]"
+        // object-contain: halaman pertama tampil utuh, juga untuk PDF mendatar; sisa bingkai 3:4 diisi warna latar.
+        style={{ background: 'var(--bg3)', boxShadow: '0 6px 14px -8px color-mix(in srgb, var(--shadow-color) 35%, transparent), 0 0 0 1px var(--border)' }}
         onError={() => {
           // Gambar belum ada: dosen membuatkannya sekali dari PDF, mahasiswa melihat sampul rancangan.
           if (!buat || versi || !pdf) return setTahap('gagal')

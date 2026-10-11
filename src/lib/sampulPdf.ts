@@ -12,11 +12,11 @@ const LEBAR_SAMPUL = 480 // px; kartu rak paling lebar sekitar 280 px, jadi cuku
 /** Alamat gambar sampul untuk PDF di bucket `modul-pdf`; null untuk PDF di tempat lain (mis. /books/...). */
 export function urlSampul(pdfUrl: string | null | undefined): string | null {
   if (!pdfUrl || !pdfUrl.includes(PENANDA)) return null
-  return pdfUrl.split('?')[0] + AKHIRAN_SAMPUL
+  return pdfUrl.split(/[?#]/)[0] + AKHIRAN_SAMPUL
 }
 
 function namaObjek(pdfUrl: string): string {
-  return decodeURIComponent(pdfUrl.slice(pdfUrl.indexOf(PENANDA) + PENANDA.length).split('?')[0])
+  return decodeURIComponent(pdfUrl.slice(pdfUrl.indexOf(PENANDA) + PENANDA.length).split(/[?#]/)[0])
 }
 
 const berjalan = new Map<string, Promise<boolean>>()
@@ -27,11 +27,15 @@ const berjalan = new Map<string, Promise<boolean>>()
  * PDF rusak, jaringan); pemanggil tetap memakai sampul rancangan.
  */
 export function buatSampul(pdfUrl: string): Promise<boolean> {
-  if (!isSupabaseConfigured || !urlSampul(pdfUrl)) return Promise.resolve(false)
+  const sampul = urlSampul(pdfUrl)
+  if (!isSupabaseConfigured || !sampul) return Promise.resolve(false)
   const ada = berjalan.get(pdfUrl)
   if (ada) return ada
   const tugas = (async () => {
     try {
+      // Gambar yang gagal dimuat belum tentu tidak ada (jaringan putus, kartu lain baru
+      // saja membuatnya). Cek dulu supaya PDF tidak diunduh dan sampul tidak ditimpa percuma.
+      if ((await fetch(sampul, { method: 'HEAD' })).ok) return true
       const [pdfjs, pekerja] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.js?url')])
       pdfjs.GlobalWorkerOptions.workerSrc = pekerja.default
       const doc = await pdfjs.getDocument(pdfUrl).promise

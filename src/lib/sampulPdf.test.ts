@@ -10,6 +10,7 @@ describe('urlSampul', () => {
   it('PDF di bucket modul-pdf: alamat sampul = alamat PDF ditambah akhiran, tanpa query', () => {
     expect(urlSampul(PDF)).toBe(PDF + AKHIRAN_SAMPUL)
     expect(urlSampul(PDF + '?t=123')).toBe(PDF + AKHIRAN_SAMPUL)
+    expect(urlSampul(PDF + '#page=2')).toBe(PDF + AKHIRAN_SAMPUL)
   })
   it('PDF di luar bucket, alamat kosong, dan blob tidak punya sampul', () => {
     expect(urlSampul('/books/modul-01.pdf')).toBeNull()

@@ -424,7 +424,7 @@ export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
   if (!isSupabaseConfigured) return []
   const [listRes, modulesRes0] = await Promise.all([
     supabase.storage.from('modul-pdf').list('', {
-      limit: 200,
+      limit: 400, // tiap PDF bisa punya satu berkas sampul (antrean #192)
       sortBy: { column: 'created_at', order: 'desc' },
     }),
     supabase.from('modules').select('title, pdf_path, course_id, courses(name)'),
@@ -496,7 +496,7 @@ export async function deleteModulPdfFile(path: string): Promise<void> {
     .filter((m) => storageObjectName((m as { pdf_path?: string }).pdf_path) === path)
     .map((m) => (m as { id: number }).id)
 
-  const { error } = await supabase.storage.from('modul-pdf').remove([path])
+  const { error } = await supabase.storage.from('modul-pdf').remove([path, path + AKHIRAN_SAMPUL])
   if (error) throw error
 
   if (usedByIds.length) {
