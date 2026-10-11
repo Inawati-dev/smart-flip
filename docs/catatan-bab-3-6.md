@@ -250,3 +250,42 @@ Tidak ada yang terjaring.
 - Kata rusak berpola "...mahasiswa...": tidak ada.
 - Kata berulang berurutan (mis. "dan dan"): 0 tempat.
 
+## Versi yang masuk 11 Okt 2026 sore (antrean #209)
+
+Berkas 05, 06, dan 08 kembali ada di `kerja nyata/Naskah sampai Aktivitas Mandiri/` dengan tanggal berkas 11 Okt 2026 00:16, 00:49, dan 01:56. Dibaca dari salinan dengan `baca346.py` (`.claude/catatan-346/` pada worktree sesi), dibandingkan dengan sidik versi sesi 11 Okt 11:04 di `.claude/catatan-bab-3-6/`. Berkas naskah tidak disunting. Bab 5 dikerjakan terpisah di antrean #208.
+
+| Bab | Paragraf sama | Diubah | Baru | Tidak ada lagi | Komentar Word | Kata rusak | Kalimat berpola keras |
+|---|---|---|---|---|---|---|---|
+| 3 | 163 | 16 | 2 | 5 | 0 | 0 (kata "Anda" masih 6) | 4 |
+| 4 | 144 | 21 | 2 | 9 | 0 | 7 | 8 |
+| 6 | 167 | 19 | 5 | 16 | 1 | 8 | 2 |
+
+Angka kolom terakhir dari `cek_pola_ai.py` atas ketiga berkas; kolom lain dari `baca346.py`.
+
+Warna huruf: merah FF0000 masih ada di ketiganya (14.511, 13.730, dan 11.047 huruf). Seperti di Bab 5, merah menandai materi tambahan sesi mesin sebelumnya, bukan tulisan tim (lihat `docs/materi-tambahan-bab-5.md`).
+
+### Bab 3
+
+- Diubah: judul tabel tanpa akhiran "Bab 3"; beberapa kata "mahasiswa" dibuang dari kalimat; paragraf ruang lingkup dan batasan ditulis ulang lebih pendek.
+- Baru: satu paragraf pembuka subbab latar belakang (64 kata, memuat "tidak muda disusun"); paragraf "Panjang judul tidak perlu dikejar" versi pendek (69 kata).
+- Tidak ada lagi: paragraf hasil studi Hyland dan Jiang (137 kata; kalimat pertamanya dipindah ke paragraf sebelumnya), paragraf hasil studi Heard, Cull, dan White (132 kata), dan tiga entri rujukan (Heard dkk.; Hyland dan Jiang; Millar dkk.).
+- Kata "Anda" tersisa 6 kali (dua kotak pertanyaan reflektif, dua paragraf ruang lingkup, dua butir Aktivitas Mandiri).
+
+### Bab 4
+
+- Judul bab tertulis "Kajian Pustaka sebagai Lmahasiswasan Pengembangan" di kop bab, kop tabel pembuka, dan satu paragraf jadwal (asalnya "Landasan"). Kata rusak lain: "pmahasiswangan", "menmahasiswakan", dan "Lmahasiswasan" pada dua judul kecil. Salah ketik baru: "indokator".
+- Diubah: banyak titik dua diganti kata penghubung ("meliputi", "seperti", "yaitu", "karena"); judul "Pendahuluan Bab" menjadi "Pendahuluan".
+- Baru: satu paragraf indikator kunci kajian pustaka (58 kata).
+- Tidak ada lagi: bagian "Memakai alat AI secara bertanggung jawab dalam kajian pustaka" (judul dan 3 paragraf, 355 kata) beserta dua entri rujukan (Adel dan Alani; Walters dan Wilder).
+
+### Bab 6
+
+- Komentar tim (Inawati FS, 11 Okt 2026) pada judul "Standar Validitas dan Reliabilitas Instrumen": "tambahkan rumus dalam menghitung hasil validasi ahli dan uji coba pengguna serta berikan contohnya".
+- Kata rusak: "Stmahasiswar" dan "stmahasiswar" (3), "Tmahasiswa" (2), "gmahasiswa", "mengmahasiswalkan", "menmahasiswai".
+- Diubah: tujuan pembelajaran dipecah dua; judul "Data Pendukung: Standar Validitas ..." menjadi "Standar Validitas ..."; paragraf persentase kelayakan dipendekkan (contoh studi dibuang).
+- Baru: satu paragraf pengantar pengembangan instrumen (49 kata); judul "Pengelolaan dan Analisis Hasil Wawancara" dan "Instrumen dan Analisis Data".
+- Tidak ada lagi: paragraf kriteria persentase (123 kata), paragraf asal kode induktif dan deduktif (132 kata), bagian "Dari analisis data ke rekomendasi yang actionable" (88 kata), judul "Keterampilan instrumen dan analisis data sebagai bekal employability", bagian "Menghitung kesepakatan ahli untuk tiap butir" (137 kata) dan paragraf indeks V Aiken (141 kata), serta lima entri rujukan (Byrne; Coates dkk.; Mulyanto dan Suhartanta; Naeem dkk.; Ryandika dkk.).
+
+Dari berkasnya tidak bisa dipastikan apakah bagian yang tidak ada lagi itu dipangkas tim atau memang belum ada di salinan dasar yang tim sunting. Petunjuk ke arah dipangkas: kalimat pertama dua paragraf Bab 3 masih tersisa, dan entri rujukan bagian itu ikut tidak ada.
+
+Rincian tiap paragraf yang berubah: keluaran `baca346.py` di `.claude/catatan-346/hasil-baca.txt`.
