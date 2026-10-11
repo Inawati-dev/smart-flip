@@ -1,10 +1,11 @@
-# Daftar tulisan sesi di Bab 1 dan Bab 2 (antrean #200 dan #201)
+# Daftar tulisan sesi di Bab 1 dan Bab 2 (antrean #200, #201, #203, #205)
 
-Disusun 11 Okt 2026 dari berkas di `kerja nyata/Naskah sampai Aktivitas Mandiri/` (tersimpan 13:52) dibandingkan dengan berkas asal suntingan manual di `.claude/cadangan-200/`.
-Semua paragraf di daftar ini ditulis sesi (mesin), bukan tim penulis. Warnanya merah FF0000, sama dengan merah yang sudah dipakai tim penulis di berkas asal, jadi warna saja tidak membedakannya. Daftar inilah pembedanya.
+Disusun 11 Okt 2026 dari berkas di `kerja nyata/Naskah sampai Aktivitas Mandiri/` dibandingkan dengan berkas asal suntingan manual di `.claude/cadangan-200/`.
+
+Semua yang ada di daftar ini ditulis sesi (mesin), bukan tim penulis, dan berwarna **biru 0070C0** di naskah. Teks merah di kedua berkas seluruhnya milik tim penulis dan tidak diubah warnanya, kecuali kata yang dibetulkan di tabel pembetulan.
 Nomor halaman adalah nomor yang tercetak di kaki halaman PDF ekspor (`.claude/cadangan-200/pdf-hasil/`).
 
-## Bab 1
+## Bab 1: materi baru
 
 | No | Subbab | Jenis | Awal kalimat | Kata | Halaman |
 |---|---|---|---|---|---|
@@ -15,9 +16,25 @@ Nomor halaman adalah nomor yang tercetak di kaki halaman PDF ekspor (`.claude/ca
 | 5 | Pendekatan Kuantitatif, Kualitatif, dan R&D | paragraf | Pendekatan R&D memakai kedua jenis data itu untuk tujuan ... | 109 | 12 |
 | 6 | Pendekatan Kuantitatif, Kualitatif, dan R&D | paragraf | Tiga pertanyaan berikut membantu mahasiswa mengisi kolom paradigma pada ... | 69 | 12 |
 
-Jumlah kata tulisan sesi di Bab 1: 433.
+Jumlah kata materi baru di Bab 1: 433.
 
-## Bab 2
+## Bab 1: pembetulan teks lama
+
+| Antrean | Letak (kata sebelumnya) | Sebelum | Sesudah (biru) |
+|---|---|---|---|
+| #201 | ... pilihan | gmahasiswa | ganda |
+| #201 | ... kuantitatif | mengmahasiswalkan | mengandalkan |
+| #201 | ... luaran | gmahasiswa | ganda |
+| #203 | ... satu | sam alain | sama lain |
+| #203 | ... paradigma | penbelitian | penelitian |
+| #203 | ... R&D) | memliki | memiliki |
+| #203 | ... penelitian | tersut | tersebut |
+| #203 | ... bertujuan | untukmenggali | untuk menggali |
+| #203 | ... dosen | da | dan |
+| #203 | ... R&D | dengen | dengan |
+| #203 | ... Anggaplah | pada ini | bab ini |
+
+## Bab 2: materi baru
 
 | No | Subbab | Jenis | Awal kalimat | Kata | Halaman |
 |---|---|---|---|---|---|
@@ -35,15 +52,23 @@ Jumlah kata tulisan sesi di Bab 1: 433.
 | 12 | Contoh Penggunaan Teknik Fishbone | paragraf | Diagram ini dibaca dengan dua cara. Cara pertama melihat ... | 100 | 11 |
 | 13 | Contoh Penggunaan Teknik Fishbone | paragraf | Tiga kekeliruan sering muncul saat mahasiswa pertama kali membuat ... | 60 | 12 |
 
-Jumlah kata tulisan sesi di Bab 2: 651.
+Jumlah kata materi baru di Bab 2: 651.
 
-## Perubahan lain oleh sesi
+## Bab 2: pembetulan teks lama
 
-| Bab | Letak | Sebelum | Sesudah |
+| Antrean | Letak (kata sebelumnya) | Sebelum | Sesudah (biru) |
 |---|---|---|---|
-| 1 | Tabel 1.1, baris Penutup pertemuan ke-2 | pilihan gmahasiswa | pilihan ganda (kata "ganda" merah) |
-| 1 | Uraian Materi, paragraf "Tiga paradigma besar ..." | mengmahasiswalkan | mengandalkan (merah) |
-| 1 | Subbab "Ciri Penelitian Pengembangan dan Luarannya" | luaran gmahasiswa | luaran ganda (merah) |
-| 2 | Tabel 2.3, baris Manusia | di atas stmahasiswar | di atas standar (merah) |
-| 2 | Keterangan gambar UMKM | Gambar 2.2 | Gambar 2.3 (angka "2.3" merah) |
-| 1 dan 2 | Daftar isi di halaman 1 | belum memuat judul baru | diperbarui lewat Word |
+| #201 | ... di atas | stmahasiswar | standar |
+| #203 | ... Kegiatan | identifikais | identifikasi |
+| #203 | ... telah | mengudentifikasi | mengidentifikasi |
+| #203 | ... lapangan/kampus/ | lingkunagn | lingkungan |
+| #203 | ... biasanya | anda | Anda |
+| #203 | ... masalah dan studi | perbandingan | pendahuluan |
+| #203 | ... simpan pinjam pada | Bab 1 | bab ini |
+| #200 | Keterangan gambar UMKM | Gambar 2.2 | Gambar 2.3 (angka biru) |
+
+## Perubahan lain
+
+- Daftar isi di halaman 1 tiap bab diperbarui lewat Word (judul baru masuk, nomor halaman bergeser).
+- Setelan "sematkan fon" di kedua berkas dimatikan supaya ukuran berkas tidak membengkak.
+- Dua pembetulan bukan salah ketik murni dan perlu dibaca penulis: "Anggaplah pada ini" menjadi "Anggaplah bab ini" (Bab 1), dan "studi kasus koperasi simpan pinjam pada Bab 1" menjadi "pada bab ini" (Bab 2, karena kasusnya ada di Bab 2).
