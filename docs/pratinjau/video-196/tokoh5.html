@@ -1,0 +1,92 @@
+      <div class="clip" id="papan" data-start="0" data-duration="@@TOTAL@@" data-track-index="6"><div id="papan-bidang"></div><div id="papan-rak"></div><div id="papan-spidol"></div><div id="papan-hapus"></div></div>
+      <div class="clip" id="tokoh" data-start="0" data-duration="@@TOTAL@@" data-track-index="7">
+        <!-- Tokoh: dosen laki-laki bersongkok Bugis (songkok recca), jas tutup. Sisi "k" = lengan di kanan layar (dekat papan). -->
+        <svg viewBox="0 0 470 800" width="470" height="800" style="overflow: visible" aria-hidden="true">
+          <defs>
+            <!-- tangan terbuka: telapak dan empat jari menyatu, ibu jari terpisah; pergelangan di (0,0), jari mengarah ke bawah -->
+            <g id="bentuk-tangan">
+              <rect x="-31" y="3" width="11.5" height="28" rx="5.7" fill="#D7A476" transform="rotate(-26 -17 6)" />
+              <path d="M-13 -3 L13 -3 C16 5 18 13 18 23 L18 38.5 A4.5 4.5 0 0 1 9 38.5 L9 47.5 A4.5 4.5 0 0 1 0 47.5 L0 50.5 A4.5 4.5 0 0 1 -9 50.5 L-9 45 A4.5 4.5 0 0 1 -18 45 L-18 23 C-18 13 -16 5 -13 -3 Z" fill="#D7A476" />
+              <path d="M9 29 L9 39 M0 29 L0 48 M-9 29 L-9 46" fill="none" stroke="#C48F62" stroke-width="1.6" stroke-linecap="round" />
+            </g>
+            <!-- tangan memegang spidol -->
+            <g id="bentuk-spidol">
+              <rect x="-7.5" y="12" width="15" height="52" rx="5" fill="#26211E" />
+              <rect x="-6" y="58" width="12" height="16" rx="4" fill="#B8855A" />
+              <rect x="-30" y="4" width="11.5" height="23" rx="5.7" fill="#D7A476" transform="rotate(-14 -17 6)" />
+              <rect x="-18" y="-3" width="36" height="36" rx="13" fill="#D7A476" />
+              <path d="M-15 15 L15 15 M-15 23 L15 23" fill="none" stroke="#C48F62" stroke-width="1.6" stroke-linecap="round" />
+            </g>
+          </defs>
+          <ellipse cx="200" cy="772" rx="150" ry="20" fill="#3E362E" opacity=".14" />
+          <!-- kaki dan sepatu -->
+          <rect x="140" y="520" width="54" height="234" rx="22" fill="#3E362E" />
+          <rect x="206" y="520" width="54" height="234" rx="22" fill="#3E362E" />
+          <rect x="124" y="740" width="76" height="30" rx="15" fill="#241F1C" />
+          <rect x="200" y="740" width="76" height="30" rx="15" fill="#241F1C" />
+          <g id="tk-atas">
+            <!-- badan: jas tutup berkancing emas -->
+            <rect x="112" y="288" width="176" height="276" rx="44" fill="#6B5D4F" />
+            <rect x="198" y="300" width="4" height="258" rx="2" fill="#594C40" />
+            <circle cx="200" cy="336" r="5.5" fill="#C9A24B" />
+            <circle cx="200" cy="386" r="5.5" fill="#C9A24B" />
+            <circle cx="200" cy="436" r="5.5" fill="#C9A24B" />
+            <circle cx="200" cy="486" r="5.5" fill="#C9A24B" />
+            <rect x="226" y="352" width="34" height="5" rx="2.5" fill="#594C40" />
+
+            <!-- Lengan: satu kurva dari bahu lewat siku ke pergelangan (bentuknya diisi skrip), bagian atas sedikit lebih tebal.
+                 Tangan dan manset digambar dengan pergelangan di titik (0,0) dan digeser skrip ke ujung lengan. -->
+            <path id="l-lengan" d="M128 322 Q128 410 128 497" fill="none" stroke="#5C4F43" stroke-width="37" stroke-linecap="round" />
+            <path id="l-atas" d="M128 322 Q128 366 128 410" fill="none" stroke="#5C4F43" stroke-width="45" stroke-linecap="round" />
+            <g id="l-tangan">
+              <use href="#bentuk-tangan" transform="scale(-1 1)" />
+              <rect x="-19" y="-11" width="38" height="14" rx="5" fill="#FFFDF8" />
+            </g>
+            <path id="k-lengan" d="M272 322 Q272 410 272 497" fill="none" stroke="#5C4F43" stroke-width="37" stroke-linecap="round" />
+            <path id="k-atas" d="M272 322 Q272 366 272 410" fill="none" stroke="#5C4F43" stroke-width="45" stroke-linecap="round" />
+            <g id="k-tangan">
+              <g id="k-buka"><use href="#bentuk-tangan" /></g>
+              <g id="k-spidol"><use href="#bentuk-spidol" /></g>
+              <rect x="-19" y="-11" width="38" height="14" rx="5" fill="#FFFDF8" />
+            </g>
+
+            <!-- leher, kerah tegak, kepala; kepala berputar di pangkal leher (200,268) -->
+            <rect x="181" y="246" width="38" height="56" rx="14" fill="#C48F62" />
+            <path d="M170 300 Q170 284 186 284 L214 284 Q230 284 230 300 L226 308 L174 308 Z" fill="#594C40" />
+            <g id="tk-kepala">
+              <!-- rambut pendek: hanya terlihat di pelipis, di bawah tepi songkok -->
+              <ellipse cx="200" cy="176" rx="66" ry="62" fill="#1F1B18" />
+              <ellipse cx="137" cy="204" rx="9" ry="13" fill="#C48F62" />
+              <ellipse cx="263" cy="204" rx="9" ry="13" fill="#C48F62" />
+              <ellipse cx="200" cy="196" rx="62" ry="70" fill="#D7A476" />
+              <!-- songkok Bugis: selebar kepala, tepi bawahnya melingkari dahi; atas hitam, pita bawah emas bergaris -->
+              <path d="M137.5 157 L142 96 Q200 78 258 96 L262.5 157 Q200 170 137.5 157 Z" fill="#26211E" />
+              <path d="M141.6 104 Q200 90 258.4 104" fill="none" stroke="#3D3530" stroke-width="1.6" />
+              <path d="M140.8 116 Q200 104 259.2 116" fill="none" stroke="#3D3530" stroke-width="1.6" />
+              <path d="M139.6 130 Q200 143 260.4 130 L262.5 157 Q200 170 137.5 157 Z" fill="#C9A24B" />
+              <path d="M139 139 Q200 152 261 139" fill="none" stroke="#26211E" stroke-width="2.2" />
+              <path d="M138.3 147.5 Q200 160.5 261.7 147.5" fill="none" stroke="#26211E" stroke-width="2.2" />
+              <g id="tk-wajah">
+                <g id="tk-alis">
+                  <rect x="158" y="176" width="32" height="7" rx="3.5" fill="#1F1B18" />
+                  <rect x="210" y="176" width="32" height="7" rx="3.5" fill="#1F1B18" />
+                </g>
+                <g class="tk-mata">
+                  <ellipse cx="175" cy="199" rx="10.5" ry="11" fill="#FFFDF8" />
+                  <circle class="tk-pupil" cx="175" cy="200" r="7.5" fill="#1F1B18" />
+                </g>
+                <g class="tk-mata">
+                  <ellipse cx="225" cy="199" rx="10.5" ry="11" fill="#FFFDF8" />
+                  <circle class="tk-pupil" cx="225" cy="200" r="7.5" fill="#1F1B18" />
+                </g>
+                <path d="M196 206 Q192 220 200 222 Q208 220 204 206" fill="#C48F62" />
+                <g id="tk-mulut">
+                  <ellipse cx="200" cy="241" rx="18" ry="13" fill="#6E2F25" />
+                  <rect x="188" y="230" width="24" height="6" rx="3" fill="#FFFDF8" />
+                  <ellipse cx="200" cy="248" rx="9" ry="5" fill="#C56A5A" />
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
