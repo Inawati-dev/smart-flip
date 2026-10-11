@@ -1,6 +1,7 @@
 # Spek Video Pembelajaran per Pertemuan (antrean #196)
 
-Status: USULAN, menunggu keputusan Johan. Belum ada video yang dibuat dan belum ada agen yang dikirim.
+Status: USULAN, menunggu keputusan Johan. Belum ada video penuh yang dibuat dan belum ada agen yang dikirim.
+Diperbarui 11 Okt 2026 malam: bentuk video, tokoh, gerak, suara, dan cara membuat diisi dari sembilan contoh 1 menit yang dikoreksi Johan (bagian 3, 3a, 3b, 6, 7). Contoh terakhir: `docs/pratinjau/video-196/contoh-dosen-kelas-v5.mp4`; Johan belum menyatakan contoh itu sudah cocok.
 Disusun 11 Okt 2026 dari enam berkas di `kerja nyata/Naskah sampai Aktivitas Mandiri/` (Bab 1 sampai Bab 6).
 
 Yang dibaca: Bab 1 dibaca penuh (3.926 kata, hitungan skrip `ekstrak196.py`). Bab 2 sampai Bab 6 dibaca pada bagian tujuan, tabel jadwal pertemuan, dua paragraf pertama tiap subbab, kotak studi kasus, daftar tabel dan gambar, serta langkah Aktivitas Mandiri. Isi penuh tiap subbab Bab 2 sampai Bab 6 dibaca saat naskah narasinya ditulis.
@@ -32,8 +33,8 @@ Pembagian ini mengikuti tabel jadwal di tiap bab (Tabel 1.1, 2.1, 3.1, 4.1, 5.1,
 | Hal | Ketentuan |
 |---|---|
 | Durasi | 5 sampai 7 menit, sasaran 6 menit |
-| Narasi | 470 sampai 650 kata bahasa Indonesia. Diukur 11 Okt 2026 pada contoh 1 menit: suara sintetis `id-ID-GadisNeural` membaca 91 kata dalam 52,8 detik (103 kata per menit) pada laju +6%, dan 123 kata dalam 77,2 detik (96 kata per menit) pada laju -4%. Taksiran awal 130 sampai 150 kata per menit keliru |
-| Gaya | Tanpa wajah: suara narator, teks kunci, diagram, dan tabel yang digambar ulang dari gambar dan tabel naskah |
+| Narasi | 580 sampai 810 kata bahasa Indonesia, sasaran sekitar 690 kata untuk 6 menit. Diukur 11 Okt 2026 pada contoh bersuara `id-ID-ArdiNeural`: 105 kata menjadi video 54,5 detik termasuk jeda antarkalimat, yaitu sekitar 116 kata per menit (44,9 detik bicara, hitungan `tts2.py` dan `ffprobe`). Suara `id-ID-GadisNeural` lebih lambat: 96 sampai 103 kata per menit. Taksiran awal 130 sampai 150 kata per menit keliru |
+| Gaya | Dosen kartun mengajar di ruang kelas: tokoh berdiri di kiri, isi materi (teks kunci, diagram, tabel yang digambar ulang dari naskah) tampil di papan tulis di kanan, takarir di bawah papan. Rincian di bagian 3a |
 | Sapaan | "Anda", sama dengan naskah |
 | Warna dan fon | Warna tema aplikasi (cream, ivory, terra, sage, brown) dan fon aplikasi, supaya video menyatu dengan Smart Flip |
 | Ukuran | 1920x1080, 30 gambar per detik, MP4 (H.264 dan AAC) |
@@ -50,6 +51,53 @@ Urutan isi yang sama di semua video:
 | 0:45 sampai 5:15 | Inti | Tiga atau empat segmen, tiap segmen 60 sampai 90 detik, satu gagasan dan satu contoh dari naskah |
 | 5:15 sampai 6:00 | Jembatan | Pertemuan pertama: apa yang disiapkan untuk kelas. Pertemuan kedua: langkah Aktivitas Mandiri dan Tes Formatif |
 | 6:00 sampai 6:30 | Rangkuman | Tiga butir, lalu ajakan membuka modul dan menu yang dituju di Smart Flip |
+
+## 3a. Tokoh, ruang kelas, dan gerak
+
+Semua butir di sini lahir dari koreksi Johan atas contoh 1 menit (11 Okt 2026). Kutipan permintaannya ada di `docs/antrean-permintaan.md` baris #196.
+
+**Tokoh**
+- Dosen laki-laki bersongkok Bugis (atas hitam, pita bawah emas bergaris hitam) dan jas tutup berkancing emas, kemeja bermanset putih.
+- Songkok selebar kepala, tepi bawahnya melengkung melingkari dahi, rambut pendek terlihat di pelipis di bawah tepinya.
+- Tangan satu bentuk utuh: telapak, empat jari rapat berujung bulat, ibu jari menyambung ke telapak, garis antarjari pendek. Tangan memegang spidol berupa kepalan satu bentuk.
+- Lengan satu kurva dari bahu lewat siku ke pergelangan, bagian atas sedikit lebih tebal. Bukan potongan kaku yang diputar.
+
+**Aturan lengan**
+- Siku selalu di luar garis badan. Di skrip, siku harus lebih dari 16 ke luar dari bahu pada semua pose bergerak (garis badan 16 dari bahu); pose sekarang 26 sampai 84.
+- Lengan tidak menyilang ke sisi badan yang lain dan dua lengan tidak membentuk silang.
+- Saat istirahat kedua lengan lurus ke bawah.
+
+**Pose**
+
+| Pose | Kapan dipakai |
+|---|---|
+| Istirahat | Sebelum bicara dan di penutup |
+| Bicara (empat letak tangan kanan: sedang, lebih tinggi, lebih rendah, lebih lebar) | Selama narasi; berpindah pada kata panjang yang ditekankan |
+| Bertanya (tangan kanan naik dengan siku ke luar, tangan kiri terbuka rendah, kepala miring, alis naik) | Menjelang akhir kalimat tanya |
+| Menunjuk papan dengan spidol (melirik papan dulu, lengan menyusul, lalu kembali menatap penonton) | Tepat saat kata kunci diucapkan dan isinya muncul di papan |
+
+**Gerak lain**
+- Bentuk mulut per huruf, waktunya dari batas tiap kata yang diberikan mesin suara.
+- Kedip berjarak tidak rata, anggukan kecil di awal kalimat, badan berayun pelan.
+- Isi papan muncul tepat saat katanya diucapkan, bukan dengan taksiran waktu.
+
+**Ruang kelas**
+- Dinding, lis, lantai papan kayu, jendela dengan pucuk pohon, jam dinding, meja dosen bertumpuk buku.
+- Papan tulis menempel di dinding dengan spidol dan penghapus di raknya.
+- Tidak ada mahasiswa di gambar, karena bagian bawah layar dipakai takarir.
+
+**Batas cara ini**
+- Jari tidak bisa menekuk satu per satu, dan kain lengan tidak berlipat.
+- Lebar lengan hampir rata dari siku ke pergelangan.
+- Papan lebih kecil dari layar penuh, jadi tulisan lebih kecil daripada versi tanpa tokoh. Keterbacaan di telepon belum diukur.
+
+## 3b. Suara dan naskah
+
+- Suara yang dipilih Johan: laki-laki, `id-ID-ArdiNeural` ("suara dengan banding-suara-2-ardi-indonesia"). Sumber suaranya belum diputuskan; lihat bagian 8a.
+- Naskah ditulis dalam gaya bicara: kalimat pendek, sapaan "Anda", kata penghubung lisan seperti "nah", "kan", "sih". Johan belum menyatakan keberatan atau persetujuan atas gaya ini.
+- Tiap kalimat dibuat sebagai berkas suara sendiri, dengan laju dan nada sedikit berbeda: kalimat tanya sedikit lebih tinggi, kalimat penutup lebih lambat.
+- Singkatan yang dibaca salah oleh mesin suara ditulis menurut bunyinya di teks yang dibaca, dan ditulis biasa di takarir. Contoh: "R&D" dibaca dari teks "ar en di".
+- Sesi tidak bisa mendengar. Alami atau tidaknya suara dinilai Johan.
 
 ## 4. Aturan isi
 
@@ -225,13 +273,34 @@ Segmen inti:
 Tampilan kunci: lembar kerja spreadsheet tiruan yang menghitung rata-rata dan persentase; komentar wawancara diberi kode lalu dikelompokkan.
 Jembatan: enam langkah AM-6, susunan Bab 3 proposal, kirim lewat Mini Projek, Tes Formatif Bab 6.
 
-## 6. Cara membuat (usulan)
+## 6. Cara membuat
 
-1. Alat: HyperFrames (video dibuat dari HTML lalu dirender ke MP4), alur `general-video` karena durasinya di atas 3 menit. Belum diuji untuk video 6 menit di mesin ini.
-2. Suara: belum diputuskan (lihat pertanyaan 2 di bawah). Mutu suara sintetis bahasa Indonesia belum diuji.
-3. Tiap video punya folder sendiri berisi naskah narasi (`narasi.md`), daftar adegan, berkas komposisi, takarir `.vtt`, dan hasil MP4.
-4. Urutan kerja: (a) naskah narasi dan daftar adegan ditulis dan disetujui Johan; (b) video dirender; (c) pemeriksa mencocokkan narasi dengan naskah bab.
-5. Percontohan dulu: Bab 1 Pertemuan 1 dibuat sampai jadi dan ditonton Johan. Sebelas video lain dibuat sesudah percontohan disetujui, memakai bentuk dan gaya yang sama.
+Cara ini sudah dipakai untuk sembilan contoh 1 menit. Untuk video 5 sampai 7 menit belum diuji.
+
+1. Alat: HyperFrames versi 0.8.145 (video dibuat dari HTML lalu dirender ke MP4), dijalankan lewat `npx`. Contoh 54,5 detik selesai dirender dalam 35 sampai 44 detik di mesin ini.
+2. Sumber contoh ada di `docs/pratinjau/video-196/`:
+
+| Berkas | Isi |
+|---|---|
+| `tts2.py` | Naskah per adegan dan per kalimat; membuat satu berkas suara per kalimat dan mencatat waktu tiap kata ke `narasi2.json` |
+| `buat2.py` | Menyusun `index.html` dari suara: waktu mulai tiap kalimat, takarir, adegan, dan data gerak |
+| `templat.html` | Tata letak, warna, fon, dan enam adegan papan |
+| `skrip2.js` | Waktu munculnya isi papan, diikat ke kata yang diucapkan |
+| `kelas.html` | Gambar ruang kelas |
+| `tokoh5.html`, `tokoh5.js` | Gambar tokoh dan aturan geraknya (versi yang berlaku) |
+
+3. Urutan perintah untuk membangun ulang contoh, dari folder yang memuat berkas di atas, folder `fon` berisi dua fon aplikasi, dan satu proyek HyperFrames kosong bernama `tokoh5`:
+
+```bash
+python tts2.py assets3 id-ID-ArdiNeural
+python buat2.py tokoh5 assets3 5
+cd tokoh5 && npx hyperframes validate && npx hyperframes render --output ../contoh.mp4
+```
+
+4. Yang tidak tersimpan di repo: berkas MP4 dan MP3 hasil, dua berkas fon (diunduh dari Google Fonts), dan folder proyek HyperFrames. Semuanya bisa dibuat ulang dari berkas di atas.
+5. Urutan kerja tiap video: (a) bab dibaca penuh; (b) naskah narasi dan daftar adegan ditulis dan disetujui Johan; (c) lembar pose atau gambar diam dikirim dulu bila ada perubahan rupa; (d) video dirender; (e) pemeriksa mencocokkan narasi dengan naskah bab.
+6. Percontohan dulu: Bab 1 Pertemuan 1 dibuat sampai jadi dan ditonton Johan. Sebelas video lain dibuat sesudah percontohan disetujui.
+7. Perubahan rupa tokoh selalu diperlihatkan sebagai gambar diam lebih dulu (antrean #199). Sesi memeriksa hasil lewat gambar diam dari video jadi; kehalusan gerak dan suara dinilai Johan.
 
 ## 7. Kriteria terima tiap video
 
@@ -240,13 +309,18 @@ Jembatan: enam langkah AM-6, susunan Bab 3 proposal, kirim lewat Mini Projek, Te
 | Durasi 300 sampai 420 detik | `ffprobe -show_entries format=duration` |
 | Ukuran 1920x1080, ada jalur suara | `ffprobe -show_streams` |
 | Besar berkas paling besar 100 MB | `ls -l` |
-| Narasi 470 sampai 650 kata | hitung kata `narasi.md` |
+| Narasi 580 sampai 810 kata | hitung kata `narasi.md` |
 | Tiap angka dan nama penulis di narasi ada di naskah bab | skrip yang mencari tiap angka dan nama di teks bab; hasil "tidak ditemukan" harus nol |
 | Urutan enam bagian lengkap | daftar adegan memuat enam bagian dengan waktunya |
 | Takarir ada dan sama dengan narasi | berkas `.vtt` dibandingkan dengan `narasi.md` |
 | Teks terbaca di telepon | gambar diam tiap adegan dilihat pada lebar 412 px |
+| Siku di luar garis badan pada semua pose | hitungan letak siku di skrip: tiap pose bergerak lebih dari 16 ke luar dari bahu |
+| Tangan menempel di ujung lengan sepanjang gerak | urutan gambar dari video jadi di sekitar tiap perpindahan pose |
+| Rupa tokoh sama dengan lembar pose yang disetujui | lembar pose dibandingkan dengan gambar diam dari video jadi |
 
 ## 8. Yang perlu diputuskan Johan
+
+Sudah diputuskan Johan lewat koreksi contoh: tokoh dosen laki-laki bersongkok Bugis di ruang kelas, dan suara Ardi. Yang belum:
 
 1. Isi dan pembagian per pertemuan di bagian 5: sudah sesuai, atau ada segmen yang ditukar?
 2. Suara narator: suara sintetis bahasa Indonesia (cepat, mutunya belum diuji) atau rekaman suara dosen (narasi dikirim sebagai naskah baca)?
