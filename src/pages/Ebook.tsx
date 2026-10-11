@@ -100,7 +100,7 @@ export function Ebook() {
                     aria-label={`Buka topik ${m.order_num}: ${m.title}`}
                     className="block w-full text-left rounded-[4px_10px_10px_4px] transition-transform hover:-translate-y-0.5"
                   >
-                    <SampulTopik nomor={m.order_num} judul={m.title} keterangan="PDF" adaPdf />
+                    <SampulTopik nomor={m.order_num} judul={m.title} keterangan="PDF" adaPdf pdf={m.pdf_path} />
                   </button>
                 ))}
               </div>

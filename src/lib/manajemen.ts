@@ -1,3 +1,4 @@
+import { AKHIRAN_SAMPUL } from './sampulPdf'
 import { supabase, isSupabaseConfigured } from './supabase'
 
 // Mirrors legacy/data-layer.js's "MANAJEMEN MODUL" section (saveModulCustom /
@@ -230,7 +231,7 @@ export async function buangBerkasYatim(urls: Array<string | null | undefined>): 
         .eq(pdf ? 'pdf_path' : 'video_url', url)
       // Ragu = jangan hapus: hitungan gagal dibaca diperlakukan sebagai "masih dipakai".
       if (error || count == null || count > 0) continue
-      await supabase.storage.from(pdf ? 'modul-pdf' : 'modul-video').remove([nama])
+      await supabase.storage.from(pdf ? 'modul-pdf' : 'modul-video').remove(pdf ? [nama, nama + AKHIRAN_SAMPUL] : [nama])
     } catch (e) {
       console.warn('[manajemen] buangBerkasYatim gagal untuk', url, e)
     }
@@ -325,7 +326,7 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
     // tidak menghapus file yang baru saja diunggah.
     if (prevObject && prevObject !== path) {
       try {
-        await supabase.storage.from('modul-pdf').remove([prevObject])
+        await supabase.storage.from('modul-pdf').remove([prevObject, prevObject + AKHIRAN_SAMPUL])
       } catch (cleanupError) {
         console.warn('[manajemen] uploadModulPdf → gagal menghapus PDF lama:', cleanupError)
       }

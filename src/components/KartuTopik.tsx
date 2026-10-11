@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { buatSampul, urlSampul } from '../lib/sampulPdf'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
@@ -10,6 +12,10 @@ export interface KartuTopikProps {
   judul: string
   /** Teks kecil di kaki sampul, mis. "40 hal" atau "PDF". */
   keterangan?: string
+  /** Alamat PDF topik; bila ada di bucket modul-pdf, halaman pertamanya jadi sampul (antrean #192). */
+  pdf?: string | null
+  /** Dosen: buatkan gambar sampul dari PDF bila belum ada. */
+  buatSampul?: boolean
   /** Sudah punya PDF atau belum (antrean #162); bila diisi, keterangan tampil sebagai lencana dan sampul tanpa PDF dipudarkan. */
   adaPdf?: boolean
   /** 0..100; bar progres di bawah sampul. Tidak ditampilkan bila undefined. */
@@ -34,7 +40,50 @@ export function warnaSampul(nomor: number): string {
 
 // Sampul buku satu topik. Satu-satunya bentuk sampul PDF di aplikasi (antrean
 // #147): rak Modul, halaman topik, dan katalog Ebook memakai komponen ini.
-export function SampulTopik({ nomor, judul, keterangan, adaPdf }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean }) {
+// Sejak antrean #192 sampulnya halaman pertama PDF, polos tanpa tulisan di
+// atasnya; nomor topik, judul, dan keterangan pindah ke bawah gambar. Topik
+// tanpa PDF, atau yang gambar sampulnya belum ada, memakai sampul rancangan.
+export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean }) {
+  const src = urlSampul(props.pdf)
+  // key: ganti PDF berarti mulai lagi dari mencoba memuat gambarnya.
+  return src ? <SampulGambar key={src} src={src} {...props} /> : <SampulRancangan {...props} />
+}
+
+function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean }) {
+  // coba: memuat gambar. membuat: gambar belum ada dan dosen sedang membuatnya. gagal: pakai sampul rancangan.
+  const [tahap, setTahap] = useState<'coba' | 'membuat' | 'gagal'>('coba')
+  const [versi, setVersi] = useState(0)
+  if (tahap !== 'coba') return <SampulRancangan nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} />
+  return (
+    <div className="flex flex-col gap-1.5">
+      <img
+        src={versi ? `${src}?v=${versi}` : src}
+        alt=""
+        loading="lazy"
+        className="block w-full aspect-[3/4] object-cover object-top rounded-[4px_10px_10px_4px] bg-ivory"
+        style={{ boxShadow: '0 6px 14px -8px color-mix(in srgb, var(--shadow-color) 35%, transparent), 0 0 0 1px var(--border)' }}
+        onError={() => {
+          // Gambar belum ada: dosen membuatkannya sekali dari PDF, mahasiswa melihat sampul rancangan.
+          if (!buat || versi || !pdf) return setTahap('gagal')
+          setTahap('membuat')
+          void buatSampul(pdf).then((ok) => {
+            if (ok) setVersi(Date.now())
+            setTahap(ok ? 'coba' : 'gagal')
+          })
+        }}
+      />
+      <span className="block text-[13px] leading-snug">
+        <span className="block font-semibold text-brown line-clamp-2">{judul}</span>
+        <span className="block text-brown-3 tabular-nums">
+          Topik {String(nomor).padStart(2, '0')}
+          {keterangan ? ` · ${keterangan}` : ''}
+        </span>
+      </span>
+    </div>
+  )
+}
+
+function SampulRancangan({ nomor, judul, keterangan, adaPdf }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean }) {
   return (
     <div
       className="w-full aspect-[3/4] flex flex-col justify-between p-3.5 pl-5 rounded-[4px_10px_10px_4px]"
@@ -67,8 +116,8 @@ export function SampulTopik({ nomor, judul, keterangan, adaPdf }: { nomor: numbe
   )
 }
 
-export function KartuTopik({ nomor, judul, keterangan, adaPdf, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi }: KartuTopikProps) {
-  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} />
+export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi }: KartuTopikProps) {
+  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} />
   const bisaKlik = !terkunci && (to || onClick)
   const label = `Buka topik ${nomor}: ${judul}`
   return (

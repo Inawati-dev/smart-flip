@@ -284,6 +284,8 @@ export function DosenModulRak() {
                 judul={judul}
                 keterangan={fileName ? 'PDF' : 'Belum Ada PDF'}
                 adaPdf={!!fileName}
+                pdf={m.pdf_path}
+                buatSampul
                 kaki={m.estimasi_menit ? `± ${m.estimasi_menit} menit` : undefined}
                 aksi={
                   <>
@@ -827,6 +829,7 @@ export function ModulList() {
                       judul={m.title}
                       keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}
                       adaPdf={!!m.pdf_path}
+                      pdf={m.pdf_path}
                       persen={pct}
                       kaki={m.estimasi_menit ? `${kaki} · ± ${m.estimasi_menit} menit` : kaki}
                       chip={chip}
