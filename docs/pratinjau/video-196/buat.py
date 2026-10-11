@@ -5,6 +5,7 @@ import json, os, re, shutil, sys
 sini = os.path.dirname(os.path.abspath(__file__))
 proyek = sys.argv[1]
 wajah = len(sys.argv) > 2 and sys.argv[2] == 'wajah'
+papan = len(sys.argv) > 2 and sys.argv[2] == 'papan'
 narasi = json.load(open(os.path.join(sini, 'assets', 'narasi.json'), encoding='utf-8'))
 
 AWAL, JEDA, EKOR = 1.0, 0.5, 2.3
@@ -55,9 +56,23 @@ html_wajah = f'''
         </div>
       </div>''' if wajah else ''
 
+# gerak mulut: kerasnya suara (RMS) tiap 0,09 detik, dinormalkan ke 0..1
+def amplop(mp3):
+    import array, subprocess
+    raw = subprocess.run(['ffmpeg', '-v', 'error', '-i', mp3, '-ac', '1', '-ar', '8000', '-f', 's16le', '-'], capture_output=True).stdout
+    a = array.array('h')
+    a.frombytes(raw[:len(raw) // 2 * 2])
+    n = int(8000 * 0.09)
+    rms = [(sum(x * x for x in a[i:i + n]) / max(1, len(a[i:i + n]))) ** 0.5 for i in range(0, len(a), n)]
+    p = sorted(rms)[int(len(rms) * 0.9)] or 1
+    return [round(min(1, r / p), 2) for r in rms]
+
+mulut = [amplop(os.path.join(sini, 'assets', n['id'] + '.mp3')) for n in narasi] if papan else []
+html_tokoh = open(os.path.join(sini, 'tokoh.html'), encoding='utf-8').read().replace('@@TOTAL@@', str(total)) if papan else ''
+
 tpl = open(os.path.join(sini, 'templat.html'), encoding='utf-8').read()
 isi = {
-    'KELAS': 'wajah' if wajah else '', 'TOTAL': total, 'TAKARIR': html_takarir, 'AUDIO': html_audio, 'WAJAH': html_wajah,
+    'KELAS': 'wajah' if wajah else 'papan' if papan else '', 'TOKOH': html_tokoh, 'MULUT': json.dumps(mulut), 'TOTAL': total, 'TAKARIR': html_takarir, 'AUDIO': html_audio, 'WAJAH': html_wajah,
     'MULAI': json.dumps(mulai), 'BATAS': json.dumps(batas), 'DUR': json.dumps([n['dur'] for n in narasi]),
 }
 for i in range(6):

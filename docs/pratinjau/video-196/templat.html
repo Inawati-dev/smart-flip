@@ -50,6 +50,7 @@
       .kartu .no { display: flex; align-items: center; justify-content: center; width: 84px; height: 84px; border-radius: 50%; font-size: 44px; font-weight: 600; color: var(--ivory); }
       .kartu p { font-size: 46px; font-weight: 600; line-height: 1.2; margin-top: 30px; }
       .kartu small { display: block; font-size: 32px; color: var(--brown2); margin-top: 18px; }
+      .a5j { font-size: 92px; }
       .kutip { font-family: 'Playfair Display', serif; font-size: 124px; line-height: 1.12; max-width: 1400px; }
       .garis { display: block; width: 220px; height: 12px; border-radius: 6px; background: var(--terra); margin: 44px 0; transform-origin: 0 50%; }
 
@@ -63,6 +64,33 @@
       #wajah { position: absolute; right: 100px; bottom: 150px; width: 380px; height: 420px; }
       #wajah-kotak { position: relative; width: 380px; height: 420px; border-radius: 36px; overflow: hidden; background: linear-gradient(160deg, #D4A373, #B8855A); box-shadow: 0 18px 50px rgba(62, 54, 46, .28); border: 8px solid var(--ivory); }
       #wajah-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 10px; background: rgba(62, 54, 46, .9); color: var(--ivory); font-size: 28px; font-weight: 600; text-align: center; }
+
+      /* mode papan: tokoh kartun di kiri, isi di papan tulis */
+      #papan { position: absolute; left: 540px; top: 136px; width: 1280px; height: 740px; }
+      #papan-bidang { position: absolute; inset: 0; background: var(--ivory); border: 16px solid var(--brown2); border-radius: 26px; box-shadow: 0 18px 50px rgba(62, 54, 46, .22); }
+      #papan-rak { position: absolute; left: 80px; right: 80px; bottom: -22px; height: 22px; border-radius: 0 0 12px 12px; background: var(--brown); }
+      .papan .adegan { inset: 152px 116px 220px 556px; padding: 44px 60px; }
+      .papan .label { font-size: 26px; margin-bottom: 16px; }
+      .papan h1 { font-size: 76px; }
+      .papan h2 { font-size: 90px; }
+      .papan .a5j { font-size: 62px; }
+      .papan .tanya { font-size: 40px; margin-top: 28px; }
+      .papan .besar { font-size: 54px; margin-top: 22px; }
+      .papan .ket { font-size: 34px; margin-top: 20px; }
+      .papan .chips { margin-top: 38px; gap: 18px; }
+      .papan .chip { font-size: 34px; padding: 14px 30px; }
+      .papan .dua { gap: 40px; }
+      .papan .dua > .kanan { margin-right: -168px; transform: scale(.72); transform-origin: 0 50%; }
+      .papan .langkah { margin-top: 40px; gap: 24px; }
+      .papan .kartu { padding: 28px 26px 32px; border: 3px solid rgba(62, 54, 46, .12); box-shadow: none; }
+      .papan .kartu .no { width: 66px; height: 66px; font-size: 34px; }
+      .papan .kartu p { font-size: 36px; margin-top: 20px; }
+      .papan .kartu small { font-size: 26px; margin-top: 12px; }
+      .papan .kutip { font-size: 96px; }
+      .papan .takarir { left: 540px; right: 100px; bottom: 56px; }
+      .papan .takarir span { max-width: 1240px; font-size: 34px; }
+      #tokoh { position: absolute; left: 70px; bottom: 96px; width: 470px; height: 800px; z-index: 3; }
+      .papan .adegan, .papan .takarir { z-index: 2; }
     </style>
   </head>
   <body>
@@ -137,7 +165,7 @@
       <section class="clip adegan" id="a5" @@K5@@>
         <div class="isi" id="a5-isi">
           <p class="label">STUDI KASUS</p>
-          <h2 id="a5-judul" style="font-size: 92px">Ritel di Malang, antrean kasir panjang</h2>
+          <h2 id="a5-judul" class="a5j">Ritel di Malang, antrean kasir panjang</h2>
           <div class="langkah">
             <div class="kartu" id="a5-k1"><span class="no" style="background: #8FA287; color: #3E362E">1</span><p>Ukur waktu tunggu</p><small>kuantitatif</small></div>
             <div class="kartu" id="a5-k2"><span class="no" style="background: #B8855A">2</span><p>Wawancarai kasir</p><small>kualitatif</small></div>
@@ -157,6 +185,7 @@
 @@TAKARIR@@
       <div class="clip" id="maju" data-start="0" data-duration="@@TOTAL@@" data-track-index="4"><i id="maju-isi"></i></div>
 @@WAJAH@@
+@@TOKOH@@
 @@AUDIO@@
     </div>
     <script>
@@ -171,6 +200,30 @@
 
       tl.fromTo('#maju-isi', { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: 'none' }, 0);
       if (document.getElementById('wajah-kotak')) muncul('#wajah-kotak', 0.3);
+
+      if (document.getElementById('tokoh')) {
+        const MULUT = @@MULUT@@, LANGKAH = 0.09;
+        tl.fromTo('#papan', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' }, 0.05);
+        tl.fromTo('#tokoh', { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out' }, 0.2);
+        // napas: badan naik turun pelan
+        tl.to('#tk-atas', { y: -6, duration: 1.7, ease: 'sine.inOut', yoyo: true, repeat: Math.max(0, Math.floor(TOTAL / 1.7) - 1) }, 0);
+        // kedip
+        for (let t = 2.1; t < TOTAL - 0.5; t += 3.3) {
+          tl.to('.tk-mata', { scaleY: 0.1, duration: 0.07, transformOrigin: '50% 50%' }, t);
+          tl.to('.tk-mata', { scaleY: 1, duration: 0.1, transformOrigin: '50% 50%' }, t + 0.07);
+        }
+        // mulut mengikuti kerasnya suara tiap 0,09 detik
+        MULUT.forEach((baris, i) => {
+          baris.forEach((v, k) => tl.to('#tk-mulut', { scaleY: 0.14 + 0.86 * v, duration: LANGKAH, ease: 'none', transformOrigin: '50% 50%' }, M[i] + k * LANGKAH));
+          tl.to('#tk-mulut', { scaleY: 0.14, duration: 0.1, transformOrigin: '50% 50%' }, M[i] + baris.length * LANGKAH);
+        });
+        // lengan: menunjuk papan saat isi kunci muncul, turun di penutup
+        const tunjuk = (t) => tl.to('#tk-lengan', { rotation: -112, duration: 0.22, ease: 'power2.out', yoyo: true, repeat: 1, svgOrigin: '268 318' }, t);
+        tl.to('#tk-lengan', { rotation: -96, duration: 0.7, ease: 'power2.out', svgOrigin: '268 318' }, M[0] + D[0] * 0.6);
+        [M[1] + 1.0, M[1] + D[1] * 0.45, M[2] + 2.8, M[2] + 4.0, M[3] + 3.6, M[3] + 4.9, M[3] + 6.2, M[4] + D[4] * 0.45, M[4] + D[4] * 0.6, M[4] + D[4] * 0.8].forEach(tunjuk);
+        tl.to('#tk-lengan', { rotation: 0, duration: 0.7, ease: 'power2.inOut', svgOrigin: '268 318' }, M[5] + 0.1);
+        tl.to('#tk-kepala', { rotation: 4, duration: 0.5, ease: 'sine.inOut', yoyo: true, repeat: 1, svgOrigin: '200 250' }, M[5] + 0.3);
+      }
 
       masuk('#a1-label', 0.15); masuk('#a1-judul', 0.3); masuk('#a1-tanya', M[0] + 0.3);
       ['#a1-c1', '#a1-c2', '#a1-c3'].forEach((s, i) => muncul(s, M[0] + D[0] * 0.66 + i * 0.3));
