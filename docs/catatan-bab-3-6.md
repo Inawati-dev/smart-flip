@@ -325,7 +325,7 @@ Bagian baru "Menghitung Hasil Validasi Ahli dan Uji Coba Pengguna" disisipkan se
 | Rumus | Contoh hitung | Sumber cara |
 |---|---|---|
 | Persentase kelayakan = jumlah skor ÷ skor maksimum × 100% | aspek tampilan: 21 ÷ 30 = 70% (seluruh lembar pada contoh lama: 102 ÷ 120 = 85%) | Okterina dkk. (2025), Tabel 4: rata-rata 4,60 dari 5 ditulis 92% |
-| I-CVI = jumlah ahli yang memberi skor 3 atau 4 ÷ jumlah ahli | butir 1: 3 ÷ 3 = 1,00; butir 5: 2 ÷ 3 = 0,67 | Yusoff (2019), hlm. 51 dan 52; Wang dan Sahid (2024), hlm. 4 |
+| I-CVI = jumlah ahli yang memberi skor 3 atau 4 ÷ jumlah ahli | butir 1: 3 ÷ 3 = 1,00; butir 5: 2 ÷ 3 = 0,67 | Yusoff (2019), hlm. 52; Wang dan Sahid (2024), hlm. 4 |
 | Persentase kepraktisan = jumlah skor seluruh responden ÷ skor maksimum × 100% | 9 pengguna, 8 butir, skala 5: 306 ÷ 360 = 85% | Okterina dkk. (2025): 98% kelompok kecil, 93% kelompok besar |
 
 Rujukan baru di Daftar Rujukan Bab 6: Okterina dkk. (2025), DOI 10.29303/jppipa.v11i4.10673; Yusoff (2019), DOI 10.21315/eimj2019.11.2.6. Keduanya artikel akses terbuka yang dibuka sesi. Wang dan Sahid (2024) serta Polit dkk. (2007) sudah ada di daftar.
