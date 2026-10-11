@@ -289,3 +289,67 @@ Warna huruf: merah FF0000 masih ada di ketiganya (14.511, 13.730, dan 11.047 hur
 Dari berkasnya tidak bisa dipastikan apakah bagian yang tidak ada lagi itu dipangkas tim atau memang belum ada di salinan dasar yang tim sunting. Petunjuk ke arah dipangkas: kalimat pertama dua paragraf Bab 3 masih tersisa, dan entri rujukan bagian itu ikut tidak ada.
 
 Rincian tiap paragraf yang berubah: keluaran `baca346.py` di `.claude/catatan-346/hasil-baca.txt`.
+
+## Pembetulan dan tambahan 11 Okt 2026 malam (antrean #210 dan #211 A)
+
+Ditulis ke berkas 05, 06, dan 08 di folder naskah pada 11 Okt 2026 17:55. Berkas sebelum diubah disimpan di `.claude/cadangan-210/asal/` pada worktree sesi (md5 `f33b381e...`, `e0af4e61...`, `f5a6a9b4...`). Skrip: `betul210.py`, `isi211.py`, `sisip211.py`, `word210.py`, `cek210.py` di folder yang sama.
+
+Warna: pembetulan dan tulisan baru di badan berwarna biru 0070C0. Pembetulan di kop bab, kaki halaman, dan daftar isi mengikuti warna aslinya.
+
+### Pembetulan kata (#210): 25 tempat
+
+| Bab | Sebelum | Sesudah | Jumlah | Letak |
+|---|---|---|---|---|
+| 3 | Anda | mahasiswa | 6 | satu kotak pertanyaan reflektif, dua paragraf ruang lingkup, tiga butir Aktivitas Mandiri |
+| 3 | tidak muda disusun | tidak mudah disusun | 1 | paragraf pembuka latar belakang |
+| 4 | LmahasiswaSAN | LANDASAN | 3 | baris kop di atas daftar isi, judul bab di kop, kaki halaman |
+| 4 | Lmahasiswasan, lmahasiswasan | Landasan, landasan | 3 | paragraf jadwal, dua sel tabel |
+| 4 | pmahasiswangan | pandangan | 1 | badan |
+| 4 | menmahasiswakan | menandakan | 1 | badan |
+| 4 | indokator | indikator | 1 | badan |
+| 6 | Stmahasiswar, stmahasiswar | Standar, standar | 3 | daftar isi (dibangun ulang), badan, keterangan Tabel 6.5 |
+| 6 | Tmahasiswa | Tanda | 2 | dua sel Tabel 6.3 |
+| 6 | mengmahasiswalkan | mengandalkan | 1 | sel tabel |
+| 6 | gmahasiswa | ganda | 1 | butir Aktivitas Mandiri |
+| 6 | menmahasiswai | menandai | 1 | butir Aktivitas Mandiri |
+| 6 | oengembangan | pengembangan | 1 | badan (ditemukan pemeriksa) |
+
+Kata "antarmahasiswa" di Bab 3 dibiarkan karena memang benar.
+
+### Tambahan Bab 6 (#211 A)
+
+Menjawab komentar tim pada judul "Standar Validitas dan Reliabilitas Instrumen": "tambahkan rumus dalam menghitung hasil validasi ahli dan uji coba pengguna serta berikan contohnya". Komentar itu masih menempel di tempatnya.
+
+Bagian baru "Menghitung Hasil Validasi Ahli dan Uji Coba Pengguna" disisipkan sesudah Tabel 6.5: satu judul, empat paragraf (457 kata), tiga baris rumus, dua rujukan. Semua angka contoh rekaan dan memakai lembar validasi delapan butir pada Tabel 6.3.
+
+| Rumus | Contoh hitung | Sumber cara |
+|---|---|---|
+| Persentase kelayakan = jumlah skor ÷ skor maksimum × 100% | aspek tampilan: 21 ÷ 30 = 70% (seluruh lembar pada contoh lama: 102 ÷ 120 = 85%) | Okterina dkk. (2025), Tabel 4: rata-rata 4,60 dari 5 ditulis 92% |
+| I-CVI = jumlah ahli yang memberi skor 3 atau 4 ÷ jumlah ahli | butir 1: 3 ÷ 3 = 1,00; butir 5: 2 ÷ 3 = 0,67 | Yusoff (2019), hlm. 51 dan 52; Wang dan Sahid (2024), hlm. 4 |
+| Persentase kepraktisan = jumlah skor seluruh responden ÷ skor maksimum × 100% | 9 pengguna, 8 butir, skala 5: 306 ÷ 360 = 85% | Okterina dkk. (2025): 98% kelompok kecil, 93% kelompok besar |
+
+Rujukan baru di Daftar Rujukan Bab 6: Okterina dkk. (2025), DOI 10.29303/jppipa.v11i4.10673; Yusoff (2019), DOI 10.21315/eimj2019.11.2.6. Keduanya artikel akses terbuka yang dibuka sesi. Wang dan Sahid (2024) serta Polit dkk. (2007) sudah ada di daftar.
+
+Menyimpang dari usulan awal: usulan #211 A hanya menyebut persentase kelayakan. Rumus I-CVI ditambahkan karena Tabel 6.5 di bagian yang dikomentari memakai ambang ukuran itu tanpa cara menghitungnya.
+
+Daftar isi Bab 6 dibangun ulang lewat Word; halaman 16 menjadi 17.
+
+### Yang ditemukan tetapi tidak diubah
+
+- Kalimat lama (merah) di bagian yang sama menulis bahwa Polit, Beck, dan Owen (2007) "menyebut batas 0,78 untuk penilaian oleh tiga ahli atau lebih". Menurut tabel di Yusoff (2019) dan Wang dan Sahid (2024), angka 0,78 berasal dari Lynn (1986) untuk sembilan ahli atau lebih, dan untuk tiga sampai lima ahli patokannya 1,00. Artikel Polit dkk. tidak terbuka untuk umum dan tidak dibaca sesi, jadi kalimat lama dibiarkan. Paragraf baru hanya menjelaskan bahwa untuk tiga ahli kedua batas itu memberi keputusan yang sama.
+- Okterina dkk. (2025) tidak konsisten di dalam artikelnya: kepraktisan guru 94% di abstrak tetapi 93% di badan, dan tabel kelompok besar memuat 98% padahal teksnya 93%. Naskah memakai angka yang sama di abstrak dan teks (98% kelompok kecil, 93% kelompok besar) dan tidak memakai angka guru.
+- Daftar isi Bab 3 dan Bab 4 tampil tanpa judul bila dicetak dari Word, juga di berkas yang belum disentuh sesi (antrean #218).
+- Dua butir Aktivitas Mandiri Bab 3 kini berbunyi "dalam proyek mahasiswa"; benar tata bahasanya, tetapi tidak lagi menyapa pembaca langsung.
+
+### Pemeriksa akhir
+
+Satu agen `sonnet`, hanya membaca. Ia menjalankan ulang `cek210.py` dan `cek_pola_ai.py`, membuka seluruh bagian XML tiga berkas dengan pola cari sendiri, menghitung ulang semua angka, membuka tiga PDF sumber, mencocokkan dua rujukan ke Crossref, dan membuat enam berkas uji di `.claude/cadangan-210/periksa/`. Delapan klaim: tujuh lolos, satu disanggah.
+
+| Sanggahan atau catatan | Nasib |
+|---|---|
+| Kalimat baru menisbahkan ambang 1,00 ke Polit dkk., kalimat lama menisbahkan 0,78 ke rujukan yang sama | Diterima. Kalimat baru ditulis ulang tanpa menisbahkan ke Polit dkk.; kalimat lama dicatat di atas |
+| `cek210.py` tidak memeriksa kata rusak di daftar isi Bab 6 | Diterima. Pembanding kini memeriksanya |
+| "oengembangan" di Bab 6 | Diterima. Dibetulkan |
+
+Keluaran akhir `python cek210.py asal <folder naskah>`: `SEMUA LOLOS` (teks lama sama persis sesudah pembetulan dan urutannya tetap; merah 14.511 menjadi 14.503, 13.730 menjadi 13.701, 11.047 menjadi 11.014; komentar, gambar, dan tabel tetap). `cek_pola_ai.py teks-baru-211.txt`: keras = 0.
+
