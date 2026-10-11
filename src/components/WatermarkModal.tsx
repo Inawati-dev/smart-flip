@@ -121,7 +121,7 @@ export function WatermarkModal({ course, onClose, onSaved }: { course: Course; o
         role="dialog"
         aria-modal="true"
         aria-label="Watermark PDF"
-        className="bg-ivory rounded-2xl p-5 max-w-md w-full max-h-[90dvh] overflow-y-auto"
+        className="bg-ivory rounded-2xl modal-lebar p-5"
         style={{ animation: 'slideUpModal 0.22s ease' }}
       >
         <h3 className="text-base font-semibold text-brown mb-1">Watermark PDF</h3>

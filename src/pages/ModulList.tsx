@@ -335,7 +335,7 @@ export function DosenModulRak() {
           style={{ background: 'rgba(44,36,32,.55)' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
+            className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">{creatingNew ? 'Tambah Topik' : 'Ubah Topik'}</h3>
@@ -376,7 +376,7 @@ export function DosenModulRak() {
             {creatingNew && (
               <div className="mb-4">
                 <span className="block text-xs font-semibold text-brown-2 mb-1">PDF Topik (opsional)</span>
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
+                <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
                   <FileInput
                     accept="application/pdf,.pdf"
                     label="Pilih PDF"
@@ -405,7 +405,7 @@ export function DosenModulRak() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
               Hapus Topik "{customs[deleteId]?.judul || modules.find((m) => m.id === deleteId)?.title || ''}"?
             </h3>
@@ -430,13 +430,13 @@ export function DosenModulRak() {
           style={{ background: 'rgba(44,36,32,.55)' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] my-8 max-h-[90vh] overflow-y-auto"
+            className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Ganti PDF Topik</h3>
 
             <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah Berkas Baru</p>
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
               <FileInput
                 accept="application/pdf,.pdf"
                 label="Pilih PDF"
@@ -463,7 +463,7 @@ export function DosenModulRak() {
                 <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
                   Atau Pakai Berkas yang Sudah Ada
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 items-start">
+                <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
                   <div className="flex items-center gap-2 min-w-0">
                     <Select
                       value={pickedPdfUrl}
@@ -615,7 +615,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
         style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
       >
         <div
-          className="bg-ivory rounded-2xl p-5 sm:p-6 max-w-full w-[760px] my-6 max-h-[90dvh] overflow-y-auto"
+          className="bg-ivory rounded-2xl modal-lebar p-5 sm:p-6 my-6"
           style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
         >
           <h3 className="font-display text-lg font-semibold text-brown mb-4">Kelola Mata Kuliah</h3>
@@ -729,7 +729,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'rgba(44,36,32,.48)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">
               Hapus Mata Kuliah "{courses.find((c) => c.id === deleteId)?.name || ''}"?
             </h3>

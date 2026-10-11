@@ -99,7 +99,7 @@ export function UrutkanTopikModal({ open, modules, onClose, onSimpan }: UrutkanT
       <div
         role="dialog"
         aria-labelledby="urutkan-topik-judul"
-        className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
+        className="bg-ivory rounded-2xl modal-sedang p-6 my-8 overflow-x-hidden"
         style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
       >
         <h3 id="urutkan-topik-judul" className="font-display text-lg font-bold text-brown mb-1">

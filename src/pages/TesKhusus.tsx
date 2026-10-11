@@ -274,7 +274,7 @@ export function DosenTesKhususPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-sedang p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat Sesi Tes</h3>
@@ -419,7 +419,7 @@ export function DosenTesKhususPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[560px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between mb-1">

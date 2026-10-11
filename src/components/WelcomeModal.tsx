@@ -85,7 +85,7 @@ export function WelcomeModal({
         role="dialog"
         aria-modal="true"
         aria-label="Sambutan"
-        className="rounded-2xl p-7 md:p-8 max-w-md w-full text-center relative"
+        className="rounded-2xl modal-sempit p-7 md:p-8 text-center relative"
         style={{
           background: 'var(--ivory)',
           boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)',

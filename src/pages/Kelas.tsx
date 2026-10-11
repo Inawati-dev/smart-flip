@@ -544,7 +544,7 @@ export function KelasPanel() {
         >
           <form
             onSubmit={handleCreate}
-            className="bg-ivory rounded-2xl border p-5 max-w-md w-full flex flex-col gap-3.5"
+            className="bg-ivory rounded-2xl modal-sedang border p-5 flex flex-col gap-3.5"
             style={{ ...BORDER, animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between">
@@ -624,7 +624,7 @@ export function KelasPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Kelas "{deleteTarget.name}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.studentCount > 0
@@ -649,7 +649,7 @@ export function KelasPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-5 max-w-2xl w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-lebar p-5" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
               <h3 className="text-base font-semibold text-brown min-w-0">
                 Hasil Tes Diagnostik · {golTarget.name} ({golTarget.angkatan})
@@ -704,7 +704,7 @@ export function KelasPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-5 max-w-lg w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-lebar p-5" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
               <h3 className="text-base font-semibold text-brown min-w-0">{daftar.judul}</h3>
               <button onClick={tutupDaftar} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
@@ -744,7 +744,7 @@ export function KelasPanel() {
           className="fixed inset-0 z-[800] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus {pilih.size} Akun Mahasiswa?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Akun yang dicentang dihapus permanen beserta seluruh pengerjaannya: tes, progres baca, dan kiriman. Mahasiswa itu tidak bisa masuk lagi.
@@ -768,7 +768,7 @@ export function KelasPanel() {
           className="fixed inset-0 z-[800] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Reset Tes Diagnostik {dipilihBisaDireset.length} Mahasiswa?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Skor dan jawaban tes diagnostik mereka{course?.name ? ` di ${course.name}` : ''} dihapus, dan mereka harus mengerjakannya lagi sebelum bisa
@@ -794,7 +794,7 @@ export function KelasPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-5 md:p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto"
+            className="bg-ivory rounded-2xl modal-lebar p-5 md:p-6"
             style={{ animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between gap-3 mb-1">
@@ -1020,7 +1020,7 @@ export function KelasPanel() {
           style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="rounded-2xl p-6 max-w-sm w-full text-center"
+            className="rounded-2xl modal-sempit p-6 text-center"
             style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-bold text-brown mb-2">Unduh Kredensial?</h3>

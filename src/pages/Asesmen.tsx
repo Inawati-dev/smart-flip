@@ -89,7 +89,7 @@ function BatasSkorModal({ course, onClose }: { course: Course; onClose: () => vo
       className="fixed inset-0 z-[700] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
     >
-      <div className="bg-ivory rounded-2xl p-5 max-w-md w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+      <div className="bg-ivory rounded-2xl modal-sedang p-5" style={{ animation: 'slideUpModal 0.22s ease' }}>
         <h3 className="text-base font-semibold text-brown mb-1">Batas Skor</h3>
         <p className="text-xs text-brown-3 mb-4">{course.name}. Berlaku juga untuk pengerjaan yang sudah ada.</p>
         <div className="flex flex-col gap-3 mb-4">

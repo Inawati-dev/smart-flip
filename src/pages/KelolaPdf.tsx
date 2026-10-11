@@ -228,7 +228,7 @@ export function KelolaPdf() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Berkas {deleteTarget.name}?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.usedBy

@@ -104,15 +104,15 @@ export function PemilihKelas({
   )
 }
 
-function Modal({ lebar, children }: { lebar: number; children: ReactNode }) {
+function Modal({ children }: { children: ReactNode }) {
   return (
     <div
       className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
       style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
     >
       <div
-        className="bg-ivory rounded-2xl p-6 max-w-[90vw] max-h-[90vh] overflow-y-auto my-8"
-        style={{ ...MODAL_SHADOW, width: lebar, animation: 'slideUpModal 0.22s ease' }}
+        className="bg-ivory rounded-2xl modal-sedang p-6 my-8"
+        style={{ ...MODAL_SHADOW, animation: 'slideUpModal 0.22s ease' }}
       >
         {children}
       </div>
@@ -163,7 +163,7 @@ function ModalBuat({
   }
 
   return (
-    <Modal lebar={560}>
+    <Modal>
       <h3 className="font-display text-lg font-semibold text-brown mb-1">Buat Paket Proposal</h3>
       <p className="text-sm text-brown-3 mb-4 leading-relaxed">
         Empat Mini Projek dibuat sekaligus dengan rubrik dan bobot usulan. Tenggat boleh dikosongkan dan diubah nanti per bab.
@@ -234,7 +234,7 @@ function ModalBobot({
   }
 
   return (
-    <Modal lebar={440}>
+    <Modal>
       <h3 className="font-display text-lg font-semibold text-brown mb-1">Ubah Bobot Nilai</h3>
       <p className="text-sm text-brown-3 mb-4">Sumbangan tiap Mini Projek ke nilai Mini Projek di rekap, dalam persen.</p>
       <div className="flex flex-col gap-3 mb-3">
@@ -477,7 +477,7 @@ export function PaketProposalDosen({
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-96 max-h-[90vh] overflow-y-auto text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Paket Proposal?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Keempat Mini Projek dihapus bersama, dan semua kiriman serta nilai mahasiswa di dalamnya ikut terhapus.

@@ -239,7 +239,7 @@ export function Akun() {
           style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl border-2 p-5 max-w-md w-full max-h-[90vh] overflow-y-auto"
+            className="bg-ivory rounded-2xl modal-sedang border-2 p-5"
             style={{ borderColor: 'var(--terra)', boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="text-sm font-semibold text-brown mb-4 pb-2 border-b" style={BORDER}>

@@ -62,7 +62,7 @@ export function JadwalModal({ course, modules, onClose }: { course: Course; modu
       className="fixed inset-0 z-[700] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
     >
-      <div className="bg-ivory rounded-2xl p-5 max-w-lg w-full max-h-[90dvh] overflow-y-auto" style={{ animation: 'slideUpModal 0.22s ease' }}>
+      <div className="bg-ivory rounded-2xl modal-sedang p-5" style={{ animation: 'slideUpModal 0.22s ease' }}>
         <h3 className="text-base font-semibold text-brown mb-1">Jadwal Kuliah</h3>
         <p className="text-xs text-brown-3 mb-4">
           {course.name}. Materi topik terbuka di minggu yang ditentukan, tes formatifnya satu minggu sesudah itu dan tetap terbuka bagi yang belum lulus.

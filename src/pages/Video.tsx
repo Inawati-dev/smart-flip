@@ -492,7 +492,7 @@ function VideoDosen() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[520px] my-8 max-h-[90vh] overflow-y-auto overflow-x-hidden"
+            className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url ? 'Ubah Video' : 'Tambah Video'}</h3>

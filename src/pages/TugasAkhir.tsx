@@ -422,7 +422,7 @@ export function TugasAkhirPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[560px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-sedang p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">{editing ? 'Ubah Brief' : 'Buat Brief'}</h3>
@@ -522,7 +522,7 @@ export function TugasAkhirPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Brief "{deleteTarget.title}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">Kiriman mahasiswa untuk brief ini ikut terhapus.</p>
             <div className="flex gap-2.5">
@@ -544,7 +544,7 @@ export function TugasAkhirPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-sedang p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Nilai Kiriman {gradingSub.full_name}</h3>

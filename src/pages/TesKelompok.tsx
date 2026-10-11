@@ -271,7 +271,7 @@ export function DosenTesKelompokPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[440px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-sedang p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Buat Sesi Tes Kelompok</h3>
@@ -350,7 +350,7 @@ export function DosenTesKelompokPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[384px] max-h-[90vh] overflow-y-auto text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Sesi "{deleteTarget.name}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">Sesi dan semua kelompoknya akan dihapus permanen. Tindakan ini tidak dapat dibatalkan.</p>
             <div className="flex gap-2.5">
@@ -372,7 +372,7 @@ export function DosenTesKelompokPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[600px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between mb-4">

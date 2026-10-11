@@ -193,7 +193,7 @@ export default function Formatif() {
           style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)' }}
         >
           <div
-            className="rounded-2xl p-8 max-w-sm w-full text-center"
+            className="rounded-2xl modal-sempit p-8 text-center"
             style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)' }}
           >
             {modal.kind === 'apresiasi' ? (

@@ -287,7 +287,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-sm w-full text-center"
+            className="bg-ivory rounded-2xl modal-sempit p-6 text-center"
             style={{ animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="text-base font-semibold text-brown mb-1.5">Ganti Kode Undangan?</h3>

@@ -209,7 +209,7 @@ function BriefItem({ project }: { project: FinalProject }) {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
-            className="bg-ivory rounded-2xl p-6 max-w-[90vw] w-[480px] max-h-[90vh] overflow-y-auto my-8"
+            className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">

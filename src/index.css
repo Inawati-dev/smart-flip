@@ -486,6 +486,19 @@ button:not(:disabled):active {
   .pembaca-lembar, .pembaca-alas { transition: none !important; }
 }
 
+/* Ukuran baku kartu modal (antrean #193): sempit = konfirmasi, sedang = isian,
+   lebar = data, tabel, dan unggah berkas. Kartu tidak pernah keluar layar; isi
+   yang panjang bergulir di dalam kartu. 6rem = padding latar (2 x 1rem) ditambah
+   margin tegak kartu (2 x 2rem) pada modal yang menempel di atas. */
+.modal-sempit, .modal-sedang, .modal-lebar {
+  width: 100%;
+  max-height: min(90dvh, calc(100dvh - 6rem));
+  overflow-y: auto;
+}
+.modal-sempit { max-width: min(400px, 90vw); }
+.modal-sedang { max-width: min(560px, 90vw); }
+.modal-lebar { max-width: min(760px, 90vw); }
+
 /* Modal animation — kemampuan-web-dev.md §128/§129: durasi di atas ~200ms, jangan diulang per komponen modal */
 @keyframes fadeInBg {
   from { opacity: 0; }
