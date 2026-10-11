@@ -1,0 +1,237 @@
+# Catatan pemeriksaan Bab 3 sampai Bab 6 (antrean #206)
+
+Dibuat 11 Okt 2026 14:18 dengan skrip `periksa36.py`. **Tidak ada berkas naskah yang disunting.** Bab 3 sampai 6 sedang disunting manusia; catatan ini memotret keadaan berkas yang ada di `kerja nyata/Naskah sampai Aktivitas Mandiri/` supaya nanti bisa dibandingkan dengan versi suntingan.
+
+Cara membaca:
+- **Calon salah ketik** dicari mesin: kata huruf kecil yang muncul paling banyak dua kali di enam bab dan hanya berbeda satu huruf dari kata yang sering muncul. Cara ini hanya menangkap salah ketik yang mirip kata lain; kata hilang, kalimat janggal, dan rujukan silang yang keliru tidak tertangkap.
+- **Calon kata menempel** adalah kata panjang yang bisa dipecah menjadi dua kata yang sering muncul.
+- Isi tiap subbab belum dibaca penuh oleh sesi. Pembacaan penuh untuk bahan video dilakukan pada versi suntingan terakhir.
+- Sidik isi (teks tiap paragraf) disimpan di luar git, di `.claude/catatan-bab-3-6/` pada folder utama proyek.
+
+## Ringkasan
+
+| Bab | Paragraf | Kata | Calon salah ketik | Calon kata menempel | Kata "Anda" | Kata rusak cari-ganti | Catatan penomoran |
+|---|---|---|---|---|---|---|---|
+| Bab 3 | 201 | 4136 | 1 | 0 | 31 | 0 | 0 |
+| Bab 4 | 190 | 3920 | 0 | 0 | 29 | 0 | 0 |
+| Bab 5 | 257 | 5289 | 1 | 0 | 37 | 0 | 0 |
+| Bab 6 | 217 | 4107 | 0 | 0 | 16 | 0 | 0 |
+
+## Cara membandingkan nanti
+
+Sesudah versi suntingan manusia untuk Bab 3 sampai 6 masuk ke folder naskah:
+
+1. Salin dulu sidik lama: ubah nama folder `.claude/catatan-bab-3-6/` menjadi `.claude/catatan-bab-3-6-sebelum/`.
+2. Jalankan lagi `python periksa36.py <folder-naskah> <folder-sidik-baru> <catatan-baru.md>`.
+3. Bandingkan berkas sidik per bab (`05.txt` sampai `08.txt`) antara dua folder itu. Paragraf yang berbeda adalah suntingan manusia.
+4. Bandingkan tabel ringkasan: jumlah kata per subbab, hitungan kata "Anda", dan kata rusak berpola "...mahasiswa..." (tanda cari-ganti yang salah sasaran, seperti di Bab 1 dan Bab 2).
+5. Versi sesudah perbandingan itulah yang dibaca penuh untuk menulis narasi 12 video (lihat `docs/spek-video-pembelajaran.md`).
+
+## Bab 3
+
+Berkas: `05 Bagian II - Bab 3 Penyusunan Bab Pendahuluan Proyek (sampai Aktivitas Mandiri).docx`. Tersimpan 11 Okt 2026 11:04, md5 `63769f34702d12849cab445935cbd2e2`, 201 paragraf, 4136 kata.
+
+### Kerangka dan jumlah kata
+
+| Subbab | Kata | Paragraf |
+|---|---|---|
+| (sebelum judul pertama) | 110 | 23 |
+| Pendahuluan Bab | 438 | 60 |
+| Uraian Materi | 320 | 5 |
+| Kajian Teori dan Riset Terkini | 211 | 3 |
+| Ringkasan Kajian Pustaka | 120 | 16 |
+| Pola Piramida Terbalik dalam Menulis Latar Belakang | 130 | 2 |
+| Menyatakan Celah dan Kebaruan dalam Latar Belakang | 408 | 3 |
+| Merumuskan Tujuan yang Selaras dengan Rumusan Masalah | 69 | 1 |
+| Definisi Operasional sebagai Jembatan Menuju Instrumen Penelitian | 206 | 13 |
+| Dari Identifikasi Masalah ke Rumusan Masalah | 143 | 2 |
+| Menulis Manfaat Praktis dan Teoretis Secara Wajar | 257 | 2 |
+| Menetapkan Ruang Lingkup dan Batasan Proyek | 465 | 24 |
+| Menuliskan Spesifikasi Produk | 130 | 2 |
+| Menyusun Judul Proposal Pengembangan | 257 | 2 |
+| Data Pendukung: Pentingnya Data Kuantitatif dalam Latar Belakang Proyek | 148 | 2 |
+| Aktivitas Mandiri | 167 | 9 |
+| Format Pengumpulan Tugas: | 81 | 1 |
+| Daftar Rujukan Bab 3 | 392 | 14 |
+
+### Calon salah ketik
+
+Terjaring mesin 13 kata; 12 di antaranya dinilai sesi sebagai kata yang sah sesudah konteksnya dibaca, dan tidak ditampilkan.
+
+| Kata | Mirip dengan | Konteks |
+|---|---|---|
+| draft | draf | ...Tulis draft latar belakang mengikuti alur... |
+
+### Calon kata menempel
+
+Tidak ada yang terjaring.
+
+### Penomoran tabel dan gambar
+
+- Keterangan tabel: 3.1, 3.2, 3.3, 3.4.
+- Keterangan gambar: 3.1.
+- Nomor kembar: tidak ada.
+- Urutan tidak naik: tidak ada.
+- Disebut di teks tetapi tidak punya keterangan di bab ini: tidak ada.
+
+### Sapaan dan pola lain
+
+- Kata "Anda": 31 kali; "anda" huruf kecil: 0 kali. Bab 1 dan Bab 2 versi suntingan memakai "mahasiswa" sebagai sapaan.
+- Kata rusak berpola "...mahasiswa...": tidak ada.
+- Kata berulang berurutan (mis. "dan dan"): 0 tempat.
+
+## Bab 4
+
+Berkas: `06 Bagian II - Bab 4 Kajian Pustaka sebagai Landasan Pengembangan (sampai Aktivitas Mandiri).docx`. Tersimpan 11 Okt 2026 11:04, md5 `423b87cbacdde6df95d5b7dffd4156cb`, 190 paragraf, 3920 kata.
+
+### Kerangka dan jumlah kata
+
+| Subbab | Kata | Paragraf |
+|---|---|---|
+| (sebelum judul pertama) | 117 | 23 |
+| Pendahuluan Bab | 321 | 43 |
+| Uraian Materi | 265 | 4 |
+| Kajian Teori dan Riset Terkini | 193 | 3 |
+| Ringkasan Kajian Pustaka | 129 | 16 |
+| Strategi Penelusuran Sumber pada Basis Data Bereputasi | 163 | 2 |
+| Menyusun Sintesis, Bukan Sekadar Kumpulan Kutipan | 76 | 1 |
+| Belajar dari Tinjauan Sistematis: Menyaring Ratusan Sumber Menjadi Beberapa Puluh yang Relevan | 215 | 22 |
+| Mencatat Sumber dengan Pengelola Referensi | 256 | 2 |
+| Matriks Sintesis sebagai Alat Kerja Sebelum Menulis | 476 | 20 |
+| Parafrase, Kutipan Langsung, dan Batas Plagiarisme | 372 | 3 |
+| Menuliskan Penelitian yang Relevan | 94 | 1 |
+| Menyusun Kerangka Berpikir | 105 | 2 |
+| Memakai Alat AI secara Bertanggung Jawab dalam Kajian Pustaka | 355 | 3 |
+| Data Pendukung: Tren Publikasi Self Directed Learning di Indonesia | 123 | 5 |
+| Aktivitas Mandiri | 186 | 9 |
+| Format Pengumpulan Tugas | 64 | 1 |
+| Daftar Rujukan Bab 4 | 321 | 13 |
+
+### Calon salah ketik
+
+Terjaring mesin 13 kata; 13 di antaranya dinilai sesi sebagai kata yang sah sesudah konteksnya dibaca, dan tidak ditampilkan.
+
+Tidak ada yang terjaring.
+
+### Calon kata menempel
+
+Tidak ada yang terjaring.
+
+### Penomoran tabel dan gambar
+
+- Keterangan tabel: 4.1, 4.2, 4.3, 4.4.
+- Keterangan gambar: 4.1, 4.2.
+- Nomor kembar: tidak ada.
+- Urutan tidak naik: tidak ada.
+- Disebut di teks tetapi tidak punya keterangan di bab ini: tidak ada.
+
+### Sapaan dan pola lain
+
+- Kata "Anda": 29 kali; "anda" huruf kecil: 0 kali. Bab 1 dan Bab 2 versi suntingan memakai "mahasiswa" sebagai sapaan.
+- Kata rusak berpola "...mahasiswa...": tidak ada.
+- Kata berulang berurutan (mis. "dan dan"): 0 tempat.
+
+## Bab 5
+
+Berkas: `07 Bagian II - Bab 5 Model-Model Pengembangan dan Validasi Produk (sampai Aktivitas Mandiri).docx`. Tersimpan 11 Okt 2026 11:04, md5 `3ca97dd49d7464ae77196c15625f162d`, 257 paragraf, 5289 kata.
+
+### Kerangka dan jumlah kata
+
+| Subbab | Kata | Paragraf |
+|---|---|---|
+| (sebelum judul pertama) | 126 | 24 |
+| Pendahuluan Bab | 307 | 41 |
+| Uraian Materi | 898 | 21 |
+| Kajian Teori dan Riset Terkini | 209 | 3 |
+| Ringkasan Kajian Pustaka | 122 | 14 |
+| Kriteria Praktis Memilih ADDIE vs 4D | 143 | 2 |
+| Merancang Validasi Produk yang Kredibel | 109 | 1 |
+| Model Pengembangan 4D dalam Praktik Pendidikan Vokasi Indonesia | 205 | 19 |
+| Data Pendukung: Efektivitas Model ADDIE dalam Riset Meta Analisis | 221 | 15 |
+| Model Pengembangan Lain yang Dipakai pada Proyek Vokasi | 301 | 27 |
+| Menjabarkan Tahap Model untuk Proyek Sendiri | 131 | 2 |
+| Dari Flowchart ke Prototipe | 133 | 2 |
+| Pembagian Peran Ahli Materi, Ahli Media, dan Pengguna | 478 | 24 |
+| Uji Coba Terbatas: Peserta, Jumlah, dan Hal yang Diamati | 352 | 3 |
+| Mengukur Kegunaan Produk Digital dengan System Usability Scale | 370 | 3 |
+| Merevisi Produk dan Mencatat Jejak Revisi | 238 | 2 |
+| Aktivitas Mandiri | 150 | 9 |
+| Format Pengumpulan Tugas: | 55 | 1 |
+| Daftar Rujukan Bab 5 | 643 | 26 |
+
+### Calon salah ketik
+
+Terjaring mesin 19 kata; 18 di antaranya dinilai sesi sebagai kata yang sah sesudah konteksnya dibaca, dan tidak ditampilkan.
+
+| Kata | Mirip dengan | Konteks |
+|---|---|---|
+| judgement | judgment | ... dua jalur utama: validasi ahli (expert judgement), di mana seorang pakar di bi... |
+
+### Calon kata menempel
+
+Tidak ada yang terjaring.
+
+### Penomoran tabel dan gambar
+
+- Keterangan tabel: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6.
+- Keterangan gambar: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7.
+- Nomor kembar: tidak ada.
+- Urutan tidak naik: tidak ada.
+- Disebut di teks tetapi tidak punya keterangan di bab ini: tidak ada.
+
+### Sapaan dan pola lain
+
+- Kata "Anda": 37 kali; "anda" huruf kecil: 0 kali. Bab 1 dan Bab 2 versi suntingan memakai "mahasiswa" sebagai sapaan.
+- Kata rusak berpola "...mahasiswa...": tidak ada.
+- Kata berulang berurutan (mis. "dan dan"): 0 tempat.
+
+## Bab 6
+
+Berkas: `08 Bagian II - Bab 6 Instrumen, Pengumpulan Data, Analisis Data, dan Pelaporan (sampai Aktivitas Mandiri).docx`. Tersimpan 11 Okt 2026 11:04, md5 `663def53d6c7eb34391c4dbbe904dafc`, 217 paragraf, 4107 kata.
+
+### Kerangka dan jumlah kata
+
+| Subbab | Kata | Paragraf |
+|---|---|---|
+| (sebelum judul pertama) | 111 | 22 |
+| Pendahuluan Bab | 429 | 60 |
+| Uraian Materi | 318 | 5 |
+| Kajian Teori dan Riset Terkini | 204 | 3 |
+| Ringkasan Kajian Pustaka | 132 | 16 |
+| Menyusun Kisi-Kisi Sebelum Menulis Butir | 475 | 24 |
+| Menjaga Validitas dan Reliabilitas Instrumen Sejak Awal | 123 | 2 |
+| Skala Likert, Skor, dan Persentase Kelayakan | 373 | 3 |
+| Mengolah Jawaban Wawancara Menjadi Tema | 263 | 2 |
+| Dari Analisis Data ke Rekomendasi yang Actionable | 88 | 1 |
+| Keterampilan Instrumen dan Analisis Data sebagai Bekal Employability | 200 | 19 |
+| Data Pendukung: Standar Validitas dan Reliabilitas Instrumen | 195 | 15 |
+| Menghitung Kesepakatan Ahli untuk Tiap Butir | 278 | 2 |
+| Menyusun Daftar Pustaka dari Rujukan Tiap Bab | 62 | 1 |
+| Aktivitas Mandiri | 110 | 6 |
+| Format Pengumpulan Tugas | 115 | 1 |
+| Daftar Rujukan Bab 6 | 552 | 19 |
+
+### Calon salah ketik
+
+Terjaring mesin 17 kata; 17 di antaranya dinilai sesi sebagai kata yang sah sesudah konteksnya dibaca, dan tidak ditampilkan.
+
+Tidak ada yang terjaring.
+
+### Calon kata menempel
+
+Tidak ada yang terjaring.
+
+### Penomoran tabel dan gambar
+
+- Keterangan tabel: 6.1, 6.2, 6.3, 6.4, 6.5.
+- Keterangan gambar: 6.1.
+- Nomor kembar: tidak ada.
+- Urutan tidak naik: tidak ada.
+- Disebut di teks tetapi tidak punya keterangan di bab ini: tidak ada.
+
+### Sapaan dan pola lain
+
+- Kata "Anda": 16 kali; "anda" huruf kecil: 0 kali. Bab 1 dan Bab 2 versi suntingan memakai "mahasiswa" sebagai sapaan.
+- Kata rusak berpola "...mahasiswa...": tidak ada.
+- Kata berulang berurutan (mis. "dan dan"): 0 tempat.
+
