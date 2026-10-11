@@ -72,6 +72,7 @@ html_tokoh = open(os.path.join(sini, 'tokoh.html'), encoding='utf-8').read().rep
 
 tpl = open(os.path.join(sini, 'templat.html'), encoding='utf-8').read()
 isi = {
+    'RUANG': '',
     'KELAS': 'wajah' if wajah else 'papan' if papan else '', 'TOKOH': html_tokoh, 'MULUT': json.dumps(mulut), 'TOTAL': total, 'TAKARIR': html_takarir, 'AUDIO': html_audio, 'WAJAH': html_wajah,
     'MULAI': json.dumps(mulai), 'BATAS': json.dumps(batas), 'DUR': json.dumps([n['dur'] for n in narasi]),
 }

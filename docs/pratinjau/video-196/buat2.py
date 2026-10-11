@@ -1,10 +1,11 @@
 # Menyusun contoh video versi 2 (antrean #196): tokoh kartun di samping papan, gerak dari waktu tiap kata.
-# Pemakaian: python buat2.py <folder-proyek> [folder-suara]
+# Pemakaian: python buat2.py <folder-proyek> [folder-suara] [versi-tokoh]
 import json, os, re, shutil, sys
 
 sini = os.path.dirname(os.path.abspath(__file__))
 proyek = sys.argv[1]
 suara = os.path.join(sini, sys.argv[2] if len(sys.argv) > 2 else 'assets2')
+versi = sys.argv[3] if len(sys.argv) > 3 else '2'
 adegan = json.load(open(os.path.join(suara, 'narasi2.json'), encoding='utf-8'))['adegan']
 
 AWAL, JEDA_KALIMAT, JEDA_ADEGAN, EKOR = 1.0, 0.34, 0.62, 2.4
@@ -40,8 +41,9 @@ tpl = open(os.path.join(sini, 'templat.html'), encoding='utf-8').read()
 a, z = tpl.index('    <script>\n      window.__timelines'), tpl.index('</script>', tpl.index('window.__timelines')) + len('</script>\n')
 tpl = tpl[:a] + open(os.path.join(sini, 'skrip2.js'), encoding='utf-8').read() + tpl[z:]
 isi = {
-    'TOKOHJS': open(os.path.join(sini, 'tokoh2.js'), encoding='utf-8').read().rstrip('\n'),
-    'TOKOH': open(os.path.join(sini, 'tokoh2.html'), encoding='utf-8').read(),
+    'TOKOHJS': open(os.path.join(sini, f'tokoh{versi}.js'), encoding='utf-8').read().rstrip('\n'),
+    'TOKOH': open(os.path.join(sini, f'tokoh{versi}.html'), encoding='utf-8').read(),
+    'RUANG': open(os.path.join(sini, 'kelas.html'), encoding='utf-8').read().rstrip() if versi == '3' else '',
     'KELAS': 'papan', 'WAJAH': '', 'TOTAL': total, 'TAKARIR': '\n'.join(html_takarir), 'AUDIO': '\n'.join(html_audio),
     'MULAI': json.dumps(mulai), 'BATAS': json.dumps(batas), 'DUR': json.dumps(dur),
     'KATA': json.dumps(kata, ensure_ascii=False), 'KALIMAT': json.dumps(kalimat),

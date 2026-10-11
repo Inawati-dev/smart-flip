@@ -89,6 +89,10 @@
       .papan .kutip { font-size: 96px; }
       .papan .takarir { left: 540px; right: 100px; bottom: 56px; }
       .papan .takarir span { max-width: 1240px; font-size: 34px; }
+      #kelas { position: absolute; inset: 0; }
+      .papan #latar { opacity: 0; }
+      #papan-spidol { position: absolute; left: 190px; bottom: 0; width: 74px; height: 14px; border-radius: 7px; background: linear-gradient(90deg, #26211E 0 72%, #B8855A 72% 100%); }
+      #papan-hapus { position: absolute; left: 300px; bottom: 0; width: 86px; height: 24px; border-radius: 6px; background: linear-gradient(180deg, #3E362E 0 45%, #8FA287 45% 100%); }
       #tokoh { position: absolute; left: 70px; bottom: 96px; width: 470px; height: 800px; z-index: 3; }
       .papan .adegan, .papan .takarir { z-index: 2; }
     </style>
@@ -96,6 +100,7 @@
   <body>
     <div id="root" class="@@KELAS@@" data-composition-id="main" data-start="0" data-duration="@@TOTAL@@" data-width="1920" data-height="1080">
       <div class="clip" id="latar" data-start="0" data-duration="@@TOTAL@@" data-track-index="0"><i class="l1"></i><i class="l2"></i></div>
+@@RUANG@@
       <div class="clip" id="kop" data-start="0" data-duration="@@TOTAL@@" data-track-index="1"><b>Smart Flip 5.0</b><span>Bab 1 · Pertemuan 1</span></div>
 
       <section class="clip adegan" id="a1" @@K1@@>
