@@ -252,3 +252,18 @@ Jembatan: enam langkah AM-6, susunan Bab 3 proposal, kirim lewat Mini Projek, Te
 2. Suara narator: suara sintetis bahasa Indonesia (cepat, mutunya belum diuji) atau rekaman suara dosen (narasi dikirim sebagai naskah baca)?
 3. Tempat memasang: aplikasi sekarang menyimpan satu video per topik (`modules.video_url`). Dua video per bab butuh keputusan: aplikasi diubah supaya satu topik bisa memuat dua video, atau video diunggah ke YouTube sebagai daftar putar. Belum dicek ke data produksi berapa topik yang ada sekarang.
 4. Bentuk kerja agen sesudah percontohan disetujui (lihat balasan obrolan).
+5. Sumber suara untuk 12 video (lihat bagian 8a).
+
+## 8a. Pilihan sumber suara dan status izinnya (antrean #198)
+
+Ditambahkan 11 Okt 2026 atas temuan sesi pengawas. Contoh 1 menit memakai baris pertama; untuk 12 video Johan memilih.
+
+| Sumber suara | Biaya | Yang dibutuhkan | Ke mana naskah terkirim | Status izin pakai di video untuk mahasiswa |
+|---|---|---|---|---|
+| `edge-tts` (jalur baca nyaring peramban Edge) | Gratis | Tidak ada | Server Microsoft | Tidak jelas. Bukan layanan resmi untuk pembuat konten; syarat yang mengizinkannya tidak ditemukan (pencarian web 11 Okt 2026). Jalurnya juga bisa diblokir sewaktu-waktu |
+| Azure Speech resmi (suara yang sama, Gadis dan Ardi) | Berbayar di atas kuota gratis | Akun Azure dan kunci milik Johan | Server Microsoft | Jelas, diatur syarat layanan Azure; belum dibaca rinciannya |
+| Gemini TTS | Berbayar di atas kuota gratis; batas gratisnya belum pasti | Kunci Google AI Studio milik Johan | Server Google | Diatur syarat Gemini API; belum dibaca rinciannya. Satu sumber pihak ketiga menyebut data di tingkat gratis bisa dipakai untuk pelatihan |
+| ElevenLabs | Berbayar di atas kuota gratis | Akun dan kunci milik Johan | Server ElevenLabs | Diatur syarat ElevenLabs; hak pakai tingkat gratis dan berbayar belum diperiksa |
+| Rekaman suara dosen | Waktu dosen | Rekaman 12 narasi dan izin dosen | Tidak terkirim ke mana pun | Jelas, selama dosen mengizinkan |
+
+Saran sesi: `edge-tts` hanya untuk contoh. Sebelum 12 video dibuat, pilih salah satu dari empat baris lain, dan syarat pakai layanan yang dipilih dibaca dulu.
