@@ -12,7 +12,7 @@ Disusun 11 Okt 2026 dari hasil ukur, belum disetujui Johan. Angka diambil dari b
 | Keterangan tabel dan gambar | Times New Roman | 12 pt | 1,5 | tengah | |
 | Baris "Sumber" di bawah gambar | Times New Roman | 12 pt | 1,5 | tengah | |
 | Isi tabel | Times New Roman | butuh pilihan Johan: 11 atau 12 pt | 1,5 | kiri | tabel tiga garis (tanpa garis tegak), tidak diubah |
-| Daftar rujukan | Times New Roman | 12 pt | 1,5 | kiri-kanan | baris kedua menjorok |
+| Daftar rujukan | Times New Roman | 12 pt | 1,5 | kiri | baris kedua menjorok. Dibetulkan 11 Okt 2026 sesudah pemeriksa: di enam bab entri rujukan memang rata kiri, dan sapuan tidak mengubahnya |
 | Kop bab, kepala dan kaki halaman | mengikuti rancangan berkas | | | | tidak diubah, warnanya juga tidak |
 | Warna teks | | | | | hitam untuk seluruh isi; warna kop bab dan kaki halaman tetap |
 
