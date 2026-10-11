@@ -43,7 +43,7 @@ tpl = tpl[:a] + open(os.path.join(sini, 'skrip2.js'), encoding='utf-8').read() +
 isi = {
     'TOKOHJS': open(os.path.join(sini, f'tokoh{versi}.js'), encoding='utf-8').read().rstrip('\n'),
     'TOKOH': open(os.path.join(sini, f'tokoh{versi}.html'), encoding='utf-8').read(),
-    'RUANG': open(os.path.join(sini, 'kelas.html'), encoding='utf-8').read().rstrip() if versi == '3' else '',
+    'RUANG': open(os.path.join(sini, 'kelas.html'), encoding='utf-8').read().rstrip() if versi in ('3', '4') else '',
     'KELAS': 'papan', 'WAJAH': '', 'TOTAL': total, 'TAKARIR': '\n'.join(html_takarir), 'AUDIO': '\n'.join(html_audio),
     'MULAI': json.dumps(mulai), 'BATAS': json.dumps(batas), 'DUR': json.dumps(dur),
     'KATA': json.dumps(kata, ensure_ascii=False), 'KALIMAT': json.dumps(kalimat),
