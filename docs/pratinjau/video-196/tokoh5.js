@@ -5,9 +5,10 @@
         const ARAH = { k: 1, l: -1 }; // sisi k = kanan layar (dekat papan); sisi l dicerminkan
         // Pose ditulis sebagai letak pergelangan dihitung dari bahu [ke luar badan, ke bawah, putar tangan].
         // Letak siku dihitung dari dua ruas sama panjang, lalu lengan digambar sebagai kurva yang melewati siku.
-        const ISTIRAHAT = [5, 175.5, 0];
-        const BICARA = [[88, 52, -22], [106, 22, -32], [72, 86, -8], [98, 42, 8]];
-        const TANYA_K = [94, -6, -38], TANYA_L = [66, 98, -14];
+        const ISTIRAHAT = [14, 174.5, 0];
+        // Aturan: siku harus jatuh di luar garis badan (lebih dari 16 ke luar dari bahu), jadi pergelangan ditaruh cukup jauh dari bahu.
+        const BICARA = [[116, 66, -18], [118, 34, -28], [112, 104, -8], [120, 56, 6]];
+        const TANYA_K = [120, -10, -34], TANYA_L = [95, 140, -10];
         const TUNJUK_POSE = [172, 24, 0];
         const f = (n) => n.toFixed(1);
         const hitung = (sisi, p) => {
