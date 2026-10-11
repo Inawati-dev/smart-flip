@@ -294,7 +294,7 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
       .select('pdf_path')
       .eq('id', moduleId)
       .maybeSingle()
-    const prevObject = storageObjectName(prevRow?.pdf_path as string | undefined)
+    const lama = prevRow?.pdf_path as string | undefined
 
     // Pola nama `topik-` (antrean #90): satuan pertemuan disebut topik, dan nama
     // berkas ini bisa tampil di halaman Berkas.
@@ -320,17 +320,10 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
       }
       throw updateError
     }
-    // Modul sudah menunjuk file baru — file lama kini yatim, buang.
-    // Dilindungi guard `!== path` supaya re-upload dengan nama identik
-    // (secara teori mustahil karena timestamp, tapi murah untuk dijaga)
-    // tidak menghapus file yang baru saja diunggah.
-    if (prevObject && prevObject !== path) {
-      try {
-        await supabase.storage.from('modul-pdf').remove([prevObject, prevObject + AKHIRAN_SAMPUL])
-      } catch (cleanupError) {
-        console.warn('[manajemen] uploadModulPdf → gagal menghapus PDF lama:', cleanupError)
-      }
-    }
+    // Modul sudah menunjuk file baru. File lama dibuang hanya bila tidak ada
+    // topik lain yang masih memakainya (antrean #194: modal "Ganti PDF"
+    // mengizinkan dua topik berbagi satu berkas).
+    if (lama && lama !== data.publicUrl) await buangBerkasYatim([lama])
     return data.publicUrl
   }
   // Demo mode: no Storage backend — keep the override local only.

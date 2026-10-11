@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 const h = vi.hoisted(() => ({
   dipakai: {} as Record<string, number | null>, // alamat -> jumlah topik yang masih menunjuk; null = hitungan gagal
   dibuang: [] as Array<[string, string]>, // [bucket, nama berkas]
+  lama: null as string | null, // pdf_path topik sebelum diganti
 }))
 
 vi.mock('./supabase', () => ({
@@ -11,11 +12,13 @@ vi.mock('./supabase', () => ({
   supabase: {
     from: () => ({
       select: () => ({
-        eq: async (_kolom: string, url: string) => {
+        eq: (_kolom: string, url: string) => {
           const n = h.dipakai[url]
-          return n === null ? { count: null, error: { message: 'gagal' } } : { count: n ?? 0, error: null }
+          const hitung = n === null ? { count: null, error: { message: 'gagal' } } : { count: n ?? 0, error: null }
+          return Object.assign(Promise.resolve(hitung), { maybeSingle: async () => ({ data: { pdf_path: h.lama } }) })
         },
       }),
+      update: () => ({ eq: async () => ({ error: null }) }),
     }),
     storage: {
       from: (bucket: string) => ({
@@ -23,12 +26,14 @@ vi.mock('./supabase', () => ({
           h.dibuang.push([bucket, nama[0]])
           return { error: null }
         },
+        upload: async () => ({ error: null }),
+        getPublicUrl: (path: string) => ({ data: { publicUrl: `https://x.supabase.co/storage/v1/object/public/${bucket}/${path}` } }),
       }),
     },
   },
 }))
 
-import { buangBerkasYatim } from './manajemen'
+import { buangBerkasYatim, uploadModulPdf } from './manajemen'
 
 const PDF = 'https://x.supabase.co/storage/v1/object/public/modul-pdf/modul-1-111.pdf'
 const PDF_BERSAMA = 'https://x.supabase.co/storage/v1/object/public/modul-pdf/bersama.pdf'
@@ -37,6 +42,7 @@ const VIDEO = 'https://x.supabase.co/storage/v1/object/public/modul-video/video%
 beforeEach(() => {
   h.dipakai = {}
   h.dibuang = []
+  h.lama = null
 })
 
 describe('buangBerkasYatim', () => {
@@ -63,5 +69,24 @@ describe('buangBerkasYatim', () => {
   it('mengabaikan alamat di luar bucket (YouTube, berkas bawaan repo)', async () => {
     await buangBerkasYatim(['https://youtu.be/abc', '/books/modul-01.pdf'])
     expect(h.dibuang).toEqual([])
+  })
+})
+
+// Antrean #194: mengganti PDF satu topik tidak boleh membuang berkas lama yang
+// masih dipakai topik lain.
+describe('uploadModulPdf', () => {
+  const berkas = new File(['x'], 'baru.pdf', { type: 'application/pdf' })
+
+  it('membiarkan PDF lama yang masih dipakai topik lain', async () => {
+    h.lama = PDF_BERSAMA
+    h.dipakai[PDF_BERSAMA] = 1
+    await uploadModulPdf(1, berkas)
+    expect(h.dibuang).toEqual([])
+  })
+
+  it('membuang PDF lama yang tidak dipakai topik lain', async () => {
+    h.lama = PDF
+    await uploadModulPdf(1, berkas)
+    expect(h.dibuang).toEqual([['modul-pdf', 'modul-1-111.pdf']])
   })
 })
