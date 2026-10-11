@@ -27,6 +27,21 @@ Sesudah versi suntingan manusia untuk Bab 3 sampai 6 masuk ke folder naskah:
 4. Bandingkan tabel ringkasan: jumlah kata per subbab, hitungan kata "Anda", dan kata rusak berpola "...mahasiswa..." (tanda cari-ganti yang salah sasaran, seperti di Bab 1 dan Bab 2).
 5. Versi sesudah perbandingan itulah yang dibaca penuh untuk menulis narasi 12 video (lihat `docs/spek-video-pembelajaran.md`).
 
+## Pola tulisan mesin (antrean #207)
+
+Ditambahkan 11 Okt 2026 sesudah tim penulis menemukan pola tulisan mesin di Bab 1 dan Bab 2. Hitungan kasar atas berkas yang ada sekarang, dengan pencarian kata (bukan pembacaan penuh):
+
+| Bab | Kata | "bukan sekadar" | "bukan hanya" | "tidak hanya" | "melainkan" | "alih-alih" | Titik dua diikuti deret tiga |
+|---|---|---|---|---|---|---|---|
+| 1 | 4.325 | 7 | 0 | 0 | 3 | 1 | 6 |
+| 2 | 4.251 | 2 | 1 | 0 | 3 | 1 | 9 |
+| 3 | 4.136 | 2 | 0 | 0 | 1 | 3 | 7 |
+| 4 | 3.920 | 7 | 2 | 1 | 2 | 0 | 12 |
+| 5 | 5.289 | 2 | 1 | 1 | 0 | 1 | 10 |
+| 6 | 4.107 | 1 | 0 | 0 | 2 | 1 | 5 |
+
+Bab 3 sampai 6 tidak disunting. Pola ini disapu sesudah versi suntingan manusia masuk dan Johan memilih caranya (antrean #207). Daftar pola di atas belum lengkap; skrip ukur yang lebih lengkap sedang disiapkan sesi pengawas (`AI Skill/00 - Dokumentasi/cek_pola_ai.py`).
+
 ## Bab 3
 
 Berkas: `05 Bagian II - Bab 3 Penyusunan Bab Pendahuluan Proyek (sampai Aktivitas Mandiri).docx`. Tersimpan 11 Okt 2026 11:04, md5 `63769f34702d12849cab445935cbd2e2`, 201 paragraf, 4136 kata.
