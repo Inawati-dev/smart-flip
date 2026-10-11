@@ -32,7 +32,7 @@ Pembagian ini mengikuti tabel jadwal di tiap bab (Tabel 1.1, 2.1, 3.1, 4.1, 5.1,
 | Hal | Ketentuan |
 |---|---|
 | Durasi | 5 sampai 7 menit, sasaran 6 menit |
-| Narasi | 780 sampai 900 kata bahasa Indonesia (TAKSIRAN laju bicara 130 sampai 150 kata per menit; diukur ulang di video percontohan) |
+| Narasi | 470 sampai 650 kata bahasa Indonesia. Diukur 11 Okt 2026 pada contoh 1 menit: suara sintetis `id-ID-GadisNeural` membaca 91 kata dalam 52,8 detik (103 kata per menit) pada laju +6%, dan 123 kata dalam 77,2 detik (96 kata per menit) pada laju -4%. Taksiran awal 130 sampai 150 kata per menit keliru |
 | Gaya | Tanpa wajah: suara narator, teks kunci, diagram, dan tabel yang digambar ulang dari gambar dan tabel naskah |
 | Sapaan | "Anda", sama dengan naskah |
 | Warna dan fon | Warna tema aplikasi (cream, ivory, terra, sage, brown) dan fon aplikasi, supaya video menyatu dengan Smart Flip |
@@ -240,7 +240,7 @@ Jembatan: enam langkah AM-6, susunan Bab 3 proposal, kirim lewat Mini Projek, Te
 | Durasi 300 sampai 420 detik | `ffprobe -show_entries format=duration` |
 | Ukuran 1920x1080, ada jalur suara | `ffprobe -show_streams` |
 | Besar berkas paling besar 100 MB | `ls -l` |
-| Narasi 780 sampai 900 kata | hitung kata `narasi.md` |
+| Narasi 470 sampai 650 kata | hitung kata `narasi.md` |
 | Tiap angka dan nama penulis di narasi ada di naskah bab | skrip yang mencari tiap angka dan nama di teks bab; hasil "tidak ditemukan" harus nol |
 | Urutan enam bagian lengkap | daftar adegan memuat enam bagian dengan waktunya |
 | Takarir ada dan sama dengan narasi | berkas `.vtt` dibandingkan dengan `narasi.md` |
