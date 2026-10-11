@@ -135,3 +135,12 @@ Satu agen `sonnet`, 11 Okt 2026, hanya membaca. Ia membuka tujuh PDF sumber, tuj
 | `cek208.py` tidak menangkap huruf miring atau tebal teks lama yang dibuang | Belum diperbaiki (di luar yang disentuh skrip penyisip). |
 
 Yang tidak diperiksa pemeriksa: artikel Maydiantoro, Ramadan dan Widyani, dan versi terbit Saravanos dan Curinga; halaman PDF 1 sampai 3 dan 16 sampai 27; tampilan di Word (hanya PDF ekspor).
+
+## Tanggapan atas temuan pengawas (antrean #214)
+
+- **Sumber gambar tangan kedua.** Tidak satu pun dari tujuh gambar digambar dari buku atau makalah perumus modelnya. Semuanya dari artikel jurnal yang memuat ulang atau mengadaptasi gambar itu, dan baris "Sumber" di naskah menyebut artikel tersebut. Bentuknya (urutan tahap, arah panah, nama tahap) dicocokkan dengan halaman sumber oleh sesi dan oleh pemeriksa akhir. Cukup atau tidaknya untuk komentar "berdasarkan gambar asli" diputuskan tim.
+- **Komentar yang hilang.** Hanya komentar 0 pada daftar isi. Sembilan lainnya masih menempel di tempatnya dan belum ditandai selesai, supaya tim sendiri yang menilai.
+- **Deret tiga di teks biru.** `python ukur214.py teks-baru.txt ...` mencetak 21 temuan dalam 1.266 kata. Lima adalah daftar nama penulis, enam bukan deret tiga, sepuluh perincian sungguhan. Enam dari sepuluh itu berisi tepat tiga unsur, semuanya menyebut hal yang ada di sumber atau gambar. Semua dipertahankan; dua yang bisa dirapikan dicatat di antrean #214.
+- **Teks lama.** Tiga kalimat berpola keras di teks lama Bab 5 tidak diubah.
+- **Berkas disunting pihak lain.** Berkas 07 tersimpan lagi pukul 16:32, lima menit sesudah sesi menulisnya: satu paragraf dipecah dua dan judul "Daftar Rujukan Bab 5" menjadi "Daftar Rujukan". Tulisan biru sesi utuh.
+
