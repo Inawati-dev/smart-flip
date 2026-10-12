@@ -77,6 +77,33 @@ export interface SaveProgressInput {
   lastOpened?: string
   /** Jumlah halaman PDF (v26). */
   totalPages?: number
+  /** Jumlah detik baca topik ini sampai sekarang (antrean #191); kosong = tidak diubah. */
+  timeSpent?: number
+}
+
+// Aturan hitung baca (antrean #191, pilihan B). Posisi baca (currentPage) disimpan seketika, tetapi persen
+// hanya naik lewat halaman yang benar-benar tampil: minimal MIN_DETIK_PER_HALAMAN detik dan merupakan
+// lanjutan dari halaman terjauh yang sudah dihitung. Membalik cepat atau melompat ke halaman akhir tidak menaikkannya.
+export const MIN_DETIK_PER_HALAMAN = 5
+/** Batas detik yang dicatat untuk satu kali tampil sebuah halaman, supaya tab yang ditinggal terbuka tidak menggelembungkan waktu baca. */
+export const MAKS_DETIK_PER_HALAMAN = 180
+/** Lanjutan yang sah hanya halaman tepat sesudah yang terjauh. Pembaca menampilkan satu halaman per balikan
+ *  (DUA_HALAMAN = false di PembacaPdf.tsx); bila tampilan dua halaman dihidupkan lagi, angka ini menjadi 2. */
+export const LANGKAH_HALAMAN = 1
+
+export function persenBaca(terjauh: number, total: number): number {
+  return total > 0 ? Math.min(100, Math.round((terjauh / total) * 100)) : 0
+}
+
+/** Halaman terjauh yang sudah dihitung dibaca, diturunkan dari persen tersimpan. */
+// shortcut: persen bulat hanya memulihkan nomor halaman dengan tepat sampai 100 halaman; PDF yang lebih panjang perlu kolom halaman terjauh sendiri.
+export function halamanTerjauh(pct: number, total: number): number {
+  return total > 0 ? Math.max(0, Math.min(total, Math.round((pct / 100) * total))) : 0
+}
+
+export function majuTerjauh(terjauh: number, halaman: number, detikTampil: number, langkah: number = LANGKAH_HALAMAN): number {
+  if (detikTampil < MIN_DETIK_PER_HALAMAN) return terjauh
+  return halaman > terjauh && halaman <= terjauh + langkah ? halaman : terjauh
 }
 
 // Ported from legacy/data-layer.js's DataLayer.saveProgress(): upsert into
@@ -104,6 +131,7 @@ export async function saveProgress(modulePath: string, data: SaveProgressInput):
           completed_at: data.pct >= 100 ? new Date().toISOString() : null,
         }
         if (data.totalPages != null) row.total_pages = data.totalPages
+        if (data.timeSpent != null) row.time_spent = data.timeSpent
         let { error } = await supabase.from('user_progress').upsert(row, { onConflict: 'user_id,module_id' })
         if (error && data.totalPages != null && (error.code === '42703' || /total_pages/.test(error.message))) {
           delete row.total_pages
@@ -131,11 +159,47 @@ export async function saveProgress(modulePath: string, data: SaveProgressInput):
       ...existing,
       pct: data.pct,
       currentPage: data.currentPage,
+      totalPages: data.totalPages ?? existing.totalPages ?? null,
       lastOpened,
     }
     localStorage.setItem('sfp_' + modulePath, JSON.stringify(merged))
+    const moduleId = pathToModuleId(modulePath)
+    if (data.timeSpent != null && moduleId) localStorage.setItem('sfp_time_' + moduleId, String(data.timeSpent))
   } catch {
     // ignore quota/serialization errors, matches legacy/data-layer.js lsSet behavior
+  }
+}
+
+export interface CatatanTopik {
+  pct: number
+  totalPages: number | null
+  timeSpent: number
+}
+
+// Catatan baca satu topik, dibaca langsung dan bukan dari cache (antrean #191). Berbeda dari fetchAllProgress
+// dan fetchTimeSpent, fungsi ini MELEMPAR bila Supabase gagal: pemanggil yang menulis ulang persen dan waktu
+// tidak boleh mengira catatan kosong lalu menimpa angka lama dengan angka yang lebih kecil.
+export async function fetchCatatanTopik(moduleId: number): Promise<CatatanTopik> {
+  if (isSupabaseConfigured) {
+    const { data: userData } = await supabase.auth.getUser()
+    const uid = userData.user?.id
+    if (uid) {
+      type Baris = { pct: number | null; time_spent: number | null; total_pages?: number | null }
+      const baca = (kolom: string) => supabase.from('user_progress').select(kolom).eq('user_id', uid).eq('module_id', moduleId).maybeSingle()
+      let { data, error } = await baca('pct, time_spent, total_pages')
+      // Sebelum v26 kolom total_pages belum ada: ulang tanpa kolom itu.
+      if (error && (error.code === '42703' || /total_pages/.test(error.message))) ({ data, error } = await baca('pct, time_spent'))
+      if (error) throw error
+      const r = data as Baris | null
+      return { pct: r?.pct || 0, totalPages: r?.total_pages ?? null, timeSpent: r?.time_spent || 0 }
+    }
+  }
+  const timeSpent = parseInt(localStorage.getItem('sfp_time_' + moduleId) || '0', 10) || 0
+  try {
+    const lokal = JSON.parse(localStorage.getItem('sfp_' + moduleIdToPath(moduleId)) || '{}') as Partial<ProgressEntry>
+    return { pct: lokal.pct || 0, totalPages: lokal.totalPages ?? null, timeSpent }
+  } catch {
+    return { pct: 0, totalPages: null, timeSpent }
   }
 }
 

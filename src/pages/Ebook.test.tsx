@@ -65,10 +65,16 @@ vi.mock('../lib/modules', () => ({
 }))
 
 const saveProgressMock = vi.fn(async (_path: string, _data: unknown) => {})
-vi.mock('../lib/progress', () => ({
-  saveProgress: (path: string, data: unknown) => saveProgressMock(path, data),
-  moduleIdToPath: (id: number) => 'books/modul-' + String(id).padStart(2, '0') + '.pdf',
-}))
+// Saklar untuk meniru Supabase yang gagal menjawab saat catatan lama dibaca.
+const catatan = vi.hoisted(() => ({ gagal: false }))
+vi.mock('../lib/progress', async (asli) => {
+  const a = await asli<typeof import('../lib/progress')>()
+  return {
+    ...a,
+    saveProgress: (path: string, data: unknown) => saveProgressMock(path, data),
+    fetchCatatanTopik: (id: number) => (catatan.gagal ? Promise.reject(new Error('putus')) : a.fetchCatatanTopik(id)),
+  }
+})
 
 // A fake PDF with `pageCount` pages; getDocument resolves/rejects depending on
 // the requested path, so tests can exercise both the happy path and the
@@ -157,24 +163,135 @@ describe('Ebook', () => {
     expect((screen.getByTitle('Sebelumnya') as HTMLButtonElement).disabled).toBe(true)
   })
 
-  it('saves progress keyed by moduleIdToPath, with page and computed pct, on every page change', async () => {
-    saveProgressMock.mockClear()
-    renderEbook(1)
-    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
-    await waitFor(() =>
-      expect(saveProgressMock).toHaveBeenCalledWith(
-        'books/modul-01.pdf',
-        expect.objectContaining({ pct: 33, currentPage: 1 }),
-      ),
-    )
+  // Antrean #191: posisi baca disimpan seketika, persen baru naik sesudah halaman tampil 5 detik.
+  it('menyimpan posisi seketika, dan persen baru naik sesudah halaman tampil cukup lama', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      saveProgressMock.mockClear()
+      renderEbook(1)
+      await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+      await waitFor(() =>
+        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 0, currentPage: 1, totalPages: 3 })),
+      )
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+      expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 33, currentPage: 1 }))
 
-    fireEvent.click(screen.getByTitle('Berikutnya'))
-    await waitFor(() =>
-      expect(saveProgressMock).toHaveBeenCalledWith(
-        'books/modul-01.pdf',
-        expect.objectContaining({ pct: 67, currentPage: 2 }),
-      ),
-    )
+      // membalik cepat ke halaman 2 lalu 3: posisi ikut, persen tetap 33 karena belum ada yang tampil 5 detik
+      saveProgressMock.mockClear()
+      fireEvent.click(screen.getByTitle('Berikutnya'))
+      await waitFor(() => expect(screen.getAllByText('2 / 3').length).toBeGreaterThan(0))
+      fireEvent.click(screen.getByTitle('Berikutnya'))
+      await waitFor(() => expect(screen.getAllByText('3 / 3').length).toBeGreaterThan(0))
+      await waitFor(() =>
+        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 33, currentPage: 3 })),
+      )
+
+      // halaman 3 tampil 5 detik: tetap 33, karena halaman 2 belum pernah tampil 5 detik (dilewati)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+      expect(saveProgressMock.mock.calls.some(([, d]) => (d as { pct: number }).pct > 33)).toBe(false)
+      expect(screen.getByText('Tercatat dibaca 33%')).toBeTruthy()
+
+      // kembali ke halaman 2 dan menunggu 5 detik: 67; lalu halaman 3 selama 5 detik: 100
+      fireEvent.click(screen.getByTitle('Sebelumnya'))
+      await waitFor(() => expect(screen.getAllByText('2 / 3').length).toBeGreaterThan(0))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+      expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 67, currentPage: 2 }))
+      fireEvent.click(screen.getByTitle('Berikutnya'))
+      await waitFor(() => expect(screen.getAllByText('3 / 3').length).toBeGreaterThan(0))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+      expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 100, currentPage: 3 }))
+
+      // mundur ke halaman 1 tidak menurunkan persen
+      saveProgressMock.mockClear()
+      fireEvent.click(screen.getByTitle('Halaman pertama'))
+      await waitFor(() =>
+        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 100, currentPage: 1 })),
+      )
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  // Temuan pemeriksa #191: catatan lama dibaca langsung tiap pembaca dibuka, jadi persen tersimpan tidak tertimpa.
+  it('membuka lagi topik yang sudah 67% tidak menulis persen yang lebih kecil', async () => {
+    localStorage.setItem('sfp_books/modul-01.pdf', JSON.stringify({ pct: 67, currentPage: 2, totalPages: 3, lastOpened: 'x' }))
+    localStorage.setItem('sfp_time_1', '500')
+    try {
+      saveProgressMock.mockClear()
+      renderEbook(1)
+      await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+      await waitFor(() =>
+        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 67, currentPage: 1 })),
+      )
+      expect(saveProgressMock.mock.calls.every(([, d]) => (d as { pct: number }).pct >= 67)).toBe(true)
+      expect(saveProgressMock.mock.calls.every(([, d]) => (d as { timeSpent: number }).timeSpent >= 500)).toBe(true)
+    } finally {
+      localStorage.removeItem('sfp_books/modul-01.pdf')
+      localStorage.removeItem('sfp_time_1')
+    }
+  })
+
+  it('selama catatan lama gagal dibaca tidak ada yang ditulis; begitu terbaca, penulisan jalan lagi', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    catatan.gagal = true
+    try {
+      saveProgressMock.mockClear()
+      renderEbook(1)
+      await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(6000)
+      })
+      expect(saveProgressMock).not.toHaveBeenCalled()
+
+      catatan.gagal = false
+      fireEvent.click(screen.getByTitle('Berikutnya'))
+      await waitFor(() =>
+        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 0, currentPage: 2 })),
+      )
+    } finally {
+      catatan.gagal = false
+      vi.useRealTimers()
+    }
+  })
+
+  it('tab tersembunyi tidak dihitung; sesudah terlihat lagi hitungan 5 detik mulai dari awal', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    const tampak = (v: 'visible' | 'hidden') => {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => v })
+      document.dispatchEvent(new Event('visibilitychange'))
+    }
+    try {
+      saveProgressMock.mockClear()
+      renderEbook(1)
+      await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+      await waitFor(() => expect(saveProgressMock).toHaveBeenCalled())
+      act(() => tampak('hidden'))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(20000)
+      })
+      expect(saveProgressMock.mock.calls.some(([, d]) => (d as { pct: number }).pct > 0)).toBe(false)
+
+      act(() => tampak('visible'))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(4000)
+      })
+      expect(saveProgressMock.mock.calls.some(([, d]) => (d as { pct: number }).pct > 0)).toBe(false)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(1100)
+      })
+      expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 33, currentPage: 1 }))
+    } finally {
+      Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' })
+      vi.useRealTimers()
+    }
   })
 
   it('shows the catalog picker (not an error) when no ?book= param is present', async () => {

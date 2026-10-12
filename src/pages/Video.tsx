@@ -184,7 +184,7 @@ function VideoMahasiswa() {
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6">
-            <VideoPlayer modul={modul} />
+            <VideoPlayer modul={modul} sudahSelesai={progressMap[modul.id]?.done ?? false} />
             <SetelahVideoPanel current={current} idx={idx} sorted={sorted} />
           </div>
         )}
@@ -198,10 +198,12 @@ function VideoMahasiswa() {
 // (iframe) tidak punya API tanpa skrip tambahan, jadi hanya seconds=0/
 // done=false saat pemutar dibuka, dan tombol "Tandai selesai ditonton" di
 // bawah pemutar — muncul untuk kedua jenis — yang menulis done=true.
-function VideoPlayer({ modul }: { modul: ModuleRow }) {
+function VideoPlayer({ modul, sudahSelesai }: { modul: ModuleRow; sudahSelesai: boolean }) {
   const parsed = parseVideoUrl(modul.video_url)
   const lastSentRef = useRef<number | null>(null)
-  const [done, setDone] = useState(false)
+  const [baruSelesai, setDone] = useState(false)
+  // Tanda yang sudah tersimpan tetap tampil saat pemutar dibuka lagi (antrean #191).
+  const done = baruSelesai || sudahSelesai
   const [marking, setMarking] = useState(false)
 
   useEffect(() => {

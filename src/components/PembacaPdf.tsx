@@ -106,6 +106,8 @@ export interface PembacaPdfProps {
   cap?: string | null
   /** Dipanggil tiap halaman terbaca berubah, hanya untuk `src` yang benar-benar termuat. */
   onHalaman?: (halaman: number, total: number) => void
+  /** Persen yang benar-benar tercatat dibaca (antrean #191). Bila diisi, tampil menggantikan persen posisi. */
+  persenTercatat?: number | null
   /** Melapor keadaan muat. Pemanggil yang menampilkan sendiri keadaan itu memakai `tampilStatus={false}`. */
   onStatus?: (status: StatusPdf, pesan: string) => void
   /** Bila true (bawaan), "Membuka PDF…" dan pesan galat tampil di lapisan pembaca; bilah atas tetap ada supaya bisa ditutup. */
@@ -126,7 +128,7 @@ export interface PembacaPdfProps {
 // sempit: satu halaman). Mode Gulir: semua halaman bersusun ke bawah.
 // Klik tepi kiri/kanan = balik halaman, klik tengah = sembunyikan/tampilkan
 // kendali. Gaya ada di src/index.css (.pembaca-*).
-export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, onStatus, tampilStatus = true, diAtasModal = false, onEscape }: PembacaPdfProps) {
+export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, persenTercatat = null, onStatus, tampilStatus = true, diAtasModal = false, onEscape }: PembacaPdfProps) {
   const pdfRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
   const panggungRef = useRef<HTMLDivElement>(null)
   const gambarRef = useRef<Record<number, string>>({})
@@ -487,7 +489,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, onSt
                 aria-label="Lompat ke halaman"
                 className="pembaca-geser flex-1 min-w-0"
               />
-              <span className="text-xs pembaca-redup whitespace-nowrap">Progres baca {persen}%</span>
+              <span className="text-xs pembaca-redup whitespace-nowrap">{persenTercatat != null ? `Tercatat dibaca ${persenTercatat}%` : `Progres baca ${persen}%`}</span>
             </div>
             <div className="flex items-center gap-1.5 md:order-1">
               <button onClick={() => lompat(1)} disabled={prevDisabled} title="Halaman pertama" aria-label="Halaman pertama" className="pembaca-tb kotak !hidden md:!inline-flex">

@@ -1,5 +1,5 @@
 import type { ProgressMap } from './progress'
-import { moduleIdToPath } from './progress'
+import { moduleIdToPath, halamanTerjauh } from './progress'
 import type { QuizAttemptWithModule } from './quizAttempts'
 import { AMBANG_FORMATIF } from './ambang'
 
@@ -61,10 +61,10 @@ export function hitungLangkah({
 
   const langkah: Langkah = semuaLulus ? 'selesai-semua' : pct >= 100 ? 'formatif' : 'baca'
 
-  const halaman =
-    p && p.currentPage > 0 && pct > 0
-      ? { dibaca: p.currentPage, total: Math.round(p.currentPage / (pct / 100)) }
-      : undefined
+  // Sejak antrean #191 persen dihitung dari halaman terjauh yang benar-benar dibaca, bukan dari posisi terakhir.
+  // Jumlah halaman tidak ditaksir dari posisi: posisi dan persen tidak lagi sebanding, jadi baris tanpa total_pages tampil tanpa angka halaman.
+  const total = p?.totalPages || 0
+  const halaman = p && total > 0 && pct > 0 ? { dibaca: halamanTerjauh(pct, total), total } : undefined
 
   const latest = attempts.length
     ? attempts.reduce((a, b) => ((a.completedAt || '') > (b.completedAt || '') ? a : b))

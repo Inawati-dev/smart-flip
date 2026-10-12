@@ -37,12 +37,10 @@ export async function upsertVideoProgress(moduleId: number, seconds: number, don
     const { data: userData } = await supabase.auth.getUser()
     const uid = userData.user?.id
     if (!uid) return
-    const { error } = await supabase
-      .from('video_progress')
-      .upsert(
-        { user_id: uid, module_id: moduleId, seconds, done, updated_at: new Date().toISOString() },
-        { onConflict: 'user_id,module_id' },
-      )
+    // Kolom done hanya dikirim saat true (antrean #191): membuka pemutar lagi atau lapor detik tidak boleh
+    // menghapus tanda selesai. Baris baru tetap done=false dari bawaan kolomnya.
+    const baris = { user_id: uid, module_id: moduleId, seconds, updated_at: new Date().toISOString(), ...(done ? { done: true } : {}) }
+    const { error } = await supabase.from('video_progress').upsert(baris, { onConflict: 'user_id,module_id' })
     if (error) throw error
   } catch (e) {
     if (isMissingTable(e)) {

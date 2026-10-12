@@ -24,12 +24,20 @@ describe('hitungLangkah', () => {
   })
 
   it('modul 1 dibaca penuh: langkah formatif, halaman terisi', () => {
-    const progress = { [moduleIdToPath(1)]: { pct: 100, currentPage: 20, lastOpened: null } }
+    const progress = { [moduleIdToPath(1)]: { pct: 100, currentPage: 20, totalPages: 20, lastOpened: null } }
     const r = hitungLangkah({ modules, progress, attempts: [] })
     expect(r.topikAktif.id).toBe(1)
     expect(r.langkah).toBe('formatif')
     expect(r.halaman).toEqual({ dibaca: 20, total: 20 })
     expect(r.topikSelesai).toBe(0)
+  })
+
+  // Antrean #191: angka halaman memakai halaman yang tercatat dibaca, bukan posisi terakhir, dan tidak ditaksir.
+  it('halaman memakai catatan baca, bukan posisi; tanpa jumlah halaman tidak ada angka', () => {
+    const melompat = { [moduleIdToPath(1)]: { pct: 17, currentPage: 18, totalPages: 18, lastOpened: null } }
+    expect(hitungLangkah({ modules, progress: melompat, attempts: [] }).halaman).toEqual({ dibaca: 3, total: 18 })
+    const tanpaTotal = { [moduleIdToPath(1)]: { pct: 6, currentPage: 18, lastOpened: null } }
+    expect(hitungLangkah({ modules, progress: tanpaTotal, attempts: [] }).halaman).toBeUndefined()
   })
 
   it('modul 1 remedial 64: topik aktif tetap modul 1, skor terakhir remedial', () => {

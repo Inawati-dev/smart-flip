@@ -49,4 +49,22 @@ describe('upsertVideoProgress: panggilan ended → done=true', () => {
     )
     vi.doUnmock('./supabase')
   })
+
+  // Antrean #191: membuka pemutar lagi (done=false) tidak boleh menghapus tanda selesai yang sudah tersimpan.
+  it('tidak mengirim kolom done saat done=false, supaya tanda selesai tidak tertimpa', async () => {
+    const upsertSpy = vi.fn<(baris: Record<string, unknown>, opsi: unknown) => Promise<{ error: null }>>(async () => ({ error: null }))
+    vi.doMock('./supabase', () => ({
+      supabase: {
+        auth: { getUser: async () => ({ data: { user: { id: 'u1' } } }) },
+        from: () => ({ upsert: upsertSpy }),
+      },
+      isSupabaseConfigured: true,
+    }))
+    vi.resetModules()
+    const { upsertVideoProgress: upsertWithUser } = await import('./videoProgress')
+    await upsertWithUser(3, 0, false)
+    expect(upsertSpy.mock.calls[0][0]).toMatchObject({ user_id: 'u1', module_id: 3, seconds: 0 })
+    expect('done' in upsertSpy.mock.calls[0][0]).toBe(false)
+    vi.doUnmock('./supabase')
+  })
 })

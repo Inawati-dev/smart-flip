@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
-import { saveProgress, moduleIdToPath } from '../lib/progress'
+import { useQueryClient } from '@tanstack/react-query'
+import { saveProgress, moduleIdToPath, fetchCatatanTopik, halamanTerjauh, majuTerjauh, persenBaca, MIN_DETIK_PER_HALAMAN, MAKS_DETIK_PER_HALAMAN, type CatatanTopik } from '../lib/progress'
 import { useModules } from '../hooks/useModules'
 import { Layout } from '../components/Layout'
 import { SampulTopik } from '../components/KartuTopik'
@@ -14,6 +15,138 @@ import { IconWarning, IconBook, IconChevronRight } from '../components/icons'
 // ?book= membawa id topik, bukan alamat berkasnya; sumber PDF diambil dari
 // useModules() supaya alamat penyimpanan tidak tampil di bilah alamat.
 const TIDAK_ADA = 'PDF topik ini belum tersedia.\nFile akan ditambahkan segera.'
+
+// Catatan baca satu topik (antrean #191, pilihan B). Posisi baca disimpan seketika supaya "Lanjutkan Membaca"
+// tetap tepat. Persen baru naik sesudah halaman tampil MIN_DETIK_PER_HALAMAN detik (tab terlihat) dan merupakan
+// lanjutan dari halaman terjauh, jadi membalik cepat tidak dihitung membaca. Persen yang ditulis tidak pernah
+// lebih kecil dari yang tersimpan. Waktu baca dijumlahkan per halaman (dibatasi MAKS_DETIK_PER_HALAMAN).
+// Catatan lama dibaca langsung tiap pembaca dibuka; selama belum terbaca (atau gagal dibaca), tidak ada yang
+// ditulis, supaya angka lama tidak tertimpa.
+// shortcut: dua tab atau dua perangkat pada topik yang sama masih saling menimpa (tulisan terakhir menang); perlu penjaga di server.
+function useCatatBaca(moduleId: number | null) {
+  const qc = useQueryClient()
+  // disimpan bersama id topiknya, supaya angka topik lama tidak tampil sesaat di topik baru
+  const [tercatat, setTercatat] = useState<{ id: number; pct: number } | null>(null)
+  const st = useRef({
+    id: null as number | null,
+    lama: null as CatatanTopik | null,
+    memuat: false,
+    terjauh: 0,
+    halaman: 0,
+    total: 0,
+    sejak: 0,
+    detik: 0,
+    tertunda: false,
+    timer: undefined as ReturnType<typeof setTimeout> | undefined,
+  })
+
+  const simpan = useCallback(() => {
+    const s = st.current
+    if (moduleId == null || s.total <= 0 || s.halaman <= 0) return
+    if (!s.lama) {
+      s.tertunda = true
+      return
+    }
+    s.tertunda = false
+    s.terjauh = Math.max(s.terjauh, halamanTerjauh(s.lama.pct, s.total))
+    const pct = Math.max(s.lama.pct, persenBaca(s.terjauh, s.total))
+    s.lama.pct = pct
+    setTercatat({ id: moduleId, pct })
+    saveProgress(moduleIdToPath(moduleId), {
+      pct,
+      currentPage: s.halaman,
+      totalPages: s.total,
+      lastOpened: new Date().toISOString(),
+      timeSpent: s.lama.timeSpent + Math.round(s.detik),
+    }).catch(() => {})
+  }, [moduleId])
+
+  const tutupHalaman = useCallback(() => {
+    const s = st.current
+    if (s.sejak) s.detik += Math.min(MAKS_DETIK_PER_HALAMAN, (Date.now() - s.sejak) / 1000)
+    s.sejak = 0
+  }, [])
+
+  // Hitungan 5 detik untuk halaman yang sedang tampil; dipasang ulang tiap halaman berganti, tab kembali terlihat, atau catatan lama selesai dibaca.
+  const pasangTimer = useCallback(() => {
+    const s = st.current
+    clearTimeout(s.timer)
+    const halaman = s.halaman
+    if (halaman <= 0) return
+    s.timer = setTimeout(() => {
+      if (document.visibilityState !== 'visible' || !s.lama || s.halaman !== halaman) return
+      const lama = Math.max(s.terjauh, halamanTerjauh(s.lama.pct, s.total))
+      s.terjauh = majuTerjauh(lama, halaman, MIN_DETIK_PER_HALAMAN)
+      if (s.terjauh !== lama) simpan()
+    }, MIN_DETIK_PER_HALAMAN * 1000)
+  }, [simpan])
+
+  const muatLama = useCallback(() => {
+    const s = st.current
+    const id = moduleId
+    if (id == null || s.lama || s.memuat) return
+    s.memuat = true
+    fetchCatatanTopik(id)
+      .then((c) => {
+        if (s.id !== id) return
+        s.memuat = false
+        s.lama = c
+        setTercatat({ id, pct: c.pct })
+        if (s.tertunda) simpan()
+        pasangTimer()
+      })
+      .catch(() => {
+        if (s.id === id) s.memuat = false // dicoba lagi saat halaman berikutnya tampil
+      })
+  }, [moduleId, simpan, pasangTimer])
+
+  useEffect(() => {
+    const s = st.current
+    Object.assign(s, { id: moduleId, lama: null, memuat: false, terjauh: 0, halaman: 0, total: 0, sejak: 0, detik: 0, tertunda: false })
+    if (moduleId == null) return
+    muatLama()
+    return () => {
+      clearTimeout(s.timer)
+      tutupHalaman()
+      simpan()
+      void qc.invalidateQueries({ queryKey: ['progress'] })
+    }
+  }, [moduleId, muatLama, simpan, tutupHalaman, qc])
+
+  // Tab tersembunyi: hitungan berhenti dan waktu disimpan. Tab terlihat lagi: hitungan halaman itu mulai dari awal.
+  useEffect(() => {
+    const ubah = () => {
+      const s = st.current
+      if (s.halaman <= 0) return
+      if (document.visibilityState === 'visible') {
+        s.sejak = Date.now()
+        pasangTimer()
+      } else {
+        clearTimeout(s.timer)
+        tutupHalaman()
+        simpan()
+      }
+    }
+    document.addEventListener('visibilitychange', ubah)
+    return () => document.removeEventListener('visibilitychange', ubah)
+  }, [pasangTimer, simpan, tutupHalaman])
+
+  const onHalaman = useCallback(
+    (halaman: number, total: number) => {
+      const s = st.current
+      tutupHalaman()
+      if (total !== s.total) s.terjauh = 0 // PDF diganti dengan jumlah halaman lain: hitung ulang dari persen tersimpan
+      s.halaman = halaman
+      s.total = total
+      s.sejak = document.visibilityState === 'visible' ? Date.now() : 0
+      muatLama()
+      simpan()
+      pasangTimer()
+    },
+    [muatLama, pasangTimer, simpan, tutupHalaman],
+  )
+  return { onHalaman, tercatat: tercatat && tercatat.id === moduleId ? tercatat.pct : null }
+}
 
 export function Ebook() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -30,6 +163,7 @@ export function Ebook() {
   const currentModule = moduleId != null ? modules.find((m) => m.id === moduleId) : undefined
   const src = currentModule?.path || currentModule?.pdf_path || ''
   const cap = useCapAir()
+  const catatBaca = useCatatBaca(moduleId)
 
   // Keadaan muat dilaporkan PembacaPdf bersama id topiknya. Saat ?book= berganti,
   // render pertama masih membawa laporan buku lama; id yang tidak cocok dianggap "memuat".
@@ -138,14 +272,8 @@ export function Ebook() {
             onStatus={(status, pesan) => setLaporan((l) => (l.id === moduleId && l.status === status && l.pesan === pesan ? l : { id: moduleId, status, pesan }))}
             // Progres per halaman, dikunci ke moduleIdToPath() (bukan alamat PDF) supaya
             // sama saja untuk berkas di books/ maupun yang diunggah ke Supabase Storage.
-            onHalaman={(halaman, total) => {
-              saveProgress(moduleIdToPath(moduleId), {
-                pct: Math.min(100, Math.round((halaman / total) * 100)),
-                currentPage: halaman,
-                totalPages: total,
-                lastOpened: new Date().toISOString(),
-              }).catch(() => {})
-            }}
+            onHalaman={catatBaca.onHalaman}
+            persenTercatat={catatBaca.tercatat}
             kiri={
               <>
                 <Link to="/modul" className="hover:underline flex-shrink-0 pembaca-redup">Modul</Link>

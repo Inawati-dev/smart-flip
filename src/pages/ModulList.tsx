@@ -7,7 +7,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import { createCourse, updateCourse, deleteCourse, type Course } from '../lib/courses'
 import { useTopikStatus } from '../lib/topik'
-import { moduleIdToPath } from '../lib/progress'
+import { moduleIdToPath, halamanTerjauh } from '../lib/progress'
 import { useModulCustoms } from '../hooks/useManajemen'
 import {
   saveModulOrder,
@@ -809,7 +809,7 @@ export function ModulList() {
                     pct >= 100
                       ? total ? `${total}/${total} hal` : 'Selesai dibaca'
                       : pct > 0 && entry?.currentPage > 0
-                        ? total ? `${entry.currentPage}/${total} hal` : `Halaman ${entry.currentPage}`
+                        ? total ? `${halamanTerjauh(pct, total)}/${total} hal` : `Halaman ${entry.currentPage}`
                         : total ? `0/${total} hal` : 'Belum dibaca'
                   const chip =
                     status === 'done' ? (

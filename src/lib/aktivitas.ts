@@ -130,7 +130,7 @@ export function gabungKejadian(sumber: SumberAktivitas): Kejadian[] {
       kelasId: p?.classId ?? null,
       kelasNama: p?.kelasNama ?? null,
       jenis: 'modul',
-      keterangan: `Topik ${m?.orderNum ?? pr.moduleId} dibaca sampai halaman ${pr.currentPage}`,
+      keterangan: `Topik ${m?.orderNum ?? pr.moduleId} dibuka sampai halaman ${pr.currentPage}`,
     })
   }
 
