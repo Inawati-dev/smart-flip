@@ -332,11 +332,11 @@ export function DosenModulRak() {
       {(editId != null || creatingNew) && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)' }}
+          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
             className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
+            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">{creatingNew ? 'Tambah Topik' : 'Ubah Topik'}</h3>
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
@@ -427,11 +427,11 @@ export function DosenModulRak() {
       {pdfModalId != null && (
         <div
           className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)' }}
+          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div
             className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)' }}
+            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-4">Ganti PDF Topik</h3>
 
