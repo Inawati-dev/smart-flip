@@ -288,6 +288,7 @@ Cara ini sudah dipakai untuk sembilan contoh 1 menit. Untuk video 5 sampai 7 men
 | `skrip2.js` | Waktu munculnya isi papan, diikat ke kata yang diucapkan |
 | `kelas.html` | Gambar ruang kelas |
 | `tokoh5.html`, `tokoh5.js` | Gambar tokoh dan aturan geraknya (versi yang berlaku) |
+| `lembar.py` | Membuat lembar pose gambar diam bernomor dari `tokoh5.html` dan hitungan lengan di `tokoh5.js` (7 pose badan penuh, 4 tampak dekat), tanpa merender video; hasil terakhir `lembar-pose-dosen-v4.jpg` |
 
 3. Urutan perintah untuk membangun ulang contoh, dari folder yang memuat berkas di atas, folder `fon` berisi dua fon aplikasi, dan satu proyek HyperFrames kosong bernama `tokoh5`:
 
