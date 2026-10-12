@@ -2,7 +2,7 @@
 
 Disusun 11 Okt 2026 dari berkas di `kerja nyata/Naskah sampai Aktivitas Mandiri/` dibandingkan dengan berkas asal suntingan manual di `.claude/cadangan-200/`.
 
-Semua yang ada di daftar ini ditulis sesi (mesin), bukan tim penulis, dan berwarna **biru 0070C0** di naskah. Teks merah di kedua berkas seluruhnya milik tim penulis dan tidak diubah warnanya, kecuali kata yang dibetulkan di tabel pembetulan.
+Semua yang ada di daftar ini ditulis sesi (mesin), bukan tim penulis, dan berwarna **biru 0070C0** di naskah. Teks merah di kedua berkas sudah ada sebelum sesi ini dan tidak diubah warnanya, kecuali kata yang dibetulkan di tabel pembetulan. Merah itu bukan tulisan tim: 53 dari 53 paragraf merah Bab 1 dan 54 dari 56 paragraf merah Bab 2 sudah merah sebelum tim menyunting, jadi merah menandai tulisan dan suntingan mesin sampai 10 Okt 2026 (dibetulkan 12 Okt 2026, antrean #212; penjelasan lengkap di `docs/materi-tambahan-bab-5.md`). Sejak sapuan #217 (11 Okt 2026) seluruh teks isi dijadikan hitam, sehingga warna di naskah tidak lagi menandai apa pun.
 Nomor halaman adalah nomor yang tercetak di kaki halaman PDF ekspor (`.claude/cadangan-200/pdf-hasil/`).
 
 ## Bab 1: materi baru
