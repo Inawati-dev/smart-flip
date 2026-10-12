@@ -223,3 +223,119 @@ python tulis221.py
 ```
 
 Yang pertama harus berakhir `SEMUA LOLOS`. Yang kedua harus menunjukkan semua baris daftar isi enam bab cocok (17, 17, 17, 16, 15, 15); ia mencetak `PERIKSA` untuk Bab 3, 4, dan 6 karena empat potong teks bukan tabel, sama seperti pada #217. Yang ketiga, tanpa `--tulis`, hanya memeriksa berkas kunci dan md5.
+
+## Putaran kedua: Bab 1, Bab 2, Bab 6, dan Penutup dibaca penuh (antrean #223 butir 5)
+
+Dikerjakan 12 Okt 2026 sesudah pemeriksa putaran pertama menyebut empat berkas ini baru disapu dengan pola. Sesi membaca keempatnya dari awal sampai akhir (daftar rujukan dilewati), lalu membetulkan dengan cara yang sama. Skrip dan cadangan ada di `.claude/cadangan-223/`; berkas asal putaran ini adalah hasil putaran pertama.
+
+Jumlah: 56 penggantian teks di 47 paragraf (Bab 1: 13, Bab 2: 11, Bab 6: 25, Penutup: 7). Sebagian besar berupa kalimat yang tanda bacanya hilang dan dua kalimat yang tersambung koma. Jumlah halaman tidak berubah (20, 21, 18, 9).
+
+Yang memakai tafsiran sesi dan perlu dibaca tim:
+
+- Bab 6 P0009: tujuan pembelajaran terpotong di "menentukan teknik pengumpulan"; sesi menambahkan kata "data", mengikuti butir berikutnya dan bunyi Sub-CPMK di Pendahuluan ("menentukan teknik pengumpulan & analisis data").
+- Bab 1 P0047: "Sebagai mahasiswa vokasi, akan lebih sering berhadapan" menjadi "Mahasiswa vokasi akan lebih sering berhadapan" (kalimat asal tanpa subjek).
+- Bab 2 P0104: deret tiga pertanyaan yang semula disambung titik koma dijadikan tiga kalimat tanya, dan kata "Terakhir," dibuang.
+- Bab 6 P0171: "Batas 0,78 yang disebut di awal bagian ini" menjadi "pada bagian sebelumnya", karena angka itu ada di bagian Standar Validitas dan Reliabilitas Instrumen.
+- Tujuh titik dua yang memisahkan dua kegiatan dalam sel tabel (Bab 1 P0040 dan enam di Penutup) dijadikan titik koma, seperti sel lain di tabel yang sama.
+
+### Bab 1 (13 catatan)
+
+| Paragraf | Jenis | Sebelum | Sesudah |
+|---|---|---|---|
+| P0040 | tanda baca | "gma, alasan) sebagai AM-1: berdiskusi kelompok." | "gma, alasan) sebagai AM-1; berdiskusi kelompok." |
+| P0047 | kalimat rusak | "Sebagai mahasiswa vokasi, akan lebih sering berhad" | "Mahasiswa vokasi akan lebih sering berhad" |
+| P0047 | tanda baca hilang | "ilah yang sering tertukar yaitu penelitian terapan" | "ilah yang sering tertukar, yaitu penelitian terapan" |
+| P0047 | tanda baca hilang | "ni menggabungkan keduanya mahasiswa akan meneliti" | "ni menggabungkan keduanya: mahasiswa akan meneliti" |
+| P0049 | kalimat rusak | "i produk atau sistem baru, inilah paradigma yang pali" | "i produk atau sistem baru. Inilah paradigma yang pali" |
+| P0135 | kalimat tanya berakhir titik | "an mana yang harus diubah." | "an mana yang harus diubah?" |
+| P0137 | kalimat rusak | "pai ke lorong. Itu gejala, masalahnya baru terlihat k" | "pai ke lorong. Itu gejala. Masalahnya baru terlihat k" |
+| P0138 | tanda baca | "ke produk yang berlainan, bingkai pertama mengarah" | "ke produk yang berlainan: bingkai pertama mengarah" |
+| P0141 | kata hilang | "eadaan mahasiswa magang, pada waktu yang sama menj" | "eadaan mahasiswa magang, yang pada waktu yang sama menj" |
+| P0145 | huruf besar judul kolom | "Yang mahasiswa Lakukan" | "Yang Mahasiswa Lakukan" |
+| P0050 | kalimat rusak | "langsung membuat aplikasi, mereka lebih dulu mengumpu" | "langsung membuat aplikasi. Mereka lebih dulu mengumpu" |
+| P0071 | kalimat rusak | "n yang diteliti, kemudian pada penelitian kuantitatif m" | "n yang diteliti, kemudian penelitian kuantitatif m" |
+| P0137 | tanda baca hilang | "isalnya, di loket layanan mahasiswa melihat antrea" | "isalnya, di loket layanan, mahasiswa melihat antrea" |
+
+### Bab 2 (11 catatan)
+
+| Paragraf | Jenis | Sebelum | Sesudah |
+|---|---|---|---|
+| P0014 | kalimat rusak | "rikut (pertemuan 3 dan 4), setiap aktivitas pembelaja" | "rikut (pertemuan 3 dan 4). Setiap aktivitas pembelaja" |
+| P0027 | tanda baca hilang | "Mardapi, & Koehler, 2020) membimbing observasi lap" | "Mardapi, & Koehler, 2020); membimbing observasi lap" |
+| P0055 | kalimat rusak | "ak dijadikan topik proyek, untuk menyaringnya gunakan tiga kriteria se" | "ak dijadikan topik proyek. Untuk menyaringnya, gunakan tiga kriteria se" |
+| P0056 | tanda baca hilang | "awal pengajuan pinjaman" topik yang lebih layak," | "awal pengajuan pinjaman", topik yang lebih layak," |
+| P0060 | tanda baca hilang | "dijadikan lensa tambahan apakah masalah yang diam" | "dijadikan lensa tambahan: apakah masalah yang diam" |
+| P0078 | kata hilang | "uluan dapat dilakukan jika telah mengidentifikasi" | "uluan dapat dilakukan jika mahasiswa telah mengidentifikasi" |
+| P0101 | tanda baca | "tiga hal untuk tiap pihak meliputi (1) apa yang ia kerjakan" | "tiga hal untuk tiap pihak: (1) apa yang ia kerjakan" |
+| P0104 | tanda baca | "draf masing-masing tugas meliputi (1) topik disangka masal" | "draf masing-masing tugas: (1) topik disangka masal" |
+| P0104 | tanda baca | "ir dengan tiga pertanyaan seperti (1) Apakah butir ini men" | "ir dengan tiga pertanyaan: (1) Apakah butir ini men" |
+| P0104 | tanda baca | ""digitalisasi koperasi"?; (2) Apakah butir ini beb" | ""digitalisasi koperasi"? (2) Apakah butir ini beb" |
+| P0104 | kalimat rusak | "menyamar sebagai masalah; dan (3) Terakhir, catatan atau dokumen mana" | "menyamar sebagai masalah. (3) Catatan atau dokumen mana" |
+
+### Bab 6 (25 catatan)
+
+| Paragraf | Jenis | Sebelum | Sesudah |
+|---|---|---|---|
+| P0009 | kata hilang | "tukan teknik pengumpulan" | "tukan teknik pengumpulan data" |
+| P0027 | tanda baca hilang | "enurut Borg & Gall (2003) mendemonstrasikan penyus" | "enurut Borg & Gall (2003); mendemonstrasikan penyus" |
+| P0070 | kalimat rusak | "ilai atau menguji sesuatu dalam konteks proyek penge" | "ilai atau menguji sesuatu. Dalam konteks proyek penge" |
+| P0077 | tanda baca hilang | "bukan saling menggantikan instrumen yang reliabel" | "bukan saling menggantikan: instrumen yang reliabel" |
+| P0099 | huruf besar | "perkembangan penyusunan Skala Likert mengangkat du" | "perkembangan penyusunan skala Likert mengangkat du" |
+| P0099 | tanda baca hilang | "ng berguna pada tahap ini yaitu definisi konstruk" | "ng berguna pada tahap ini, yaitu definisi konstruk" |
+| P0123 | bentuk terikat | "analisis statistik pasca-pengumpulan data. Setiap" | "analisis statistik pascapengumpulan data. Setiap" |
+| P0126 | huruf besar dan tanda baca | "nya dijawab dengan skala likert yaitu deret pilihan bert" | "nya dijawab dengan skala Likert, yaitu deret pilihan bert" |
+| P0145 | bentuk terikat | "Kesepakatan antar-validator atau uji coba u" | "Kesepakatan antarvalidator atau uji coba u" |
+| P0152 | kalimat rusak | "umum, bukan angka mutlak dosen pengampu tetap berwe" | "umum, bukan angka mutlak. Dosen pengampu tetap berwe" |
+| P0175 | kata baku | "enyusunan daftar pustaka baiknya menggunakan aplik" | "enyusunan daftar pustaka sebaiknya menggunakan aplik" |
+| P0027 | kata hilang | "serta prinsip validitas reliabilitas menurut Borg" | "serta prinsip validitas dan reliabilitas menurut Borg" |
+| P0127 | kalimat rusak | "100%. Sebagai ilustrasi, tiga validator menilai d" | "100%. Sebagai ilustrasi, bila tiga validator menilai d" |
+| P0127 | kalimat rusak | "dengan skor tertinggi 5, maka skor maksimumnya 3 × 8 ×" | "dengan skor tertinggi 5, skor maksimumnya 3 × 8 ×" |
+| P0131 | kata hilang | "rupakan salah satu faktor paling konsisten menentu" | "rupakan salah satu faktor yang paling konsisten menentu" |
+| P0171 | rujukan bagian keliru | "Batas 0,78 yang disebut di awal bagian ini memberi keputusan yang s" | "Batas 0,78 yang disebut pada bagian sebelumnya memberi keputusan yang s" |
+| P0025 | huruf besar | "Menit" | "menit" |
+| P0030 | huruf besar | "Menit" | "menit" |
+| P0035 | huruf besar | "Menit" | "menit" |
+| P0041 | huruf besar | "Menit" | "menit" |
+| P0046 | huruf besar | "Menit" | "menit" |
+| P0051 | huruf besar | "Menit" | "menit" |
+| P0057 | huruf besar | "Menit" | "menit" |
+| P0062 | huruf besar | "Menit" | "menit" |
+| P0067 | huruf besar | "Menit" | "menit" |
+
+### Penutup (7 catatan)
+
+| Paragraf | Jenis | Sebelum | Sesudah |
+|---|---|---|---|
+| P0004 | titik akhir | "dasar pengembangan modul" | "dasar pengembangan modul." |
+| P0013 | tanda baca | "t/mendalam tiap mahasiswa: memandu diskusi kasus pa" | "t/mendalam tiap mahasiswa; memandu diskusi kasus pa" |
+| P0016 | tanda baca | "ervasi/wawancara lapangan: memverifikasi kelayakan" | "ervasi/wawancara lapangan; memverifikasi kelayakan" |
+| P0019 | tanda baca | "atas draf bab pendahuluan: memfasilitasi peer revie" | "atas draf bab pendahuluan; memfasilitasi peer revie" |
+| P0028 | tanda baca | "eknik penelusuran pustaka: memeriksa outline kajian" | "eknik penelusuran pustaka; memeriksa outline kajian" |
+| P0031 | tanda baca | "ng sesuai karakter proyek: memvalidasi skema valida" | "ng sesuai karakter proyek; memvalidasi skema valida" |
+| P0034 | tanda baca | "cana teknik analisis data: memastikan kesesuaian de" | "cana teknik analisis data; memastikan kesesuaian de" |
+
+### Yang sengaja tidak diubah pada putaran kedua
+
+- Bab 6 P0184 "Dikirim melalui menu Mini Projek di Smart Flip 5.0." (kalimat tanpa subjek): kalimat yang sama ada di Bab 3 dan Bab 4, dan pada #217 ketiganya sengaja dijaga satu bentuk. Diubah bersama atau tidak sama sekali.
+- Lima kalimat yang maknanya perlu diputuskan tim: Bab 1 P0053 ("Pembedaan paradigma penelitian-penelitian sebelumnya lebih dari kategorisasi akademik"), Bab 1 P0081 ("berbasis proyek nyata pada Bab 1", mungkin "sejak Bab 1"), Bab 1 P0135 ("rancangan pertama saya, agar pengembang tahu"), Bab 2 P0101 ("terhambat oleh sumber daya yang terbatas dan dukungan pemangku kepentingan"), dan istilah "Tes Formatif" berdampingan dengan "Kuis Formatif".
+- Bab 6 P0126: koma sesudah "Likert" ikut tercetak miring. Tidak dikerjakan: nyaris tidak tampak.
+- Sekitar 45 soal gaya (taksiran pemeriksa): butir Aktivitas Mandiri tanpa titik akhir, "di mana" sebagai kata sambung, "vs", dan sisa kata "mahasiswa" pengganti "Anda" yang terasa kaku.
+- Penutup menyebut "ADDIE/4D" di tiga tempat, sedangkan Bab 5 sekarang membahas tujuh model. Isi, bukan salah ketik.
+
+### Pemeriksa akhir putaran kedua
+
+Satu agen model opus, hanya membaca. Ia menjalankan ulang `cek223.py`, membandingkan dengan skrip sendiri (teks, struktur, format per huruf), membaca tiap pembetulan, membaca penuh keempat berkas, membuka PDF, dan membuat 10 berkas uji di `periksa/`.
+
+| Sanggahan | Nasib |
+|---|---|
+| Sembilan salah nyata masih tertinggal sesudah sesi membaca penuh (dua kalimat tersambung koma, kata hilang, "Menit" berhuruf besar di sembilan sel Bab 6, dan lain-lain) | Delapan dibetulkan dan masuk daftar di atas; satu dibiarkan (Bab 6 P0184, lihat di atas) |
+| Bab 2 P0104 sesudah pembetulan masih memuat tanda tanya yang diikuti titik koma | Diterima. Deret dijadikan tiga kalimat tanya |
+| Bab 2 P0055: 17 huruf pindah dari run berwarna hitam tertulis ke run tanpa warna | Tidak tampak di cetakan (keduanya hitam). Pembanding kini menyamakan hitam tertulis dengan warna bawaan, sehingga daftar pengecualian dikosongkan |
+| `cek223.py` meloloskan 2 dari 10 berkas uji: atribut penjaga spasi dibuang, dan huruf dipindah di paragraf yang masuk daftar pengecualian | Diterima. Pembanding kini memeriksa spasi tepi dan tidak punya pengecualian; uji ulang sesi untuk keduanya tertangkap |
+| Bab 6 P0009: kata "data" adalah tebakan atas rumusan capaian dari RPS | Dibiarkan sebagai tafsiran yang ditandai di atas; tim perlu mengiyakan |
+| Bab 6 P0126: koma sisipan ikut miring | Tidak dikerjakan (sepele) |
+| "baiknya" menjadi "sebaiknya" dicatat sebagai salah ketik | Diterima. Jenisnya dicatat sebagai kata baku |
+
+Pembetulan sesudah pemeriksa tidak diperiksa agen lagi; sesi membacanya satu per satu dan menjalankan ulang pembanding. Yang tidak diperiksa pemeriksa: tampilan PDF dengan mata, daftar rujukan, rumusan capaian di RPS, dan sel tabel yang sangat pendek.
+
+Cara memeriksa ulang, dari `.claude/cadangan-223/`: `python cek223.py asal hasil` harus berakhir `SEMUA LOLOS`.
