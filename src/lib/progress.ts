@@ -5,6 +5,8 @@ export interface ProgressEntry {
   currentPage: number
   /** Jumlah halaman PDF (v26), null bila belum pernah dibuka. */
   totalPages?: number | null
+  /** Halaman terjauh yang sudah dihitung dibaca (v38); hanya ada di catatan yang ditulis sejak antrean #225. */
+  furthestPage?: number | null
   lastOpened: string | null
 }
 
@@ -79,7 +81,17 @@ export interface SaveProgressInput {
   totalPages?: number
   /** Jumlah detik baca topik ini sampai sekarang (antrean #191); kosong = tidak diubah. */
   timeSpent?: number
+  /** Halaman terjauh yang sudah dihitung dibaca (v38). */
+  furthestPage?: number
 }
+
+// Kolom yang belum ada di basis data (migrasi v26 atau v38 belum dijalankan). Pesan galat PostgREST menyebut nama
+// kolomnya, baik 42703 dari SELECT maupun PGRST204 dari upsert; kolom lain tidak ikut dibuang.
+function kolomHilang(error: { message: string }, kolom: string): boolean {
+  return error.message.includes(kolom)
+}
+// Diingat sesudah galat pertama, supaya tiap simpan tidak mengirim dua permintaan selama v38 belum dijalankan.
+let kolomTerjauhAda = true
 
 // Aturan hitung baca (antrean #191, pilihan B). Posisi baca (currentPage) disimpan seketika, tetapi persen
 // hanya naik lewat halaman yang benar-benar tampil: minimal MIN_DETIK_PER_HALAMAN detik dan merupakan
@@ -99,6 +111,18 @@ export function persenBaca(terjauh: number, total: number): number {
 // shortcut: persen bulat hanya memulihkan nomor halaman dengan tepat sampai 100 halaman; PDF yang lebih panjang perlu kolom halaman terjauh sendiri.
 export function halamanTerjauh(pct: number, total: number): number {
   return total > 0 ? Math.max(0, Math.min(total, Math.round((pct / 100) * total))) : 0
+}
+
+/** Halaman terjauh menurut catatan tersimpan: kolom furthest_page bila ada dan PDF-nya masih berjumlah halaman sama;
+ *  selain itu diturunkan dari persen (catatan lama, atau PDF yang sudah diganti dosen). */
+export function terjauhLama(lama: { pct: number; totalPages: number | null; furthestPage: number | null }, total: number): number {
+  if (total <= 0) return 0
+  // PDF diganti dosen dengan jumlah halaman lain: nomor halaman lama tidak berlaku, taksir ke bawah dari persen.
+  if (lama.totalPages != null && lama.totalPages !== total) return Math.max(0, Math.min(total, Math.floor((lama.pct / 100) * total)))
+  // Halaman terkecil yang masih menghasilkan persen itu. Dipakai sebagai batas bawah, karena tab lama (sebelum v38)
+  // bisa menaikkan persen tanpa ikut menaikkan kolom halaman terjauh.
+  const dariPersen = Math.max(0, Math.ceil(((lama.pct - 0.5) / 100) * total))
+  return Math.min(total, Math.max(lama.furthestPage ?? 0, dariPersen))
 }
 
 export function majuTerjauh(terjauh: number, halaman: number, detikTampil: number, langkah: number = LANGKAH_HALAMAN): number {
@@ -127,15 +151,23 @@ export async function saveProgress(modulePath: string, data: SaveProgressInput):
           current_page: data.currentPage,
           last_opened: lastOpened,
           status: data.pct >= 100 ? 'completed' : data.pct > 0 ? 'in_progress' : 'not_started',
-          started_at: new Date().toISOString(),
-          completed_at: data.pct >= 100 ? new Date().toISOString() : null,
         }
+        // started_at tidak dikirim, dan completed_at tidak pernah dikirim kosong (antrean #225). Penjaga di basis data
+        // (migration_v38) mengisi keduanya sekali dan menolak angka yang turun; selama penjaga belum dijalankan,
+        // completed_at tetap dikirim di tiap simpan 100% seperti sebelumnya supaya tidak pernah kosong.
+        if (data.pct >= 100) row.completed_at = new Date().toISOString()
         if (data.totalPages != null) row.total_pages = data.totalPages
         if (data.timeSpent != null) row.time_spent = data.timeSpent
-        let { error } = await supabase.from('user_progress').upsert(row, { onConflict: 'user_id,module_id' })
-        if (error && data.totalPages != null && (error.code === '42703' || /total_pages/.test(error.message))) {
-          delete row.total_pages
-          ;({ error } = await supabase.from('user_progress').upsert(row, { onConflict: 'user_id,module_id' }))
+        if (data.furthestPage != null && kolomTerjauhAda) row.furthest_page = data.furthestPage
+        const kirim = () => supabase.from('user_progress').upsert(row, { onConflict: 'user_id,module_id' })
+        let { error } = await kirim()
+        // Kolom yang belum ada dibuang satu per satu, yang termuda dulu, lalu dicoba lagi.
+        for (const kolom of ['furthest_page', 'total_pages']) {
+          if (error && kolom in row && kolomHilang(error, kolom)) {
+            if (kolom === 'furthest_page') kolomTerjauhAda = false
+            delete row[kolom]
+            ;({ error } = await kirim())
+          }
         }
         if (error) throw error
         return
@@ -160,6 +192,7 @@ export async function saveProgress(modulePath: string, data: SaveProgressInput):
       pct: data.pct,
       currentPage: data.currentPage,
       totalPages: data.totalPages ?? existing.totalPages ?? null,
+      ...(data.furthestPage != null ? { furthestPage: data.furthestPage } : {}),
       lastOpened,
     }
     localStorage.setItem('sfp_' + modulePath, JSON.stringify(merged))
@@ -174,6 +207,8 @@ export interface CatatanTopik {
   pct: number
   totalPages: number | null
   timeSpent: number
+  /** null bila kolomnya belum ada atau barisnya ditulis sebelum v38. */
+  furthestPage: number | null
 }
 
 // Catatan baca satu topik, dibaca langsung dan bukan dari cache (antrean #191). Berbeda dari fetchAllProgress
@@ -184,22 +219,26 @@ export async function fetchCatatanTopik(moduleId: number): Promise<CatatanTopik>
     const { data: userData } = await supabase.auth.getUser()
     const uid = userData.user?.id
     if (uid) {
-      type Baris = { pct: number | null; time_spent: number | null; total_pages?: number | null }
+      type Baris = { pct: number | null; time_spent: number | null; total_pages?: number | null; furthest_page?: number | null }
       const baca = (kolom: string) => supabase.from('user_progress').select(kolom).eq('user_id', uid).eq('module_id', moduleId).maybeSingle()
-      let { data, error } = await baca('pct, time_spent, total_pages')
-      // Sebelum v26 kolom total_pages belum ada: ulang tanpa kolom itu.
-      if (error && (error.code === '42703' || /total_pages/.test(error.message))) ({ data, error } = await baca('pct, time_spent'))
+      let { data, error } = await baca(kolomTerjauhAda ? 'pct, time_spent, total_pages, furthest_page' : 'pct, time_spent, total_pages')
+      // Sebelum v38 kolom furthest_page belum ada, sebelum v26 kolom total_pages belum ada: ulang tanpa kolom itu.
+      if (error && kolomHilang(error, 'furthest_page')) {
+        kolomTerjauhAda = false
+        ;({ data, error } = await baca('pct, time_spent, total_pages'))
+      }
+      if (error && kolomHilang(error, 'total_pages')) ({ data, error } = await baca('pct, time_spent'))
       if (error) throw error
       const r = data as Baris | null
-      return { pct: r?.pct || 0, totalPages: r?.total_pages ?? null, timeSpent: r?.time_spent || 0 }
+      return { pct: r?.pct || 0, totalPages: r?.total_pages ?? null, timeSpent: r?.time_spent || 0, furthestPage: r?.furthest_page ?? null }
     }
   }
   const timeSpent = parseInt(localStorage.getItem('sfp_time_' + moduleId) || '0', 10) || 0
   try {
     const lokal = JSON.parse(localStorage.getItem('sfp_' + moduleIdToPath(moduleId)) || '{}') as Partial<ProgressEntry>
-    return { pct: lokal.pct || 0, totalPages: lokal.totalPages ?? null, timeSpent }
+    return { pct: lokal.pct || 0, totalPages: lokal.totalPages ?? null, timeSpent, furthestPage: lokal.furthestPage ?? null }
   } catch {
-    return { pct: 0, totalPages: null, timeSpent }
+    return { pct: 0, totalPages: null, timeSpent, furthestPage: null }
   }
 }
 

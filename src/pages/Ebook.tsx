@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { saveProgress, moduleIdToPath, fetchCatatanTopik, halamanTerjauh, majuTerjauh, persenBaca, MIN_DETIK_PER_HALAMAN, MAKS_DETIK_PER_HALAMAN, type CatatanTopik } from '../lib/progress'
+import { saveProgress, moduleIdToPath, fetchCatatanTopik, terjauhLama, majuTerjauh, persenBaca, MIN_DETIK_PER_HALAMAN, MAKS_DETIK_PER_HALAMAN, type CatatanTopik } from '../lib/progress'
 import { useModules } from '../hooks/useModules'
 import { Layout } from '../components/Layout'
 import { SampulTopik } from '../components/KartuTopik'
@@ -22,7 +22,7 @@ const TIDAK_ADA = 'PDF topik ini belum tersedia.\nFile akan ditambahkan segera.'
 // lebih kecil dari yang tersimpan. Waktu baca dijumlahkan per halaman (dibatasi MAKS_DETIK_PER_HALAMAN).
 // Catatan lama dibaca langsung tiap pembaca dibuka; selama belum terbaca (atau gagal dibaca), tidak ada yang
 // ditulis, supaya angka lama tidak tertimpa.
-// shortcut: dua tab atau dua perangkat pada topik yang sama masih saling menimpa (tulisan terakhir menang); perlu penjaga di server.
+// Dua tab atau dua perangkat pada topik yang sama dijaga di basis data (migration_v38): angka dan status tidak bisa turun.
 function useCatatBaca(moduleId: number | null) {
   const qc = useQueryClient()
   // disimpan bersama id topiknya, supaya angka topik lama tidak tampil sesaat di topik baru
@@ -48,9 +48,9 @@ function useCatatBaca(moduleId: number | null) {
       return
     }
     s.tertunda = false
-    s.terjauh = Math.max(s.terjauh, halamanTerjauh(s.lama.pct, s.total))
+    s.terjauh = Math.max(s.terjauh, terjauhLama(s.lama, s.total))
     const pct = Math.max(s.lama.pct, persenBaca(s.terjauh, s.total))
-    s.lama.pct = pct
+    Object.assign(s.lama, { pct, furthestPage: s.terjauh, totalPages: s.total })
     setTercatat({ id: moduleId, pct })
     saveProgress(moduleIdToPath(moduleId), {
       pct,
@@ -58,6 +58,7 @@ function useCatatBaca(moduleId: number | null) {
       totalPages: s.total,
       lastOpened: new Date().toISOString(),
       timeSpent: s.lama.timeSpent + Math.round(s.detik),
+      furthestPage: s.terjauh,
     }).catch(() => {})
   }, [moduleId])
 
@@ -75,7 +76,7 @@ function useCatatBaca(moduleId: number | null) {
     if (halaman <= 0) return
     s.timer = setTimeout(() => {
       if (document.visibilityState !== 'visible' || !s.lama || s.halaman !== halaman) return
-      const lama = Math.max(s.terjauh, halamanTerjauh(s.lama.pct, s.total))
+      const lama = Math.max(s.terjauh, terjauhLama(s.lama, s.total))
       s.terjauh = majuTerjauh(lama, halaman, MIN_DETIK_PER_HALAMAN)
       if (s.terjauh !== lama) simpan()
     }, MIN_DETIK_PER_HALAMAN * 1000)

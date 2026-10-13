@@ -207,13 +207,13 @@ describe('Ebook', () => {
       await act(async () => {
         await vi.advanceTimersByTimeAsync(5000)
       })
-      expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 100, currentPage: 3 }))
+      expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 100, currentPage: 3, furthestPage: 3 }))
 
-      // mundur ke halaman 1 tidak menurunkan persen
+      // mundur ke halaman 1 tidak menurunkan persen maupun halaman terjauh
       saveProgressMock.mockClear()
       fireEvent.click(screen.getByTitle('Halaman pertama'))
       await waitFor(() =>
-        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 100, currentPage: 1 })),
+        expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 100, currentPage: 1, furthestPage: 3 })),
       )
     } finally {
       vi.useRealTimers()

@@ -371,7 +371,8 @@ export async function fetchRecentActivity(limit = 5): Promise<RecentActivityItem
   if (!isSupabaseConfigured) return null
   try {
     const [progressRes, quizRes, forumRes, draftsRes, studentsRes] = await Promise.all([
-      supabase.from('user_progress').select('user_id, module_id, completed_at').eq('status', 'completed').order('completed_at', { ascending: false }).limit(limit),
+      // baris selesai tanpa tanggal (catatan lama) disaring di kueri, supaya tidak memakan jatah limit (Postgres menaruh NULL paling depan)
+      supabase.from('user_progress').select('user_id, module_id, completed_at').eq('status', 'completed').not('completed_at', 'is', null).order('completed_at', { ascending: false }).limit(limit),
       supabase.from('quiz_attempts').select('user_id, module_id, score, attempted_at').order('attempted_at', { ascending: false }).limit(limit),
       supabase.from('forum_posts').select('user_id, module_id, created_at').order('created_at', { ascending: false }).limit(limit),
       supabase.from('drafts').select('user_id, module_id, submitted_at').order('submitted_at', { ascending: false }).limit(limit),

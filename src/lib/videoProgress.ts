@@ -39,7 +39,8 @@ export async function upsertVideoProgress(moduleId: number, seconds: number, don
     if (!uid) return
     // Kolom done hanya dikirim saat true (antrean #191): membuka pemutar lagi atau lapor detik tidak boleh
     // menghapus tanda selesai. Baris baru tetap done=false dari bawaan kolomnya.
-    const baris = { user_id: uid, module_id: moduleId, seconds, updated_at: new Date().toISOString(), ...(done ? { done: true } : {}) }
+    // Detik hanya dikirim bila lebih dari 0 (antrean #225): membuka pemutar atau menandai selesai tidak menghapus detik tersimpan.
+    const baris = { user_id: uid, module_id: moduleId, updated_at: new Date().toISOString(), ...(seconds > 0 ? { seconds } : {}), ...(done ? { done: true } : {}) }
     const { error } = await supabase.from('video_progress').upsert(baris, { onConflict: 'user_id,module_id' })
     if (error) throw error
   } catch (e) {
