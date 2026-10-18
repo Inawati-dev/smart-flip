@@ -83,11 +83,11 @@ export function kelasUntukMataKuliah<T extends Kelas>(classes: T[], courseId: nu
 }
 
 /** Mahasiswa mata kuliah ini yang belum punya kelas karena belum tes diagnostik (v40). */
-export async function fetchBelumTes(courseId: number): Promise<Array<{ id: string; nama: string }>> {
+export async function fetchBelumTes(courseId: number): Promise<Array<{ id: string; nama: string; nim?: string | null; angkatan?: string | null }>> {
   if (!isSupabaseConfigured) return []
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name')
+    .select('id, full_name, nim_nidn, angkatan')
     .eq('role', 'mahasiswa')
     .eq('course_id', courseId)
     .is('class_id', null)
@@ -97,7 +97,12 @@ export async function fetchBelumTes(courseId: number): Promise<Array<{ id: strin
     if (error.code === '42703') return []
     throw error
   }
-  return (data ?? []).map((p) => ({ id: p.id as string, nama: (p.full_name as string | null) || 'Tanpa nama' }))
+  return (data ?? []).map((p) => ({
+    id: p.id as string,
+    nama: (p.full_name as string | null) || 'Tanpa nama',
+    nim: (p.nim_nidn as string | null) ?? null,
+    angkatan: p.angkatan == null ? null : String(p.angkatan), // kolom TEXT (v1)
+  }))
 }
 
 /**
@@ -202,12 +207,14 @@ export interface AnggotaGolongan {
   nama: string
   skor: number | null
   golongan: Golongan
+  nim?: string | null
+  angkatan?: string | null
 }
 
 // Murni: mahasiswa per kelas dengan skor tes diagnostik TERAKHIR. `attempts`
 // harus urut waktu naik, supaya pengerjaan yang belakangan menimpa yang awal.
 export function kelompokkanGolongan(
-  profil: Array<{ id: string; full_name: string | null; class_id: string | null }>,
+  profil: Array<{ id: string; full_name: string | null; class_id: string | null; nim_nidn?: string | null; angkatan?: string | number | null }>,
   attempts: Array<{ user_id: string; score: number }>,
   ambang?: number,
 ): Record<string, AnggotaGolongan[]> {
@@ -217,7 +224,7 @@ export function kelompokkanGolongan(
   for (const p of profil) {
     if (!p.class_id) continue
     const s = skor.get(p.id) ?? null
-    ;(hasil[p.class_id] ??= []).push({ id: p.id, nama: p.full_name || 'Tanpa nama', skor: s, golongan: golonganDariSkor(s, ambang) })
+    ;(hasil[p.class_id] ??= []).push({ id: p.id, nama: p.full_name || 'Tanpa nama', skor: s, golongan: golonganDariSkor(s, ambang), nim: p.nim_nidn ?? null, angkatan: p.angkatan == null ? null : String(p.angkatan) })
   }
   for (const daftar of Object.values(hasil)) daftar.sort((a, b) => a.nama.localeCompare(b.nama))
   return hasil
@@ -228,7 +235,7 @@ export function kelompokkanGolongan(
 export async function fetchGolonganKelas(classIds: string[], courseId: number, ambang?: number): Promise<Record<string, AnggotaGolongan[]>> {
   if (!isSupabaseConfigured || classIds.length === 0) return {}
   const [profil, attempts] = await Promise.all([
-    supabase.from('profiles').select('id, full_name, class_id').in('class_id', classIds),
+    supabase.from('profiles').select('id, full_name, class_id, nim_nidn, angkatan').in('class_id', classIds),
     supabase
       .from('quiz_attempts')
       .select('user_id, score, attempted_at')
@@ -239,7 +246,7 @@ export async function fetchGolonganKelas(classIds: string[], courseId: number, a
   if (profil.error) throw profil.error
   if (attempts.error) throw attempts.error
   return kelompokkanGolongan(
-    (profil.data ?? []) as Array<{ id: string; full_name: string | null; class_id: string | null }>,
+    (profil.data ?? []) as Array<{ id: string; full_name: string | null; class_id: string | null; nim_nidn?: string | null; angkatan?: string | null }>,
     (attempts.data ?? []) as Array<{ user_id: string; score: number }>,
     ambang,
   )
@@ -250,9 +257,19 @@ export async function fetchGolonganKelas(classIds: string[], courseId: number, a
 // jumlah baris yang benar-benar terhapus: tanpa policy DELETE di
 // database/migration_v28_reset_diagnostik.sql basis data menolak diam-diam
 // (0 baris, tanpa galat), dan pemanggil harus bisa membedakannya.
-export async function resetDiagnostik(userIds: string[], courseId: number): Promise<number> {
+// Sejak v47 (antrean #255) lewat reset_diagnostik_mahasiswa: mahasiswa juga dikeluarkan dari kelas
+// otomatis mata kuliah itu, supaya kembali "belum tes" dan ditempatkan ulang sesudah tes.
+// Fungsi belum ada (v47 belum dijalankan): jalur lama, hanya menghapus pengerjaan.
+export async function resetDiagnostik(userIds: string[], courseId: number): Promise<{ dihapus: number; dikeluarkan: number; jalurLama?: boolean }> {
   if (!isSupabaseConfigured) throw new Error('Reset tes diagnostik butuh koneksi Supabase.')
-  if (userIds.length === 0) return 0
+  if (userIds.length === 0) return { dihapus: 0, dikeluarkan: 0 }
+  const rpc = await supabase.rpc('reset_diagnostik_mahasiswa', { p_ids: userIds, p_course: courseId })
+  if (!rpc.error) {
+    const baris = (Array.isArray(rpc.data) ? rpc.data[0] : rpc.data) as { dihapus?: number; dikeluarkan?: number } | null
+    return { dihapus: baris?.dihapus ?? 0, dikeluarkan: baris?.dikeluarkan ?? 0 }
+  }
+  // hanya "fungsi tidak ditemukan"; galat lain (mis. izin) dilempar supaya tidak diam-diam jatuh ke jalur lama
+  if (rpc.error.code !== 'PGRST202' && rpc.error.code !== '42883') throw rpc.error
   const { data, error } = await supabase
     .from('quiz_attempts')
     .delete()
@@ -261,7 +278,7 @@ export async function resetDiagnostik(userIds: string[], courseId: number): Prom
     .in('user_id', userIds)
     .select('id')
   if (error) throw error
-  return data?.length ?? 0
+  return { dihapus: data?.length ?? 0, dikeluarkan: 0, jalurLama: true }
 }
 
 /**

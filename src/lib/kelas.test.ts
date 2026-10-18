@@ -166,7 +166,7 @@ describe('kelompokkanGolongan', () => {
         { id: 'u1', full_name: 'Budi', class_id: 'A' },
         { id: 'u2', full_name: 'Ani', class_id: 'A' },
         { id: 'u3', full_name: null, class_id: 'A' },
-        { id: 'u4', full_name: 'Cici', class_id: 'B' },
+        { id: 'u4', full_name: 'Cici', class_id: 'B', nim_nidn: '2201' },
         { id: 'u5', full_name: 'Tanpa Kelas', class_id: null },
       ],
       [
@@ -183,6 +183,7 @@ describe('kelompokkanGolongan', () => {
       ['Budi', 80, 'mahir'],
       ['Tanpa nama', null, 'belum'],
     ])
-    expect(hasil.B).toEqual([{ id: 'u4', nama: 'Cici', skor: 100, golongan: 'mahir' }])
+    expect(hasil.B).toEqual([{ id: 'u4', nama: 'Cici', skor: 100, golongan: 'mahir', nim: '2201', angkatan: null }])
+    expect(hasil.A[0].nim).toBeNull() // profil tanpa nim_nidn
   })
 })

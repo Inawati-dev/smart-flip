@@ -13,7 +13,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchAttemptsByKind } from './quizAttempts'
 import { AMBANG_FORMATIF, useAmbang } from './ambang'
-import { isSupabaseConfigured } from './supabase'
+import { isSupabaseConfigured, supabase } from './supabase'
 import { useCourse } from '../contexts/CourseContext'
 import { golonganDariSkor, bacaSkorPreDemo, type Golongan } from './golongan'
 import { jadwalTopik } from './jadwal'
@@ -51,6 +51,34 @@ export function markPretestSkipped(): void {
   }
 }
 
+// Penanda "Lanjut tanpa tes" hanya berlaku selama bank soal tes diagnostik mata kuliah itu kosong
+// (antrean #255): penanda lama di peramban tidak boleh membuka materi sesudah dosen mengisi bank
+// soal atau mereset tes mahasiswa.
+export async function lewatiPreBerlaku(courseId?: number): Promise<boolean> {
+  try {
+    if (localStorage.getItem(PRETEST_SKIP_KEY) !== '1') return false
+  } catch {
+    return false
+  }
+  if (!isSupabaseConfigured || courseId == null) return true
+  const { count, error } = await supabase
+    .from('quiz_questions')
+    .select('id', { count: 'exact', head: true })
+    .eq('kind', 'pre')
+    .eq('course_id', courseId)
+  // galat jaringan/kolom: penanda tetap berlaku, supaya mahasiswa tidak berputar antara gerbang dan halaman tes
+  if (error) return true
+  if ((count ?? 0) > 0) {
+    try {
+      localStorage.removeItem(PRETEST_SKIP_KEY)
+    } catch {
+      // abaikan
+    }
+    return false
+  }
+  return true
+}
+
 export function markPretestDone(): void {
   try {
     localStorage.setItem(PRETEST_DONE_KEY, '1')
@@ -60,11 +88,7 @@ export function markPretestDone(): void {
 }
 
 async function isPreTestDone(courseId?: number): Promise<boolean> {
-  try {
-    if (localStorage.getItem(PRETEST_SKIP_KEY) === '1') return true
-  } catch {
-    // ignore, fall through
-  }
+  if (await lewatiPreBerlaku(courseId)) return true
   if (!isSupabaseConfigured) {
     try {
       return localStorage.getItem(PRETEST_DONE_KEY) === '1'
@@ -105,11 +129,7 @@ function useTopikPre() {
       const attempts = await fetchAttemptsByKind('pre', courseId)
       const skor = attempts.length ? attempts[attempts.length - 1].score : bacaSkorPreDemo(courseId)
       if (!isSupabaseConfigured || attempts.length > 0) return { done: true, skor }
-      try {
-        return { done: localStorage.getItem(PRETEST_SKIP_KEY) === '1', skor }
-      } catch {
-        return { done: false, skor }
-      }
+      return { done: await lewatiPreBerlaku(courseId), skor }
     },
     initialData: !isSupabaseConfigured ? { done: true, skor: bacaSkorPreDemo(courseId) } : undefined,
   })

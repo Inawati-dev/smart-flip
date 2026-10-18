@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
@@ -177,14 +177,27 @@ export function KelasPanel() {
     setKonfirmasiAkunOpen(false)
     tutupSandi()
   }
+  // Daftar Akun Mahasiswa (antrean #253): semua mahasiswa mata kuliah ini, berkelas maupun belum tes,
+  // dengan aksi per baris yang langsung terlihat (sebelumnya hanya di modal daftar sesudah dicentang).
+  const akun = [
+    ...classes.flatMap((k) => (golongan[k.id] ?? []).map((a) => ({ id: a.id, nama: a.nama, nim: a.nim ?? null, angkatan: a.angkatan ?? (String(k.angkatan) as string | null), kelas: k.name as string | null }))),
+    ...belumTes.map((b) => ({ id: b.id, nama: b.nama, nim: b.nim ?? null, angkatan: b.angkatan ?? null, kelas: null })),
+  ].sort((a, b) => a.nama.localeCompare(b.nama))
+  // Tautan /kelas#akun-mahasiswa (dari kartu Notifikasi di Akun) menggulir ke daftar begitu datanya tampil.
+  const adaAkun = akun.length > 0
+  useEffect(() => {
+    if (adaAkun && window.location.hash === '#akun-mahasiswa') gulirKe('akun-mahasiswa')
+  }, [adaAkun])
   // Akun mahasiswa berEmail rekaan (antrean #246): status, konfirmasi, sandi sementara.
-  const idDaftar = semuaBaris.map((a) => a.id)
+  const idStatus = Array.from(new Set([...akun.map((a) => a.id), ...semuaBaris.map((a) => a.id)])).sort()
   const { data: belumKonfirmasi = new Set<string>() } = useQuery({
-    queryKey: ['status-konfirmasi', idDaftar.join(',')],
-    queryFn: () => fetchBelumKonfirmasi(idDaftar),
-    enabled: !!daftar && idDaftar.length > 0,
+    queryKey: ['status-konfirmasi', idStatus.join(',')],
+    queryFn: () => fetchBelumKonfirmasi(idStatus),
+    enabled: idStatus.length > 0,
   })
   const dipilihBelumKonfirmasi = [...pilih].filter((id) => belumKonfirmasi.has(id))
+  // nama satu-satunya yang dipilih, untuk judul modal aksi dari daftar Akun Mahasiswa
+  const namaTunggal = pilih.size === 1 ? [...akun, ...semuaBaris].find((a) => pilih.has(a.id))?.nama : undefined
   const [konfirmasiAkunOpen, setKonfirmasiAkunOpen] = useState(false)
   const [mengonfirmasi, setMengonfirmasi] = useState(false)
   async function jalankanKonfirmasiAkun() {
@@ -209,7 +222,9 @@ export function KelasPanel() {
   function bukaSandi() {
     const id = [...pilih][0]
     const a = semuaBaris.find((b) => b.id === id)
-    if (!a) return
+    if (a) bukaSandiUntuk(a)
+  }
+  function bukaSandiUntuk(a: { id: string; nama: string }) {
     setSandiTarget({ id: a.id, nama: a.nama })
     setSandiBaru('')
     setSandiGalat('')
@@ -278,6 +293,7 @@ export function KelasPanel() {
           ? `${terhapus} akun mahasiswa dihapus`
           : 'Tidak ada akun yang terhapus. Hanya mahasiswa di kelas atau mata kuliah Anda yang bisa dihapus.',
       )
+      await queryClient.invalidateQueries({ queryKey: ['status-konfirmasi'] })
       if (terhapus > 0) tutupDaftar()
       else setKonfirmasiHapus(false)
     } catch (e) {
@@ -290,12 +306,16 @@ export function KelasPanel() {
   async function jalankanReset() {
     setMereset(true)
     try {
-      const terhapus = await resetDiagnostik(dipilihBisaDireset, courseId)
+      const { dihapus: terhapus, dikeluarkan, jalurLama } = await resetDiagnostik(dipilihBisaDireset, courseId)
       await queryClient.invalidateQueries({ queryKey: ['golongan-kelas'] })
+      await queryClient.invalidateQueries({ queryKey: ['kelas'] })
+      await queryClient.invalidateQueries({ queryKey: ['belum-tes'] })
       showToast(
         terhapus > 0
-          ? `Tes diagnostik ${dipilihBisaDireset.length} mahasiswa direset`
-          : 'Tidak ada yang terhapus. Jalankan migration_v28_reset_diagnostik.sql di Supabase dulu.',
+          ? jalurLama
+            ? `Tes diagnostik ${dipilihBisaDireset.length} mahasiswa direset, tetapi mereka masih di kelasnya: jalankan migration_v47_reset_diagnostik_kelas.sql di Supabase.`
+            : `Tes diagnostik ${dipilihBisaDireset.length} mahasiswa direset${dikeluarkan > 0 ? `; ${dikeluarkan} keluar dari kelas dan diarahkan ke tes lagi saat masuk` : ''}`
+          : 'Tidak ada yang direset. Mahasiswa ini tidak ada di kelas atau mata kuliah Anda.',
       )
       if (terhapus > 0) tutupDaftar()
       else setKonfirmasiReset(false)
@@ -578,6 +598,60 @@ export function KelasPanel() {
         )}
       </div>
 
+      {/* Akun Mahasiswa (antrean #253): aksi akun per baris tanpa membuka modal daftar */}
+      {akun.length > 0 && (
+        <div id="akun-mahasiswa" className="bg-ivory rounded-2xl border overflow-hidden mt-5" style={BORDER}>
+          <div className="px-4 py-3.5 border-b" style={BORDER}>
+            <span className="text-sm font-semibold text-brown">Akun Mahasiswa · {akun.length}</span>
+            <p className="text-xs text-brown-3 mt-0.5">
+              Konfirmasi akun yang emailnya belum dikonfirmasi, beri kata sandi sementara, atau hapus akun. Tiap aksi meminta konfirmasi dulu.
+            </p>
+          </div>
+          <ul className="flex flex-col px-4">
+            {akun.map((a) => (
+              <li key={a.id} className="row-divider flex items-center justify-between gap-x-3 gap-y-2 py-2.5 flex-wrap">
+                <div className="min-w-0 flex-1 basis-56">
+                  <div className="text-sm font-medium text-brown truncate">{a.nama}</div>
+                  <div className="text-xs text-brown-3 flex items-center gap-1.5 flex-wrap">
+                    <span>{a.nim || 'NIM belum diisi'}</span>
+                    <span aria-hidden>·</span>
+                    <span>{a.angkatan ? `Angkatan ${a.angkatan}` : 'Angkatan belum diisi'}</span>
+                    <span aria-hidden>·</span>
+                    <span>{a.kelas ?? 'Belum tes diagnostik'}</span>
+                    {belumKonfirmasi.has(a.id) && <ChipRak jenis="warn" label="Belum dikonfirmasi" />}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {belumKonfirmasi.has(a.id) && (
+                    <button
+                      onClick={() => {
+                        setPilih(new Set([a.id]))
+                        setKonfirmasiAkunOpen(true)
+                      }}
+                      className="btn btn-secondary btn-sm"
+                    >
+                      Konfirmasi Akun
+                    </button>
+                  )}
+                  <button onClick={() => bukaSandiUntuk(a)} className="btn btn-secondary btn-sm">
+                    Atur Ulang Kata Sandi
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPilih(new Set([a.id]))
+                      setKonfirmasiHapus(true)
+                    }}
+                    className="btn btn-danger btn-sm"
+                  >
+                    Hapus Akun
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {/* Hapus kelas — aksi destruktif, WAJIB modal konfirmasi (CLAUDE.md) */}
       {deleteTarget && (
         <div
@@ -673,40 +747,47 @@ export function KelasPanel() {
             </div>
             <p className="text-xs text-brown-3 mb-3">{course?.name ? `Tes diagnostik ${course.name}. ` : ''}Angka di kanan = skor tes diagnostik.</p>
             {semuaBaris.length > 0 && (
-              <div className="flex items-center gap-2 flex-wrap mb-3">
-                <button
-                  onClick={() => setPilih(pilih.size === semuaBaris.length ? new Set() : new Set(semuaBaris.map((a) => a.id)))}
-                  className="btn btn-secondary btn-sm mr-auto"
-                >
-                  {pilih.size === semuaBaris.length ? 'Lepas Semua' : `Pilih Semua (${semuaBaris.length})`}
-                </button>
-                {daftar.kelasAsal && (
-                  <button onClick={bukaPindah} disabled={pilih.size === 0 || kelasTujuan.length === 0} className="btn btn-secondary btn-sm">
-                    Pindahkan ({pilih.size})
+              // Bilah aksi dua baris (antrean #256, "rapikan juga ini tombol-tombol nya"): baris pilih,
+              // lalu aksi; di telepon aksi jadi dua kolom selebar penuh, Hapus Akun selalu di ujung.
+              <div className="flex flex-col gap-2 mb-3">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    onClick={() => setPilih(pilih.size === semuaBaris.length ? new Set() : new Set(semuaBaris.map((a) => a.id)))}
+                    className="btn btn-secondary btn-sm"
+                  >
+                    {pilih.size === semuaBaris.length ? 'Lepas Semua' : `Pilih Semua (${semuaBaris.length})`}
                   </button>
-                )}
-                <button
-                  onClick={() => setKonfirmasiReset(true)}
-                  disabled={dipilihBisaDireset.length === 0}
-                  title="Hanya berlaku bagi mahasiswa yang sudah mengerjakan tes diagnostik"
-                  className="btn btn-secondary btn-sm"
-                >
-                  Reset Tes Diagnostik ({dipilihBisaDireset.length})
-                </button>
-                <button
-                  onClick={() => setKonfirmasiAkunOpen(true)}
-                  disabled={dipilihBelumKonfirmasi.length === 0}
-                  title="Untuk mahasiswa yang emailnya belum dikonfirmasi"
-                  className="btn btn-secondary btn-sm"
-                >
-                  Konfirmasi Akun ({dipilihBelumKonfirmasi.length})
-                </button>
-                <button onClick={bukaSandi} disabled={pilih.size !== 1} title="Pilih tepat satu mahasiswa" className="btn btn-secondary btn-sm">
-                  Atur Ulang Kata Sandi
-                </button>
-                <button onClick={() => setKonfirmasiHapus(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm">
-                  Hapus Akun ({pilih.size})
-                </button>
+                  <span className="text-xs text-brown-3">{pilih.size} dipilih</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+                  {daftar.kelasAsal && (
+                    <button onClick={bukaPindah} disabled={pilih.size === 0 || kelasTujuan.length === 0} className="btn btn-secondary btn-sm">
+                      Pindahkan ({pilih.size})
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setKonfirmasiReset(true)}
+                    disabled={dipilihBisaDireset.length === 0}
+                    title="Hanya berlaku bagi mahasiswa yang sudah mengerjakan tes diagnostik"
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Reset Tes Diagnostik ({dipilihBisaDireset.length})
+                  </button>
+                  <button
+                    onClick={() => setKonfirmasiAkunOpen(true)}
+                    disabled={dipilihBelumKonfirmasi.length === 0}
+                    title="Untuk mahasiswa yang emailnya belum dikonfirmasi"
+                    className="btn btn-secondary btn-sm"
+                  >
+                    Konfirmasi Akun ({dipilihBelumKonfirmasi.length})
+                  </button>
+                  <button onClick={bukaSandi} disabled={pilih.size !== 1} title="Pilih tepat satu mahasiswa" className="btn btn-secondary btn-sm">
+                    Atur Ulang Kata Sandi
+                  </button>
+                  <button onClick={() => setKonfirmasiHapus(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm sm:ml-auto">
+                    Hapus Akun ({pilih.size})
+                  </button>
+                </div>
               </div>
             )}
             <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} pilih={pilih} onPilih={togglePilih} belumKonfirmasi={belumKonfirmasi} />
@@ -721,7 +802,7 @@ export function KelasPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Konfirmasi {dipilihBelumKonfirmasi.length} Akun Mahasiswa?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">{namaTunggal ? `Konfirmasi Akun ${namaTunggal}?` : `Konfirmasi ${dipilihBelumKonfirmasi.length} Akun Mahasiswa?`}</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Akun dianggap sudah mengonfirmasi email, jadi mahasiswa bisa langsung masuk. Pakai hanya untuk mahasiswa yang Anda kenal.
             </p>
@@ -802,9 +883,9 @@ export function KelasPanel() {
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
           <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
-            <h3 className="text-base font-semibold text-brown mb-1.5">Hapus {pilih.size} Akun Mahasiswa?</h3>
+            <h3 className="text-base font-semibold text-brown mb-1.5">{namaTunggal ? `Hapus Akun ${namaTunggal}?` : `Hapus ${pilih.size} Akun Mahasiswa?`}</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
-              Akun yang dicentang dihapus permanen beserta seluruh pengerjaannya: tes, progres baca, dan kiriman. Mahasiswa itu tidak bisa masuk lagi.
+              Akun yang dipilih dihapus permanen beserta seluruh pengerjaannya: tes, progres baca, dan kiriman. Mahasiswa itu tidak bisa masuk lagi.
               Tidak bisa dibatalkan.
             </p>
             <div className="flex gap-2.5">

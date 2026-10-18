@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router'
 import { useAuth } from '../contexts/AuthContext'
 import { useStudentStats } from '../hooks/useAnalitik'
 import { useKelasByDosen } from '../hooks/useKelas'
@@ -207,9 +208,15 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
         <GantiSandiKartu />
 
         <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
-          <div className="flex items-center gap-2.5 mb-1">
+          <div className="flex items-center gap-2.5 mb-1 flex-wrap">
             <IconBell size={18} className="text-brown-3" />
             <span className="text-sm font-semibold text-brown">Notifikasi</span>
+            {/* Aksi akun (konfirmasi, sandi sementara, hapus) ada di halaman Kelas (antrean #253) */}
+            {isDosen && (
+              <Link to="/kelas#akun-mahasiswa" className="btn btn-secondary btn-sm ml-auto">
+                Kelola Akun Mahasiswa
+              </Link>
+            )}
           </div>
           {!isDosen ? (
             <p className="text-xs text-brown-3">Segera hadir: atur notifikasi email &amp; in-app di sini.</p>

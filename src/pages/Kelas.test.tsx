@@ -45,6 +45,9 @@ vi.mock('../lib/kelas', async (asli) => ({
 
 import { KelasPanel } from './Kelas'
 
+// modal daftar mahasiswa; daftar Akun Mahasiswa (antrean #253) memuat nama dan tombol yang sama di luar modal
+const modal = () => document.querySelector('.modal-lebar') as HTMLElement
+
 function tampil() {
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   return render(
@@ -82,7 +85,7 @@ describe('KelasPanel (antrean #228)', () => {
     tampil()
     fireEvent.click(await screen.findByRole('button', { name: 'Lihat Daftar' }))
     expect(screen.getByText('Belum Tes Diagnostik · 2')).toBeTruthy()
-    expect(screen.getByText('Dodi')).toBeTruthy()
+    expect(within(modal()).getByText('Dodi')).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Pindahkan/ })).toBeNull()
   })
 
@@ -110,18 +113,18 @@ describe('KelasPanel (antrean #228)', () => {
 
   it('status Belum dikonfirmasi tampil, lalu Konfirmasi Akun lewat modal memanggil konfirmasi_akun_mahasiswa', async () => {
     await bukaDaftarJb()
-    expect(await screen.findByText('Belum dikonfirmasi')).toBeTruthy()
+    expect(await within(modal()).findByText('Belum dikonfirmasi')).toBeTruthy()
     expect((screen.getByRole('button', { name: 'Konfirmasi Akun (0)' }) as HTMLButtonElement).disabled).toBe(true)
     fireEvent.click(screen.getByLabelText('Pilih Budi'))
     fireEvent.click(screen.getByRole('button', { name: 'Konfirmasi Akun (1)' }))
-    expect(screen.getByText('Konfirmasi 1 Akun Mahasiswa?')).toBeTruthy()
+    expect(screen.getByText('Konfirmasi Akun Budi?')).toBeTruthy()
     fireEvent.click(screen.getByRole('button', { name: 'Ya, Konfirmasi' }))
     await waitFor(() => expect(h.konfirmasi).toHaveBeenCalledWith(['u1']))
   })
 
   it('Atur Ulang Kata Sandi: hanya untuk satu mahasiswa, minimal 8 karakter, pesan sampaikan ke mahasiswa', async () => {
     await bukaDaftarJb()
-    const tombol = screen.getByRole('button', { name: 'Atur Ulang Kata Sandi' }) as HTMLButtonElement
+    const tombol = within(modal()).getByRole('button', { name: 'Atur Ulang Kata Sandi' }) as HTMLButtonElement
     expect(tombol.disabled).toBe(true)
     fireEvent.click(screen.getByLabelText('Pilih Budi'))
     fireEvent.click(tombol)
@@ -142,9 +145,31 @@ describe('KelasPanel (antrean #228)', () => {
   it('daftar belum tes juga punya Konfirmasi Akun dan Atur Ulang Kata Sandi', async () => {
     tampil()
     fireEvent.click(await screen.findByRole('button', { name: 'Lihat Daftar' }))
-    expect(await screen.findByText('Belum dikonfirmasi')).toBeTruthy()
+    expect(await within(modal()).findByText('Belum dikonfirmasi')).toBeTruthy()
     fireEvent.click(screen.getByLabelText('Pilih Dodi'))
-    expect((screen.getByRole('button', { name: 'Konfirmasi Akun (1)' }) as HTMLButtonElement).disabled).toBe(false)
-    expect((screen.getByRole('button', { name: 'Atur Ulang Kata Sandi' }) as HTMLButtonElement).disabled).toBe(false)
+    expect((within(modal()).getByRole('button', { name: 'Konfirmasi Akun (1)' }) as HTMLButtonElement).disabled).toBe(false)
+    expect((within(modal()).getByRole('button', { name: 'Atur Ulang Kata Sandi' }) as HTMLButtonElement).disabled).toBe(false)
+  })
+
+  it('daftar Akun Mahasiswa menampilkan semua mahasiswa dengan aksi per baris tanpa membuka modal (antrean #253)', async () => {
+    tampil()
+    const daftar = await waitFor(() => {
+      const el = document.getElementById('akun-mahasiswa')
+      if (!el) throw new Error('belum tampil')
+      return el as HTMLElement
+    })
+    expect(within(daftar).getByText('Akun Mahasiswa · 3')).toBeTruthy()
+    await waitFor(() => expect(within(daftar).getAllByText('Belum dikonfirmasi').length).toBe(2))
+    // Budi berkelas dan belum dikonfirmasi, Cici belum tes dan sudah dikonfirmasi: tombol Konfirmasi hanya untuk yang belum
+    expect(within(daftar).getAllByRole('button', { name: 'Konfirmasi Akun' }).length).toBe(2)
+    expect(within(daftar).getAllByRole('button', { name: 'Hapus Akun' }).length).toBe(3)
+    expect(within(daftar).getByText('Jalur Cepat B')).toBeTruthy()
+    expect(within(daftar).getAllByText('Belum tes diagnostik').length).toBe(2)
+    fireEvent.click(within(daftar).getAllByRole('button', { name: 'Konfirmasi Akun' })[0])
+    expect(await screen.findByText('Konfirmasi Akun Budi?')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Ya, Konfirmasi' }))
+    await waitFor(() => expect(h.konfirmasi).toHaveBeenCalledWith(['u1']))
+    fireEvent.click(within(daftar).getAllByRole('button', { name: 'Hapus Akun' })[1])
+    expect(await screen.findByText('Hapus Akun Cici?')).toBeTruthy()
   })
 })
