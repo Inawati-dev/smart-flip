@@ -65,6 +65,7 @@ vi.mock('../lib/modules', () => ({
 }))
 
 const saveProgressMock = vi.fn(async (_path: string, _data: unknown) => {})
+const tambahWaktuMock = vi.fn<(id: number, detik: number) => Promise<boolean>>(async () => true)
 // Saklar untuk meniru Supabase yang gagal menjawab saat catatan lama dibaca.
 const catatan = vi.hoisted(() => ({ gagal: false }))
 vi.mock('../lib/progress', async (asli) => {
@@ -72,6 +73,7 @@ vi.mock('../lib/progress', async (asli) => {
   return {
     ...a,
     saveProgress: (path: string, data: unknown) => saveProgressMock(path, data),
+    tambahWaktuBaca: (id: number, detik: number) => tambahWaktuMock(id, detik),
     fetchCatatanTopik: (id: number) => (catatan.gagal ? Promise.reject(new Error('putus')) : a.fetchCatatanTopik(id)),
   }
 })
@@ -220,6 +222,39 @@ describe('Ebook', () => {
     }
   })
 
+  // Antrean #226 butir 4: waktu dikirim sebagai selisih supaya dua tab dijumlah di basis data (migration_v43).
+  it('dua kiriman berturut mengirim selisih detik, bukan total', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    try {
+      saveProgressMock.mockClear()
+      tambahWaktuMock.mockClear()
+      renderEbook(1)
+      await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(20000)
+      })
+      fireEvent.click(screen.getByTitle('Berikutnya'))
+      await waitFor(() => expect(screen.getAllByText('2 / 3').length).toBeGreaterThan(0))
+      await waitFor(() => expect(tambahWaktuMock).toHaveBeenCalledTimes(1))
+      expect(tambahWaktuMock.mock.calls[0][0]).toBe(1)
+      expect(tambahWaktuMock.mock.calls[0][1]).toBeGreaterThanOrEqual(19)
+      expect(tambahWaktuMock.mock.calls[0][1]).toBeLessThanOrEqual(22)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(30000)
+      })
+      fireEvent.click(screen.getByTitle('Berikutnya'))
+      await waitFor(() => expect(screen.getAllByText('3 / 3').length).toBeGreaterThan(0))
+      await waitFor(() => expect(tambahWaktuMock).toHaveBeenCalledTimes(2))
+      const kedua = tambahWaktuMock.mock.calls[1][1]
+      expect(kedua).toBeGreaterThanOrEqual(29)
+      expect(kedua).toBeLessThanOrEqual(32) // selisih 30 detik, bukan total 50
+      // saveProgress tidak lagi membawa waktu mutlak selama fungsi v43 menjawab
+      expect(saveProgressMock.mock.calls.every(([, d]) => (d as { timeSpent?: number }).timeSpent === undefined)).toBe(true)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
   // Temuan pemeriksa #191: catatan lama dibaca langsung tiap pembaca dibuka, jadi persen tersimpan tidak tertimpa.
   it('membuka lagi topik yang sudah 67% tidak menulis persen yang lebih kecil', async () => {
     localStorage.setItem('sfp_books/modul-01.pdf', JSON.stringify({ pct: 67, currentPage: 2, totalPages: 3, lastOpened: 'x' }))
@@ -232,7 +267,7 @@ describe('Ebook', () => {
         expect(saveProgressMock).toHaveBeenCalledWith('books/modul-01.pdf', expect.objectContaining({ pct: 67, currentPage: 1 })),
       )
       expect(saveProgressMock.mock.calls.every(([, d]) => (d as { pct: number }).pct >= 67)).toBe(true)
-      expect(saveProgressMock.mock.calls.every(([, d]) => (d as { timeSpent: number }).timeSpent >= 500)).toBe(true)
+      expect(saveProgressMock.mock.calls.every(([, d]) => (d as { timeSpent?: number }).timeSpent === undefined || (d as { timeSpent: number }).timeSpent >= 500)).toBe(true)
     } finally {
       localStorage.removeItem('sfp_books/modul-01.pdf')
       localStorage.removeItem('sfp_time_1')

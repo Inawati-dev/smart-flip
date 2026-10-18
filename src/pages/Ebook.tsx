@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSearchParams, Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { saveProgress, moduleIdToPath, fetchCatatanTopik, terjauhLama, majuTerjauh, persenBaca, MIN_DETIK_PER_HALAMAN, MAKS_DETIK_PER_HALAMAN, type CatatanTopik } from '../lib/progress'
+import { saveProgress, tambahWaktuBaca, moduleIdToPath, fetchCatatanTopik, terjauhLama, majuTerjauh, persenBaca, MIN_DETIK_PER_HALAMAN, MAKS_DETIK_PER_HALAMAN, type CatatanTopik } from '../lib/progress'
 import { useModules } from '../hooks/useModules'
 import { Layout } from '../components/Layout'
 import { SampulTopik } from '../components/KartuTopik'
@@ -36,6 +36,7 @@ function useCatatBaca(moduleId: number | null) {
     total: 0,
     sejak: 0,
     detik: 0,
+    dikirim: 0,
     tertunda: false,
     timer: undefined as ReturnType<typeof setTimeout> | undefined,
   })
@@ -52,14 +53,30 @@ function useCatatBaca(moduleId: number | null) {
     const pct = Math.max(s.lama.pct, persenBaca(s.terjauh, s.total))
     Object.assign(s.lama, { pct, furthestPage: s.terjauh, totalPages: s.total })
     setTercatat({ id: moduleId, pct })
-    saveProgress(moduleIdToPath(moduleId), {
-      pct,
-      currentPage: s.halaman,
-      totalPages: s.total,
-      lastOpened: new Date().toISOString(),
-      timeSpent: s.lama.timeSpent + Math.round(s.detik),
-      furthestPage: s.terjauh,
-    }).catch(() => {})
+    // Waktu dikirim sebagai selisih sejak kiriman terakhir (migration_v43) supaya dua tab dijumlah, bukan diambil yang terbesar.
+    // Selisih dianggap terkirim sebelum jawaban datang agar simpan beruntun tidak mengirimnya dua kali; gagal = dikembalikan.
+    const total = Math.round(s.detik)
+    const selisih = total - s.dikirim
+    s.dikirim = total
+    const { lama, halaman, total: jumlah, terjauh } = s
+    void (async () => {
+      let mutlak = false // fungsi v43 belum ada: cara lama, kirim angka mutlak
+      if (selisih > 0) {
+        try {
+          mutlak = !(await tambahWaktuBaca(moduleId, selisih))
+        } catch {
+          if (s.id === moduleId) s.dikirim -= selisih
+        }
+      }
+      await saveProgress(moduleIdToPath(moduleId), {
+        pct,
+        currentPage: halaman,
+        totalPages: jumlah,
+        lastOpened: new Date().toISOString(),
+        ...(mutlak ? { timeSpent: lama.timeSpent + total } : {}),
+        furthestPage: terjauh,
+      })
+    })().catch(() => {})
   }, [moduleId])
 
   const tutupHalaman = useCallback(() => {
@@ -103,7 +120,7 @@ function useCatatBaca(moduleId: number | null) {
 
   useEffect(() => {
     const s = st.current
-    Object.assign(s, { id: moduleId, lama: null, memuat: false, terjauh: 0, halaman: 0, total: 0, sejak: 0, detik: 0, tertunda: false })
+    Object.assign(s, { id: moduleId, lama: null, memuat: false, terjauh: 0, halaman: 0, total: 0, sejak: 0, detik: 0, dikirim: 0, tertunda: false })
     if (moduleId == null) return
     muatLama()
     return () => {

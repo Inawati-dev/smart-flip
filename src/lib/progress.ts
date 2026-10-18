@@ -203,6 +203,40 @@ export async function saveProgress(modulePath: string, data: SaveProgressInput):
   }
 }
 
+// Fungsi tambah_waktu_baca (v43) belum ada di basis data: diingat supaya tiap simpan tidak mencobanya lagi.
+let fungsiWaktuAda = true
+function fungsiWaktuHilang(error: { code?: string; message: string }): boolean {
+  return error.code === 'PGRST202' || error.code === '42883' || error.message.includes('Could not find the function')
+}
+
+/** Menambah waktu baca topik sebesar `detik` (selisih, bukan total), supaya dua tab terbuka bersamaan dijumlah (antrean #226).
+ *  Mengembalikan true bila tercatat; false bila fungsi v43 belum ada di basis data, dan pemanggil harus jatuh ke
+ *  saveProgress dengan timeSpent mutlak. Melempar bila RPC gagal karena sebab lain, supaya selisihnya dikirim ulang. */
+export async function tambahWaktuBaca(moduleId: number, detik: number): Promise<boolean> {
+  if (isSupabaseConfigured && fungsiWaktuAda) {
+    const { data: userData } = await supabase.auth.getUser()
+    // Supabase aktif tapi pengguna kosong (sesi habis/jaringan putus): lempar supaya selisih dicoba ulang,
+    // jangan ditulis ke localStorage lalu dianggap terkirim (temuan pemeriksa #226 butir 4).
+    if (!userData.user?.id) throw new Error('Pengguna belum masuk; waktu baca belum terkirim')
+    // shortcut: server memotong kiriman di atas 600 detik; selisih yang menumpuk saat luring lama bisa terpotong.
+    const { error } = await supabase.rpc('tambah_waktu_baca', { p_module_id: moduleId, p_detik: detik })
+    if (!error) return true
+    if (fungsiWaktuHilang(error)) {
+      fungsiWaktuAda = false
+      return false
+    }
+    throw error
+  }
+  if (!fungsiWaktuAda) return false
+  try {
+    const sekarang = parseInt(localStorage.getItem('sfp_time_' + moduleId) || '0', 10) || 0
+    localStorage.setItem('sfp_time_' + moduleId, String(sekarang + Math.max(0, detik)))
+  } catch {
+    // kuota penuh: sama seperti saveProgress
+  }
+  return true
+}
+
 export interface CatatanTopik {
   pct: number
   totalPages: number | null
