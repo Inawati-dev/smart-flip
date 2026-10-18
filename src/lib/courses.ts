@@ -123,9 +123,14 @@ export async function createCourse(input: { code: string; name: string; descript
 
 export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active' | 'ambang_diagnostik' | 'ambang_formatif' | 'watermark_pdf' | 'watermark_jenis' | 'watermark_teks' | 'watermark_gambar'>>): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Mengubah mata kuliah butuh koneksi Supabase.')
-  const { error } = await supabase.from('courses').update(patch).eq('id', id)
+  const { data, error } = await supabase.from('courses').update(patch).eq('id', id).select('id')
   if (error) throw error
+  // RLS v48 (antrean #250) menolak diam-diam (0 baris) bila pemanggil bukan pengampu
+  if (!data?.length) throw new Error(BUKAN_PENGAMPU)
 }
+
+/** Pesan bila basis data menolak perubahan mata kuliah karena pemanggil bukan pengampunya (v48). */
+export const BUKAN_PENGAMPU = 'Hanya dosen pengampu mata kuliah ini yang boleh mengubah atau menghapusnya.'
 
 /** Hapus mata kuliah beserta topik dan asesmennya (ON DELETE CASCADE di DB). */
 export async function deleteCourse(id: number): Promise<void> {
@@ -139,8 +144,9 @@ export async function deleteCourse(id: number): Promise<void> {
   } catch {
     // tidak bisa membaca daftar topik = tidak ada yang dibersihkan
   }
-  const { error } = await supabase.from('courses').delete().eq('id', id)
+  const { data: terhapus, error } = await supabase.from('courses').delete().eq('id', id).select('id')
   if (error) throw error
+  if (!terhapus?.length) throw new Error(BUKAN_PENGAMPU)
   await buangBerkasYatim(berkas)
 }
 

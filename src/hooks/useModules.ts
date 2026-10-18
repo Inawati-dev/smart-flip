@@ -20,7 +20,7 @@ export function useModule(id: number) {
 // jadi mahasiswa tetap bebas mengganti mata kuliah sesudahnya.
 // Mengembalikan true selama pemindahan belum selesai.
 export function useIkutiMataKuliah(moduleId: number | null): boolean {
-  const { courseId, setCourseId } = useCourse()
+  const { courseId, setCourseId, terkunci } = useCourse()
   const { data: modul } = useQuery({
     queryKey: ['modules', moduleId],
     queryFn: () => fetchModuleById(moduleId as number),
@@ -31,5 +31,6 @@ export function useIkutiMataKuliah(moduleId: number | null): boolean {
     if (target != null && target !== courseId) setCourseId(target)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target])
-  return target != null && target !== courseId
+  // terkunci (antrean #258): mata kuliah tidak akan pindah, jadi jangan menunggu; halaman menampilkan "tidak ditemukan"
+  return target != null && target !== courseId && !terkunci
 }

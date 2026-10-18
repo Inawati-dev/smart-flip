@@ -11,6 +11,8 @@ export interface Profile {
   avatar_url: string | null
   /** Tahun angkatan, ditetapkan saat daftar dan dikunci dari klien (migration_v44, antrean #239). */
   angkatan?: string | null
+  /** Mata kuliah mahasiswa (v40); mahasiswa dikunci ke mata kuliah ini (antrean #258). */
+  course_id?: number | null
 }
 
 interface AuthContextValue {
@@ -43,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, role, nim_nidn, learning_style, jalur, avatar_url, angkatan')
+        .select('full_name, role, nim_nidn, learning_style, jalur, avatar_url, angkatan, course_id')
         .eq('id', uid)
         .single()
       if (error) console.error('[AuthContext] failed to load profile:', error.message)

@@ -5,8 +5,9 @@ import { useCourse } from '../contexts/CourseContext'
 // Satu komponen supaya bentuk dan lebarnya sama di semua halaman. Kalau
 // hanya ada satu mata kuliah, tampilkan namanya saja tanpa dropdown.
 export function MataKuliahSelect({ size = 'sm', className = '' }: { size?: 'sm' | 'md'; className?: string }) {
-  const { courses, courseId, setCourseId, course } = useCourse()
-  if (courses.length <= 1) {
+  const { courses, courseId, setCourseId, course, terkunci } = useCourse()
+  // Mahasiswa terkunci ke mata kuliah profilnya (antrean #258): nama saja, tanpa dropdown.
+  if (courses.length <= 1 || terkunci) {
     return course ? <span className={`text-sm font-semibold text-brown ${className}`}>{course.name}</span> : null
   }
   return (

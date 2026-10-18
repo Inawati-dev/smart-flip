@@ -13,6 +13,8 @@ interface CourseContextValue {
   course: Course | null
   setCourseId: (id: number) => void
   isLoading: boolean
+  /** Mahasiswa yang sudah punya mata kuliah di profil tidak bisa berpindah mata kuliah (antrean #258). */
+  terkunci: boolean
 }
 
 const CourseContext = createContext<CourseContextValue>({
@@ -21,11 +23,12 @@ const CourseContext = createContext<CourseContextValue>({
   course: null,
   setCourseId: () => {},
   isLoading: true,
+  terkunci: false,
 })
 
 export function CourseProvider({ children }: { children: ReactNode }) {
   // Dosen melihat juga mata kuliah yang ditutup (antrean #141); mahasiswa tidak.
-  const { user, role, loading: authLoading } = useAuth()
+  const { user, role, profile, loading: authLoading } = useAuth()
   const dosen = role === 'dosen'
   // Daftar baru diambil sesudah ada sesi: tabel `courses` menolak pengunjung tanpa login,
   // jadi halaman login dulu memunculkan galat 401 di konsol (Papan #2).
@@ -49,18 +52,26 @@ export function CourseProvider({ children }: { children: ReactNode }) {
     }
   }, [courses, courseId, authLoading])
 
+  // Antrean #258: mahasiswa memakai mata kuliah di profilnya saja. Dulu ia bisa membuka mata kuliah
+  // lain lewat pemilih, mengerjakan tes di sana, dan badge kelasnya tetap dari mata kuliah profil.
+  // Mata kuliah profil yang ditutup (tidak ada di daftar) tidak dikunci: pilihan biasa berlaku.
+  const mkProfil = role === 'mahasiswa' ? (profile?.course_id ?? null) : null
+  const terkunci = mkProfil != null && courses.some((c) => c.id === mkProfil)
+  const efektif = terkunci ? (mkProfil as number) : courseId
   const value = useMemo<CourseContextValue>(
     () => ({
       courses,
-      courseId,
-      course: courses.find((c) => c.id === courseId) ?? null,
+      courseId: efektif,
+      course: courses.find((c) => c.id === efektif) ?? null,
       setCourseId: (id: number) => {
+        if (terkunci) return
         setCourseIdState(id)
         saveCourseId(id)
       },
       isLoading,
+      terkunci,
     }),
-    [courses, courseId, isLoading],
+    [courses, efektif, isLoading, terkunci],
   )
   return <CourseContext.Provider value={value}>{children}</CourseContext.Provider>
 }

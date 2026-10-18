@@ -53,8 +53,9 @@ export function formatTanggal(t: Date): string {
 /** Simpan tanggal mulai dan minggu tiap topik. `minggu[id] = null` mengembalikan topik itu ke bawaan. */
 export async function simpanJadwal(courseId: number, mulai: string | null, minggu: Record<number, number | null>): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Menyimpan jadwal butuh koneksi Supabase.')
-  const { error } = await supabase.from('courses').update({ mulai_kuliah: mulai }).eq('id', courseId)
+  const { data: ubah, error } = await supabase.from('courses').update({ mulai_kuliah: mulai }).eq('id', courseId).select('id')
   if (error) throw error
+  if (!ubah?.length) throw new Error('Hanya dosen pengampu mata kuliah ini yang boleh mengubah jadwalnya.') // RLS v48, antrean #250
   const hasil = await Promise.all(
     Object.entries(minggu).map(([id, m]) => supabase.from('modules').update({ minggu_mulai: m }).eq('id', Number(id))),
   )

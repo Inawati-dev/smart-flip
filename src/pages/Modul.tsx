@@ -43,7 +43,7 @@ export default function Modul() {
   const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
   // Panel Aktivitas Mandiri (antrean #179): hanya bila mata kuliah punya paket
   // proposal. Dosen tidak sampai ke tata letak baca di bawah, jadi tak diambil.
-  const { courseId } = useCourse()
+  const { courseId, terkunci } = useCourse()
   const { data: daftarModul = [] } = useModules()
   const { data: briefs = [] } = useQuery({
     queryKey: ['final-projects-mhs', courseId],
@@ -64,7 +64,8 @@ export default function Modul() {
   }
 
   if (isLoading || menyesuaikan) return <Layout><div className="p-8 text-brown-3">Memuat…</div></Layout>
-  if (!modul) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
+  // topik mata kuliah lain bagi mahasiswa yang terkunci ke mata kuliah profilnya (antrean #258)
+  if (!modul || (terkunci && modul.course_id !== courseId)) return <Layout><div className="p-8 text-brown">Modul tidak ditemukan</div></Layout>
 
   const status = statusOf(modul.id)
   if (status === 'locked') {

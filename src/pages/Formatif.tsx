@@ -32,7 +32,7 @@ export default function Formatif() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
 
-  const { courseId } = useCourse()
+  const { courseId, terkunci } = useCourse()
   const ambang = useAmbang()
   const { data: modul, isLoading: modulLoading } = useModule(moduleId)
   const { data: modules = [] } = useModules()
@@ -60,7 +60,7 @@ export default function Formatif() {
       </Layout>
     )
   }
-  if (!modul) {
+  if (!modul || (terkunci && modul.course_id !== courseId)) {
     return (
       <Layout>
         <div className="p-6 text-brown">Topik tidak ditemukan</div>
