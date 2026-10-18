@@ -624,7 +624,7 @@ function MahasiswaTesKhusus() {
               (!pre ? (
                 <p className="text-sm text-brown-3">Belum ada skor tes diagnostik awal, peningkatan skor belum bisa dihitung.</p>
               ) : pre.score >= 100 ? (
-                <p className="text-sm text-brown-3">Peningkatan skor dari tes diagnostik awal: -</p>
+                <p className="text-sm text-brown-3">Peningkatan skor tidak dihitung karena skor tes diagnostik awal sudah 100.</p>
               ) : (
                 (() => {
                   const { gain, category } = computeNGain(pre.score, hasilBaru, 100)

@@ -662,7 +662,7 @@ export function KelasPanel() {
             <h3 className="text-base font-semibold text-brown mb-1.5">Hapus Kelas "{deleteTarget.name}"?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.studentCount > 0
-                ? `Kelas ini punya ${deleteTarget.studentCount} mahasiswa terdaftar. Mereka TIDAK akan terhapus, hanya keluar dari kelas ini (class_id jadi kosong).`
+                ? `Kelas ini punya ${deleteTarget.studentCount} mahasiswa terdaftar. Mereka TIDAK akan terhapus, hanya keluar dari kelas ini.`
                 : 'Tugas atau tes yang pernah ditujukan ke kelas ini tidak lagi menyebut kelasnya. Tidak dapat dibatalkan.'}
             </p>
             <div className="flex gap-2.5">
