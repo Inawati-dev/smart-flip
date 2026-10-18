@@ -12,12 +12,18 @@ import {
   pindahMahasiswa,
   resetDiagnostik,
   hapusMahasiswa,
+  fetchBelumKonfirmasi,
+  konfirmasiAkun,
+  aturSandiMahasiswa,
+  MIN_SANDI_SEMENTARA,
+  MAKS_SANDI_SEMENTARA,
   type AnggotaGolongan,
   type KelasWithCount,
 } from '../lib/kelas'
 import { buatKodeAcak, getKodeMataKuliah, kodeMataKuliahSah, rapikanKodeMataKuliah, setKodeMataKuliah } from '../lib/courses'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
+import { PasswordInput } from '../components/PasswordInput'
 import { StatCard } from '../components/StatCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { Select } from '../components/Select'
@@ -39,11 +45,14 @@ function DaftarSeksi({
   tampilGolongan,
   pilih,
   onPilih,
+  belumKonfirmasi,
 }: {
   seksi: SeksiMahasiswa[]
   tampilGolongan: boolean
   pilih?: Set<string>
   onPilih?: (id: string) => void
+  /** Id yang emailnya belum dikonfirmasi (antrean #246). */
+  belumKonfirmasi?: Set<string>
 }) {
   if (seksi.every((x) => x.baris.length === 0)) return <p className="text-sm text-brown-3">Belum ada mahasiswa.</p>
   return (
@@ -62,7 +71,8 @@ function DaftarSeksi({
                 ) : (
                   <span className="truncate min-w-0">{a.nama}</span>
                 )}
-                <span className="flex items-center gap-2 flex-shrink-0">
+                <span className="flex items-center gap-2 flex-shrink-0 flex-wrap justify-end">
+                  {belumKonfirmasi?.has(a.id) && <ChipRak jenis="warn" label="Belum dikonfirmasi" />}
                   <span className="tabular-nums text-brown-3">{a.skor ?? '—'}</span>
                   {tampilGolongan && <ChipRak jenis={GOLONGAN_CHIP[a.golongan]} label={GOLONGAN_LABEL[a.golongan]} />}
                 </span>
@@ -164,6 +174,66 @@ export function KelasPanel() {
     setKonfirmasiReset(false)
     setKonfirmasiHapus(false)
     setPindahOpen(false)
+    setKonfirmasiAkunOpen(false)
+    tutupSandi()
+  }
+  // Akun mahasiswa berEmail rekaan (antrean #246): status, konfirmasi, sandi sementara.
+  const idDaftar = semuaBaris.map((a) => a.id)
+  const { data: belumKonfirmasi = new Set<string>() } = useQuery({
+    queryKey: ['status-konfirmasi', idDaftar.join(',')],
+    queryFn: () => fetchBelumKonfirmasi(idDaftar),
+    enabled: !!daftar && idDaftar.length > 0,
+  })
+  const dipilihBelumKonfirmasi = [...pilih].filter((id) => belumKonfirmasi.has(id))
+  const [konfirmasiAkunOpen, setKonfirmasiAkunOpen] = useState(false)
+  const [mengonfirmasi, setMengonfirmasi] = useState(false)
+  async function jalankanKonfirmasiAkun() {
+    setMengonfirmasi(true)
+    try {
+      const n = await konfirmasiAkun(dipilihBelumKonfirmasi)
+      await queryClient.invalidateQueries({ queryKey: ['status-konfirmasi'] })
+      showToast(n > 0 ? `${n} akun dikonfirmasi. Mahasiswa sudah bisa masuk.` : 'Tidak ada akun yang berubah.')
+      setKonfirmasiAkunOpen(false)
+    } catch (e) {
+      showToast((e as { message?: string } | null)?.message || 'Gagal mengonfirmasi akun')
+      setKonfirmasiAkunOpen(false)
+    } finally {
+      setMengonfirmasi(false)
+    }
+  }
+  const [sandiTarget, setSandiTarget] = useState<{ id: string; nama: string } | null>(null)
+  const [sandiBaru, setSandiBaru] = useState('')
+  const [sandiGalat, setSandiGalat] = useState('')
+  const [sandiSelesai, setSandiSelesai] = useState(false)
+  const [menyimpanSandi, setMenyimpanSandi] = useState(false)
+  function bukaSandi() {
+    const id = [...pilih][0]
+    const a = semuaBaris.find((b) => b.id === id)
+    if (!a) return
+    setSandiTarget({ id: a.id, nama: a.nama })
+    setSandiBaru('')
+    setSandiGalat('')
+    setSandiSelesai(false)
+  }
+  function tutupSandi() {
+    setSandiTarget(null)
+    setSandiBaru('') // sandi tidak disimpan di mana pun sesudah modal ditutup
+    setSandiGalat('')
+    setSandiSelesai(false)
+  }
+  async function simpanSandi() {
+    if (!sandiTarget) return
+    setMenyimpanSandi(true)
+    setSandiGalat('')
+    try {
+      await aturSandiMahasiswa(sandiTarget.id, sandiBaru)
+      setSandiBaru('')
+      setSandiSelesai(true)
+    } catch (e) {
+      setSandiGalat((e as { message?: string } | null)?.message || 'Gagal mengatur ulang kata sandi.')
+    } finally {
+      setMenyimpanSandi(false)
+    }
   }
   // Pindah kelas (antrean #228): ke kelas otomatis lain di mata kuliah ini.
   const [pindahOpen, setPindahOpen] = useState(false)
@@ -623,13 +693,105 @@ export function KelasPanel() {
                 >
                   Reset Tes Diagnostik ({dipilihBisaDireset.length})
                 </button>
+                <button
+                  onClick={() => setKonfirmasiAkunOpen(true)}
+                  disabled={dipilihBelumKonfirmasi.length === 0}
+                  title="Untuk mahasiswa yang emailnya belum dikonfirmasi"
+                  className="btn btn-secondary btn-sm"
+                >
+                  Konfirmasi Akun ({dipilihBelumKonfirmasi.length})
+                </button>
+                <button onClick={bukaSandi} disabled={pilih.size !== 1} title="Pilih tepat satu mahasiswa" className="btn btn-secondary btn-sm">
+                  Atur Ulang Kata Sandi
+                </button>
                 <button onClick={() => setKonfirmasiHapus(true)} disabled={pilih.size === 0} className="btn btn-danger btn-sm">
                   Hapus Akun ({pilih.size})
                 </button>
               </div>
             )}
-            <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} pilih={pilih} onPilih={togglePilih} />
+            <DaftarSeksi seksi={daftar.seksi} tampilGolongan={daftar.tampilGolongan} pilih={pilih} onPilih={togglePilih} belumKonfirmasi={belumKonfirmasi} />
           </div>
+        </div>
+      )}
+
+      {/* Konfirmasi akun mahasiswa yang emailnya belum dikonfirmasi (antrean #246) */}
+      {konfirmasiAkunOpen && (
+        <div
+          className="fixed inset-0 z-[800] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+        >
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 text-center" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown mb-1.5">Konfirmasi {dipilihBelumKonfirmasi.length} Akun Mahasiswa?</h3>
+            <p className="text-sm text-brown-3 mb-5 leading-relaxed">
+              Akun dianggap sudah mengonfirmasi email, jadi mahasiswa bisa langsung masuk. Pakai hanya untuk mahasiswa yang Anda kenal.
+            </p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setKonfirmasiAkunOpen(false)} disabled={mengonfirmasi} className="btn btn-secondary flex-1">
+                Batal
+              </button>
+              <button onClick={() => void jalankanKonfirmasiAkun()} disabled={mengonfirmasi} className="btn btn-primary flex-1">
+                {mengonfirmasi ? 'Mengonfirmasi…' : 'Ya, Konfirmasi'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Atur ulang kata sandi satu mahasiswa (antrean #246). Sandi tidak ditampilkan lagi sesudah disimpan. */}
+      {sandiTarget && (
+        <div
+          className="fixed inset-0 z-[800] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
+        >
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void simpanSandi()
+            }}
+            className="bg-ivory rounded-2xl modal-sempit p-6 flex flex-col gap-3.5"
+            style={{ animation: 'slideUpModal 0.22s ease' }}
+          >
+            <h3 className="text-base font-semibold text-brown">Atur Ulang Kata Sandi · {sandiTarget.nama}</h3>
+            {sandiSelesai ? (
+              <>
+                <p className="text-sm text-brown-2 leading-relaxed">
+                  Kata sandi sementara sudah disimpan. Sampaikan langsung ke {sandiTarget.nama} (bukan lewat grup). Ia masuk dengan sandi ini mulai sekarang.
+                  {belumKonfirmasi.has(sandiTarget.id) ? ' Akunnya belum dikonfirmasi: tekan juga Konfirmasi Akun supaya ia bisa masuk.' : ''}
+                </p>
+                <button type="button" onClick={tutupSandi} className="btn btn-primary">
+                  Selesai
+                </button>
+              </>
+            ) : (
+              <>
+                {sandiGalat && <div className="text-danger text-sm rounded-lg px-3 py-2.5 border border-danger/30 bg-danger/10">{sandiGalat}</div>}
+                <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+                  Kata sandi sementara
+                  <PasswordInput
+                    value={sandiBaru}
+                    onChange={(e) => setSandiBaru(e.target.value)}
+                    minLength={MIN_SANDI_SEMENTARA}
+                    maxLength={MAKS_SANDI_SEMENTARA}
+                    autoComplete="new-password"
+                    autoFocus
+                    className="w-full h-11 rounded-[var(--radius-control)] border px-3 text-base font-normal text-brown"
+                    style={BORDER}
+                  />
+                </label>
+                <p className="text-[13px] text-brown-3 leading-relaxed">
+                  {MIN_SANDI_SEMENTARA} sampai {MAKS_SANDI_SEMENTARA} karakter. Sesudah disimpan, mahasiswa tidak bisa lagi masuk dengan sandi lama; perangkat yang sedang masuk tidak otomatis keluar.
+                </p>
+                <div className="flex gap-2.5">
+                  <button type="button" onClick={tutupSandi} disabled={menyimpanSandi} className="btn btn-secondary flex-1">
+                    Batal
+                  </button>
+                  <button type="submit" disabled={menyimpanSandi || sandiBaru.trim().length < MIN_SANDI_SEMENTARA} className="btn btn-primary flex-1">
+                    {menyimpanSandi ? 'Menyimpan…' : 'Simpan'}
+                  </button>
+                </div>
+              </>
+            )}
+          </form>
         </div>
       )}
 

@@ -28,12 +28,19 @@ const KELAS = [
 ]
 vi.mock('../hooks/useKelas', () => ({ useKelasByDosen: () => ({ data: KELAS, isLoading: false }) }))
 
-const h = vi.hoisted(() => ({ pindah: vi.fn<(u: string, kelas: string) => Promise<void>>(async () => {}) }))
+const h = vi.hoisted(() => ({
+  pindah: vi.fn<(u: string, kelas: string) => Promise<void>>(async () => {}),
+  konfirmasi: vi.fn<(ids: string[]) => Promise<number>>(async (ids) => ids.length),
+  sandi: vi.fn<(id: string, sandi: string) => Promise<void>>(async () => {}),
+}))
 vi.mock('../lib/kelas', async (asli) => ({
   ...(await asli<typeof import('../lib/kelas')>()),
   fetchGolonganKelas: async () => ({ jb: [{ id: 'u1', nama: 'Budi', skor: 90, golongan: 'mahir' }] }),
   fetchBelumTes: async () => [{ id: 'u8', nama: 'Cici' }, { id: 'u9', nama: 'Dodi' }],
   pindahMahasiswa: (u: string, kelas: string) => h.pindah(u, kelas),
+  fetchBelumKonfirmasi: async () => new Set(['u1', 'u9']),
+  konfirmasiAkun: (ids: string[]) => h.konfirmasi(ids),
+  aturSandiMahasiswa: (id: string, sandi: string) => h.sandi(id, sandi),
 }))
 
 import { KelasPanel } from './Kelas'
@@ -91,5 +98,53 @@ describe('KelasPanel (antrean #228)', () => {
     await waitFor(() => expect(h.pindah).toHaveBeenCalledTimes(1))
     // tujuan bawaan = kelas otomatis pertama selain kelas asal (urutan: Belajar Mendalam A dulu)
     expect(h.pindah).toHaveBeenCalledWith('u1', 'bm')
+  })
+
+  // Antrean #246: aksi dosen untuk akun mahasiswa berEmail rekaan.
+  async function bukaDaftarJb() {
+    tampil()
+    const baris = screen.getByRole('button', { name: /Lihat daftar mahasiswa kelas Jalur Cepat B/ }).closest('tr') as HTMLElement
+    await waitFor(() => expect(within(baris).getByText(/Cepat 1/)).toBeTruthy())
+    fireEvent.click(within(baris).getByRole('button', { name: 'Kelola' }))
+  }
+
+  it('status Belum dikonfirmasi tampil, lalu Konfirmasi Akun lewat modal memanggil konfirmasi_akun_mahasiswa', async () => {
+    await bukaDaftarJb()
+    expect(await screen.findByText('Belum dikonfirmasi')).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'Konfirmasi Akun (0)' }) as HTMLButtonElement).disabled).toBe(true)
+    fireEvent.click(screen.getByLabelText('Pilih Budi'))
+    fireEvent.click(screen.getByRole('button', { name: 'Konfirmasi Akun (1)' }))
+    expect(screen.getByText('Konfirmasi 1 Akun Mahasiswa?')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Ya, Konfirmasi' }))
+    await waitFor(() => expect(h.konfirmasi).toHaveBeenCalledWith(['u1']))
+  })
+
+  it('Atur Ulang Kata Sandi: hanya untuk satu mahasiswa, minimal 8 karakter, pesan sampaikan ke mahasiswa', async () => {
+    await bukaDaftarJb()
+    const tombol = screen.getByRole('button', { name: 'Atur Ulang Kata Sandi' }) as HTMLButtonElement
+    expect(tombol.disabled).toBe(true)
+    fireEvent.click(screen.getByLabelText('Pilih Budi'))
+    fireEvent.click(tombol)
+    expect(screen.getByText('Atur Ulang Kata Sandi · Budi')).toBeTruthy()
+    const isian = screen.getByLabelText('Kata sandi sementara') as HTMLInputElement
+    expect(isian.type).toBe('password')
+    const simpan = screen.getByRole('button', { name: 'Simpan' }) as HTMLButtonElement
+    fireEvent.change(isian, { target: { value: 'pendek7' } })
+    expect(simpan.disabled).toBe(true)
+    fireEvent.change(isian, { target: { value: 'Sementara1' } })
+    fireEvent.click(simpan)
+    await waitFor(() => expect(h.sandi).toHaveBeenCalledWith('u1', 'Sementara1'))
+    expect(await screen.findByText(/Sampaikan langsung ke Budi/)).toBeTruthy()
+    expect(screen.getByText(/belum dikonfirmasi: tekan juga Konfirmasi Akun/)).toBeTruthy()
+    expect(screen.queryByDisplayValue('Sementara1')).toBeNull()
+  })
+
+  it('daftar belum tes juga punya Konfirmasi Akun dan Atur Ulang Kata Sandi', async () => {
+    tampil()
+    fireEvent.click(await screen.findByRole('button', { name: 'Lihat Daftar' }))
+    expect(await screen.findByText('Belum dikonfirmasi')).toBeTruthy()
+    fireEvent.click(screen.getByLabelText('Pilih Dodi'))
+    expect((screen.getByRole('button', { name: 'Konfirmasi Akun (1)' }) as HTMLButtonElement).disabled).toBe(false)
+    expect((screen.getByRole('button', { name: 'Atur Ulang Kata Sandi' }) as HTMLButtonElement).disabled).toBe(false)
   })
 })

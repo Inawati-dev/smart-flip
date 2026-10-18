@@ -33,7 +33,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/mini-projek', icon: IconDocument, label: 'Mini Projek', desc: 'Rancangan proposal per bab', mahasiswaOnly: true },
   { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank Soal', desc: 'Soal dan mini projek', dosenOnly: true },
   // Menu Berkas (/akun/pdf) disembunyikan (antrean #168): berkas kini ikut terhapus bersama topiknya. Rutenya tetap ada.
-  { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas dan kode gabung', dosenOnly: true },
+  { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas otomatis dan akun mahasiswa', dosenOnly: true },
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil dan pengaturan' },
 ]
 

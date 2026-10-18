@@ -281,3 +281,42 @@ export async function hapusMahasiswa(userIds: string[]): Promise<number> {
   }
   return typeof data === 'number' ? data : 0
 }
+
+// ── Aksi dosen untuk akun mahasiswa (antrean #246, migration_v45) ──
+// Untuk mahasiswa yang mendaftar dengan email rekaan dan tidak bisa
+// mengonfirmasi akunnya. Pengamannya di fungsi SQL: hanya dosen pengampu
+// (is_dosen_of) dan hanya akun mahasiswa.
+function galatV45(error: { code?: string; message?: string }): Error {
+  const belumAda = error.code === 'PGRST202' || error.code === '42883'
+  return new Error(belumAda ? 'Fungsi akun belum ada di basis data. Jalankan migration_v45_aksi_dosen_akun.sql di Supabase dulu.' : error.message || 'Gagal')
+}
+
+/** Id mahasiswa (dari `userIds`) yang emailnya belum dikonfirmasi. Kosong bila fungsi belum ada atau mode demo. */
+export async function fetchBelumKonfirmasi(userIds: string[]): Promise<Set<string>> {
+  if (!isSupabaseConfigured || userIds.length === 0) return new Set()
+  const { data, error } = await supabase.rpc('status_konfirmasi_mahasiswa', { p_ids: userIds })
+  if (error) return new Set()
+  return new Set(((data ?? []) as Array<{ id: string; terkonfirmasi: boolean }>).filter((r) => !r.terkonfirmasi).map((r) => r.id))
+}
+
+/** Konfirmasi akun mahasiswa terpilih. Mengembalikan jumlah akun yang benar-benar berubah. */
+export async function konfirmasiAkun(userIds: string[]): Promise<number> {
+  if (!isSupabaseConfigured) throw new Error('Mengonfirmasi akun butuh koneksi Supabase.')
+  if (userIds.length === 0) return 0
+  const { data, error } = await supabase.rpc('konfirmasi_akun_mahasiswa', { p_ids: userIds })
+  if (error) throw galatV45(error)
+  return typeof data === 'number' ? data : 0
+}
+
+export const MIN_SANDI_SEMENTARA = 8
+export const MAKS_SANDI_SEMENTARA = 72 // bcrypt hanya memakai 72 byte pertama
+
+/** Ganti kata sandi satu mahasiswa dengan sandi sementara ketikan dosen. Sandi tidak disimpan di aplikasi. */
+export async function aturSandiMahasiswa(userId: string, sandi: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new Error('Mengatur ulang kata sandi butuh koneksi Supabase.')
+  if (sandi.trim().length < MIN_SANDI_SEMENTARA || new TextEncoder().encode(sandi).length > MAKS_SANDI_SEMENTARA) {
+    throw new Error(`Kata sandi sementara ${MIN_SANDI_SEMENTARA} sampai ${MAKS_SANDI_SEMENTARA} karakter dan tidak boleh hanya spasi.`)
+  }
+  const { error } = await supabase.rpc('atur_sandi_mahasiswa', { p_id: userId, p_sandi: sandi })
+  if (error) throw galatV45(error)
+}
