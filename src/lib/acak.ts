@@ -31,6 +31,29 @@ export interface AcakSoalResult {
 // ke quiz_attempts.question_order untuk audit; `tampil` dipakai layar
 // pengerjaan. kunciTampil = posisi opsi benar SESUDAH diacak (null untuk
 // VARK, answer_idx-nya memang tidak ada).
+// Tes diagnostik awal menampilkan 20 soal dari bank (antrean #241, keputusan Johan 18 Okt 2026: bank 60, 10 per bab).
+export const SOAL_TAMPIL_DIAGNOSTIK = 20
+
+// Ambil `n` soal acak yang seimbang per topik (topik_id; soal tanpa topik satu kelompok): giliran antar-topik yang
+// urutannya diacak, sehingga 20 dari 6 topik menjadi 3-4 per topik. Bank lebih kecil dari `n` dikembalikan semua.
+export function ambilSeimbang(soal: KuisSoal[], n: number, rng: () => number = Math.random): KuisSoal[] {
+  if (soal.length <= n) return soal
+  const kelompok = new Map<string, KuisSoal[]>()
+  for (const s of shuffle(soal, rng)) {
+    const k = String(s.topik_id ?? '-')
+    kelompok.set(k, [...(kelompok.get(k) ?? []), s])
+  }
+  const antre = shuffle([...kelompok.values()], rng)
+  const hasil: KuisSoal[] = []
+  while (hasil.length < n) {
+    for (const g of antre) {
+      const s = g.shift()
+      if (s && hasil.length < n) hasil.push(s)
+    }
+  }
+  return hasil
+}
+
 // Tes formatif menampilkan sebagian bank (antrean #235, keputusan Johan 18 Okt 2026: bank 20, tampil 10)
 // supaya soal, urutan, dan opsinya berganti tiap pengerjaan.
 export const SOAL_TAMPIL_FORMATIF = 10

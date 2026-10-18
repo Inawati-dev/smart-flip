@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { shuffle, acakSoal, nilai } from './acak'
+import { shuffle, acakSoal, nilai, ambilSeimbang } from './acak'
 import type { KuisSoal } from './kuisSoal'
 
 // rng deterministik (mulberry32) — sama seed selalu menghasilkan urutan sama,
@@ -95,3 +95,24 @@ describe('acakSoal dengan maks (tes formatif, antrean #235)', () => {
     expect(x).not.toBe(y)
   })
 })
+
+describe('ambilSeimbang (tes diagnostik, antrean #241)', () => {
+  const bank = Array.from({ length: 60 }, (_, i) => ({ ...soal(1)[0], id: i + 1, topik_id: (i % 6) + 1 }))
+  it('mengambil 20 soal berbeda, 3-4 per topik', () => {
+    const hasil = ambilSeimbang(bank, 20)
+    expect(hasil).toHaveLength(20)
+    expect(new Set(hasil.map((s) => s.id)).size).toBe(20)
+    const per = new Map<number, number>()
+    for (const s of hasil) per.set(s.topik_id!, (per.get(s.topik_id!) ?? 0) + 1)
+    expect([...per.values()].every((n) => n === 3 || n === 4)).toBe(true)
+    expect(per.size).toBe(6)
+  })
+  it('bank kecil dikembalikan utuh', () => {
+    expect(ambilSeimbang(bank.slice(0, 12), 20)).toHaveLength(12)
+  })
+  it('topik timpang tetap terisi sampai 20', () => {
+    const timpang = [...bank.filter((s) => s.topik_id === 1), ...bank.slice(0, 30)]
+    expect(ambilSeimbang(timpang, 20)).toHaveLength(20)
+  })
+})
+

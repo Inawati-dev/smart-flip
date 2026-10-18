@@ -6,7 +6,7 @@ import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchBankSoal } from '../lib/kuisSoal'
 import { fetchAttemptsByKind, saveQuizAttempt } from '../lib/quizAttempts'
 import { useAmbang } from '../lib/ambang'
-import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
+import { acakSoal, nilai, type AcakSoalResult, ambilSeimbang, SOAL_TAMPIL_DIAGNOSTIK } from '../lib/acak'
 import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topik'
 import { computeNGain } from '../lib/ngain'
 import { rincianDariBenar, rincianDariPercobaan, type RincianTopik } from '../lib/rincianTopik'
@@ -356,7 +356,7 @@ function PreTest() {
       : null
 
   function mulai() {
-    setAcak(acakSoal(soal))
+    setAcak(acakSoal(ambilSeimbang(soal, SOAL_TAMPIL_DIAGNOSTIK)))
     setCurrentQ(0)
     setJawaban({})
   }
@@ -441,7 +441,7 @@ function PreTest() {
         ) : (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <p className="text-brown-2 mb-1">Kerjakan tes diagnostik awal {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
-            <p className="text-sm text-brown-3 mb-1">{soal.length} soal · tanpa kode · skor {ambang.diagnostik} ke atas masuk {GOLONGAN_LABEL.mahir} dan semua topik langsung terbuka</p>
+            <p className="text-sm text-brown-3 mb-1">{Math.min(soal.length, SOAL_TAMPIL_DIAGNOSTIK)} soal{soal.length > SOAL_TAMPIL_DIAGNOSTIK ? ` diambil acak dari ${soal.length}` : ''} · tanpa kode · skor {ambang.diagnostik} ke atas masuk {GOLONGAN_LABEL.mahir} dan semua topik langsung terbuka</p>
             <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya tes diagnostik awal sendiri, jadi tes ini hanya untuk mata kuliah yang sedang dipilih.</p>
             <button onClick={mulai} className="btn btn-primary">
               Mulai
