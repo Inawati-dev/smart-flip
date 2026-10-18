@@ -779,13 +779,13 @@ export function KelasPanel() {
                   />
                 </label>
                 <p className="text-[13px] text-brown-3 leading-relaxed">
-                  {MIN_SANDI_SEMENTARA} sampai {MAKS_SANDI_SEMENTARA} karakter. Sesudah disimpan, mahasiswa tidak bisa lagi masuk dengan sandi lama; perangkat yang sedang masuk tidak otomatis keluar.
+                  Minimal {MIN_SANDI_SEMENTARA} karakter. Sesudah disimpan, mahasiswa tidak bisa lagi masuk dengan sandi lama; perangkat yang sedang masuk tidak otomatis keluar.
                 </p>
                 <div className="flex gap-2.5">
                   <button type="button" onClick={tutupSandi} disabled={menyimpanSandi} className="btn btn-secondary flex-1">
                     Batal
                   </button>
-                  <button type="submit" disabled={menyimpanSandi || sandiBaru.trim().length < MIN_SANDI_SEMENTARA} className="btn btn-primary flex-1">
+                  <button type="submit" disabled={menyimpanSandi || sandiBaru.length < MIN_SANDI_SEMENTARA || !sandiBaru.trim()} className="btn btn-primary flex-1">
                     {menyimpanSandi ? 'Menyimpan…' : 'Simpan'}
                   </button>
                 </div>

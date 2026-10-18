@@ -131,7 +131,7 @@ export function ResetPassword() {
       setView('success')
     } catch (err) {
       let msg = err instanceof Error ? err.message : 'Gagal memperbarui password. Coba lagi.'
-      if (msg.toLowerCase().includes('same password')) {
+      if (msg.toLowerCase().includes('same password') || msg.toLowerCase().includes('different from the old password')) {
         msg = 'Password baru tidak boleh sama dengan password lama.'
       }
       setSubmitError(msg)

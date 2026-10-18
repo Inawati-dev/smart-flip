@@ -96,8 +96,8 @@ BEGIN
     RAISE EXCEPTION 'Hanya dosen yang boleh mengatur ulang kata sandi mahasiswa.' USING ERRCODE = '42501';
   END IF;
   -- bcrypt hanya memakai 72 byte pertama; sandi yang isinya spasi saja ditolak.
-  IF p_sandi IS NULL OR length(btrim(p_sandi)) < 8 OR octet_length(p_sandi) > 72 THEN
-    RAISE EXCEPTION 'Kata sandi sementara 8 sampai 72 karakter dan tidak boleh hanya spasi.' USING ERRCODE = '22023';
+  IF p_sandi IS NULL OR length(p_sandi) < 8 OR btrim(p_sandi) = '' OR octet_length(p_sandi) > 72 THEN
+    RAISE EXCEPTION 'Kata sandi sementara minimal 8 karakter, paling banyak 72 byte, dan tidak boleh hanya spasi.' USING ERRCODE = '22023';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = p_id AND role = 'mahasiswa') OR NOT public.is_dosen_of(p_id) THEN
     RAISE EXCEPTION 'Mahasiswa ini tidak ada di kelas atau mata kuliah Anda.' USING ERRCODE = '42501';

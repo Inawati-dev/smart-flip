@@ -314,8 +314,8 @@ export const MAKS_SANDI_SEMENTARA = 72 // bcrypt hanya memakai 72 byte pertama
 /** Ganti kata sandi satu mahasiswa dengan sandi sementara ketikan dosen. Sandi tidak disimpan di aplikasi. */
 export async function aturSandiMahasiswa(userId: string, sandi: string): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Mengatur ulang kata sandi butuh koneksi Supabase.')
-  if (sandi.trim().length < MIN_SANDI_SEMENTARA || new TextEncoder().encode(sandi).length > MAKS_SANDI_SEMENTARA) {
-    throw new Error(`Kata sandi sementara ${MIN_SANDI_SEMENTARA} sampai ${MAKS_SANDI_SEMENTARA} karakter dan tidak boleh hanya spasi.`)
+  if (sandi.length < MIN_SANDI_SEMENTARA || !sandi.trim() || new TextEncoder().encode(sandi).length > MAKS_SANDI_SEMENTARA) {
+    throw new Error(`Kata sandi sementara minimal ${MIN_SANDI_SEMENTARA} karakter, paling banyak ${MAKS_SANDI_SEMENTARA} byte, dan tidak boleh hanya spasi.`)
   }
   const { error } = await supabase.rpc('atur_sandi_mahasiswa', { p_id: userId, p_sandi: sandi })
   if (error) throw galatV45(error)
