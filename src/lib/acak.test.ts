@@ -69,3 +69,29 @@ describe('nilai', () => {
     expect(nilai(tampil, tigaBenar)).toEqual({ benar: 3, total: 5, score: 60 })
   })
 })
+
+describe('acakSoal dengan maks (tes formatif, antrean #235)', () => {
+  it('mengambil maks soal berbeda dari bank dan menjaga kunci', () => {
+    const bank = soal(20)
+    const { tampil, urut } = acakSoal(bank, Math.random, 10)
+    expect(tampil).toHaveLength(10)
+    expect(urut).toHaveLength(10)
+    expect(new Set(tampil.map((t) => t.id)).size).toBe(10)
+    for (const t of tampil) {
+      const asli = bank.find((b) => b.id === t.id)!
+      expect(t.options[t.kunciTampil!]).toBe(asli.options[asli.answer_idx!])
+    }
+  })
+  it('bank lebih kecil dari maks menampilkan semua soal', () => {
+    expect(acakSoal(soal(5), Math.random, 10).tampil).toHaveLength(5)
+  })
+  it('dua pengerjaan dengan acak berbeda mengambil himpunan soal berbeda', () => {
+    let a = 1
+    let b = 7
+    const rngA = () => ((a = (a * 9301 + 49297) % 233280) / 233280)
+    const rngB = () => ((b = (b * 9301 + 49297) % 233280) / 233280)
+    const x = acakSoal(soal(20), rngA, 10).tampil.map((t) => t.id).sort().join()
+    const y = acakSoal(soal(20), rngB, 10).tampil.map((t) => t.id).sort().join()
+    expect(x).not.toBe(y)
+  })
+})

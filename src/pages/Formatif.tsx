@@ -8,7 +8,7 @@ import { useCourse } from '../contexts/CourseContext'
 import { saveQuizAttempt } from '../lib/quizAttempts'
 import { useAmbang } from '../lib/ambang'
 import { fetchBankSoal } from '../lib/kuisSoal'
-import { acakSoal, nilai, type AcakSoalResult } from '../lib/acak'
+import { acakSoal, nilai, SOAL_TAMPIL_FORMATIF, type AcakSoalResult } from '../lib/acak'
 import { useTopikStatus } from '../lib/topik'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
@@ -75,7 +75,7 @@ export default function Formatif() {
   const nextModul = idx >= 0 ? sorted[idx + 1] : undefined
 
   function mulai() {
-    setAcak(acakSoal(soal))
+    setAcak(acakSoal(soal, Math.random, SOAL_TAMPIL_FORMATIF))
     setCurrentQ(0)
     setJawaban({})
     setSubmitted({})
@@ -172,7 +172,7 @@ export default function Formatif() {
             />
           ) : (
             <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-              <p className="text-sm text-brown-3 mb-1">{soal.length} soal pilihan ganda</p>
+              <p className="text-sm text-brown-3 mb-1">{Math.min(soal.length, SOAL_TAMPIL_FORMATIF)} soal pilihan ganda, diambil acak dari {soal.length} soal</p>
               <p className="text-sm text-brown-3 mb-5">Syarat lulus: skor ≥ {ambang.formatif}</p>
               {bestScore != null && (
                 <p className="text-sm text-brown-2 mb-5">
@@ -219,7 +219,7 @@ export default function Formatif() {
               <>
                 <h3 className="font-display text-lg font-bold text-brown mb-2">Belum Lulus, Skor {modal.score}</h3>
                 <p className="text-sm text-brown-2 mb-6">
-                  Syarat lulus {ambang.formatif}. Kerjakan ulang; urutan soal dan opsi diacak lagi.
+                  Syarat lulus {ambang.formatif}. Kerjakan ulang; soal, urutan soal, dan urutan opsi diacak lagi.
                 </p>
                 <div className="flex gap-3 flex-col sm:flex-row">
                   <button onClick={() => navigate(`/modul/${moduleId}`)} className="btn btn-secondary flex-1">

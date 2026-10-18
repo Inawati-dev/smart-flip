@@ -31,8 +31,13 @@ export interface AcakSoalResult {
 // ke quiz_attempts.question_order untuk audit; `tampil` dipakai layar
 // pengerjaan. kunciTampil = posisi opsi benar SESUDAH diacak (null untuk
 // VARK, answer_idx-nya memang tidak ada).
-export function acakSoal(soal: KuisSoal[], rng: () => number = Math.random): AcakSoalResult {
-  const soalUrut = shuffle(soal, rng)
+// Tes formatif menampilkan sebagian bank (antrean #235, keputusan Johan 18 Okt 2026: bank 20, tampil 10)
+// supaya soal, urutan, dan opsinya berganti tiap pengerjaan.
+export const SOAL_TAMPIL_FORMATIF = 10
+
+// `maks` = ambil sebanyak itu dari bank yang sudah diacak; tanpa `maks` semua soal tampil.
+export function acakSoal(soal: KuisSoal[], rng: () => number = Math.random, maks?: number): AcakSoalResult {
+  const soalUrut = maks == null ? shuffle(soal, rng) : shuffle(soal, rng).slice(0, maks)
   const urut: AcakUrutSoal[] = []
   const tampil: SoalTampil[] = []
   for (const s of soalUrut) {
