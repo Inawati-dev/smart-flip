@@ -17,8 +17,11 @@ import {
   uploadModulPdf,
   listModulPdfFiles,
   assignModulPdf,
+  PESAN_V50,
   type ModulCustom,
+  type PertemuanTopik,
 } from '../lib/manajemen'
+import { PillGroup } from '../components/PillGroup'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
@@ -172,18 +175,22 @@ export function DosenModulRak() {
   }
 
   const [pdfModalId, setPdfModalId] = useState<number | null>(null)
+  // PDF pertemuan pertama atau kedua topik (antrean #271).
+  const [pdfSlot, setPdfSlot] = useState<PertemuanTopik>(1)
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [pdfError, setPdfError] = useState('')
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [pickedPdfUrl, setPickedPdfUrl] = useState('')
   const [assigningPdf, setAssigningPdf] = useState(false)
 
-  function openPdfModal(id: number) {
+  function openPdfModal(id: number, p: PertemuanTopik = 1) {
     setPdfModalId(id)
+    setPdfSlot(p)
     setPdfFile(null)
     setPdfError('')
     setPickedPdfUrl('')
   }
+  const pesanGagal = (e: unknown, biasa: string) => (e instanceof Error && e.message === PESAN_V50 ? PESAN_V50 : biasa)
 
   async function handleUploadPdf() {
     if (pdfModalId == null || !pdfFile) return
@@ -194,13 +201,13 @@ export function DosenModulRak() {
     setPdfError('')
     setUploadingPdf(true)
     try {
-      await uploadModulPdf(pdfModalId, pdfFile)
+      await uploadModulPdf(pdfModalId, pdfFile, pdfSlot)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       await queryClient.invalidateQueries({ queryKey: ['manajemen', 'modul-pdf-files'] })
       setPdfFile(null)
-      showToast('PDF topik berhasil diunggah')
-    } catch {
-      setPdfError('Gagal mengunggah PDF. Coba lagi.')
+      showToast(pdfSlot === 2 ? 'PDF pertemuan kedua berhasil diunggah' : 'PDF topik berhasil diunggah')
+    } catch (e) {
+      setPdfError(pesanGagal(e, 'Gagal mengunggah PDF. Coba lagi.'))
     } finally {
       setUploadingPdf(false)
     }
@@ -211,12 +218,12 @@ export function DosenModulRak() {
     setPdfError('')
     setAssigningPdf(true)
     try {
-      await assignModulPdf(pdfModalId, pickedPdfUrl)
+      await assignModulPdf(pdfModalId, pickedPdfUrl, pdfSlot)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       setPickedPdfUrl('')
       showToast('PDF topik dipasang dari file yang sudah ada')
-    } catch {
-      setPdfError('Gagal memasang PDF. Coba lagi.')
+    } catch (e) {
+      setPdfError(pesanGagal(e, 'Gagal memasang PDF. Coba lagi.'))
     } finally {
       setAssigningPdf(false)
     }
@@ -319,6 +326,15 @@ export function DosenModulRak() {
                       className="btn btn-danger btn-sm w-full whitespace-nowrap"
                     >
                       <IconTrash size={13} /> <span className="hidden sm:inline">Hapus</span>
+                    </button>
+                    {/* PDF pertemuan kedua topik (antrean #271): baris sendiri, teks tetap tampil di telepon. */}
+                    <button
+                      type="button"
+                      onClick={() => openPdfModal(m.id, 2)}
+                      title={m.pdf_path_2 ? 'Ganti PDF pertemuan kedua topik ini' : 'Tambah PDF untuk pertemuan kedua topik ini'}
+                      className="btn btn-secondary btn-sm w-full whitespace-nowrap col-span-2"
+                    >
+                      {m.pdf_path_2 ? <IconDocument size={13} /> : '+'} {m.pdf_path_2 ? 'Ganti PDF Pertemuan Kedua' : 'PDF Pertemuan Kedua'}
                     </button>
                   </>
                 }
@@ -433,7 +449,36 @@ export function DosenModulRak() {
             className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">Ganti PDF Topik</h3>
+            <h3 className="font-display text-lg font-semibold text-brown mb-3">Ganti PDF Topik</h3>
+            {/* Satu topik = dua pertemuan (antrean #271); PDF pertemuan kedua opsional. */}
+            <div className="mb-2">
+              <PillGroup
+                variant="tab"
+                ariaLabel="PDF untuk pertemuan"
+                options={[
+                  { value: '1', label: 'Pertemuan Pertama' },
+                  { value: '2', label: 'Pertemuan Kedua' },
+                ]}
+                value={String(pdfSlot)}
+                onChange={(v) => {
+                  setPdfSlot(v === '2' ? 2 : 1)
+                  setPdfFile(null)
+                  setPdfError('')
+                  setPickedPdfUrl('')
+                }}
+              />
+            </div>
+            {(() => {
+              const m = modules.find((x) => x.id === pdfModalId)
+              const kini = pdfSlot === 2 ? m?.pdf_path_2 : m?.pdf_path
+              const nama = kini ? kini.split('/').pop()?.split('?')[0] : null
+              return (
+                <p className="text-xs text-brown-3 mb-4 break-words">
+                  {pdfSlot === 2 ? 'Opsional: PDF tambahan yang dibaca di pertemuan kedua topik ini. ' : ''}
+                  {nama ? `Berkas sekarang: ${nama}` : 'Belum ada berkas.'}
+                </p>
+              )
+            })()}
 
             <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah Berkas Baru</p>
             <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, Link } from 'react-router'
+import { useParams, Link, useSearchParams } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
@@ -7,7 +7,8 @@ import { useModules, useIkutiMataKuliah } from '../hooks/useModules'
 import { useTopikStatus } from '../lib/topik'
 import { useAuth } from '../contexts/AuthContext'
 import { parseVideoUrl } from '../lib/video'
-import { saveVideoUrl, uploadModulVideo, saveModulOrder } from '../lib/manajemen'
+import { saveVideoUrl, uploadModulVideo, saveModulOrder, buangBerkasYatim, PESAN_V50, type PertemuanTopik } from '../lib/manajemen'
+import { PillGroup } from '../components/PillGroup'
 import { upsertVideoProgress, shouldSendTimeUpdate, fetchVideoProgressMap } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
@@ -33,6 +34,13 @@ export default function Video() {
 function sortModules(modules: ModuleRow[]) {
   return [...modules].sort((a, b) => a.order_num - b.order_num)
 }
+
+// Satu topik memakai dua pertemuan (antrean #271): isian kedua opsional, di kolom `_2`.
+const PILIHAN_PERTEMUAN = [
+  { value: '1', label: 'Pertemuan Pertama' },
+  { value: '2', label: 'Pertemuan Kedua' },
+]
+const urlPertemuan = (m: ModuleRow, p: PertemuanTopik) => (p === 2 ? m.video_url_2 : m.video_url) || ''
 
 function formatDuration(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return '—'
@@ -83,6 +91,7 @@ function VideoMahasiswa() {
   const current = id ? parseInt(id, 10) : null
   const menyesuaikan = useIkutiMataKuliah(current)
   const [durations, setDurations] = useState<Record<number, number>>({})
+  const [cari, setCari] = useSearchParams()
 
   function handleDuration(moduleId: number, sec: number) {
     setDurations((prev) => (prev[moduleId] === sec ? prev : { ...prev, [moduleId]: sec }))
@@ -91,7 +100,12 @@ function VideoMahasiswa() {
   // /video tanpa id → rak semua topik (antrean #85 opsi B, mengganti alihkan
   // otomatis WP4 lama).
   if (current == null) {
-    const detik = (m: ModuleRow) => m.duration_sec ?? durations[m.id] ?? null
+    // shortcut: durasi video pertemuan kedua hanya dari isian dosen (tanpa probe metadata); tambah probe bila sering kosong.
+    const detik = (m: ModuleRow) => {
+      const satu = m.video_url ? (m.duration_sec ?? durations[m.id] ?? null) : 0
+      const dua = m.video_url_2 ? (m.duration_sec_2 ?? null) : 0
+      return satu == null || dua == null ? null : satu + dua
+    }
     const semuaDurasiTahu = sorted.length > 0 && sorted.every((m) => detik(m) != null)
     const totalMenit = Math.round(sorted.reduce((s, m) => s + (detik(m) ?? 0), 0) / 60)
     return (
@@ -117,8 +131,10 @@ function VideoMahasiswa() {
                   const parsed = parseVideoUrl(m.video_url)
                   const status = statusOf(m.id)
                   const prog = progressMap[m.id]
-                  const hasVideo = !!m.video_url
-                  const chip = chipMahasiswa(status, hasVideo, prog?.seconds ?? 0, prog?.done ?? false)
+                  const hasVideo = !!(m.video_url || m.video_url_2)
+                  // Selesai = semua video topik yang terpasang sudah ditonton.
+                  const selesai = (!m.video_url || !!prog?.done) && (!m.video_url_2 || !!prog?.done2)
+                  const chip = chipMahasiswa(status, hasVideo, (prog?.seconds ?? 0) + (prog?.seconds2 ?? 0), !!prog && selesai)
                   return (
                     <div key={m.id}>
                       {parsed?.kind === 'file' && durations[m.id] == null && (
@@ -127,7 +143,7 @@ function VideoMahasiswa() {
                       <KartuVideo
                         nomor={m.order_num}
                         judul={m.title}
-                        url={m.video_url}
+                        url={m.video_url || m.video_url_2}
                         durasi={detik(m) ? formatDuration(detik(m)!) : undefined}
                         chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
                         terkunci={status === 'locked'}
@@ -158,6 +174,10 @@ function VideoMahasiswa() {
   }
 
   const status = statusOf(current)
+  // ?p=2 memutar video pertemuan kedua; topik yang hanya punya video kedua langsung ke sana.
+  const duaVideo = !!(modul.video_url && modul.video_url_2)
+  const pertemuan: PertemuanTopik = modul.video_url_2 && (cari.get('p') === '2' || !modul.video_url) ? 2 : 1
+  const prog = progressMap[modul.id]
 
   return (
     <Layout>
@@ -184,7 +204,22 @@ function VideoMahasiswa() {
           </div>
         ) : (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6">
-            <VideoPlayer modul={modul} sudahSelesai={progressMap[modul.id]?.done ?? false} />
+            <div className="min-w-0 flex flex-col gap-3">
+              {duaVideo && (
+                <PillGroup
+                  ariaLabel="Video pertemuan"
+                  options={PILIHAN_PERTEMUAN}
+                  value={String(pertemuan)}
+                  onChange={(v) => setCari(v === '2' ? { p: '2' } : {}, { replace: true })}
+                />
+              )}
+              <VideoPlayer
+                key={`${modul.id}-${pertemuan}`}
+                modul={modul}
+                pertemuan={pertemuan}
+                sudahSelesai={(pertemuan === 2 ? prog?.done2 : prog?.done) ?? false}
+              />
+            </div>
             <SetelahVideoPanel current={current} idx={idx} sorted={sorted} />
           </div>
         )}
@@ -198,8 +233,8 @@ function VideoMahasiswa() {
 // (iframe) tidak punya API tanpa skrip tambahan, jadi hanya seconds=0/
 // done=false saat pemutar dibuka, dan tombol "Tandai selesai ditonton" di
 // bawah pemutar — muncul untuk kedua jenis — yang menulis done=true.
-function VideoPlayer({ modul, sudahSelesai }: { modul: ModuleRow; sudahSelesai: boolean }) {
-  const parsed = parseVideoUrl(modul.video_url)
+function VideoPlayer({ modul, pertemuan = 1, sudahSelesai }: { modul: ModuleRow; pertemuan?: PertemuanTopik; sudahSelesai: boolean }) {
+  const parsed = parseVideoUrl(urlPertemuan(modul, pertemuan))
   const lastSentRef = useRef<number | null>(null)
   const [baruSelesai, setDone] = useState(false)
   // Tanda yang sudah tersimpan tetap tampil saat pemutar dibuka lagi (antrean #191).
@@ -209,7 +244,7 @@ function VideoPlayer({ modul, sudahSelesai }: { modul: ModuleRow; sudahSelesai: 
   useEffect(() => {
     lastSentRef.current = null
     setDone(false)
-    if (parsed) void upsertVideoProgress(modul.id, 0, false)
+    if (parsed) void upsertVideoProgress(modul.id, 0, false, pertemuan)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [modul.id])
 
@@ -217,18 +252,18 @@ function VideoPlayer({ modul, sudahSelesai }: { modul: ModuleRow; sudahSelesai: 
     const now = Date.now()
     if (!shouldSendTimeUpdate(lastSentRef.current, now)) return
     lastSentRef.current = now
-    void upsertVideoProgress(modul.id, Math.floor(e.currentTarget.currentTime), false)
+    void upsertVideoProgress(modul.id, Math.floor(e.currentTarget.currentTime), false, pertemuan)
   }
 
   function handleEnded(e: React.SyntheticEvent<HTMLVideoElement>) {
     setDone(true)
-    void upsertVideoProgress(modul.id, Math.floor(e.currentTarget.currentTime), true)
+    void upsertVideoProgress(modul.id, Math.floor(e.currentTarget.currentTime), true, pertemuan)
   }
 
   async function handleTandaiSelesai() {
     setMarking(true)
     try {
-      await upsertVideoProgress(modul.id, 0, true)
+      await upsertVideoProgress(modul.id, 0, true, pertemuan)
       setDone(true)
     } finally {
       setMarking(false)
@@ -326,7 +361,11 @@ function VideoDosen() {
   const sorted = useMemo(() => sortModules(modules), [modules])
 
   const [editModul, setEditModul] = useState<ModuleRow | null>(null)
-  const [urlInput, setUrlInput] = useState('')
+  // Isian dua pertemuan topik (antrean #271); `slot` = tab yang sedang tampil di modal. Simpan menulis keduanya.
+  const [slot, setSlot] = useState<PertemuanTopik>(1)
+  const [isi, setIsi] = useState<Record<PertemuanTopik, { url: string; durasi: string }>>({ 1: { url: '', durasi: '' }, 2: { url: '', durasi: '' } })
+  const urlInput = isi[slot].url
+  const setUrlInput = (url: string) => setIsi((s) => ({ ...s, [slot]: { ...s[slot], url } }))
   const [urlError, setUrlError] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -336,7 +375,8 @@ function VideoDosen() {
   const [uploadingVideo, setUploadingVideo] = useState(false)
   // Durasi dalam menit (v26). YouTube tidak bisa dibaca klien, jadi dosen mengisi
   // manual; berkas unggahan terisi otomatis dari metadata.
-  const [durasiMenit, setDurasiMenit] = useState('')
+  const durasiMenit = isi[slot].durasi
+  const setDurasiMenit = (durasi: string) => setIsi((s) => ({ ...s, [slot]: { ...s[slot], durasi } }))
 
   function showToast(msg: string) {
     setToast(msg)
@@ -357,10 +397,11 @@ function VideoDosen() {
   }
   const { seretProps } = useSeretTopik(sorted, simpanUrutan)
 
-  function openEdit(m: ModuleRow) {
+  const menitDari = (detik: number | null | undefined) => (detik ? String(Math.round(detik / 60)) : '')
+  function openEdit(m: ModuleRow, p: PertemuanTopik = 1) {
     setEditModul(m)
-    setDurasiMenit(m.duration_sec ? String(Math.round(m.duration_sec / 60)) : '')
-    setUrlInput(m.video_url || '')
+    setSlot(p)
+    setIsi({ 1: { url: m.video_url || '', durasi: menitDari(m.duration_sec) }, 2: { url: m.video_url_2 || '', durasi: menitDari(m.duration_sec_2) } })
     setUrlError('')
     setVideoFile(null)
     setVideoFileError('')
@@ -381,13 +422,13 @@ function VideoDosen() {
     setVideoFileError('')
     setUploadingVideo(true)
     try {
-      const url = await uploadModulVideo(editModul.id, videoFile)
+      const url = await uploadModulVideo(editModul.id, videoFile, slot)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       setUrlInput(url)
       setVideoFile(null)
       showToast('Video berhasil diunggah')
-    } catch {
-      setVideoFileError('Gagal mengunggah video. Coba lagi.')
+    } catch (e) {
+      setVideoFileError(e instanceof Error && e.message === PESAN_V50 ? PESAN_V50 : 'Gagal mengunggah video. Coba lagi.')
     } finally {
       setUploadingVideo(false)
     }
@@ -395,26 +436,43 @@ function VideoDosen() {
 
   async function saveEdit() {
     if (!editModul) return
-    const trimmed = urlInput.trim()
-    if (trimmed && !parseVideoUrl(trimmed)) {
-      setUrlError('URL tidak dikenal. Pakai tautan YouTube atau file .mp4/.webm.')
-      return
+    for (const p of [1, 2] as const) {
+      const u = isi[p].url.trim()
+      if (u && !parseVideoUrl(u)) {
+        setSlot(p)
+        setUrlError('URL tidak dikenal. Pakai tautan YouTube atau file .mp4/.webm.')
+        return
+      }
     }
     setSaving(true)
+    // Berkas lama dibuang sesudah KEDUA isian tersimpan, supaya video yang dipindah antartab tidak terhapus di tengah jalan.
+    const lama = [editModul.video_url, editModul.video_url_2].filter((u): u is string => !!u && !Object.values(isi).some((s) => s.url.trim() === u))
     try {
-      const menit = durasiMenit.trim() === '' ? null : Math.max(0, Math.round(Number(durasiMenit)))
-      await saveVideoUrl(editModul.id, trimmed, menit == null || Number.isNaN(menit) ? null : menit * 60)
+      for (const p of [1, 2] as const) {
+        const u = isi[p].url.trim()
+        const menit = isi[p].durasi.trim() === '' ? null : Math.max(0, Math.round(Number(isi[p].durasi)))
+        const detik = menit == null || Number.isNaN(menit) ? null : menit * 60
+        // Pertemuan kedua yang tidak diubah tidak dikirim, supaya topik tanpa isian kedua tetap tersimpan walau SQL v50 belum dijalankan.
+        if (p === 2 && u === (editModul.video_url_2 || '') && detik === (editModul.duration_sec_2 ?? null)) continue
+        try {
+          await saveVideoUrl(editModul.id, u, detik, p, false)
+        } catch (e) {
+          setSlot(p)
+          throw e
+        }
+      }
+      await buangBerkasYatim(lama)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       setEditModul(null)
       showToast('Tautan video disimpan')
-    } catch {
-      setUrlError('Gagal menyimpan. Coba lagi.')
+    } catch (e) {
+      setUrlError(e instanceof Error && e.message === PESAN_V50 ? PESAN_V50 : 'Gagal menyimpan. Coba lagi.')
     } finally {
       setSaving(false)
     }
   }
 
-  const punyaVideo = sorted.filter((m) => m.video_url).length
+  const punyaVideo = sorted.filter((m) => m.video_url || m.video_url_2).length
 
   return (
     <Layout>
@@ -441,6 +499,7 @@ function VideoDosen() {
           <Rak>
             {sorted.map((m) => {
               const url = m.video_url || ''
+              const url2 = m.video_url_2 || ''
               const parsed = parseVideoUrl(url)
               const chip: { jenis: ChipJenis; label: string } = !url
                 ? { jenis: 'todo', label: 'Belum Ada Video' }
@@ -452,10 +511,12 @@ function VideoDosen() {
                 <KartuVideo
                   nomor={m.order_num}
                   judul={m.title}
-                  url={m.video_url}
+                  url={m.video_url || url2}
                   durasi={m.duration_sec ? formatDuration(m.duration_sec) : undefined}
-                  chip={chip.jenis === 'warn' ? <ChipRak jenis="warn" label={chip.label} /> : undefined}
-                  onClick={url ? () => setPreviewUrl(url) : undefined}
+                  chip={
+                    chip.jenis === 'warn' ? <ChipRak jenis="warn" label={chip.label} /> : url && url2 ? <ChipRak jenis="ok" label="2 Video" /> : undefined
+                  }
+                  onClick={url || url2 ? () => setPreviewUrl(url || url2) : undefined}
                   warna={warnaSampul(m.order_num)}
                   aksi={
                     <>
@@ -478,6 +539,15 @@ function VideoDosen() {
                           <IconPlay size={13} /> <span className="hidden sm:inline">Pratinjau</span>
                         </button>
                       )}
+                      {/* Video pertemuan kedua topik (antrean #271): baris sendiri, teks tetap tampil di telepon supaya tidak tertukar dengan tombol di atasnya. */}
+                      <button
+                        type="button"
+                        onClick={() => openEdit(m, 2)}
+                        title={url2 ? 'Ubah video pertemuan kedua topik ini' : 'Tambah video untuk pertemuan kedua topik ini'}
+                        className="btn btn-secondary btn-sm w-full whitespace-nowrap col-span-2"
+                      >
+                        {url2 ? <IconEdit size={13} /> : '+'} {url2 ? 'Ubah Pertemuan Kedua' : 'Pertemuan Kedua'}
+                      </button>
                     </>
                   }
                 />
@@ -497,8 +567,26 @@ function VideoDosen() {
             className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url ? 'Ubah Video' : 'Tambah Video'}</h3>
-            <p className="text-xs text-brown-3 mb-4">{editModul.title}</p>
+            <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url || editModul.video_url_2 ? 'Ubah Video' : 'Tambah Video'}</h3>
+            <p className="text-xs text-brown-3 mb-3">{editModul.title}</p>
+            {/* Satu topik = dua pertemuan (antrean #271). Isian kedua opsional; Simpan menulis kedua tab. */}
+            <div className="mb-2">
+              <PillGroup
+                variant="tab"
+                ariaLabel="Video untuk pertemuan"
+                options={PILIHAN_PERTEMUAN}
+                value={String(slot)}
+                onChange={(v) => {
+                  setSlot(v === '2' ? 2 : 1)
+                  setUrlError('')
+                  setVideoFile(null)
+                  setVideoFileError('')
+                }}
+              />
+            </div>
+            <p className="text-xs text-brown-3 mb-4">
+              {slot === 1 ? 'Video yang diputar di pertemuan pertama topik ini.' : 'Opsional: isi bila topik ini memakai video lain di pertemuan keduanya. Kosongkan bila tidak.'}
+            </p>
 
             {/* Bagian 1: tautan. Pola sama dengan modal Ganti PDF (antrean #67):
                 subjudul kecil, isi di kiri, aksi di kanan, tanpa flex-wrap. */}

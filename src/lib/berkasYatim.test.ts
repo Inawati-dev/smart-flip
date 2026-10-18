@@ -5,6 +5,8 @@ const h = vi.hoisted(() => ({
   dipakai: {} as Record<string, number | null>, // alamat -> jumlah topik yang masih menunjuk; null = hitungan gagal
   dibuang: [] as Array<[string, string]>, // [bucket, nama berkas]
   lama: null as string | null, // pdf_path topik sebelum diganti
+  dipakai2: {} as Record<string, number>, // alamat -> jumlah topik yang menunjuknya di kolom pertemuan kedua (antrean #271)
+  tanpaV50: false, // kolom `_2` belum ada (migration_v50 belum dijalankan)
 }))
 
 vi.mock('./supabase', () => ({
@@ -12,7 +14,14 @@ vi.mock('./supabase', () => ({
   supabase: {
     from: () => ({
       select: () => ({
-        eq: (_kolom: string, url: string) => {
+        eq: (kolom: string, url: string) => {
+          if (kolom.endsWith('_2')) {
+            // Bukan HEAD (temuan pemeriksa #271): galat membawa kode 42703 hanya pada permintaan biasa.
+            const hasil = h.tanpaV50
+              ? { data: null, error: { code: '42703', message: 'column does not exist' } }
+              : { data: Array.from({ length: h.dipakai2[url] ?? 0 }, (_, i) => ({ id: i })), error: null }
+            return { limit: async () => hasil, maybeSingle: async () => ({ data: null }) }
+          }
           const n = h.dipakai[url]
           const hitung = n === null ? { count: null, error: { message: 'gagal' } } : { count: n ?? 0, error: null }
           return Object.assign(Promise.resolve(hitung), { maybeSingle: async () => ({ data: { pdf_path: h.lama } }) })
@@ -43,6 +52,22 @@ beforeEach(() => {
   h.dipakai = {}
   h.dibuang = []
   h.lama = null
+  h.dipakai2 = {}
+  h.tanpaV50 = false
+})
+
+describe('buangBerkasYatim: isian pertemuan kedua (antrean #271)', () => {
+  it('membiarkan berkas yang hanya dipakai di kolom pertemuan kedua', async () => {
+    h.dipakai2[PDF] = 1
+    await buangBerkasYatim([PDF])
+    expect(h.dibuang).toEqual([])
+  })
+
+  it('tetap membersihkan berkas yatim walau kolom pertemuan kedua belum ada', async () => {
+    h.tanpaV50 = true
+    await buangBerkasYatim([PDF])
+    expect(h.dibuang).toEqual([['modul-pdf', 'modul-1-111.pdf']])
+  })
 })
 
 describe('buangBerkasYatim', () => {

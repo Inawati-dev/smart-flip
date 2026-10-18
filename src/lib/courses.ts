@@ -139,8 +139,9 @@ export async function deleteCourse(id: number): Promise<void> {
   // dicatat dulu supaya berkasnya bisa dibuang sesudahnya (antrean #168).
   let berkas: Array<string | null> = []
   try {
-    const { data } = await supabase.from('modules').select('pdf_path, video_url').eq('course_id', id)
-    berkas = (data ?? []).flatMap((m) => [m.pdf_path as string | null, m.video_url as string | null])
+    // `*` supaya isian pertemuan kedua (v50, antrean #271) ikut dibersihkan bila kolomnya sudah ada.
+    const { data } = await supabase.from('modules').select('*').eq('course_id', id)
+    berkas = (data ?? []).flatMap((m) => [m.pdf_path, m.video_url, m.pdf_path_2, m.video_url_2] as Array<string | null>)
   } catch {
     // tidak bisa membaca daftar topik = tidak ada yang dibersihkan
   }

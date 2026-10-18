@@ -73,3 +73,24 @@ describe('upsertVideoProgress: panggilan ended → done=true', () => {
     vi.doUnmock('./supabase')
   })
 })
+
+// Antrean #271: video pertemuan kedua topik menulis kolom seconds_2/done_2, kolom pertama tidak tersentuh.
+describe('upsertVideoProgress: pertemuan kedua', () => {
+  it('menulis seconds_2 dan done_2, bukan seconds dan done', async () => {
+    const upsertSpy = vi.fn<(baris: Record<string, unknown>, opsi: unknown) => Promise<{ error: null }>>(async () => ({ error: null }))
+    vi.doMock('./supabase', () => ({
+      supabase: {
+        auth: { getUser: async () => ({ data: { user: { id: 'u1' } } }) },
+        from: () => ({ upsert: upsertSpy }),
+      },
+      isSupabaseConfigured: true,
+    }))
+    vi.resetModules()
+    const { upsertVideoProgress: upsertWithUser } = await import('./videoProgress')
+    await upsertWithUser(3, 90, true, 2)
+    const baris = upsertSpy.mock.calls[0][0]
+    expect(baris).toMatchObject({ module_id: 3, seconds_2: 90, done_2: true })
+    expect('seconds' in baris || 'done' in baris).toBe(false)
+    vi.doUnmock('./supabase')
+  })
+})

@@ -10,6 +10,10 @@ export interface ModuleRow {
   /** Durasi video dalam detik (v26), null bila belum diisi. */
   duration_sec: number | null
   pdf_path: string | null
+  /** Isi pertemuan kedua topik (v50, antrean #271); null = topik hanya punya isi pertemuan pertama. */
+  video_url_2?: string | null
+  duration_sec_2?: number | null
+  pdf_path_2?: string | null
   is_active: boolean
   /** Minggu ke berapa materi topik dibuka (v29); kosong = bawaan lib/jadwal.ts. */
   minggu_mulai?: number | null
@@ -36,6 +40,9 @@ export function normalizeModuleRow(row: Record<string, unknown>): ModuleRow {
     video_url: (row.video_url as string) ?? null,
     duration_sec: (row.duration_sec as number) ?? null,
     pdf_path: (row.pdf_path as string) ?? null,
+    video_url_2: (row.video_url_2 as string) ?? null,
+    duration_sec_2: (row.duration_sec_2 as number) ?? null,
+    pdf_path_2: (row.pdf_path_2 as string) ?? null,
     is_active: (row.is_active as boolean) ?? true,
     minggu_mulai: (row.minggu_mulai as number) ?? null,
     estimasi_menit: (row.estimasi_menit as number) ?? null,

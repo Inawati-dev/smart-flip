@@ -179,9 +179,12 @@ export function Ebook() {
   const { data: modules = [] } = useModules()
   const catalog = useMemo(() => modules.filter((m) => !!(m.path || m.pdf_path)), [modules])
   const currentModule = moduleId != null ? modules.find((m) => m.id === moduleId) : undefined
-  const src = currentModule?.path || currentModule?.pdf_path || ''
+  // &p=2 membuka PDF pertemuan kedua topik (antrean #271).
+  // shortcut: progres baca hanya dicatat untuk PDF pertemuan pertama; catat juga bila dosen memakai PDF kedua sebagai bacaan wajib.
+  const kedua = searchParams.get('p') === '2'
+  const src = (kedua ? currentModule?.pdf_path_2 : currentModule?.path || currentModule?.pdf_path) || ''
   const cap = useCapAir()
-  const catatBaca = useCatatBaca(moduleId)
+  const catatBaca = useCatatBaca(kedua ? null : moduleId)
 
   // Keadaan muat dilaporkan PembacaPdf bersama id topiknya. Saat ?book= berganti,
   // render pertama masih membawa laporan buku lama; id yang tidak cocok dianggap "memuat".
@@ -282,16 +285,16 @@ export function Ebook() {
 
         {moduleId != null && src && (
           <PembacaPdf
-            key={moduleId}
+            key={`${moduleId}-${kedua ? 2 : 1}`}
             src={src}
-            judul={currentModule?.title || 'Ebook'}
+            judul={(currentModule?.title || 'Ebook') + (kedua ? ' (Pertemuan Kedua)' : '')}
             cap={cap}
             tampilStatus={false}
             onStatus={(status, pesan) => setLaporan((l) => (l.id === moduleId && l.status === status && l.pesan === pesan ? l : { id: moduleId, status, pesan }))}
             // Progres per halaman, dikunci ke moduleIdToPath() (bukan alamat PDF) supaya
             // sama saja untuk berkas di books/ maupun yang diunggah ke Supabase Storage.
-            onHalaman={catatBaca.onHalaman}
-            persenTercatat={catatBaca.tercatat}
+            onHalaman={kedua ? undefined : catatBaca.onHalaman}
+            persenTercatat={kedua ? null : catatBaca.tercatat}
             kiri={
               <>
                 <Link to="/modul" className="hover:underline flex-shrink-0 pembaca-redup">Modul</Link>
@@ -299,6 +302,7 @@ export function Ebook() {
                 <h1 className="text-xs font-semibold truncate">
                   <Link to={`/modul/${moduleId}`} className="hover:underline">
                     {currentModule?.title || 'Ebook'}
+                    {kedua ? ' · Pertemuan Kedua' : ''}
                   </Link>
                 </h1>
               </>

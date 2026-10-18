@@ -6,6 +6,9 @@ import { supabase, isSupabaseConfigured } from './supabase'
 export interface VideoProgressEntry {
   seconds: number
   done: boolean
+  /** Video pertemuan kedua topik (v50, antrean #271); 0/false sebelum migrasi dijalankan. */
+  seconds2?: number
+  done2?: boolean
 }
 
 export type VideoProgressMap = Record<number, VideoProgressEntry>
@@ -31,7 +34,7 @@ function isMissingTable(e: unknown): boolean {
 
 let warnedMissingTable = false
 
-export async function upsertVideoProgress(moduleId: number, seconds: number, done: boolean): Promise<void> {
+export async function upsertVideoProgress(moduleId: number, seconds: number, done: boolean, pertemuan: 1 | 2 = 1): Promise<void> {
   if (!isSupabaseConfigured) return
   try {
     const { data: userData } = await supabase.auth.getUser()
@@ -40,7 +43,8 @@ export async function upsertVideoProgress(moduleId: number, seconds: number, don
     // Kolom done hanya dikirim saat true (antrean #191): membuka pemutar lagi atau lapor detik tidak boleh
     // menghapus tanda selesai. Baris baru tetap done=false dari bawaan kolomnya.
     // Detik hanya dikirim bila lebih dari 0 (antrean #225): membuka pemutar atau menandai selesai tidak menghapus detik tersimpan.
-    const baris = { user_id: uid, module_id: moduleId, updated_at: new Date().toISOString(), ...(seconds > 0 ? { seconds } : {}), ...(done ? { done: true } : {}) }
+    const [kDetik, kDone] = pertemuan === 2 ? ['seconds_2', 'done_2'] : ['seconds', 'done']
+    const baris = { user_id: uid, module_id: moduleId, updated_at: new Date().toISOString(), ...(seconds > 0 ? { [kDetik]: seconds } : {}), ...(done ? { [kDone]: true } : {}) }
     const { error } = await supabase.from('video_progress').upsert(baris, { onConflict: 'user_id,module_id' })
     if (error) throw error
   } catch (e) {
@@ -63,12 +67,12 @@ export async function fetchVideoProgressMap(): Promise<VideoProgressMap> {
     if (!uid) return {}
     const { data, error } = await supabase
       .from('video_progress')
-      .select('module_id, seconds, done')
+      .select('*')
       .eq('user_id', uid)
     if (error) throw error
     const map: VideoProgressMap = {}
     for (const r of data ?? []) {
-      map[r.module_id as number] = { seconds: r.seconds as number, done: r.done as boolean }
+      map[r.module_id as number] = { seconds: r.seconds as number, done: r.done as boolean, seconds2: (r.seconds_2 as number) ?? 0, done2: (r.done_2 as boolean) ?? false }
     }
     return map
   } catch (e) {

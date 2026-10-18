@@ -8,6 +8,15 @@ import { supabase, isSupabaseConfigured } from './supabase'
 
 export type ModulStatus = 'aktif' | 'draf' | 'terkunci' | 'nonaktif'
 
+/** Pertemuan ke berapa dalam satu topik (antrean #271): 1 = kolom lama, 2 = kolom `_2` dari migration_v50. */
+export type PertemuanTopik = 1 | 2
+const kol = (nama: 'video_url' | 'pdf_path', p: PertemuanTopik) => (p === 2 ? `${nama}_2` : nama)
+export const PESAN_V50 = 'Isian pertemuan kedua belum aktif. Jalankan database/migration_v50_pertemuan_kedua.sql di Supabase.'
+// Galat pertemuan kedua: kolom belum ada (42703) diterjemahkan jadi langkah yang bisa dikerjakan Johan.
+function galatKedua(e: { code?: string; message?: string }): Error {
+  return e.code === '42703' || /_2\b/.test(e.message ?? '') ? new Error(PESAN_V50) : new Error(e.message ?? 'Gagal menyimpan.')
+}
+
 export interface ModulCustom {
   judul?: string
   deskripsi?: string
@@ -85,7 +94,20 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
 // demo mode even though (like saveModulCustom's other localStorage-only
 // fields) it won't be read back into fetchModules() there.
 // durationSec (v26): durasi video dalam detik; undefined = jangan ubah, null = kosongkan.
-export async function saveVideoUrl(moduleId: number, url: string, durationSec?: number | null): Promise<void> {
+// bersihkan=false: pemanggil membuang berkas lama sendiri sesudah semua isian tersimpan (antrean #271: memindah
+// video dari pertemuan pertama ke kedua tidak boleh membuang berkasnya di tengah jalan).
+export async function saveVideoUrl(moduleId: number, url: string, durationSec?: number | null, pertemuan: PertemuanTopik = 1, bersihkan = true): Promise<void> {
+  if (pertemuan === 2) {
+    if (!isSupabaseConfigured) throw new Error('Video pertemuan kedua butuh koneksi Supabase.')
+    const { data } = await supabase.from('modules').select('video_url_2').eq('id', moduleId).maybeSingle()
+    const lama = (data?.video_url_2 as string | null) ?? null
+    const patch: Record<string, unknown> = { video_url_2: url || null }
+    if (durationSec !== undefined) patch.duration_sec_2 = durationSec
+    const { error } = await supabase.from('modules').update(patch).eq('id', moduleId)
+    if (error) throw galatKedua(error)
+    if (bersihkan && lama && lama !== url) await buangBerkasYatim([lama])
+    return
+  }
   if (isSupabaseConfigured) {
     let lama: string | null = null
     try {
@@ -102,7 +124,7 @@ export async function saveVideoUrl(moduleId: number, url: string, durationSec?: 
         ;({ error } = await supabase.from('modules').update({ video_url: url }).eq('id', moduleId))
       }
       if (error) throw error
-      if (lama && lama !== url) await buangBerkasYatim([lama])
+      if (bersihkan && lama && lama !== url) await buangBerkasYatim([lama])
       return
     } catch (e) {
       console.warn('[manajemen] saveVideoUrl → Supabase gagal, fallback localStorage:', e)
@@ -231,6 +253,14 @@ export async function buangBerkasYatim(urls: Array<string | null | undefined>): 
         .eq(pdf ? 'pdf_path' : 'video_url', url)
       // Ragu = jangan hapus: hitungan gagal dibaca diperlakukan sebagai "masih dipakai".
       if (error || count == null || count > 0) continue
+      // Isian pertemuan kedua (v50) juga dihitung; kolomnya belum ada (42703) = tidak ada yang memakai di sana.
+      // Bukan permintaan HEAD: galat HEAD tidak membawa kode 42703, jadi berkas yatim tidak pernah terbuang sebelum v50.
+      const kedua = await supabase
+        .from('modules')
+        .select('id')
+        .eq(pdf ? 'pdf_path_2' : 'video_url_2', url)
+        .limit(1)
+      if (kedua.error ? kedua.error.code !== '42703' : !kedua.data || kedua.data.length > 0) continue
       await supabase.storage.from(pdf ? 'modul-pdf' : 'modul-video').remove(pdf ? [nama, nama + AKHIRAN_SAMPUL] : [nama])
     } catch (e) {
       console.warn('[manajemen] buangBerkasYatim gagal untuk', url, e)
@@ -253,9 +283,10 @@ export async function deleteModul(moduleId: number): Promise<void> {
 
   // Ambil alamat berkas SEBELUM baris hilang, supaya PDF dan video di Storage
   // ikut dibersihkan dan tidak menumpuk tanpa pemilik di bucket.
+  // `*` supaya isian pertemuan kedua (v50) ikut terbaca bila kolomnya sudah ada.
   const { data: row } = await supabase
     .from('modules')
-    .select('pdf_path, video_url')
+    .select('*')
     .eq('id', moduleId)
     .maybeSingle()
 
@@ -269,7 +300,7 @@ export async function deleteModul(moduleId: number): Promise<void> {
     throw error
   }
 
-  await buangBerkasYatim([row?.pdf_path as string | undefined, row?.video_url as string | undefined])
+  await buangBerkasYatim([row?.pdf_path, row?.video_url, row?.pdf_path_2, row?.video_url_2] as Array<string | undefined>)
 
   try {
     localStorage.removeItem(customKey(moduleId))
@@ -283,22 +314,25 @@ export async function deleteModul(moduleId: number): Promise<void> {
 // pdf_path at the resulting public URL. Demo/localStorage mode has no
 // Storage backend, so it just stores the override locally instead — the
 // file itself never leaves the browser in that mode.
-export async function uploadModulPdf(moduleId: number, file: File): Promise<string> {
+export async function uploadModulPdf(moduleId: number, file: File, pertemuan: PertemuanTopik = 1): Promise<string> {
+  const kolom = kol('pdf_path', pertemuan)
+  if (pertemuan === 2 && !isSupabaseConfigured) throw new Error('PDF pertemuan kedua butuh koneksi Supabase.')
   if (isSupabaseConfigured) {
     // Nama file lama dicatat dulu: setiap upload memakai path ber-timestamp
     // baru, jadi tanpa pembersihan ini file versi sebelumnya menumpuk
     // selamanya di bucket dan muncul terus di daftar "pakai file yang sudah
     // ada" walau tidak ada modul yang memakainya lagi.
-    const { data: prevRow } = await supabase
+    const { data: prevRow, error: prevError } = await supabase
       .from('modules')
-      .select('pdf_path')
+      .select(kolom)
       .eq('id', moduleId)
       .maybeSingle()
-    const lama = prevRow?.pdf_path as string | undefined
+    if (prevError && pertemuan === 2) throw galatKedua(prevError)
+    const lama = (prevRow as Record<string, string | null> | null)?.[kolom] ?? undefined
 
     // Pola nama `topik-` (antrean #90): satuan pertemuan disebut topik, dan nama
     // berkas ini bisa tampil di halaman Berkas.
-    const path = `topik-${moduleId}-${Date.now()}.pdf`
+    const path = `topik-${moduleId}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.pdf`
     const { error: uploadError } = await supabase.storage
       .from('modul-pdf')
       .upload(path, file, { upsert: true, contentType: 'application/pdf' })
@@ -306,7 +340,7 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
     const { data } = supabase.storage.from('modul-pdf').getPublicUrl(path)
     const { error: updateError } = await supabase
       .from('modules')
-      .update({ pdf_path: data.publicUrl })
+      .update({ [kolom]: data.publicUrl })
       .eq('id', moduleId)
     if (updateError) {
       // Storage upload succeeded but the DB link failed — the file would
@@ -318,7 +352,7 @@ export async function uploadModulPdf(moduleId: number, file: File): Promise<stri
       } catch (cleanupError) {
         console.warn('[manajemen] uploadModulPdf → gagal membersihkan file orphan setelah update DB gagal:', cleanupError)
       }
-      throw updateError
+      throw pertemuan === 2 ? galatKedua(updateError) : updateError
     }
     // Modul sudah menunjuk file baru. File lama dibuang hanya bila tidak ada
     // topik lain yang masih memakainya (antrean #194: modal "Ganti PDF"
@@ -353,17 +387,20 @@ function videoStorageObjectName(publicUrl: string | null | undefined): string | 
 // demo-mode local-only fallback), just against modules.video_url instead of
 // pdf_path, and keyed under the same videoUrlKey() localStorage slot that
 // saveVideoUrl's demo-mode fallback already uses.
-export async function uploadModulVideo(moduleId: number, file: File): Promise<string> {
+export async function uploadModulVideo(moduleId: number, file: File, pertemuan: PertemuanTopik = 1): Promise<string> {
+  const kolom = kol('video_url', pertemuan)
+  if (pertemuan === 2 && !isSupabaseConfigured) throw new Error('Video pertemuan kedua butuh koneksi Supabase.')
   if (isSupabaseConfigured) {
-    const { data: prevRow } = await supabase
+    const { data: prevRow, error: prevError } = await supabase
       .from('modules')
-      .select('video_url')
+      .select(kolom)
       .eq('id', moduleId)
       .maybeSingle()
-    const prevObject = videoStorageObjectName(prevRow?.video_url as string | undefined)
+    if (prevError && pertemuan === 2) throw galatKedua(prevError)
+    const prevUrl = (prevRow as Record<string, string | null> | null)?.[kolom] ?? null
 
     const ext = file.type === 'video/webm' ? 'webm' : 'mp4'
-    const path = `topik-${moduleId}-${Date.now()}.${ext}`
+    const path = `topik-${moduleId}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.${ext}`
     const { error: uploadError } = await supabase.storage
       .from('modul-video')
       .upload(path, file, { upsert: true, contentType: file.type || 'video/mp4' })
@@ -371,7 +408,7 @@ export async function uploadModulVideo(moduleId: number, file: File): Promise<st
     const { data } = supabase.storage.from('modul-video').getPublicUrl(path)
     const { error: updateError } = await supabase
       .from('modules')
-      .update({ video_url: data.publicUrl })
+      .update({ [kolom]: data.publicUrl })
       .eq('id', moduleId)
     if (updateError) {
       try {
@@ -379,15 +416,10 @@ export async function uploadModulVideo(moduleId: number, file: File): Promise<st
       } catch (cleanupError) {
         console.warn('[manajemen] uploadModulVideo → gagal membersihkan file orphan setelah update DB gagal:', cleanupError)
       }
-      throw updateError
+      throw pertemuan === 2 ? galatKedua(updateError) : updateError
     }
-    if (prevObject && prevObject !== path) {
-      try {
-        await supabase.storage.from('modul-video').remove([prevObject])
-      } catch (cleanupError) {
-        console.warn('[manajemen] uploadModulVideo → gagal menghapus video lama:', cleanupError)
-      }
-    }
+    // Video lama dibuang hanya bila tidak dipakai isian lain (antrean #271: satu berkas bisa dipasang di dua pertemuan).
+    if (prevUrl && prevUrl !== data.publicUrl) await buangBerkasYatim([prevUrl])
     return data.publicUrl
   }
   // Demo mode: no Storage backend — keep the override local only, under the
@@ -420,7 +452,7 @@ export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
       limit: 400, // tiap PDF bisa punya satu berkas sampul (antrean #192)
       sortBy: { column: 'created_at', order: 'desc' },
     }),
-    supabase.from('modules').select('title, pdf_path, course_id, courses(name)'),
+    supabase.from('modules').select('*, courses(name)'),
   ])
   if (listRes.error) throw listRes.error
   // Sebelum migrasi v23 relasi courses belum ada; ulang tanpa embed.
@@ -430,12 +462,14 @@ export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
   // lama yang sudah tidak ditunjuk modul mana pun) bisa dibedakan di UI.
   const usedBy = new Map<string, string>()
   for (const m of modulesRes.data ?? []) {
-    const name = storageObjectName((m as { pdf_path?: string }).pdf_path)
-    if (name) {
-      const row = m as { title?: string; courses?: { name?: string } | { name?: string }[] | null }
-      const c = Array.isArray(row.courses) ? row.courses[0] : row.courses
-      const judul = row.title || 'Tanpa judul'
-      usedBy.set(name, c?.name ? `${c.name} · ${judul}` : judul)
+    for (const [k, ket] of [['pdf_path', ''], ['pdf_path_2', ' (pertemuan kedua)']] as const) {
+      const name = storageObjectName((m as Record<string, string | undefined>)[k])
+      if (name && !usedBy.has(name)) {
+        const row = m as { title?: string; courses?: { name?: string } | { name?: string }[] | null }
+        const c = Array.isArray(row.courses) ? row.courses[0] : row.courses
+        const judul = (row.title || 'Tanpa judul') + ket
+        usedBy.set(name, c?.name ? `${c.name} · ${judul}` : judul)
+      }
     }
   }
 
@@ -460,19 +494,20 @@ export async function listModulPdfFiles(): Promise<ModulPdfFile[]> {
 
 // Points a module at an already-uploaded file (picked via listModulPdfFiles)
 // instead of uploading a new one — just a metadata update, no Storage write.
-export async function assignModulPdf(moduleId: number, url: string): Promise<void> {
+export async function assignModulPdf(moduleId: number, url: string, pertemuan: PertemuanTopik = 1): Promise<void> {
   if (!isSupabaseConfigured) {
     throw new Error('assignModulPdf membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
   }
+  const kolom = kol('pdf_path', pertemuan)
   let lama: string | null = null
   try {
-    const { data } = await supabase.from('modules').select('pdf_path').eq('id', moduleId).maybeSingle()
-    lama = (data?.pdf_path as string | null) ?? null
+    const { data } = await supabase.from('modules').select(kolom).eq('id', moduleId).maybeSingle()
+    lama = (data as Record<string, string | null> | null)?.[kolom] ?? null
   } catch {
     // tidak bisa membaca alamat lama = tidak ada yang dibersihkan
   }
-  const { error } = await supabase.from('modules').update({ pdf_path: url }).eq('id', moduleId)
-  if (error) throw error
+  const { error } = await supabase.from('modules').update({ [kolom]: url }).eq('id', moduleId)
+  if (error) throw pertemuan === 2 ? galatKedua(error) : error
   if (lama && lama !== url) await buangBerkasYatim([lama])
 }
 
@@ -484,16 +519,20 @@ export async function deleteModulPdfFile(path: string): Promise<void> {
   if (!isSupabaseConfigured) {
     throw new Error('deleteModulPdfFile membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
   }
-  const { data: modulesRes } = await supabase.from('modules').select('id, pdf_path')
-  const usedByIds = (modulesRes ?? [])
-    .filter((m) => storageObjectName((m as { pdf_path?: string }).pdf_path) === path)
-    .map((m) => (m as { id: number }).id)
+  const { data: modulesRes } = await supabase.from('modules').select('*')
+  const pakai = (k: string) =>
+    (modulesRes ?? []).filter((m) => storageObjectName((m as Record<string, string>)[k]) === path).map((m) => (m as { id: number }).id)
+  const usedByIds = pakai('pdf_path')
+  const usedByIds2 = pakai('pdf_path_2')
 
   const { error } = await supabase.storage.from('modul-pdf').remove([path, path + AKHIRAN_SAMPUL])
   if (error) throw error
 
   if (usedByIds.length) {
     await supabase.from('modules').update({ pdf_path: null }).in('id', usedByIds)
+  }
+  if (usedByIds2.length) {
+    await supabase.from('modules').update({ pdf_path_2: null }).in('id', usedByIds2)
   }
 }
 
@@ -607,7 +646,7 @@ export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
       limit: 200,
       sortBy: { column: 'created_at', order: 'desc' },
     }),
-    supabase.from('modules').select('title, video_url, course_id, courses(name)'),
+    supabase.from('modules').select('*, courses(name)'),
   ])
   const modulesRes = modulesRes0.error ? await supabase.from('modules').select('title, video_url') : modulesRes0
   if (listRes.error) {
@@ -617,12 +656,14 @@ export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
   }
   const usedBy = new Map<string, string>()
   for (const m of modulesRes.data ?? []) {
-    const name = videoStorageObjectName((m as { video_url?: string }).video_url)
-    if (name) {
-      const row = m as { title?: string; courses?: { name?: string } | { name?: string }[] | null }
-      const c = Array.isArray(row.courses) ? row.courses[0] : row.courses
-      const judul = row.title || 'Tanpa judul'
-      usedBy.set(name, c?.name ? `${c.name} · ${judul}` : judul)
+    for (const [k, ket] of [['video_url', ''], ['video_url_2', ' (pertemuan kedua)']] as const) {
+      const name = videoStorageObjectName((m as Record<string, string | undefined>)[k])
+      if (name && !usedBy.has(name)) {
+        const row = m as { title?: string; courses?: { name?: string } | { name?: string }[] | null }
+        const c = Array.isArray(row.courses) ? row.courses[0] : row.courses
+        const judul = (row.title || 'Tanpa judul') + ket
+        usedBy.set(name, c?.name ? `${c.name} · ${judul}` : judul)
+      }
     }
   }
   return (listRes.data || [])
@@ -645,13 +686,17 @@ export async function deleteModulVideoFile(path: string): Promise<void> {
   if (!isSupabaseConfigured) {
     throw new Error('deleteModulVideoFile membutuhkan koneksi Supabase, tidak tersedia di mode demo.')
   }
-  const { data: modulesRes } = await supabase.from('modules').select('id, video_url')
-  const usedByIds = (modulesRes ?? [])
-    .filter((m) => videoStorageObjectName((m as { video_url?: string }).video_url) === path)
-    .map((m) => (m as { id: number }).id)
+  const { data: modulesRes } = await supabase.from('modules').select('*')
+  const pakai = (k: string) =>
+    (modulesRes ?? []).filter((m) => videoStorageObjectName((m as Record<string, string>)[k]) === path).map((m) => (m as { id: number }).id)
+  const usedByIds = pakai('video_url')
+  const usedByIds2 = pakai('video_url_2')
   const { error } = await supabase.storage.from('modul-video').remove([path])
   if (error) throw error
   if (usedByIds.length) {
     await supabase.from('modules').update({ video_url: null }).in('id', usedByIds)
+  }
+  if (usedByIds2.length) {
+    await supabase.from('modules').update({ video_url_2: null, duration_sec_2: null }).in('id', usedByIds2)
   }
 }
