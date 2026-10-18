@@ -386,6 +386,8 @@ function PreTest() {
       // Status topik ikut golongan pre-test (antrean #105), jadi hitung ulang.
       await queryClient.invalidateQueries({ queryKey: ['topik-pretest-done'] })
       await queryClient.invalidateQueries({ queryKey: ['attempts-by-kind', 'pre'] })
+      // Basis data menempatkan mahasiswa ke kelas otomatis saat tes ini tersimpan (antrean #228).
+      await queryClient.invalidateQueries({ queryKey: ['kelas-saya'] })
     } catch (e) {
       console.warn('[asesmen-pre] saveQuizAttempt gagal:', e)
     }

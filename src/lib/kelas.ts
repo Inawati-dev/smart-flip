@@ -1,13 +1,12 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import { golonganDariSkor, type Golongan } from './golongan'
 
-// Mirrors manajemen.ts / forum.ts's dual-mode (Supabase when configured,
-// else localStorage) pattern. Backs src/pages/Kelas.tsx (dosen-only kelas
-// management) and the "Kode Kelas" opt-in field on Register.tsx (which sends
-// class_code in signUp's user_metadata — see
-// database/migration_v7_kelas.sql's handle_new_user(), NOT this file; the
-// actual code→class_id resolution happens server-side in that trigger, this
-// file never resolves a code to a class_id on the client).
+// Backs src/pages/Kelas.tsx (dosen). Sejak antrean #228 (migration_v40)
+// kelas tidak dibuat dosen dan tidak punya kode daftar: basis data
+// membentuknya sendiri dari tes diagnostik awal (Jalur Cepat A, B, ... dan
+// Belajar Mendalam A, B, ..., 25 mahasiswa per kelas). Kelas lama buatan
+// dosen (golongan kosong) tetap ada karena tugas dan tes kelompok
+// menyimpan class_ids-nya. Mode demo (tanpa Supabase) tidak punya kelas.
 
 export interface Kelas {
   id: string
@@ -17,116 +16,16 @@ export interface Kelas {
   dosen_id: string
   max_students: number
   created_at: string
+  /** v40: mata kuliah kelas otomatis; kosong untuk kelas lama. */
+  course_id?: number | null
+  /** v40: 'mahir' = Jalur Cepat, 'remedial' = Belajar Mendalam; kosong = kelas lama buatan dosen. */
+  golongan?: 'mahir' | 'remedial' | null
+  /** v40: 1 = A, 2 = B, ... */
+  urutan?: number | null
 }
 
 export interface KelasWithCount extends Kelas {
   studentCount: number
-}
-
-const CLASSES_KEY = 'sfp_kelas_demo'
-
-// Excludes visually ambiguous characters (0/O, 1/I/L) so a dosen reading the
-// code aloud or a mahasiswa typing it by hand is less likely to mistype it.
-const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
-const CODE_LENGTH = 6
-
-function lsGet<T>(key: string): T | null {
-  try {
-    const raw = localStorage.getItem(key)
-    return raw !== null ? (JSON.parse(raw) as T) : null
-  } catch {
-    return null
-  }
-}
-
-function lsSet(key: string, value: unknown): void {
-  try {
-    localStorage.setItem(key, JSON.stringify(value))
-  } catch {
-    // ignore quota/serialization errors, matches manajemen.ts lsSet behavior
-  }
-}
-
-function getDemoClasses(): Kelas[] {
-  return lsGet<Kelas[]>(CLASSES_KEY) ?? []
-}
-
-function setDemoClasses(classes: Kelas[]): void {
-  lsSet(CLASSES_KEY, classes)
-}
-
-// Random, uppercase, collision-checked-by-the-caller code — dosen never
-// types one in manually (CLAUDE.md-adjacent product requirement: consistent,
-// no-collision codes). Exported mainly so it's unit-testable on its own.
-export function generateClassCode(length = CODE_LENGTH): string {
-  let code = ''
-  for (let i = 0; i < length; i++) {
-    code += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)]
-  }
-  return code
-}
-
-export interface CreateKelasInput {
-  name: string
-  angkatan: number
-  maxStudents: number
-  dosenId: string
-}
-
-function validateKelasInput(input: CreateKelasInput): string {
-  const name = input.name.trim()
-  if (!name) throw new Error('Nama kelas wajib diisi.')
-  if (!Number.isFinite(input.angkatan) || input.angkatan < 2000 || input.angkatan > 2100) {
-    throw new Error('Angkatan tidak valid.')
-  }
-  if (!Number.isFinite(input.maxStudents) || input.maxStudents < 1) {
-    throw new Error('Kapasitas maksimal harus lebih dari 0.')
-  }
-  return name
-}
-
-// Creates a kelas with a freshly generated code. In Supabase mode, retries a
-// handful of times on a unique-constraint violation (Postgres error code
-// 23505) against `classes.code` — collisions are astronomically unlikely at
-// 6 chars from a 32-symbol alphabet (~1 billion combinations) but not
-// impossible, and a cheap retry is simpler than a client-side existence
-// pre-check that would itself be racy against concurrent dosen.
-export async function createKelas(input: CreateKelasInput): Promise<Kelas> {
-  const name = validateKelasInput(input)
-
-  if (isSupabaseConfigured) {
-    let lastError: unknown = null
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const code = generateClassCode()
-      const { data, error } = await supabase
-        .from('classes')
-        .insert({
-          name,
-          angkatan: input.angkatan,
-          max_students: input.maxStudents,
-          dosen_id: input.dosenId,
-          code,
-        })
-        .select()
-        .single()
-      if (!error) return data as Kelas
-      lastError = error
-      if ((error as { code?: string }).code !== '23505') break
-    }
-    throw lastError instanceof Error ? lastError : new Error('Gagal membuat kelas.')
-  }
-
-  const kelas: Kelas = {
-    id: crypto.randomUUID(),
-    name,
-    angkatan: input.angkatan,
-    max_students: input.maxStudents,
-    dosen_id: input.dosenId,
-    code: generateClassCode(),
-    created_at: new Date().toISOString(),
-  }
-  setDemoClasses([kelas, ...getDemoClasses()])
-  return kelas
 }
 
 // Fetches every kelas owned by this dosen, each annotated with a live
@@ -157,28 +56,61 @@ export async function getKelasByDosen(dosenId: string): Promise<KelasWithCount[]
 
       return list.map((c) => ({ ...c, studentCount: counts[c.id] ?? 0 }))
     } catch (e) {
-      console.warn('[kelas] getKelasByDosen → Supabase gagal, fallback localStorage:', e)
+      console.warn('[kelas] getKelasByDosen → Supabase gagal:', e)
     }
   }
-
-  // Demo/localStorage mode: Register.tsx blocks supabase.auth.signUp()
-  // entirely when Supabase isn't configured (there's no local multi-account
-  // auth to join a kelas against), so no mahasiswa can ever actually join a
-  // demo-mode kelas — studentCount is always 0 here. This is an honest
-  // limitation of demo mode, not a bug; mirrors manajemen.ts's comment about
-  // durasi/catatan never round-tripping through Supabase.
-  return getDemoClasses()
-    .filter((c) => c.dosen_id === dosenId)
-    .map((c) => ({ ...c, studentCount: 0 }))
+  // Mode demo: tidak ada akun mahasiswa, jadi tidak ada kelas otomatis.
+  return []
 }
 
+/** Hapus kelas lama buatan dosen (kelas otomatis tidak diberi tombol hapus). */
 export async function deleteKelas(id: string): Promise<void> {
-  if (isSupabaseConfigured) {
-    const { error } = await supabase.from('classes').delete().eq('id', id)
-    if (error) throw error
-    return
+  if (!isSupabaseConfigured) return
+  const { error } = await supabase.from('classes').delete().eq('id', id)
+  if (error) throw error
+}
+
+/**
+ * Kelas yang tampil di halaman Kelas untuk satu mata kuliah: kelas otomatis
+ * mata kuliah itu, lalu kelas lama (tanpa mata kuliah). Urut angkatan terbaru,
+ * Belajar Mendalam sebelum Jalur Cepat (sama dengan urutan kartu), lalu A, B, ...
+ */
+export function kelasUntukMataKuliah<T extends Kelas>(classes: T[], courseId: number): T[] {
+  const nilai = (k: Kelas) => (k.golongan === 'remedial' ? 0 : k.golongan === 'mahir' ? 1 : 2)
+  return classes
+    .filter((k) => !k.golongan || k.course_id === courseId)
+    .sort((a, b) => b.angkatan - a.angkatan || nilai(a) - nilai(b) || (a.urutan ?? 0) - (b.urutan ?? 0) || a.name.localeCompare(b.name))
+}
+
+/** Mahasiswa mata kuliah ini yang belum punya kelas karena belum tes diagnostik (v40). */
+export async function fetchBelumTes(courseId: number): Promise<Array<{ id: string; nama: string }>> {
+  if (!isSupabaseConfigured) return []
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name')
+    .eq('role', 'mahasiswa')
+    .eq('course_id', courseId)
+    .is('class_id', null)
+    .order('full_name')
+  if (error) {
+    // Kolom course_id belum ada = migration_v40 belum jalan; daftar ini kosong saja.
+    if (error.code === '42703') return []
+    throw error
   }
-  setDemoClasses(getDemoClasses().filter((c) => c.id !== id))
+  return (data ?? []).map((p) => ({ id: p.id as string, nama: (p.full_name as string | null) || 'Tanpa nama' }))
+}
+
+/**
+ * Pindahkan mahasiswa ke kelas lain milik dosen ini (fungsi SQL
+ * pindah_mahasiswa, migration_v40). Basis data menolak kelas yang sudah penuh.
+ */
+export async function pindahMahasiswa(userId: string, classId: string): Promise<void> {
+  if (!isSupabaseConfigured) throw new Error('Memindahkan mahasiswa butuh koneksi Supabase.')
+  const { error } = await supabase.rpc('pindah_mahasiswa', { p_user: userId, p_class: classId })
+  if (error) {
+    const belumAda = error.code === 'PGRST202' || error.code === '42883'
+    throw new Error(belumAda ? 'Fungsi pindah kelas belum ada di basis data. Jalankan migration_v40_kelas_otomatis.sql di Supabase dulu.' : error.message)
+  }
 }
 
 /** Kelas mahasiswa yang sedang masuk (profiles.class_id), null bila belum bergabung atau tanpa Supabase. */
@@ -220,116 +152,6 @@ export function summarizeKelas(classes: KelasWithCount[]): KelasSummary {
     .filter((a) => a.total > 0)
     .sort((a, b) => b.angkatan - a.angkatan)
   return { totalStudents, byAngkatan }
-}
-
-// ════════════════════════════════════════════
-//  Tahap 2 — import CSV mahasiswa + auto-generated password
-// ════════════════════════════════════════════
-// See supabase/functions/import-mahasiswa/index.ts for the server-side half
-// (Deno Edge Function, needs the service_role key -- can't run client-side).
-// This file only ever sends parsed+validated rows to that function and
-// relays its per-row results back; it never talks to auth.admin.* directly.
-
-export interface ImportRow {
-  nama: string
-  nim: string
-  email: string
-}
-
-export interface ImportResult {
-  nama: string
-  nim: string
-  email: string
-  status: 'berhasil' | 'kelas_penuh' | 'error'
-  password?: string
-  error?: string
-}
-
-// A row after client-side CSV parsing + validation, before it's (maybe)
-// sent to the Edge Function. Kept distinct from ImportRow so the UI can
-// render a full preview (including invalid rows, with a reason) without
-// conflating it with the wire format the Edge Function actually expects.
-export interface ParsedImportRow extends ImportRow {
-  line: number
-  valid: boolean
-  reason?: string
-}
-
-const SIMPLE_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-// Splits one CSV line respecting double-quoted fields (so e.g. a name like
-// "Budi, S.Kom" with an embedded comma isn't split in half). Doesn't handle
-// escaped quotes-within-quotes or multi-line quoted fields -- this is the
-// "nama,nim,email sederhana" parser the product spec asks for, not a
-// general-purpose CSV library.
-function splitCsvLine(line: string): string[] {
-  const cells: string[] = []
-  let cur = ''
-  let inQuotes = false
-  for (const ch of line) {
-    if (ch === '"') {
-      inQuotes = !inQuotes
-    } else if (ch === ',' && !inQuotes) {
-      cells.push(cur)
-      cur = ''
-    } else {
-      cur += ch
-    }
-  }
-  cells.push(cur)
-  return cells.map((c) => c.trim())
-}
-
-// Parses a `nama,nim,email` CSV (header row required and skipped -- its
-// exact text doesn't matter, only column ORDER does) into rows tagged
-// valid/invalid client-side. Invalid rows are never sent to the Edge
-// Function (importMahasiswaCSV below only receives what the caller filters
-// to `.valid`), matching the product requirement that bad rows are caught
-// before any account-creation attempt, not reported back from the server.
-export function parseImportCsv(csvText: string): ParsedImportRow[] {
-  const lines = csvText
-    .split(/\r\n|\r|\n/)
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0)
-
-  const dataLines = lines.slice(1) // first non-empty line = header, skipped
-
-  return dataLines.map((raw, idx) => {
-    const cells = splitCsvLine(raw)
-    const nama = (cells[0] ?? '').trim()
-    const nim = (cells[1] ?? '').trim()
-    const email = (cells[2] ?? '').trim().toLowerCase()
-    const line = idx + 2 // +1 for the skipped header, +1 for 1-based lines
-
-    let reason: string | undefined
-    if (!nama) reason = 'Nama kosong.'
-    else if (!nim) reason = 'NIM kosong.'
-    else if (!email || !SIMPLE_EMAIL_RE.test(email)) reason = 'Email tidak valid.'
-
-    return { nama, nim, email, line, valid: !reason, reason }
-  })
-}
-
-// Bulk-imports mahasiswa into a kelas with auto-generated passwords. No
-// demo/localStorage mode: this creates REAL Supabase Auth accounts, which
-// makes no sense to simulate locally -- same reasoning as Register.tsx
-// blocking supabase.auth.signUp() outright when Supabase isn't configured.
-export async function importMahasiswaCSV(classId: string, students: ImportRow[]): Promise<ImportResult[]> {
-  if (!isSupabaseConfigured) {
-    throw new Error('Import mahasiswa memerlukan konfigurasi Supabase — tidak tersedia dalam mode demo.')
-  }
-  if (students.length === 0) {
-    throw new Error('Tidak ada data mahasiswa yang valid untuk diimpor.')
-  }
-
-  const { data, error } = await supabase.functions.invoke<{
-    results: ImportResult[]
-    summary: { total: number; berhasil: number; kelas_penuh: number; error: number }
-  }>('import-mahasiswa', { body: { classId, students } })
-
-  if (error) throw error
-  if (!data) throw new Error('Tidak ada respons dari server.')
-  return data.results
 }
 
 // Label kelas untuk dropdown/daftar. Nama saja ("Kelas A") tidak
@@ -443,28 +265,10 @@ export async function resetDiagnostik(userIds: string[], courseId: number): Prom
 }
 
 /**
- * Cek kode kelas sebelum pendaftaran (antrean #126 bagian c, fungsi SQL
- * verify_class_code di migration_v33). 'belum_bisa_dicek' = fungsi belum ada di
- * basis data atau jaringan gagal: pendaftaran tidak diblokir karena itu, kode
- * tetap dikirim dan diputuskan server seperti sebelumnya.
- */
-export type HasilKodeKelas = 'ok' | 'tidak_ada' | 'penuh' | 'belum_bisa_dicek'
-
-export async function cekKodeKelas(kode: string): Promise<HasilKodeKelas> {
-  if (!isSupabaseConfigured) return 'belum_bisa_dicek'
-  try {
-    const { data, error } = await supabase.rpc('verify_class_code', { submitted: kode.trim().toUpperCase() })
-    if (error) return 'belum_bisa_dicek'
-    return data === 'ok' || data === 'penuh' ? data : 'tidak_ada'
-  } catch {
-    return 'belum_bisa_dicek'
-  }
-}
-
-/**
  * Hapus akun mahasiswa beserta seluruh pengerjaannya (antrean #174). Lewat
  * fungsi SQL hapus_mahasiswa (migration_v34): hanya dosen, hanya akun
- * mahasiswa di kelas miliknya. Mengembalikan jumlah akun yang benar-benar
+ * mahasiswa di kelas miliknya (sejak v40 juga mahasiswa mata kuliahnya yang
+ * belum berkelas). Mengembalikan jumlah akun yang benar-benar
  * terhapus. Tidak bisa dibatalkan.
  */
 export async function hapusMahasiswa(userIds: string[]): Promise<number> {

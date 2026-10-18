@@ -57,7 +57,7 @@ export interface SessionResult {
 }
 
 // Tanpa 0/O/1/I - karakter yang gampang tertukar saat kode dibacakan atau
-// diketik ulang (pola sama src/lib/kelas.ts's generateClassCode, alfabetnya
+// diketik ulang (pola sama buatKodeAcak di src/lib/courses.ts, alfabetnya
 // beda: spec WP6b eksplisit minta L ikut tersedia).
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const CODE_LENGTH = 6

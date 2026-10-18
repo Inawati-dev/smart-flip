@@ -143,3 +143,59 @@ export async function deleteCourse(id: number): Promise<void> {
   if (error) throw error
   await buangBerkasYatim(berkas)
 }
+
+// ── Kode mata kuliah untuk mendaftar (antrean #228, migration_v40) ──
+// Satu kode per mata kuliah, dibagikan dosen ke semua mahasiswa. Disimpan di
+// tabel course_join_codes yang tertutup bagi klien; tiga fungsi SQL di bawah
+// ini satu-satunya pintunya (pola sama dengan kode undangan dosen, lib/inviteCode.ts).
+
+/** Sama dengan pemeriksaan di set_course_code (v40): 6-20 huruf, angka, atau tanda hubung. */
+export function rapikanKodeMataKuliah(kode: string): string {
+  return kode.trim().toUpperCase()
+}
+export function kodeMataKuliahSah(kode: string): boolean {
+  return /^[A-Z0-9-]{6,20}$/.test(rapikanKodeMataKuliah(kode))
+}
+
+// Tanpa huruf yang mirip (0/O, 1/I/L) supaya kode yang dibacakan tidak salah ketik.
+const ALFABET_KODE = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+export function buatKodeAcak(panjang = 8): string {
+  let kode = ''
+  for (let i = 0; i < panjang; i++) kode += ALFABET_KODE[Math.floor(Math.random() * ALFABET_KODE.length)]
+  return kode
+}
+
+/**
+ * Cek kode sebelum mendaftar. 'belum_bisa_dicek' = fungsi belum ada atau
+ * jaringan gagal: pendaftaran tidak diblokir di sini, pemicu
+ * handle_new_user() di basis data tetap menolak kode yang salah.
+ */
+export async function cekKodeMataKuliah(kode: string): Promise<'ok' | 'tidak_ada' | 'belum_bisa_dicek'> {
+  if (!isSupabaseConfigured) return 'belum_bisa_dicek'
+  try {
+    const { data, error } = await supabase.rpc('verify_course_code', { submitted: rapikanKodeMataKuliah(kode) })
+    if (error) return 'belum_bisa_dicek'
+    return data === true ? 'ok' : 'tidak_ada'
+  } catch {
+    return 'belum_bisa_dicek'
+  }
+}
+
+/** Kode mata kuliah yang berlaku (dosen saja); null = belum diatur atau mode demo. */
+export async function getKodeMataKuliah(courseId: number): Promise<string | null> {
+  if (!isSupabaseConfigured) return null
+  const { data, error } = await supabase.rpc('get_course_code', { p_course_id: courseId })
+  if (error) throw error
+  return (data as string | null) ?? null
+}
+
+/** Ganti kode mata kuliah (dosen saja). Kode lama langsung tidak berlaku. */
+export async function setKodeMataKuliah(courseId: number, kode: string): Promise<string> {
+  if (!isSupabaseConfigured) throw new Error('Mengatur kode mata kuliah butuh koneksi Supabase, tidak tersedia di mode demo.')
+  const { data, error } = await supabase.rpc('set_course_code', { p_course_id: courseId, p_code: rapikanKodeMataKuliah(kode) })
+  if (error) {
+    const belumAda = error.code === 'PGRST202' || error.code === '42883'
+    throw new Error(belumAda ? 'Fungsi kode mata kuliah belum ada di basis data. Jalankan migration_v40_kelas_otomatis.sql di Supabase dulu.' : error.message)
+  }
+  return (data as string | null) ?? rapikanKodeMataKuliah(kode)
+}

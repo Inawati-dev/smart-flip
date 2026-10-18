@@ -7,10 +7,10 @@ import { Register, isDosenInviteCodeValid } from './Register'
 
 const mockSupabase = vi.hoisted(() => ({
   configured: false,
-  signUp: vi.fn(async (_args: unknown) => ({ data: { user: null }, error: null })),
-  // Jawaban verify_class_code (antrean #126 bagian c).
-  kodeKelas: 'ok' as string,
-  rpc: vi.fn(async (_nama: string, _arg: unknown) => ({ data: 'ok' as string, error: null })),
+  signUp: vi.fn<(args: unknown) => Promise<{ data: { user: null }; error: Error | null }>>(async () => ({ data: { user: null }, error: null })),
+  // Jawaban verify_course_code (antrean #228): true = kode mata kuliah dikenali.
+  kodeMk: true as boolean,
+  rpc: vi.fn<(nama: string, arg: unknown) => Promise<{ data: boolean; error: null }>>(async () => ({ data: true, error: null })),
 }))
 
 vi.mock('../lib/supabase', () => ({
@@ -18,7 +18,7 @@ vi.mock('../lib/supabase', () => ({
     auth: {
       signUp: mockSupabase.signUp,
     },
-    rpc: (nama: string, arg: unknown) => mockSupabase.rpc(nama, arg).then(() => ({ data: mockSupabase.kodeKelas, error: null })),
+    rpc: (nama: string, arg: unknown) => mockSupabase.rpc(nama, arg).then(() => ({ data: mockSupabase.kodeMk, error: null })),
   },
   get isSupabaseConfigured() {
     return mockSupabase.configured
@@ -30,7 +30,7 @@ afterEach(() => {
   mockSupabase.configured = false
   mockSupabase.signUp.mockClear()
   mockSupabase.rpc.mockClear()
-  mockSupabase.kodeKelas = 'ok'
+  mockSupabase.kodeMk = true
 })
 
 describe('Register', () => {
@@ -94,11 +94,9 @@ describe('Register — Dosen invite code field (interactive)', () => {
   })
 })
 
-// Kode Kelas is the mahasiswa-side counterpart of the Dosen invite code
-// field above, but OPTIONAL (see migration_v7_kelas.sql) — it should show
-// for the default "mahasiswa" role and disappear for "dosen", the exact
-// opposite visibility of the invite code field.
-describe('Register — Kode Kelas field (interactive)', () => {
+// Kode mata kuliah (antrean #228) menggantikan kode kelas: tampil untuk
+// mahasiswa, hilang untuk dosen, wajib diisi.
+describe('Register — Kode Mata Kuliah field (interactive)', () => {
   it('is visible by default (role starts as "mahasiswa") and disappears for "Dosen"', () => {
     render(
       <MemoryRouter>
@@ -106,84 +104,81 @@ describe('Register — Kode Kelas field (interactive)', () => {
       </MemoryRouter>,
     )
 
-    expect(screen.getByLabelText(/Kode Kelas/)).toBeTruthy()
-
-    fireEvent.click(screen.getByRole('button', { name: 'Dosen' }))
+    expect(screen.getByLabelText(/Kode Mata Kuliah/)).toBeTruthy()
     expect(screen.queryByLabelText(/Kode Kelas/)).toBeNull()
 
+    fireEvent.click(screen.getByRole('button', { name: 'Dosen' }))
+    expect(screen.queryByLabelText(/Kode Mata Kuliah/)).toBeNull()
+
     fireEvent.click(screen.getByRole('button', { name: 'Mahasiswa' }))
-    expect(screen.getByLabelText(/Kode Kelas/)).toBeTruthy()
+    expect(screen.getByLabelText(/Kode Mata Kuliah/)).toBeTruthy()
   })
 
-  // Antrean #126 bagian c: kode kelas kini wajib bagi mahasiswa.
   it('is marked required for mahasiswa', () => {
     render(
       <MemoryRouter>
         <Register />
       </MemoryRouter>,
     )
-    const input = screen.getByLabelText(/Kode Kelas/) as HTMLInputElement
+    const input = screen.getByLabelText(/Kode Mata Kuliah/) as HTMLInputElement
     expect(input.required).toBe(true)
   })
 })
 
-describe('Register — tautan konfirmasi email', () => {
-  it('memanggil signUp dengan emailRedirectTo ke akar aplikasi (berakhiran /)', async () => {
-    mockSupabase.configured = true
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>,
-    )
-    fireEvent.change(screen.getByLabelText('Nama Lengkap'), { target: { value: 'Budi' } })
-    fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
-    fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
-    fireEvent.change(screen.getByLabelText(/Kode Kelas/), { target: { value: 'abc123' } })
-    fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
+function isiDanKirim(kode: string) {
+  mockSupabase.configured = true
+  render(
+    <MemoryRouter>
+      <Register />
+    </MemoryRouter>,
+  )
+  fireEvent.change(screen.getByLabelText('Nama Lengkap'), { target: { value: 'Budi' } })
+  fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
+  fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
+  if (kode) fireEvent.change(screen.getByLabelText(/Kode Mata Kuliah/), { target: { value: kode } })
+  fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
+}
+
+describe('Register — tautan konfirmasi email dan data pendaftaran', () => {
+  it('memanggil signUp dengan emailRedirectTo ke akar aplikasi dan course_code kapital, tanpa class_code', async () => {
+    isiDanKirim('mpp-2026')
 
     await waitFor(() => expect(mockSupabase.signUp).toHaveBeenCalledTimes(1))
-    expect(mockSupabase.rpc).toHaveBeenCalledWith('verify_class_code', { submitted: 'ABC123' })
-    const arg = mockSupabase.signUp.mock.calls[0][0] as { options: { emailRedirectTo: string } }
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('verify_course_code', { submitted: 'MPP-2026' })
+    const arg = mockSupabase.signUp.mock.calls[0][0] as { options: { emailRedirectTo: string; data: Record<string, unknown> } }
     expect(arg.options.emailRedirectTo.endsWith('/')).toBe(true)
+    expect(arg.options.data.course_code).toBe('MPP-2026')
+    expect(arg.options.data).not.toHaveProperty('class_code')
   })
 })
 
-// Antrean #126 bagian c: tanpa kode kelas yang dikenali, akun mahasiswa tidak dibuat.
-describe('Register — kode kelas wajib', () => {
-  function isiDanKirim(kode: string) {
-    mockSupabase.configured = true
-    render(
-      <MemoryRouter>
-        <Register />
-      </MemoryRouter>,
-    )
-    fireEvent.change(screen.getByLabelText('Nama Lengkap'), { target: { value: 'Budi' } })
-    fireEvent.change(screen.getByLabelText('NIM'), { target: { value: '123' } })
-    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
-    fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
-    if (kode) fireEvent.change(screen.getByLabelText(/Kode Kelas/), { target: { value: kode } })
-    fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
-  }
-
+// Antrean #228: tanpa kode mata kuliah yang dikenali, akun mahasiswa tidak dibuat.
+describe('Register — kode mata kuliah wajib', () => {
   it('kode kosong: ditolak tanpa memanggil server', async () => {
     isiDanKirim('')
-    expect(await screen.findByText(/Kode kelas wajib diisi/)).toBeTruthy()
+    expect(await screen.findByText(/Kode mata kuliah wajib diisi/)).toBeTruthy()
     expect(mockSupabase.rpc).not.toHaveBeenCalled()
     expect(mockSupabase.signUp).not.toHaveBeenCalled()
   })
 
   it('kode tidak dikenali: akun tidak dibuat', async () => {
-    mockSupabase.kodeKelas = 'tidak_ada'
+    mockSupabase.kodeMk = false
     isiDanKirim('SALAH1')
-    expect(await screen.findByText(/Kode kelas tidak dikenali/)).toBeTruthy()
+    expect(await screen.findByText(/Kode mata kuliah tidak dikenali/)).toBeTruthy()
     expect(mockSupabase.signUp).not.toHaveBeenCalled()
   })
 
-  it('kelas penuh: akun tidak dibuat', async () => {
-    mockSupabase.kodeKelas = 'penuh'
-    isiDanKirim('PENUH1')
-    expect(await screen.findByText(/sudah penuh/)).toBeTruthy()
-    expect(mockSupabase.signUp).not.toHaveBeenCalled()
+  it('server menolak dengan teks pemicu kode: tampil pesan kode salah', async () => {
+    mockSupabase.signUp.mockResolvedValueOnce({ data: { user: null }, error: new Error('Kode mata kuliah tidak dikenali (SQLSTATE 22023)') })
+    isiDanKirim('MPP-2026')
+    expect(await screen.findByText(/Periksa lagi atau minta kodenya/)).toBeTruthy()
+  })
+
+  it('galat basis data lain: pesan umum, BUKAN pesan kode salah', async () => {
+    mockSupabase.signUp.mockResolvedValueOnce({ data: { user: null }, error: new Error('Database error saving new user') })
+    isiDanKirim('MPP-2026')
+    expect(await screen.findByText(/Pendaftaran gagal di server/)).toBeTruthy()
+    expect(screen.queryByText(/Kode mata kuliah tidak dikenali/)).toBeNull()
   })
 })

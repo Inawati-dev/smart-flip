@@ -1,24 +1,22 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import { useKelasByDosen } from '../hooks/useKelas'
 import {
-  createKelas,
   deleteKelas,
   summarizeKelas,
-  parseImportCsv,
-  importMahasiswaCSV,
   fetchGolonganKelas,
+  fetchBelumTes,
+  kelasUntukMataKuliah,
+  pindahMahasiswa,
   resetDiagnostik,
   hapusMahasiswa,
   type AnggotaGolongan,
   type KelasWithCount,
-  type ParsedImportRow,
-  type ImportResult,
 } from '../lib/kelas'
-import { downloadCsv } from '../lib/analitik'
-import { FileInput } from '../components/FileInput'
+import { buatKodeAcak, getKodeMataKuliah, kodeMataKuliahSah, rapikanKodeMataKuliah, setKodeMataKuliah } from '../lib/courses'
+import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { StatCard } from '../components/StatCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
@@ -26,7 +24,7 @@ import { Select } from '../components/Select'
 import { ChipRak } from '../components/KartuTopik'
 import { GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 import { useAmbang } from '../lib/ambang'
-import { IconTrash, IconLink, IconDocument, IconDownload, IconWarning, IconX, IconUsers } from '../components/icons'
+import { IconTrash, IconLink, IconX } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -80,30 +78,11 @@ function DaftarSeksi({
 function gulirKe(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
-const CURRENT_YEAR = new Date().getFullYear()
-
-type ImportStep = 'pilih' | 'pratinjau' | 'konfirmasi' | 'memproses' | 'hasil'
-
-// Credentials CSV -- separate shape from analitik.ts's buildAnalitikCsv, but
-// reuses its generic downloadCsv() Blob+anchor trigger (that helper only
-// needs a filename + a finished CSV string, nothing analitik-specific).
-function buildCredentialsCsv(results: ImportResult[]): string {
-  let csv = 'Nama,NIM,Email,Status,Password\n'
-  results.forEach((r) => {
-    const nama = (r.nama || '').replace(/"/g, '""')
-    const status = r.status === 'berhasil' ? 'Berhasil' : r.status === 'kelas_penuh' ? 'Kelas Penuh' : 'Gagal'
-    csv += `"${nama}",${r.nim},${r.email},${status},${r.password ?? ''}\n`
-  })
-  return csv
-}
-
-// Dosen-only "Kelola Kelas" panel — Tahap 1 of the kelas/rombongan-belajar
-// feature (see database/migration_v7_kelas.sql for the full context). Dosen
-// create a kelas (name + angkatan + capacity, code auto-generated), share
-// the code with mahasiswa, and mahasiswa self-register with it
-// (Register.tsx's optional "Kode Kelas" field). This panel only reads/writes
-// through src/lib/kelas.ts — same DataLayer-abstraction convention as every
-// other dosen-only management page (see Manajemen.tsx).
+// Halaman Kelas dosen. Sejak antrean #228 (migration_v40) kelas terbentuk
+// otomatis dari tes diagnostik awal per mata kuliah: dosen tidak membuat
+// kelas, tidak membagikan kode kelas, dan tidak mengimpor mahasiswa. Dosen
+// membagikan SATU kode mata kuliah, melihat kelas otomatis (kuota 25),
+// daftar yang belum tes, dan bisa memindahkan mahasiswa antar kelas lewat modal.
 //
 // Dirender oleh Kelas() di bawah sebagai halaman penuh /kelas, item rel
 // navigasi sendiri (Layout.tsx) — koreksi Johan 16 Sep 2026 "page kelas ini
@@ -112,13 +91,17 @@ function buildCredentialsCsv(results: ImportResult[]): string {
 export function KelasPanel() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
-  const { data: classes = [], isLoading } = useKelasByDosen(user?.id)
+  const { data: semuaKelas = [], isLoading } = useKelasByDosen(user?.id)
+  const { courseId, course } = useCourse()
+  // Kelas otomatis mata kuliah terpilih, lalu kelas lama buatan dosen (antrean #228).
+  const classes = kelasUntukMataKuliah(semuaKelas, courseId)
   const summary = summarizeKelas(classes)
 
   // Dua kelompok hasil tes diagnostik per kelas (antrean #140). Tes itu per
   // mata kuliah, jadi daftar ini ikut mata kuliah yang dipilih.
-  const { courseId, course } = useCourse()
   const ambangDiagnostik = useAmbang().diagnostik
+  const { data: belumTes = [] } = useQuery({ queryKey: ['belum-tes', courseId], queryFn: () => fetchBelumTes(courseId) })
+  const kode = useQuery({ queryKey: ['kode-mk', courseId], queryFn: () => getKodeMataKuliah(courseId), enabled: isSupabaseConfigured })
   const idKelas = classes.map((k) => k.id)
   const { data: golongan = {} } = useQuery({
     queryKey: ['golongan-kelas', courseId, ambangDiagnostik, idKelas.join(',')],
@@ -128,7 +111,8 @@ export function KelasPanel() {
   const [golTarget, setGolTarget] = useState<KelasWithCount | null>(null)
   // Daftar mahasiswa (antrean #145): satu kelas penuh, atau satu golongan
   // lintas kelas yang dipecah per angkatan dan kelas.
-  const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: SeksiMahasiswa[] } | null>(null)
+  // kelasAsal: kelas otomatis yang daftarnya dibuka; hanya daftar seperti itu yang bisa dipindahkan.
+  const [daftar, setDaftar] = useState<{ judul: string; tampilGolongan: boolean; seksi: SeksiMahasiswa[]; kelasAsal?: string } | null>(null)
   const jumlahGolongan = (g: 'mahir' | 'remedial') =>
     classes.reduce((n, k) => n + (golongan[k.id] ?? []).filter((a) => a.golongan === g).length, 0)
   // Angkatan jadi satu dropdown penyaring di kop daftar (antrean #151, lalu
@@ -179,6 +163,38 @@ export function KelasPanel() {
     setPilih(new Set())
     setKonfirmasiReset(false)
     setKonfirmasiHapus(false)
+    setPindahOpen(false)
+  }
+  // Pindah kelas (antrean #228): ke kelas otomatis lain di mata kuliah ini.
+  const [pindahOpen, setPindahOpen] = useState(false)
+  const [tujuan, setTujuan] = useState('')
+  const [memindah, setMemindah] = useState(false)
+  const kelasTujuan = classes.filter((k) => k.golongan && k.id !== daftar?.kelasAsal)
+  function bukaPindah() {
+    setTujuan(kelasTujuan[0]?.id ?? '')
+    setPindahOpen(true)
+  }
+  async function jalankanPindah() {
+    if (!tujuan) return
+    setMemindah(true)
+    let berhasil = 0
+    let galat = ''
+    for (const id of pilih) {
+      try {
+        await pindahMahasiswa(id, tujuan)
+        berhasil++
+      } catch (e) {
+        galat = (e as { message?: string } | null)?.message || 'Gagal memindahkan'
+        break
+      }
+    }
+    await queryClient.invalidateQueries({ queryKey: ['kelas'] })
+    await queryClient.invalidateQueries({ queryKey: ['golongan-kelas'] })
+    setMemindah(false)
+    const nama = classes.find((k) => k.id === tujuan)?.name ?? 'kelas tujuan'
+    showToast(galat ? `${berhasil} dipindahkan ke ${nama}. Berhenti: ${galat}` : `${berhasil} mahasiswa dipindahkan ke ${nama}`)
+    if (berhasil > 0) tutupDaftar()
+    else setPindahOpen(false)
   }
   async function jalankanHapus() {
     setMenghapus(true)
@@ -186,10 +202,11 @@ export function KelasPanel() {
       const terhapus = await hapusMahasiswa([...pilih])
       await queryClient.invalidateQueries({ queryKey: ['golongan-kelas'] })
       await queryClient.invalidateQueries({ queryKey: ['kelas'] })
+      await queryClient.invalidateQueries({ queryKey: ['belum-tes'] })
       showToast(
         terhapus > 0
           ? `${terhapus} akun mahasiswa dihapus`
-          : 'Tidak ada akun yang terhapus. Hanya mahasiswa di kelas Anda sendiri yang bisa dihapus.',
+          : 'Tidak ada akun yang terhapus. Hanya mahasiswa di kelas atau mata kuliah Anda yang bisa dihapus.',
       )
       if (terhapus > 0) tutupDaftar()
       else setKonfirmasiHapus(false)
@@ -221,124 +238,54 @@ export function KelasPanel() {
   }
   function bukaKelas(k: KelasWithCount) {
     setPilih(new Set())
-    setDaftar({ judul: `Daftar Mahasiswa · ${k.name} (${k.angkatan})`, tampilGolongan: true, seksi: [{ judul: null, baris: golongan[k.id] ?? [] }] })
+    setDaftar({
+      judul: `Daftar Mahasiswa · ${k.name} (${k.angkatan})`,
+      tampilGolongan: true,
+      seksi: [{ judul: null, baris: golongan[k.id] ?? [] }],
+      kelasAsal: k.golongan ? k.id : undefined,
+    })
+  }
+  function bukaBelumTes() {
+    setPilih(new Set())
+    setDaftar({
+      judul: `Belum Tes Diagnostik · ${belumTes.length}`,
+      tampilGolongan: false,
+      seksi: [{ judul: null, baris: belumTes.map((b) => ({ id: b.id, nama: b.nama, skor: null, golongan: 'belum' as const })) }],
+    })
   }
 
-  const [createOpen, setCreateOpen] = useState(false)
-  const [name, setName] = useState('')
-  const [angkatan, setAngkatan] = useState(CURRENT_YEAR)
-  const [maxStudents, setMaxStudents] = useState(40)
-  const [creating, setCreating] = useState(false)
-  const [formError, setFormError] = useState('')
+  // Kode mata kuliah untuk mendaftar (antrean #228): lihat, salin, ganti lewat modal.
+  const [kodeOpen, setKodeOpen] = useState(false)
+  const [kodeDraft, setKodeDraft] = useState('')
+  const [kodeError, setKodeError] = useState('')
+  const [menyimpanKode, setMenyimpanKode] = useState(false)
+  function bukaKode() {
+    setKodeDraft(kode.data ?? buatKodeAcak())
+    setKodeError('')
+    setKodeOpen(true)
+  }
+  async function simpanKode() {
+    setMenyimpanKode(true)
+    setKodeError('')
+    try {
+      await setKodeMataKuliah(courseId, kodeDraft)
+      await queryClient.invalidateQueries({ queryKey: ['kode-mk', courseId] })
+      setKodeOpen(false)
+      showToast('Kode mata kuliah disimpan. Kode lama tidak berlaku lagi.')
+    } catch (e) {
+      setKodeError((e as { message?: string } | null)?.message || 'Gagal menyimpan kode.')
+    } finally {
+      setMenyimpanKode(false)
+    }
+  }
+
   const [toast, setToast] = useState<string | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<KelasWithCount | null>(null)
   const [deleting, setDeleting] = useState(false)
 
-  // ── Import CSV mahasiswa (Tahap 2) ──
-  const [importTarget, setImportTarget] = useState<KelasWithCount | null>(null)
-  const [importStep, setImportStep] = useState<ImportStep>('pilih')
-  const [csvRows, setCsvRows] = useState<ParsedImportRow[]>([])
-  const [csvFile, setCsvFile] = useState<File | null>(null)
-  const [csvFileName, setCsvFileName] = useState('')
-  const [importError, setImportError] = useState('')
-  const [importResults, setImportResults] = useState<ImportResult[]>([])
-  const [downloadConfirmOpen, setDownloadConfirmOpen] = useState(false)
-
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 2800)
-  }
-
-  function openImport(kelas: KelasWithCount) {
-    setImportTarget(kelas)
-    setImportStep('pilih')
-    setCsvRows([])
-    setCsvFile(null)
-    setCsvFileName('')
-    setImportError('')
-    setImportResults([])
-  }
-
-  function closeImport() {
-    // Blocked entirely while an import is actually in flight -- see the
-    // overlay's onClick guard below, this is a defense-in-depth no-op.
-    if (importStep === 'memproses') return
-    setImportTarget(null)
-  }
-
-  function handleFileChange(file: File | null) {
-    setCsvFile(file)
-    if (!file) return
-    setImportError('')
-    setCsvFileName(file.name)
-    const reader = new FileReader()
-    reader.onload = () => {
-      const text = typeof reader.result === 'string' ? reader.result : ''
-      const rows = parseImportCsv(text)
-      if (rows.length === 0) {
-        setImportError('File CSV kosong atau hanya berisi baris header.')
-        return
-      }
-      setCsvRows(rows)
-      setImportStep('pratinjau')
-    }
-    reader.onerror = () => setImportError('Gagal membaca file. Pastikan formatnya CSV.')
-    reader.readAsText(file)
-  }
-
-  const validRows = csvRows.filter((r) => r.valid)
-  const invalidRows = csvRows.filter((r) => !r.valid)
-
-  async function handleImport() {
-    if (!importTarget) return
-    setImportStep('memproses')
-    try {
-      const results = await importMahasiswaCSV(
-        importTarget.id,
-        validRows.map((r) => ({ nama: r.nama, nim: r.nim, email: r.email })),
-      )
-      setImportResults(results)
-      setImportStep('hasil')
-      await queryClient.invalidateQueries({ queryKey: ['kelas', 'byDosen', importTarget.dosen_id] })
-    } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'Gagal mengimpor mahasiswa.')
-      setImportStep('pratinjau')
-    }
-  }
-
-  function confirmDownloadCredentials() {
-    const filename = `kredensial-${(importTarget?.name ?? 'kelas').toLowerCase().replace(/\s+/g, '-')}-${new Date()
-      .toISOString()
-      .slice(0, 10)}.csv`
-    downloadCsv(filename, buildCredentialsCsv(importResults))
-    setDownloadConfirmOpen(false)
-    showToast('File kredensial berhasil diunduh')
-  }
-
-  const importSummary = {
-    berhasil: importResults.filter((r) => r.status === 'berhasil').length,
-    kelasPenuh: importResults.filter((r) => r.status === 'kelas_penuh').length,
-    error: importResults.filter((r) => r.status === 'error').length,
-  }
-
-  async function handleCreate(e: FormEvent) {
-    e.preventDefault()
-    if (!user) return
-    setFormError('')
-    setCreating(true)
-    try {
-      const kelas = await createKelas({ name, angkatan, maxStudents, dosenId: user.id })
-      await queryClient.invalidateQueries({ queryKey: ['kelas', 'byDosen', user.id] })
-      setName('')
-      setAngkatan(CURRENT_YEAR)
-      setMaxStudents(40)
-      showToast(`Kelas "${kelas.name}" dibuat, kode: ${kelas.code}`)
-      setCreateOpen(false)
-    } catch (err) {
-      setFormError(err instanceof Error ? err.message : 'Gagal membuat kelas.')
-    } finally {
-      setCreating(false)
-    }
   }
 
   async function copyCode(code: string) {
@@ -368,8 +315,50 @@ export function KelasPanel() {
   return (
     <>
       <p className="text-sm text-brown-3 mb-4">
-        Buat kelas, bagikan kode kelas ke mahasiswa, dan pantau jumlah pendaftar per kelas.
+        Kelas terbentuk otomatis dari tes diagnostik awal: skor {ambangDiagnostik} ke atas masuk {GOLONGAN_LABEL.mahir}, di bawahnya{' '}
+        {GOLONGAN_LABEL.remedial}, paling banyak 25 mahasiswa per kelas. Mahasiswa mendaftar dengan kode mata kuliah di bawah.
       </p>
+
+      {/* Kode mata kuliah: satu kode untuk semua mahasiswa mata kuliah ini (antrean #228). */}
+      <div className="bg-ivory rounded-2xl border px-4 py-3.5 mb-3 flex items-center justify-between gap-3 flex-wrap" style={BORDER}>
+        <div className="min-w-0">
+          <div className="text-xs font-semibold text-brown-3">Kode Mata Kuliah{course?.name ? ` · ${course.name}` : ''}</div>
+          {kode.isLoading ? (
+            <div className="text-sm text-brown-3">Memuat…</div>
+          ) : kode.error ? (
+            <div className="text-sm text-danger">Kode belum bisa dibaca. Jalankan migration_v40_kelas_otomatis.sql di Supabase dulu.</div>
+          ) : kode.data ? (
+            <div className="text-lg font-bold tracking-wider text-brown break-all">{kode.data}</div>
+          ) : (
+            <div className="text-sm text-warning">
+              {isSupabaseConfigured ? 'Belum ada kode: mahasiswa baru belum bisa mendaftar ke mata kuliah ini.' : 'Tidak tersedia di mode demo.'}
+            </div>
+          )}
+        </div>
+        {isSupabaseConfigured && !kode.error && (
+          <div className="flex gap-2 flex-wrap">
+            {kode.data && (
+              <button onClick={() => void copyCode(kode.data as string)} className="btn btn-secondary btn-sm whitespace-nowrap">
+                <IconLink size={13} /> Salin
+              </button>
+            )}
+            <button onClick={bukaKode} disabled={kode.isLoading} className="btn btn-primary btn-sm whitespace-nowrap">
+              {kode.data ? 'Ganti Kode' : 'Atur Kode'}
+            </button>
+          </div>
+        )}
+      </div>
+
+      {belumTes.length > 0 && (
+        <div className="bg-ivory rounded-2xl border px-4 py-3 mb-3 flex items-center justify-between gap-3 flex-wrap" style={BORDER}>
+          <span className="text-sm text-brown-2">
+            {belumTes.length} mahasiswa belum tes diagnostik, jadi belum punya kelas. Mereka diarahkan ke tes itu saat masuk.
+          </span>
+          <button onClick={bukaBelumTes} className="btn btn-secondary btn-sm whitespace-nowrap">
+            Lihat Daftar
+          </button>
+        </div>
+      )}
 
       {/* Dua baris kartu (antrean #151). Baris 1: dua golongan hasil tes
           diagnostik, urutannya sama dengan Gambar 1.1 (Belajar mendalam di
@@ -413,17 +402,14 @@ export function KelasPanel() {
                 ]}
               />
             )}
-            <button onClick={() => setCreateOpen(true)} className="btn btn-primary btn-sm whitespace-nowrap">
-              + Buat Kelas Baru
-            </button>
           </div>
         </div>
 
         {isLoading ? (
           <div className="text-center py-8 text-brown-3 text-sm">Memuat…</div>
         ) : classes.length === 0 ? (
-          <div className="text-center py-8 text-brown-3 text-sm">
-            Belum ada kelas. Klik "+ Buat kelas baru" di atas.
+          <div className="text-center py-8 px-4 text-brown-3 text-sm">
+            Belum ada kelas di mata kuliah ini. Kelas terbentuk sendiri begitu mahasiswa pertama selesai tes diagnostik.
           </div>
         ) : filterGol ? (
           <div className="p-4">
@@ -447,7 +433,6 @@ export function KelasPanel() {
                       <thead>
                         <tr className="bg-bg3">
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3">Nama Kelas</th>
-                          <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-40">Kode Kelas</th>
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Mahasiswa</th>
                           <th className="text-left px-3 py-2.5 text-xs font-semibold text-brown-3 w-52">Tes Diagnostik</th>
                           <th className="text-center px-3 py-2.5 text-xs font-semibold text-brown-3 w-28">Aksi</th>
@@ -470,16 +455,7 @@ export function KelasPanel() {
                                 >
                                   {k.name}
                                 </button>
-                              </td>
-                              <td className="px-3 py-2.5">
-                                <button
-                                  onClick={() => void copyCode(k.code)}
-                                  title="Salin kode kelas"
-                                  aria-label={`Salin kode kelas ${k.code}`}
-                                  className="btn btn-secondary whitespace-nowrap font-mono"
-                                >
-                                  {k.code} <IconLink size={13} />
-                                </button>
+                                {!k.golongan && <div className="text-[11px] text-brown-3">Kelas lama, sebelum kelas otomatis</div>}
                               </td>
                               <td className="px-3 py-2.5">
                                 <span
@@ -504,24 +480,21 @@ export function KelasPanel() {
                                 </button>
                               </td>
                               <td className="px-3 py-2.5 text-center">
-                                <div className="inline-flex items-center justify-center gap-1.5">
-                                  <button
-                                    onClick={() => openImport(k)}
-                                    title="Import CSV mahasiswa"
-                                    aria-label={`Import CSV mahasiswa ke kelas ${k.name}`}
-                                    className="btn btn-secondary btn-icon flex-shrink-0"
-                                  >
-                                    <IconDocument size={15} />
+                                {/* Kelas otomatis tidak dihapus: urutan A, B, ... dikelola basis data. */}
+                                {k.golongan ? (
+                                  <button onClick={() => bukaKelas(k)} className="btn btn-secondary btn-sm whitespace-nowrap">
+                                    Kelola
                                   </button>
+                                ) : (
                                   <button
                                     onClick={() => setDeleteTarget(k)}
                                     aria-label={`Hapus kelas ${k.name}`}
-                                    title="Hapus kelas"
+                                    title="Hapus kelas lama"
                                     className="btn btn-danger btn-icon flex-shrink-0"
                                   >
                                     <IconTrash size={15} />
                                   </button>
-                                </div>
+                                )}
                               </td>
                             </tr>
                           )
@@ -535,89 +508,6 @@ export function KelasPanel() {
         )}
       </div>
 
-      {/* Buat kelas baru — modal (dipindah dari section inline biar halaman
-          gak kepanjangan) */}
-      {createOpen && (
-        <div
-          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
-          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-        >
-          <form
-            onSubmit={handleCreate}
-            className="bg-ivory rounded-2xl modal-sedang border p-5 flex flex-col gap-3.5"
-            style={{ ...BORDER, animation: 'slideUpModal 0.22s ease' }}
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-brown inline-flex items-center gap-1.5">
-                <IconUsers size={16} /> Buat Kelas Baru
-              </span>
-              <button
-                type="button"
-                onClick={() => setCreateOpen(false)}
-                aria-label="Tutup"
-                className="w-9 h-9 -mr-1.5 rounded-[var(--radius-control)] flex items-center justify-center text-brown-3"
-              >
-                <IconX size={16} />
-              </button>
-            </div>
-            {formError && (
-              <div className="text-danger text-sm rounded-lg px-3 py-2.5 border border-danger/30 bg-danger/10">{formError}</div>
-            )}
-            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-              Nama Kelas
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Contoh: Kelas A"
-                required
-                maxLength={80}
-                autoFocus
-                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                style={BORDER}
-              />
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-                Angkatan
-                <input
-                  type="number"
-                  value={angkatan}
-                  onChange={(e) => setAngkatan(parseInt(e.target.value, 10) || CURRENT_YEAR)}
-                  min={2000}
-                  max={2100}
-                  required
-                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                  style={BORDER}
-                />
-              </label>
-              <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
-                Kapasitas Maksimal
-                <input
-                  type="number"
-                  value={maxStudents}
-                  onChange={(e) => setMaxStudents(parseInt(e.target.value, 10) || 1)}
-                  min={1}
-                  required
-                  className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                  style={BORDER}
-                />
-              </label>
-            </div>
-            <p className="text-[11px] text-brown-3">
-              Kode kelas dibuat otomatis secara acak setelah kelas disimpan: tidak bisa diisi manual.
-            </p>
-            <div className="flex gap-2.5">
-              <button type="submit" disabled={creating || !name.trim()} className="btn btn-primary flex-1">
-                {creating ? 'Membuat…' : 'Buat Kelas'}
-              </button>
-              <button type="button" onClick={() => setCreateOpen(false)} className="btn btn-secondary">
-                Batal
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
       {/* Hapus kelas — aksi destruktif, WAJIB modal konfirmasi (CLAUDE.md) */}
       {deleteTarget && (
         <div
@@ -629,7 +519,7 @@ export function KelasPanel() {
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               {deleteTarget.studentCount > 0
                 ? `Kelas ini punya ${deleteTarget.studentCount} mahasiswa terdaftar. Mereka TIDAK akan terhapus, hanya keluar dari kelas ini (class_id jadi kosong).`
-                : 'Tindakan ini tidak dapat dibatalkan.'}
+                : 'Tugas atau tes yang pernah ditujukan ke kelas ini tidak lagi menyebut kelasnya. Tidak dapat dibatalkan.'}
             </p>
             <div className="flex gap-2.5">
               <button onClick={() => setDeleteTarget(null)} className="btn btn-secondary flex-1">
@@ -720,6 +610,11 @@ export function KelasPanel() {
                 >
                   {pilih.size === semuaBaris.length ? 'Lepas Semua' : `Pilih Semua (${semuaBaris.length})`}
                 </button>
+                {daftar.kelasAsal && (
+                  <button onClick={bukaPindah} disabled={pilih.size === 0 || kelasTujuan.length === 0} className="btn btn-secondary btn-sm">
+                    Pindahkan ({pilih.size})
+                  </button>
+                )}
                 <button
                   onClick={() => setKonfirmasiReset(true)}
                   disabled={dipilihBisaDireset.length === 0}
@@ -772,7 +667,7 @@ export function KelasPanel() {
             <h3 className="text-base font-semibold text-brown mb-1.5">Reset Tes Diagnostik {dipilihBisaDireset.length} Mahasiswa?</h3>
             <p className="text-sm text-brown-3 mb-5 leading-relaxed">
               Skor dan jawaban tes diagnostik mereka{course?.name ? ` di ${course.name}` : ''} dihapus, dan mereka harus mengerjakannya lagi sebelum bisa
-              membuka materi. Tidak bisa dibatalkan.
+              membuka materi. Kelasnya ditentukan ulang dari tes berikutnya. Tidak bisa dibatalkan.
             </p>
             <div className="flex gap-2.5">
               <button onClick={() => setKonfirmasiReset(false)} disabled={mereset} className="btn btn-secondary flex-1">
@@ -786,257 +681,87 @@ export function KelasPanel() {
         </div>
       )}
 
-      {/* Import CSV mahasiswa (Tahap 2) — file → pratinjau → konfirmasi (WAJIB,
-          bikin banyak akun sekaligus) → proses → hasil + unduh kredensial */}
-      {importTarget && (
+      {/* Pindahkan mahasiswa terpilih ke kelas lain (antrean #228). Kuota dicek basis data. */}
+      {pindahOpen && (
         <div
-          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[800] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div
-            className="bg-ivory rounded-2xl modal-lebar p-5 md:p-6"
-            style={{ animation: 'slideUpModal 0.22s ease' }}
-          >
-            <div className="flex items-center justify-between gap-3 mb-1">
-              <h3 className="text-base font-semibold text-brown">
-                Import CSV Mahasiswa: {importTarget.name}
-              </h3>
-              {importStep !== 'memproses' && (
-                <button
-                  onClick={closeImport}
-                  aria-label="Tutup"
-                  className="w-11 h-11 -mr-2 rounded-[var(--radius-control)] flex items-center justify-center text-brown-3 flex-shrink-0"
-                >
-                  <IconX size={16} />
-                </button>
-              )}
+          <div className="bg-ivory rounded-2xl modal-sempit p-6 flex flex-col gap-3.5" style={{ animation: 'slideUpModal 0.22s ease' }}>
+            <h3 className="text-base font-semibold text-brown">Pindahkan {pilih.size} Mahasiswa</h3>
+            <Select
+              label="Kelas tujuan"
+              value={tujuan}
+              onChange={setTujuan}
+              options={kelasTujuan.map((k) => ({ value: k.id, label: `${k.name} · ${k.angkatan} (${k.studentCount}/${k.max_students})` }))}
+            />
+            <p className="text-xs text-brown-3 leading-relaxed">Kelas yang sudah penuh menolak tambahan; mahasiswa yang belum pindah tetap di kelasnya.</p>
+            <div className="flex gap-2.5">
+              <button onClick={() => setPindahOpen(false)} disabled={memindah} className="btn btn-secondary flex-1">
+                Batal
+              </button>
+              <button onClick={() => void jalankanPindah()} disabled={memindah || !tujuan} className="btn btn-primary flex-1">
+                {memindah ? 'Memindahkan…' : 'Pindahkan'}
+              </button>
             </div>
-
-            {importError && (
-              <div className="text-danger text-sm rounded-lg px-3 py-2.5 border border-danger/30 bg-danger/10 mb-3.5">
-                {importError}
-              </div>
-            )}
-
-            {/* ── Step: pilih file ── */}
-            {importStep === 'pilih' && (
-              <div className="flex flex-col gap-3.5">
-                <p className="text-sm text-brown-3 leading-relaxed">
-                  Unggah file CSV dengan kolom <strong className="text-brown-2">nama, nim, email</strong> (baris
-                  pertama = header, dilewati otomatis). Tiap baris akan dibuatkan satu akun mahasiswa dengan password
-                  otomatis.
-                </p>
-                <FileInput
-                  accept=".csv,text/csv"
-                  label="Pilih CSV"
-                  hint="CSV, maks 2 MB"
-                  maxSizeMb={2}
-                  file={csvFile}
-                  onChange={handleFileChange}
-                />
-              </div>
-            )}
-
-            {/* ── Step: pratinjau ── */}
-            {importStep === 'pratinjau' && (
-              <div className="flex flex-col gap-3.5">
-                <p className="text-xs text-brown-3 truncate">File: {csvFileName}</p>
-                <div className="flex gap-2.5 flex-wrap">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
-                    {validRows.length} baris valid
-                  </span>
-                  {invalidRows.length > 0 && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
-                      {invalidRows.length} baris tidak valid (dilewati)
-                    </span>
-                  )}
-                </div>
-                <div className="rounded-xl border overflow-hidden" style={BORDER}>
-                  <div className="overflow-x-auto max-h-56 overflow-y-auto">
-                    <table className="w-full text-xs border-collapse">
-                      <thead>
-                        <tr className="bg-bg3">
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3 whitespace-nowrap">Baris</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Nama</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">NIM</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Email</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {csvRows.slice(0, 20).map((r, i) => (
-                          <tr key={i} className="row-divider">
-                            <td className="px-2.5 py-1.5 text-brown-3">{r.line}</td>
-                            <td className="px-2.5 py-1.5 text-brown">{r.nama || '—'}</td>
-                            <td className="px-2.5 py-1.5 text-brown-2">{r.nim || '—'}</td>
-                            <td className="px-2.5 py-1.5 text-brown-2 truncate max-w-[140px]">{r.email || '—'}</td>
-                            <td className="px-2.5 py-1.5">
-                              {r.valid ? (
-                                <span style={{ color: 'var(--success)' }}>Valid</span>
-                              ) : (
-                                <span className="text-danger" title={r.reason}>
-                                  {r.reason}
-                                </span>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  {csvRows.length > 20 && (
-                    <div className="px-2.5 py-2 text-[11px] text-brown-3 row-divider">
-                      +{csvRows.length - 20} baris lainnya tidak ditampilkan di pratinjau ini.
-                    </div>
-                  )}
-                </div>
-                <div className="flex gap-2.5">
-                  <button onClick={() => setImportStep('pilih')} className="btn btn-secondary flex-1">
-                    Pilih File Lain
-                  </button>
-                  <button onClick={() => setImportStep('konfirmasi')} disabled={validRows.length === 0} className="btn btn-primary flex-1">
-                    Lanjutkan ({validRows.length})
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ── Step: konfirmasi — WAJIB modal konfirmasi, aksi bikin banyak
-                akun sekaligus (CLAUDE.md "Modal Wajib") ── */}
-            {importStep === 'konfirmasi' && (
-              <div className="flex flex-col gap-3.5">
-                <div
-                  className="flex gap-2.5 rounded-xl px-3.5 py-3"
-                  style={{ background: 'rgba(212,163,115,.10)', border: '1px solid rgba(212,163,115,.3)' }}
-                >
-                  <IconWarning size={18} />
-                  <p className="text-sm text-brown-2 leading-relaxed">
-                    Anda akan membuat <strong>{validRows.length} akun mahasiswa baru</strong> dengan password otomatis
-                    untuk kelas "{importTarget.name}". Setiap akun langsung aktif (tanpa konfirmasi email). Proses ini{' '}
-                    <strong>tidak bisa dibatalkan di tengah jalan</strong> setelah dimulai.
-                  </p>
-                </div>
-                <div className="flex gap-2.5">
-                  <button onClick={() => setImportStep('pratinjau')} className="btn btn-secondary flex-1">
-                    Batal
-                  </button>
-                  <button onClick={() => void handleImport()} className="btn btn-primary flex-1">
-                    Ya, Impor Sekarang
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* ── Step: memproses ── */}
-            {importStep === 'memproses' && (
-              <div className="flex flex-col items-center justify-center gap-3 min-h-[160px] text-center">
-                <div
-                  className="w-9 h-9 rounded-full border-4 border-brown-3/30 border-t-terra animate-spin"
-                  aria-hidden="true"
-                />
-                <p className="text-sm text-brown-2 font-medium">Memproses {validRows.length} mahasiswa…</p>
-                <p className="text-xs text-brown-3 max-w-xs">
-                  Mohon tunggu, jangan tutup atau muat ulang halaman ini sampai selesai.
-                </p>
-              </div>
-            )}
-
-            {/* ── Step: hasil ── */}
-            {importStep === 'hasil' && (
-              <div className="flex flex-col gap-3.5">
-                <div className="flex gap-2 flex-wrap">
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
-                    {importSummary.berhasil} berhasil
-                  </span>
-                  {importSummary.kelasPenuh > 0 && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: 'var(--warning-soft)', color: 'var(--warning)' }}>
-                      {importSummary.kelasPenuh} kelas penuh
-                    </span>
-                  )}
-                  {importSummary.error > 0 && (
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-danger/10 text-danger">
-                      {importSummary.error} gagal
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-xs text-brown-3 leading-relaxed">
-                  Password hanya ditampilkan <strong>satu kali di sini</strong>: unduh sekarang sebelum menutup atau
-                  memuat ulang halaman ini, karena tidak akan tersimpan/terlihat lagi setelahnya.
-                </p>
-
-                <div className="rounded-xl border overflow-hidden" style={BORDER}>
-                  <div className="overflow-x-auto max-h-64 overflow-y-auto">
-                    <table className="w-full text-xs border-collapse">
-                      <thead>
-                        <tr className="bg-bg3">
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Nama</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Email</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Status</th>
-                          <th className="text-left px-2.5 py-2 font-semibold text-brown-3">Password</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {importResults.map((r, i) => (
-                          <tr key={i} className="row-divider">
-                            <td className="px-2.5 py-1.5 text-brown">{r.nama}</td>
-                            <td className="px-2.5 py-1.5 text-brown-2 truncate max-w-[140px]">{r.email}</td>
-                            <td className="px-2.5 py-1.5">
-                              {r.status === 'berhasil' && <span style={{ color: 'var(--success)' }}>Berhasil</span>}
-                              {r.status === 'kelas_penuh' && <span style={{ color: 'var(--warning)' }}>Kelas Penuh</span>}
-                              {r.status === 'error' && (
-                                <span className="text-danger" title={r.error}>
-                                  Gagal
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-2.5 py-1.5 font-mono text-brown-2 whitespace-nowrap">{r.password ?? '—'}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <div className="flex gap-2.5">
-                  <button onClick={closeImport} className="btn btn-secondary flex-1">
-                    Selesai
-                  </button>
-                  <button onClick={() => setDownloadConfirmOpen(true)} disabled={importSummary.berhasil === 0} className="btn btn-primary flex-1">
-                    <IconDownload size={15} /> Unduh Kredensial
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}
 
-      {/* Unduh kredensial CSV — konfirmasi dulu (pola sama dengan Analitik.tsx
-          "Unduh CSV?"), karena file ini berisi password plaintext. */}
-      {downloadConfirmOpen && (
+      {/* Atur atau ganti kode mata kuliah (antrean #228). */}
+      {kodeOpen && (
         <div
-          className="fixed inset-0 z-[800] flex items-center justify-center p-4"
-          style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+          className="fixed inset-0 z-[700] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div
-            className="rounded-2xl modal-sempit p-6 text-center"
-            style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px rgba(62,54,46,.22)', animation: 'slideUpModal 0.22s ease' }}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              void simpanKode()
+            }}
+            className="bg-ivory rounded-2xl modal-sedang border p-5 flex flex-col gap-3.5"
+            style={{ ...BORDER, animation: 'slideUpModal 0.22s ease' }}
           >
-            <h3 className="font-display text-lg font-bold text-brown mb-2">Unduh Kredensial?</h3>
-            <p className="text-sm text-brown-2 mb-6 opacity-80">
-              File berisi email &amp; password {importSummary.berhasil} akun mahasiswa akan diunduh ke perangkatmu.
-              Simpan dan distribusikan dengan hati-hati.
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setDownloadConfirmOpen(false)} className="btn btn-secondary flex-1">
-                Batal
-              </button>
-              <button onClick={confirmDownloadCredentials} className="btn btn-primary flex-1">
-                <IconDownload size={15} /> Unduh
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-sm font-semibold text-brown min-w-0">Kode Mata Kuliah{course?.name ? ` · ${course.name}` : ''}</span>
+              <button
+                type="button"
+                onClick={() => setKodeOpen(false)}
+                aria-label="Tutup"
+                className="w-9 h-9 -mr-1.5 rounded-[var(--radius-control)] flex items-center justify-center text-brown-3 flex-shrink-0"
+              >
+                <IconX size={16} />
               </button>
             </div>
-          </div>
+            {kodeError && <div className="text-danger text-sm rounded-lg px-3 py-2.5 border border-danger/30 bg-danger/10">{kodeError}</div>}
+            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+              Kode
+              <input
+                value={kodeDraft}
+                onChange={(e) => setKodeDraft(e.target.value)}
+                maxLength={20}
+                autoFocus
+                autoCapitalize="characters"
+                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown tracking-wider"
+                style={BORDER}
+              />
+            </label>
+            <p className="text-[11px] text-brown-3 leading-relaxed">
+              6 sampai 20 huruf, angka, atau tanda hubung. Hanya dosen pengampu mata kuliah ini yang bisa menggantinya. Kode lama langsung tidak berlaku; akun yang sudah terdaftar tidak terpengaruh.
+            </p>
+            <div className="flex gap-2.5 flex-wrap">
+              <button type="button" onClick={() => setKodeDraft(buatKodeAcak())} className="btn btn-secondary">
+                Buat Acak
+              </button>
+              <button
+                type="submit"
+                disabled={menyimpanKode || !kodeMataKuliahSah(kodeDraft) || rapikanKodeMataKuliah(kodeDraft) === kode.data}
+                className="btn btn-primary flex-1"
+              >
+                {menyimpanKode ? 'Menyimpan…' : 'Simpan Kode'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 

@@ -427,7 +427,7 @@ export function DashboardMhs({
           <div className="flex items-center gap-2 flex-wrap mt-1.5">
             {pre && <ChipRak jenis={GOLONGAN_CHIP[pre.golongan]} label={GOLONGAN_LABEL[pre.golongan]} />}
             <span className="text-sm text-brown-3">
-              {identitas?.kelas ? `${identitas.kelas.name} · Angkatan ${identitas.kelas.angkatan}` : 'Belum bergabung kelas'}
+              {identitas?.kelas ? `${identitas.kelas.name} · Angkatan ${identitas.kelas.angkatan}` : 'Belum punya kelas: ditentukan dari tes diagnostik awal'}
             </span>
           </div>
         </div>

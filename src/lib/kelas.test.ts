@@ -1,13 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest'
 import {
-  generateClassCode,
-  createKelas,
   getKelasByDosen,
-  deleteKelas,
+  kelasUntukMataKuliah,
   summarizeKelas,
-  parseImportCsv,
-  importMahasiswaCSV,
   labelKelas,
   tahunUnik,
   namaKelasUnik,
@@ -17,106 +13,41 @@ import {
 } from './kelas'
 
 // isSupabaseConfigured is false in the test env (no VITE_SUPABASE_* vars
-// set), so every call below exercises the localStorage fallback path —
-// matches the existing precedent in manajemen.test.ts / forum.test.ts.
+// set), so every call below exercises the demo path.
 
 beforeEach(() => {
   localStorage.clear()
 })
 
-describe('generateClassCode', () => {
-  it('generates a 6-character uppercase alphanumeric code by default', () => {
-    const code = generateClassCode()
-    expect(code).toHaveLength(6)
-    expect(code).toMatch(/^[A-Z0-9]+$/)
-  })
-
-  it('never includes visually ambiguous characters (0/O, 1/I/L)', () => {
-    for (let i = 0; i < 200; i++) {
-      const code = generateClassCode()
-      expect(code).not.toMatch(/[01OIL]/)
-    }
-  })
-
-  it('respects a custom length', () => {
-    expect(generateClassCode(8)).toHaveLength(8)
-  })
-
-  it('is randomized across calls', () => {
-    const codes = new Set(Array.from({ length: 30 }, () => generateClassCode()))
-    expect(codes.size).toBeGreaterThan(1)
-  })
-})
-
-describe('createKelas (localStorage fallback)', () => {
-  it('creates a kelas with a generated code and echoes the input fields', async () => {
-    const kelas = await createKelas({ name: 'Kelas A', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    expect(kelas.name).toBe('Kelas A')
-    expect(kelas.angkatan).toBe(2026)
-    expect(kelas.max_students).toBe(40)
-    expect(kelas.dosen_id).toBe('dosen-1')
-    expect(kelas.code).toMatch(/^[A-Z0-9]{6}$/)
-    expect(kelas.id).toBeTruthy()
-  })
-
-  it('trims the name', async () => {
-    const kelas = await createKelas({ name: '  Kelas B  ', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    expect(kelas.name).toBe('Kelas B')
-  })
-
-  it('rejects an empty name', async () => {
-    await expect(createKelas({ name: '   ', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })).rejects.toThrow()
-  })
-
-  it('rejects a non-positive max capacity', async () => {
-    await expect(createKelas({ name: 'Kelas C', angkatan: 2026, maxStudents: 0, dosenId: 'dosen-1' })).rejects.toThrow()
-  })
-
-  it('rejects an out-of-range angkatan', async () => {
-    await expect(createKelas({ name: 'Kelas D', angkatan: 1899, maxStudents: 40, dosenId: 'dosen-1' })).rejects.toThrow()
-  })
-
-  it('persists across getKelasByDosen, newest first', async () => {
-    await createKelas({ name: 'Kelas A', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    await createKelas({ name: 'Kelas B', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    const list = await getKelasByDosen('dosen-1')
-    expect(list.map((k) => k.name)).toEqual(['Kelas B', 'Kelas A'])
-  })
-})
-
-describe('getKelasByDosen (localStorage fallback)', () => {
-  it('returns an empty array when nothing is saved yet', async () => {
+// Antrean #228: kelas dibentuk basis data dari tes diagnostik; mode demo tidak punya kelas.
+describe('getKelasByDosen (mode demo)', () => {
+  it('mengembalikan daftar kosong', async () => {
     expect(await getKelasByDosen('dosen-1')).toEqual([])
   })
-
-  it('only returns classes belonging to the given dosen', async () => {
-    await createKelas({ name: 'Kelas A', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    await createKelas({ name: 'Kelas X', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-2' })
-    const list = await getKelasByDosen('dosen-1')
-    expect(list).toHaveLength(1)
-    expect(list[0].name).toBe('Kelas A')
-  })
-
-  it('always reports studentCount 0 in demo mode (documented limitation)', async () => {
-    await createKelas({ name: 'Kelas A', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    const list = await getKelasByDosen('dosen-1')
-    expect(list[0].studentCount).toBe(0)
-  })
 })
 
-describe('deleteKelas (localStorage fallback)', () => {
-  it('removes the kelas so it no longer appears in getKelasByDosen', async () => {
-    const kelas = await createKelas({ name: 'Kelas A', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    await deleteKelas(kelas.id)
-    expect(await getKelasByDosen('dosen-1')).toEqual([])
+describe('kelasUntukMataKuliah', () => {
+  const k = (id: string, o: Partial<KelasWithCount>): KelasWithCount => ({
+    id, name: id, angkatan: 2026, code: id, dosen_id: 'd', max_students: 25, created_at: '', studentCount: 0, ...o,
   })
-
-  it('leaves other classes untouched', async () => {
-    const a = await createKelas({ name: 'Kelas A', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    await createKelas({ name: 'Kelas B', angkatan: 2026, maxStudents: 40, dosenId: 'dosen-1' })
-    await deleteKelas(a.id)
-    const list = await getKelasByDosen('dosen-1')
-    expect(list.map((k) => k.name)).toEqual(['Kelas B'])
+  const semua = [
+    k('JC-B', { course_id: 1, golongan: 'mahir', urutan: 2 }),
+    k('lama', { golongan: null, course_id: null, max_students: 40 }),
+    k('JC-A', { course_id: 1, golongan: 'mahir', urutan: 1 }),
+    k('PD-A', { course_id: 2, golongan: 'mahir', urutan: 1 }),
+    k('BM-A', { course_id: 1, golongan: 'remedial', urutan: 1 }),
+    k('JC-A-2025', { course_id: 1, golongan: 'mahir', urutan: 1, angkatan: 2025 }),
+  ]
+  it('hanya kelas otomatis mata kuliah itu ditambah kelas lama, urut angkatan, Belajar Mendalam, Jalur Cepat A, B, lalu kelas lama', () => {
+    expect(kelasUntukMataKuliah(semua, 1).map((x) => x.id)).toEqual(['BM-A', 'JC-A', 'JC-B', 'lama', 'JC-A-2025'])
+  })
+  it('mata kuliah lain tidak tercampur', () => {
+    expect(kelasUntukMataKuliah(semua, 2).map((x) => x.id)).toEqual(['PD-A', 'lama'])
+  })
+  it('tidak mengubah urutan larik asal', () => {
+    const salinan = semua.map((x) => x.id)
+    kelasUntukMataKuliah(semua, 1)
+    expect(semua.map((x) => x.id)).toEqual(salinan)
   })
 })
 
@@ -154,62 +85,6 @@ describe('summarizeKelas', () => {
 
   it('returns zeroed summary for an empty list', () => {
     expect(summarizeKelas([])).toEqual({ totalStudents: 0, byAngkatan: [] })
-  })
-})
-
-describe('parseImportCsv', () => {
-  it('skips the header row and parses nama,nim,email', () => {
-    const csv = 'nama,nim,email\nBudi Santoso,220101,budi@kampus.ac.id\nSiti Aminah,220102,siti@kampus.ac.id'
-    const rows = parseImportCsv(csv)
-    expect(rows).toHaveLength(2)
-    expect(rows[0]).toMatchObject({ nama: 'Budi Santoso', nim: '220101', email: 'budi@kampus.ac.id', valid: true })
-    expect(rows[1]).toMatchObject({ nama: 'Siti Aminah', nim: '220102', email: 'siti@kampus.ac.id', valid: true })
-  })
-
-  it('lowercases email and trims whitespace around cells', () => {
-    const csv = 'nama,nim,email\n  Budi  ,  220101 ,  BUDI@KAMPUS.AC.ID  '
-    const rows = parseImportCsv(csv)
-    expect(rows[0]).toMatchObject({ nama: 'Budi', nim: '220101', email: 'budi@kampus.ac.id' })
-  })
-
-  it('flags a row with empty nama as invalid', () => {
-    const csv = 'nama,nim,email\n,220101,budi@kampus.ac.id'
-    const rows = parseImportCsv(csv)
-    expect(rows[0].valid).toBe(false)
-    expect(rows[0].reason).toMatch(/nama/i)
-  })
-
-  it('flags a row with empty nim as invalid', () => {
-    const csv = 'nama,nim,email\nBudi,,budi@kampus.ac.id'
-    const rows = parseImportCsv(csv)
-    expect(rows[0].valid).toBe(false)
-    expect(rows[0].reason).toMatch(/nim/i)
-  })
-
-  it('flags a row with a malformed email as invalid', () => {
-    const csv = 'nama,nim,email\nBudi,220101,not-an-email'
-    const rows = parseImportCsv(csv)
-    expect(rows[0].valid).toBe(false)
-    expect(rows[0].reason).toMatch(/email/i)
-  })
-
-  it('respects double-quoted fields containing a comma', () => {
-    const csv = 'nama,nim,email\n"Budi, S.Kom",220101,budi@kampus.ac.id'
-    const rows = parseImportCsv(csv)
-    expect(rows[0].nama).toBe('Budi, S.Kom')
-    expect(rows[0].valid).toBe(true)
-  })
-
-  it('ignores blank lines and assigns 1-based line numbers accounting for the header', () => {
-    const csv = 'nama,nim,email\n\nBudi,220101,budi@kampus.ac.id\n\nSiti,220102,siti@kampus.ac.id'
-    const rows = parseImportCsv(csv)
-    expect(rows).toHaveLength(2)
-    expect(rows[0].line).toBe(2)
-    expect(rows[1].line).toBe(3)
-  })
-
-  it('returns an empty array for a CSV with only a header', () => {
-    expect(parseImportCsv('nama,nim,email')).toEqual([])
   })
 })
 
@@ -280,18 +155,6 @@ describe('tahunUnik / namaKelasUnik / cocokFilter', () => {
       expect(cocokFilter({ name: 'Kelas A', angkatan: 2024 }, { tahun: 2024, kelas: 'Kelas A' })).toBe(true)
       expect(cocokFilter({ name: 'Kelas A', angkatan: 2025 }, { tahun: 2024, kelas: 'Kelas A' })).toBe(false)
     })
-  })
-})
-
-describe('importMahasiswaCSV (no Supabase configured)', () => {
-  it('rejects outright -- no demo/localStorage mode for real account creation', async () => {
-    await expect(importMahasiswaCSV('class-1', [{ nama: 'Budi', nim: '220101', email: 'budi@kampus.ac.id' }])).rejects.toThrow(
-      /Supabase/,
-    )
-  })
-
-  it('rejects an empty student list too', async () => {
-    await expect(importMahasiswaCSV('class-1', [])).rejects.toThrow()
   })
 })
 

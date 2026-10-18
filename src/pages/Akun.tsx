@@ -221,7 +221,7 @@ export function Akun() {
                     <span className="text-xs text-brown-3">{isDosen ? 'NIDN' : 'NIM'} {profile.nim_nidn}</span>
                   )}
                   {!isDosen && (
-                    <span className="text-xs text-brown-3">{kelasSaya ? labelKelas(kelasSaya) : 'Belum bergabung kelas'}</span>
+                    <span className="text-xs text-brown-3">{kelasSaya ? labelKelas(kelasSaya) : 'Belum punya kelas: ditentukan dari tes diagnostik awal'}</span>
                   )}
                 </div>
               </div>

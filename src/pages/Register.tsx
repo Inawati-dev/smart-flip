@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
 import { verifyDosenInviteCode } from '../lib/inviteCode'
-import { cekKodeKelas } from '../lib/kelas'
+import { cekKodeMataKuliah } from '../lib/courses'
 
 // Pengecekan awal di sisi klien saja, untuk umpan balik form yang instan —
 // penegakan SEBENARNYA ada di server (database/migration_v6_dosen_invite_gate.sql):
@@ -21,6 +21,10 @@ export function isDosenInviteCodeValid(inputCode: string, expectedCode: string |
   return inputCode.trim().length > 0 && inputCode.trim() === expectedCode
 }
 
+const KODE_SALAH = 'Kode mata kuliah tidak dikenali. Periksa lagi atau minta kodenya ke dosen pengampu.'
+// Sama persis dengan RAISE EXCEPTION di handle_new_user(), database/migration_v40_kelas_otomatis.sql.
+const TEKS_TOLAK_KODE = 'Kode mata kuliah tidak dikenali'
+
 export function Register() {
   const [role, setRole] = useState<'mahasiswa' | 'dosen'>('mahasiswa')
   const [fullName, setFullName] = useState('')
@@ -28,7 +32,7 @@ export function Register() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [inviteCode, setInviteCode] = useState('')
-  const [classCode, setClassCode] = useState('')
+  const [courseCode, setCourseCode] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -48,25 +52,20 @@ export function Register() {
     // Pengaturan; kalau klien masih membandingkan ke nilai yang dipanggang saat
     // build, mengganti kode akan langsung mematikan pendaftaran dosen sampai
     // ada rebuild — dua sumber kebenaran yang pasti lepas sinkron.
-    // Kode kelas wajib bagi mahasiswa (antrean #126 bagian c): tanpa kode yang
-    // dikenali, akun tidak dibuat. Dosen mengendalikan siapa yang masuk lewat kode itu.
-    if (role === 'mahasiswa' && !classCode.trim()) {
-      setError('Kode kelas wajib diisi. Minta kodenya ke dosen Anda.')
+    // Kode mata kuliah wajib bagi mahasiswa (antrean #228): satu kode untuk
+    // semua mahasiswa mata kuliah itu, supaya orang luar tetap tersaring. Kelas
+    // tidak dipilih di sini; basis data menempatkannya sesudah tes diagnostik
+    // awal (migration_v40). Pemicu handle_new_user() juga menolak kode salah.
+    if (role === 'mahasiswa' && !courseCode.trim()) {
+      setError('Kode mata kuliah wajib diisi. Minta kodenya ke dosen pengampu.')
       return
     }
 
     setLoading(true)
-    if (role === 'mahasiswa') {
-      const hasil = await cekKodeKelas(classCode)
-      if (hasil === 'tidak_ada' || hasil === 'penuh') {
-        setError(
-          hasil === 'penuh'
-            ? 'Kelas dengan kode itu sudah penuh. Hubungi dosen Anda.'
-            : 'Kode kelas tidak dikenali. Periksa lagi atau minta ke dosen Anda.',
-        )
-        setLoading(false)
-        return
-      }
+    if (role === 'mahasiswa' && (await cekKodeMataKuliah(courseCode)) === 'tidak_ada') {
+      setError(KODE_SALAH)
+      setLoading(false)
+      return
     }
     if (role === 'dosen') {
       const ok = await verifyDosenInviteCode(inviteCode)
@@ -90,16 +89,12 @@ export function Register() {
             role,
             nim_nidn: nimNidn.trim(),
             dosen_invite_code: role === 'dosen' ? inviteCode.trim() : undefined,
-            // Optional -- unlike dosen_invite_code, an absent/wrong/full-class
-            // code never blocks signup (see migration_v7_kelas.sql's
-            // handle_new_user()): the mahasiswa just ends up with class_id
-            // NULL, assignable manually later.
-            class_code: role === 'mahasiswa' ? classCode.trim() || undefined : undefined,
+            course_code: role === 'mahasiswa' ? courseCode.trim().toUpperCase() : undefined,
           },
         },
       })
       if (signUpError) throw signUpError
-      // Baris profil (nama, peran, kelas, NIM/NIDN) dibuat pemicu
+      // Baris profil (nama, peran, mata kuliah, NIM/NIDN) dibuat pemicu
       // handle_new_user() di basis data dari `data` di atas (NIM sejak
       // migration_v36). Dulu di sini ada upsert profil tanpa kolom `role`
       // yang selalu ditolak basis data dan hanya masuk console.warn
@@ -112,9 +107,16 @@ export function Register() {
       setEmail('')
       setPassword('')
       setInviteCode('')
-      setClassCode('')
+      setCourseCode('')
     } catch (err) {
       let msg = err instanceof Error ? err.message : 'Terjadi kesalahan.'
+      // Hanya penolakan kode dari pemicu handle_new_user (v40, teks RAISE-nya
+      // persis) yang jadi pesan "kode salah". Galat basis data lain tetap umum.
+      // Catatan: Supabase Auth biasanya menyembunyikan teks RAISE dan hanya
+      // mengirim "Database error saving new user"; kode salah sudah tertangkap
+      // lebih dulu oleh cekKodeMataKuliah di atas.
+      if (role === 'mahasiswa' && msg.includes(TEKS_TOLAK_KODE)) msg = KODE_SALAH
+      else if (msg.includes('Database error saving new user')) msg = 'Pendaftaran gagal di server. Coba lagi beberapa saat, atau hubungi dosen pengampu.'
       if (msg.includes('already registered')) msg = 'Email ini sudah terdaftar. Silakan masuk.'
       if (msg.includes('Email signups are disabled')) msg = 'Pendaftaran email belum diaktifkan. Hubungi admin.'
       if (msg.includes('Password should be')) msg = 'Kata sandi minimal 8 karakter.'
@@ -225,21 +227,22 @@ export function Register() {
 
         {role === 'mahasiswa' && (
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="classCode" className="text-[0.78rem] font-semibold text-brown-2">
-              Kode Kelas
+            <label htmlFor="courseCode" className="text-[0.78rem] font-semibold text-brown-2">
+              Kode Mata Kuliah
             </label>
             <input
-              id="classCode"
+              id="courseCode"
               type="text"
-              placeholder="Contoh: 7XQK2M, dari dosen Anda"
-              value={classCode}
-              onChange={(e) => setClassCode(e.target.value)}
+              placeholder="Dari dosen pengampu"
+              value={courseCode}
+              onChange={(e) => setCourseCode(e.target.value)}
               required
+              autoCapitalize="characters"
               className={authInputClass}
               style={authInputStyle}
             />
             <p className="text-[13px] text-brown-3">
-              Wajib diisi. Minta kode kelas ke dosen Anda.
+              Wajib diisi. Kelas Anda ditentukan otomatis dari tes diagnostik awal sesudah masuk.
             </p>
           </div>
         )}
