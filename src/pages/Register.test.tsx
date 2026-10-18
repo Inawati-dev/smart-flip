@@ -125,7 +125,14 @@ describe('Register — Kode Mata Kuliah field (interactive)', () => {
   })
 })
 
-function isiDanKirim(kode: string) {
+const ANGKATAN_UJI = String(new Date().getFullYear() - 1)
+
+function pilihAngkatan(tahun: string) {
+  fireEvent.click(screen.getByLabelText('Tahun Angkatan'))
+  fireEvent.click(screen.getByRole('option', { name: tahun }))
+}
+
+function isiDanKirim(kode: string, angkatan: string = ANGKATAN_UJI) {
   mockSupabase.configured = true
   render(
     <MemoryRouter>
@@ -137,6 +144,7 @@ function isiDanKirim(kode: string) {
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'budi@example.com' } })
   fireEvent.change(screen.getByLabelText('Kata Sandi'), { target: { value: 'rahasia123' } })
   if (kode) fireEvent.change(screen.getByLabelText(/Kode Mata Kuliah/), { target: { value: kode } })
+  if (angkatan) pilihAngkatan(angkatan)
   fireEvent.submit(screen.getByRole('button', { name: 'Daftar Sekarang' }).closest('form')!)
 }
 
@@ -150,6 +158,39 @@ describe('Register — tautan konfirmasi email dan data pendaftaran', () => {
     expect(arg.options.emailRedirectTo.endsWith('/')).toBe(true)
     expect(arg.options.data.course_code).toBe('MPP-2026')
     expect(arg.options.data).not.toHaveProperty('class_code')
+    expect(arg.options.data.angkatan).toBe(ANGKATAN_UJI)
+  })
+})
+
+// Antrean #239: tahun angkatan wajib bagi mahasiswa; kelas otomatis dibentuk per angkatan.
+describe('Register — tahun angkatan', () => {
+  it('pilihan tahun: tahun ini sampai 10 tahun lalu, bawaan kosong; hilang untuk dosen', () => {
+    render(
+      <MemoryRouter>
+        <Register />
+      </MemoryRouter>,
+    )
+    const pemicu = screen.getByLabelText('Tahun Angkatan')
+    expect(pemicu.textContent).toContain('Pilih tahun angkatan')
+    fireEvent.click(pemicu)
+    const tahun = screen.getAllByRole('option').map((o) => o.textContent)
+    const ini = new Date().getFullYear()
+    expect(tahun).toEqual(Array.from({ length: 11 }, (_, i) => String(ini - i)))
+    fireEvent.click(screen.getByRole('button', { name: 'Dosen' }))
+    expect(screen.queryByLabelText('Tahun Angkatan')).toBeNull()
+  })
+
+  it('kosong: ditolak tanpa memanggil server', async () => {
+    isiDanKirim('MPP-2026', '')
+    expect(await screen.findByText(/Tahun angkatan wajib dipilih/)).toBeTruthy()
+    expect(mockSupabase.rpc).not.toHaveBeenCalled()
+    expect(mockSupabase.signUp).not.toHaveBeenCalled()
+  })
+
+  it('server menolak dengan teks pemicu angkatan: tampil pesan angkatan', async () => {
+    mockSupabase.signUp.mockResolvedValueOnce({ data: { user: null }, error: new Error('Tahun angkatan tidak sah (SQLSTATE 22023)') })
+    isiDanKirim('MPP-2026')
+    expect(await screen.findByText(/Pilih tahun angkatan Anda dari daftar/)).toBeTruthy()
   })
 })
 

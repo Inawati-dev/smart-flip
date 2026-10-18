@@ -283,6 +283,19 @@ export function Akun() {
                   <span className="text-[13px] font-normal text-brown-3">NIM belum terisi. Isi sekali saja: sesudah disimpan tidak bisa diubah dari sini.</span>
                 )}
               </label>
+              {/* Angkatan menentukan kelas otomatis, jadi hanya-baca (antrean #239, kunci di migration_v44). */}
+              {!isDosen && (
+                <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2">
+                  Tahun Angkatan
+                  <input
+                    value={profile?.angkatan?.trim() || 'Belum tercatat'}
+                    readOnly
+                    className="h-11 rounded-[var(--radius-control)] border px-3 text-base font-normal text-brown read-only:opacity-65"
+                    style={BORDER}
+                  />
+                  <span className="text-[13px] font-normal text-brown-3">Angkatan ditetapkan saat pendaftaran.</span>
+                </label>
+              )}
             </div>
 
             <div className="flex gap-2.5">

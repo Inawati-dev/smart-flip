@@ -9,7 +9,7 @@ afterEach(cleanup)
 
 const mockAuth = vi.hoisted(() => ({
   user: null as { id: string; email: string } | null,
-  profile: null as { full_name: string; role: string; nim_nidn: string | null; avatar_url: string | null } | null,
+  profile: null as { full_name: string; role: string; nim_nidn: string | null; avatar_url: string | null; angkatan?: string | null } | null,
   role: null as 'mahasiswa' | 'dosen' | null,
   loading: false,
   refreshProfile: vi.fn(async () => {}),
@@ -134,6 +134,29 @@ describe('Akun', () => {
   })
 
   // Antrean #180: NIM mahasiswa bisa diisi sendiri selama kosong, lalu terkunci.
+  // Antrean #239: angkatan menentukan kelas otomatis, ditetapkan saat daftar.
+  it('mahasiswa: tahun angkatan tampil hanya-baca dengan keterangan', () => {
+    mockAuth.profile = { full_name: 'Ahmad Rizki', role: 'mahasiswa', nim_nidn: '220341600001', avatar_url: null, angkatan: '2025' }
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    fireEvent.click(screen.getByText('Ubah'))
+    const angkatan = screen.getByLabelText(/^Tahun Angkatan/) as HTMLInputElement
+    expect(angkatan.value).toBe('2025')
+    expect(angkatan.readOnly).toBe(true)
+    expect(screen.getByText('Angkatan ditetapkan saat pendaftaran.')).toBeTruthy()
+  })
+
+  it('dosen: tidak ada isian tahun angkatan', () => {
+    mockAuth.profile = { full_name: 'Bu Dosen', role: 'dosen', nim_nidn: '0011', avatar_url: null }
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    fireEvent.click(screen.getByText('Ubah'))
+    expect(screen.queryByLabelText(/^Tahun Angkatan/)).toBeNull()
+  })
+
   it('mahasiswa yang NIM-nya sudah terisi: isian NIM hanya bisa dibaca', () => {
     const queryClient = new QueryClient()
     seedQueryCache(queryClient)

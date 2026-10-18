@@ -4,6 +4,8 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
 import { verifyDosenInviteCode } from '../lib/inviteCode'
 import { cekKodeMataKuliah } from '../lib/courses'
+import { Select } from '../components/Select'
+import { PasswordInput } from '../components/PasswordInput'
 
 // Pengecekan awal di sisi klien saja, untuk umpan balik form yang instan —
 // penegakan SEBENARNYA ada di server (database/migration_v6_dosen_invite_gate.sql):
@@ -24,6 +26,12 @@ export function isDosenInviteCodeValid(inputCode: string, expectedCode: string |
 const KODE_SALAH = 'Kode mata kuliah tidak dikenali. Periksa lagi atau minta kodenya ke dosen pengampu.'
 // Sama persis dengan RAISE EXCEPTION di handle_new_user(), database/migration_v40_kelas_otomatis.sql.
 const TEKS_TOLAK_KODE = 'Kode mata kuliah tidak dikenali'
+// Antrean #239: angkatan wajib, rentang sama dengan angkatan_sah() di migration_v44
+// (tahun ini sampai 10 tahun ke belakang). Kelas otomatis dibentuk per angkatan.
+const TEKS_TOLAK_ANGKATAN = 'Tahun angkatan tidak sah'
+const ANGKATAN_SALAH = 'Tahun angkatan tidak sah. Pilih tahun angkatan Anda dari daftar.'
+const TAHUN_INI = new Date().getFullYear()
+const OPSI_ANGKATAN = Array.from({ length: 11 }, (_, i) => String(TAHUN_INI - i)).map((t) => ({ value: t, label: t }))
 
 export function Register() {
   const [role, setRole] = useState<'mahasiswa' | 'dosen'>('mahasiswa')
@@ -33,6 +41,7 @@ export function Register() {
   const [password, setPassword] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [courseCode, setCourseCode] = useState('')
+  const [angkatan, setAngkatan] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -58,6 +67,11 @@ export function Register() {
     // awal (migration_v40). Pemicu handle_new_user() juga menolak kode salah.
     if (role === 'mahasiswa' && !courseCode.trim()) {
       setError('Kode mata kuliah wajib diisi. Minta kodenya ke dosen pengampu.')
+      return
+    }
+
+    if (role === 'mahasiswa' && !angkatan) {
+      setError('Tahun angkatan wajib dipilih.')
       return
     }
 
@@ -90,6 +104,7 @@ export function Register() {
             nim_nidn: nimNidn.trim(),
             dosen_invite_code: role === 'dosen' ? inviteCode.trim() : undefined,
             course_code: role === 'mahasiswa' ? courseCode.trim().toUpperCase() : undefined,
+            angkatan: role === 'mahasiswa' ? angkatan : undefined,
           },
         },
       })
@@ -108,6 +123,7 @@ export function Register() {
       setPassword('')
       setInviteCode('')
       setCourseCode('')
+      setAngkatan('')
     } catch (err) {
       let msg = err instanceof Error ? err.message : 'Terjadi kesalahan.'
       // Hanya penolakan kode dari pemicu handle_new_user (v40, teks RAISE-nya
@@ -116,6 +132,7 @@ export function Register() {
       // mengirim "Database error saving new user"; kode salah sudah tertangkap
       // lebih dulu oleh cekKodeMataKuliah di atas.
       if (role === 'mahasiswa' && msg.includes(TEKS_TOLAK_KODE)) msg = KODE_SALAH
+      else if (role === 'mahasiswa' && msg.includes(TEKS_TOLAK_ANGKATAN)) msg = ANGKATAN_SALAH
       else if (msg.includes('Database error saving new user')) msg = 'Pendaftaran gagal di server. Coba lagi beberapa saat, atau hubungi dosen pengampu.'
       if (msg.includes('already registered')) msg = 'Email ini sudah terdaftar. Silakan masuk.'
       if (msg.includes('Email signups are disabled')) msg = 'Pendaftaran email belum diaktifkan. Hubungi admin.'
@@ -162,12 +179,42 @@ export function Register() {
         </button>
       </div>
 
-      {error && (
-        <div className="text-red text-sm rounded-lg px-3 py-2.5 border border-red/30 bg-red/10">{error}</div>
-      )}
-      {success && (
-        <div className="text-sage-d text-sm rounded-lg px-3 py-2.5 border border-sage/30 bg-sage/10">
-          {success}
+      {(error || success) && (
+        // Hasil pendaftaran sebagai modal (antrean #244) supaya berhasil atau gagalnya tidak terlewat.
+        <div
+          className="fixed inset-0 z-[600] flex items-center justify-center p-4"
+          style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hasil-daftar-judul"
+            className="rounded-2xl modal-sempit p-8 text-center"
+            style={{
+              background: 'var(--ivory)',
+              boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)',
+              animation: 'slideUpModal 0.22s ease',
+            }}
+          >
+            <h3 id="hasil-daftar-judul" className={`font-display text-lg font-bold mb-2 ${success ? 'text-sage-d' : 'text-red'}`}>
+              {success ? 'Pendaftaran Berhasil' : 'Pendaftaran Gagal'}
+            </h3>
+            <p className="text-sm text-brown-2 mb-6">{success || error}</p>
+            {success ? (
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setSuccess('')} className="btn btn-secondary flex-1">
+                  Tutup
+                </button>
+                <Link to="/" className="btn btn-primary flex-1">
+                  Ke Halaman Masuk
+                </Link>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setError('')} className="btn btn-primary w-full">
+                Coba Lagi
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -247,6 +294,25 @@ export function Register() {
           </div>
         )}
 
+        {role === 'mahasiswa' && (
+          <div className="flex flex-col gap-1.5">
+            <label htmlFor="angkatan" className="text-[0.78rem] font-semibold text-brown-2">
+              Tahun Angkatan
+            </label>
+            <Select
+              id="angkatan"
+              value={angkatan}
+              onChange={setAngkatan}
+              options={OPSI_ANGKATAN}
+              placeholder="Pilih tahun angkatan"
+              className="w-full"
+              // Disamakan dengan bidang lain di halaman ini (authInputClass): tinggi 46, teks 16 px biasa, garis 1 px.
+              style={{ ...authInputStyle, height: 46, width: '100%', fontSize: 16, fontWeight: 400, borderWidth: 1, paddingLeft: 14 }}
+            />
+            <p className="text-[13px] text-brown-3">Kelas dibentuk per angkatan. Tidak bisa diubah sesudah mendaftar.</p>
+          </div>
+        )}
+
         <div className="flex flex-col gap-1.5">
           <label htmlFor="email" className="text-[0.78rem] font-semibold text-brown-2">
             Email
@@ -268,9 +334,8 @@ export function Register() {
           <label htmlFor="password" className="text-[0.78rem] font-semibold text-brown-2">
             Kata Sandi
           </label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             required
             minLength={8}
             autoComplete="new-password"

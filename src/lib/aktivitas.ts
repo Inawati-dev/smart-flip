@@ -32,6 +32,8 @@ export interface Kejadian {
 export interface ProfileLite {
   id: string
   fullName: string
+  nim?: string | null
+  angkatan?: string | null
   classId: string | null
   kelasNama: string | null
   createdAt: string
@@ -243,6 +245,7 @@ export interface PerluPerhatianItem {
   judul: string
   keterangan: string
   tautan: string
+  userId?: string
 }
 
 // Belum ada halaman profil per-mahasiswa untuk dosen (di luar lingkup WP9),
@@ -263,7 +266,7 @@ export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {
   const sudahPre = new Set(sumber.attempts.filter((a) => a.kind === 'pre').map((a) => a.userId))
   for (const p of sumber.profiles) {
     if (!sudahPre.has(p.id)) {
-      items.push({ judul: p.fullName, keterangan: 'Belum mengerjakan tes diagnostik awal', tautan: TAUTAN_MAHASISWA })
+      items.push({ judul: p.fullName, keterangan: 'Belum mengerjakan tes diagnostik awal', tautan: TAUTAN_MAHASISWA, userId: p.id })
     }
   }
 
@@ -271,7 +274,7 @@ export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {
   for (const p of sumber.profiles) {
     const last = lastActivity.get(p.id)
     if (last === undefined || last < cutoff7) {
-      items.push({ judul: p.fullName, keterangan: 'Tidak aktif lebih dari 7 hari', tautan: TAUTAN_MAHASISWA })
+      items.push({ judul: p.fullName, keterangan: 'Tidak aktif lebih dari 7 hari', tautan: TAUTAN_MAHASISWA, userId: p.id })
     }
   }
 
@@ -286,10 +289,18 @@ export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {
     const [userId, moduleIdStr] = key.split(':')
     const nama = profileOf(sumber.profiles, userId)?.fullName ?? 'Mahasiswa'
     const orderNum = moduleOf(sumber.modules, Number(moduleIdStr))?.orderNum ?? moduleIdStr
-    items.push({ judul: nama, keterangan: `Remedial ${count} kali di topik ${orderNum}`, tautan: TAUTAN_MAHASISWA })
+    items.push({ judul: nama, keterangan: `Remedial ${count} kali di topik ${orderNum}`, tautan: TAUTAN_MAHASISWA, userId })
   }
 
-  return items
+  // Satu baris per mahasiswa, semua alasannya digabung (antrean #242: nama tidak muncul dobel).
+  const perMahasiswa = new Map<string, PerluPerhatianItem>()
+  for (const it of items) {
+    const kunci = it.userId ?? it.judul
+    const ada = perMahasiswa.get(kunci)
+    if (ada) ada.keterangan = `${ada.keterangan} · ${it.keterangan}`
+    else perMahasiswa.set(kunci, { ...it })
+  }
+  return [...perMahasiswa.values()]
 }
 
 export interface MatriksSel {
@@ -351,7 +362,7 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       .from('profiles')
       // FK eksplisit sama seperti analitik.ts fetchStudentStats: profiles<->classes
       // punya dua relasi, embed tanpa nama FK ambigu (PGRST201).
-      .select('id, full_name, class_id, created_at, vark_completed_at, classes!profiles_class_id_fkey(name)')
+      .select('id, full_name, nim_nidn, angkatan, class_id, created_at, vark_completed_at, classes!profiles_class_id_fkey(name)')
       .eq('role', 'mahasiswa')
     if (filter.kelasId && filter.kelasId !== 'semua') profilesQuery = profilesQuery.eq('class_id', filter.kelasId)
 
@@ -367,6 +378,8 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
     type ProfileRow = {
       id: string
       full_name: string
+      nim_nidn?: string | null
+      angkatan?: string | null
       class_id: string | null
       created_at: string
       vark_completed_at: string | null
@@ -378,6 +391,8 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       return {
         id: p.id,
         fullName: p.full_name,
+        nim: p.nim_nidn ?? null,
+        angkatan: p.angkatan ?? null,
         classId: p.class_id,
         kelasNama,
         createdAt: p.created_at,

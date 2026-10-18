@@ -333,6 +333,15 @@ export function IconEye({ size = 18, ...p }: IconProps) {
   )
 }
 
+export function IconEyeOff({ size = 18, ...p }: IconProps) {
+  return (
+    <svg {...base(size, p)}>
+      <path d="M2.5 12S6 5.5 12 5.5c1.6 0 3 .4 4.2 1M21.5 12s-1.2 2.2-3.4 4M14.1 14.2A2.6 2.6 0 0 1 9.8 9.9" />
+      <path d="M8 17.4c1.2.7 2.5 1.1 4 1.1 2 0 3.7-.7 5-1.7M3.5 3.5l17 17" />
+    </svg>
+  )
+}
+
 export function IconMail({ size = 18, ...p }: IconProps) {
   return (
     <svg {...base(size, p)}>

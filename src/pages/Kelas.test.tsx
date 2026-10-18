@@ -23,6 +23,8 @@ const KELAS = [
   k('bm', { name: 'Belajar Mendalam A', course_id: 1, golongan: 'remedial', urutan: 1, studentCount: 3 }),
   k('pd', { name: 'Jalur Cepat A', course_id: 2, golongan: 'mahir', urutan: 1, studentCount: 9 }),
   k('lama', { name: 'Kelas A', golongan: null, course_id: null, max_students: 40 }),
+  // Antrean #239: kelas dipisah per angkatan, nama sama boleh muncul di angkatan lain.
+  k('ja25', { name: 'Jalur Cepat A', course_id: 1, golongan: 'mahir', urutan: 1, angkatan: 2025, studentCount: 7 }),
 ]
 vi.mock('../hooks/useKelas', () => ({ useKelasByDosen: () => ({ data: KELAS, isLoading: false }) }))
 
@@ -57,6 +59,16 @@ describe('KelasPanel (antrean #228)', () => {
     expect(screen.queryByLabelText(/Import CSV/)).toBeNull()
     expect(screen.getByText('Tidak tersedia di mode demo.')).toBeTruthy()
     expect(await screen.findByText(/2 mahasiswa belum tes diagnostik/)).toBeTruthy()
+  })
+
+  it('kelas otomatis dengan nama sama di dua angkatan tampil terpisah di bawah judul angkatannya (antrean #239)', () => {
+    tampil()
+    const a26 = document.getElementById('angkatan-2026') as HTMLElement
+    const a25 = document.getElementById('angkatan-2025') as HTMLElement
+    expect(within(a26).getByText('25/25')).toBeTruthy()
+    expect(within(a25).getByText('7/25')).toBeTruthy()
+    expect(within(a25).getByRole('button', { name: /Lihat daftar mahasiswa kelas Jalur Cepat A/ })).toBeTruthy()
+    expect(within(a25).queryByText('25/25')).toBeNull()
   })
 
   it('daftar belum tes dibuka dalam modal tanpa tombol pindah', async () => {

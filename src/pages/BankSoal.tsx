@@ -316,7 +316,7 @@ function BankSoalTab() {
               onChange={(v) => selectModul(parseInt(v, 10))}
               aria-label="Pilih topik"
               size="sm"
-              options={modules.map((m) => ({ value: String(m.id), label: m.title }))}
+              options={modules.map((m) => ({ value: String(m.id), label: `Bab ${m.order_num}. ${m.title}` }))}
             />
           )}
         </div>
@@ -434,7 +434,7 @@ function BankSoalTab() {
                   value={String(modalTopikId ?? '')}
                   onChange={(v) => setModalTopikId(v ? parseInt(v, 10) : null)}
                   aria-label="Pilih topik yang diuji soal ini"
-                  options={[{ value: '', label: 'Belum Ditandai' }, ...modules.map((m) => ({ value: String(m.id), label: `${m.order_num}. ${m.title}` }))]}
+                  options={[{ value: '', label: 'Belum Ditandai' }, ...modules.map((m) => ({ value: String(m.id), label: `Bab ${m.order_num}. ${m.title}` }))]}
                 />
                 <span className="font-normal text-brown-3">Dipakai untuk menampilkan jumlah benar per topik di hasil mahasiswa. Boleh dikosongkan.</span>
               </label>
@@ -447,7 +447,7 @@ function BankSoalTab() {
                   value={String(modalModuleId ?? '')}
                   onChange={(v) => setModalModuleId(parseInt(v, 10))}
                   aria-label="Pilih topik"
-                  options={modules.map((m) => ({ value: String(m.id), label: m.title }))}
+                  options={modules.map((m) => ({ value: String(m.id), label: `Bab ${m.order_num}. ${m.title}` }))}
                 />
               </label>
             )}

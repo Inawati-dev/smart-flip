@@ -152,8 +152,22 @@ describe('perluPerhatian', () => {
     }
     const hasil = perluPerhatian(sumber, { now: NOW })
     const keterangan = hasil.map((h) => h.keterangan)
-    expect(keterangan).toContain('Belum mengerjakan tes diagnostik awal')
+    expect(keterangan.some((k) => k.includes('Belum mengerjakan tes diagnostik awal'))).toBe(true)
     expect(keterangan.some((k) => k.includes('Tidak aktif'))).toBe(true)
+  })
+
+  it('satu baris per mahasiswa: alasan ganda digabung, nama tidak dobel (antrean #242)', () => {
+    const sumber: SumberAktivitas = {
+      profiles: [profil('u1', 'Aryadi')],
+      modules: MODULES,
+      progress: [],
+      video: [],
+      attempts: [],
+    }
+    const hasil = perluPerhatian(sumber, { now: NOW })
+    expect(hasil).toHaveLength(1)
+    expect(hasil[0].keterangan).toContain('Belum mengerjakan tes diagnostik awal')
+    expect(hasil[0].keterangan).toContain('Tidak aktif')
   })
 
   it('menandai remedial lebih dari 2 kali pada satu modul', () => {

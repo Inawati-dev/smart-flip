@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { authInputClass, authInputStyle } from '../components/AuthShell'
+import { PasswordInput } from '../components/PasswordInput'
 import { LoginFlipCard, FlipPanel } from '../components/LoginFlipCard'
 import { LoginBook } from '../components/LoginBook'
 
@@ -269,9 +270,8 @@ export function Login() {
           <label htmlFor="password" className="text-[0.78rem] font-semibold text-brown-2">
             Kata Sandi
           </label>
-          <input
+          <PasswordInput
             id="password"
-            type="password"
             required
             autoComplete="current-password"
             placeholder="••••••••"

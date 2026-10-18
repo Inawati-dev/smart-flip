@@ -127,6 +127,7 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
   const kejadian = useMemo(() => (sumber ? gabungKejadian(sumber) : []), [sumber])
   const ringkas = useMemo(() => (sumber ? ringkasKelas(sumber) : null), [sumber])
   const perhatian = useMemo(() => (sumber ? perluPerhatian(sumber) : []), [sumber])
+  const profilMap = useMemo(() => new Map((sumber?.profiles ?? []).map((p) => [p.id, p])), [sumber])
   const matriks = useMemo(() => (sumber ? matriksProgres(sumber) : []), [sumber])
 
   // Tab tersimpan di ?tab=. Bawaan 'aktivitas'; kalau belum ada ?tab di URL
@@ -226,15 +227,31 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
             <>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
+                  {/* Judul kolom (antrean #243) */}
+                  <thead>
+                    <tr className="row-divider text-left">
+                      <th className="px-4 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Waktu</th>
+                      <th className="px-4 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Nama</th>
+                      <th className="px-4 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">NIM</th>
+                      <th className="px-4 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Angkatan</th>
+                      <th className="px-4 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Kegiatan</th>
+                      <th className="px-4 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Kelas</th>
+                    </tr>
+                  </thead>
                   <tbody>
-                    {kejadian.slice(0, feedLimit).map((k, i) => (
-                      <tr key={i} className="row-divider">
-                        <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{timeAgo(k.waktu)}</td>
-                        <td className="px-4 py-2 text-brown font-medium whitespace-nowrap">{k.nama}</td>
-                        <td className="px-4 py-2 text-brown-2">{k.keterangan}</td>
-                        <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{k.kelasNama ?? '—'}</td>
-                      </tr>
-                    ))}
+                    {kejadian.slice(0, feedLimit).map((k, i) => {
+                      const mhs = profilMap.get(k.userId)
+                      return (
+                        <tr key={i} className="row-divider">
+                          <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{timeAgo(k.waktu)}</td>
+                          <td className="px-4 py-2 text-brown font-medium whitespace-nowrap">{k.nama}</td>
+                          <td className="px-4 py-2 text-brown-2 text-xs whitespace-nowrap">{mhs?.nim || '—'}</td>
+                          <td className="px-4 py-2 text-brown-2 text-xs whitespace-nowrap">{mhs?.angkatan || '—'}</td>
+                          <td className="px-4 py-2 text-brown-2 min-w-[220px]">{k.keterangan}</td>
+                          <td className="px-4 py-2 text-brown-3 text-xs whitespace-nowrap">{k.kelasNama ?? '—'}</td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
