@@ -738,7 +738,8 @@ export function KelasPanel() {
           className="fixed inset-0 z-[700] flex items-center justify-center p-4"
           style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
         >
-          <div className="bg-ivory rounded-2xl modal-lebar p-5" style={{ animation: 'slideUpModal 0.22s ease' }}>
+          {/* 880 px supaya lima tombol aksi satu baris dengan Hapus Akun di ujung (antrean #270); modal lain tetap 760 px */}
+          <div className="bg-ivory rounded-2xl modal-lebar p-5" style={{ animation: 'slideUpModal 0.22s ease', maxWidth: 'min(880px, 92vw)' }}>
             <div className="flex items-start justify-between gap-3 mb-1">
               <h3 className="text-base font-semibold text-brown min-w-0">{daftar.judul}</h3>
               <button onClick={tutupDaftar} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
