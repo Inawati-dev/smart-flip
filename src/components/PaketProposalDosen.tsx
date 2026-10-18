@@ -398,10 +398,10 @@ export function PaketProposalDosen({
                       <td className="px-3 py-2.5 tabular-nums">{nilai}</td>
                       <td className="px-3 py-2">
                         <div className="flex items-center gap-1.5 whitespace-nowrap">
-                          <button onClick={() => onLihat(b.id)} className="btn btn-secondary">
+                          <button onClick={() => onLihat(b.id)} className="btn btn-secondary whitespace-nowrap">
                             Lihat Kiriman
                           </button>
-                          <button onClick={() => onUbah(b)} aria-label={`Ubah ${b.title}`} title="Ubah tenggat dan rubrik" className="btn btn-secondary">
+                          <button onClick={() => onUbah(b)} aria-label={`Ubah ${b.title}`} title="Ubah tenggat dan rubrik" className="btn btn-secondary whitespace-nowrap">
                             <IconEdit size={13} /> Ubah
                           </button>
                         </div>
