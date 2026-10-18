@@ -163,6 +163,22 @@ select:disabled {
   .select-trigger-sm { min-height: 36px; }
 }
 
+/* Bilah saring di telepon (antrean #232, pilihan A): pemilih kecil dibagi rata satu baris dengan lebar tetap,
+   jadi tidak melompat saat nilai diganti (alasan pengukur lebar di Select.tsx, antrean #46). Huruf 13 px dan
+   jarak dalam dirapatkan supaya label bawaan ("Semua Tahun", "Semua Kelas", "7 hari") muat utuh; nilai panjang
+   dipotong titik-titik oleh .select-trigger-label. Pemilih mata kuliah tetap satu baris sendiri. */
+@media (max-width: 639px) {
+  .flex-wrap:has(> .select-trigger-sm) > .select-trigger-sm {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0 28px 0 10px;
+    font-size: 0.8125rem;
+  }
+  .flex-wrap:has(> .select-trigger-sm) > .select-trigger-sm .select-trigger-chevron { right: 9px; }
+  .flex-wrap:has(> .select-trigger-sm) > .select-trigger-sm[aria-label="Pilih mata kuliah"],
+  .flex-wrap:has(> .select-trigger-sm) > .btn { flex-basis: 100%; }
+}
+
 .select-trigger:hover:not(:disabled) {
   border-color: var(--brown3);
   background-color: var(--bg3);
