@@ -339,3 +339,28 @@ Satu agen model opus, hanya membaca. Ia menjalankan ulang `cek223.py`, membandin
 Pembetulan sesudah pemeriksa tidak diperiksa agen lagi; sesi membacanya satu per satu dan menjalankan ulang pembanding. Yang tidak diperiksa pemeriksa: tampilan PDF dengan mata, daftar rujukan, rumusan capaian di RPS, dan sel tabel yang sangat pendek.
 
 Cara memeriksa ulang, dari `.claude/cadangan-223/`: `python cek223.py asal hasil` harus berakhir `SEMUA LOLOS`.
+
+## Putaran ketiga: keputusan isi (antrean #223 sisa, 18 Okt 2026)
+
+Johan menyerahkan pertanyaan isi yang tertunda ke rekomendasi sesi: "sesuaikan dengan rekomendasimu yang mana baik nya" (18 Okt 2026). Skrip dan cadangan ada di `.claude/cadangan-227/`. Berkas asal putaran ini adalah naskah 12 Okt (md5 sama dengan salinan terakhir yang ditulis sesi). Jumlah: 38 penggantian teks di 7 berkas (Pendahuluan 18, Bab 1: 4, Bab 2: 1, Bab 3: 1, Bab 4: 1, Bab 6: 2, Penutup 10). Jumlah halaman tidak berubah. Bab 5 tidak disentuh.
+
+| Pertanyaan | Keputusan | Alasan |
+|---|---|---|
+| Nama mata kuliah di Pendahuluan P0029, P0049 | "Metode Penelitian dan Pengembangan Proyek" | Tiga paragraf lain di Pendahuluan, dua di Penutup, dan sampul memakai nama itu. Aplikasi memakai "Metode Penelitian dan Pengembangan" tanpa "Proyek". P0049 mengutip judul RPS; judul resmi RPS belum dicocokkan |
+| Sub CPMK, Sub-CPMK, sub CPMK | "Sub-CPMK" di semua tempat (8 di Pendahuluan, 2 di Penutup) | Bentuk berstrip dipakai panduan penyusunan kurikulum pendidikan tinggi |
+| "Tabel Bagian 1.1" di Pendahuluan | "Tabel 1.1" | Tiga tabel sesudahnya bernomor 1.2 sampai 1.4 dan gambar di berkas yang sama bernomor 1.1, 1.2. Nomornya kembar dengan Tabel 1.1 di Bab 1, sama seperti gambarnya; Penutup memakai pola lain ("Tabel Bagian III.n") |
+| "Gambar 2.0 (Bagian II)" di Penutup P0076 | Rujukan gambar dibuang: "roadmap enam bab pada Bagian II" | Gambar itu tidak ada di delapan berkas |
+| Judul bernomor 1 sampai 10 di Bab 5 | Dibiarkan | Teks Bab 5 P0133 merujuk "bagian 1" dan "bagian 2"; berkasnya juga sedang dibuka di Word saat dikerjakan |
+| Bab 1 P0053 | "Pembedaan paradigma penelitian bukan sekadar urusan kategorisasi akademik." | Kalimat lanjutannya (Creswell) menjelaskan bahwa paradigma mengikuti sifat masalah |
+| Bab 1 P0081 | "berbasis proyek nyata sejak Bab 1" | Lanjutan kalimat: "alih-alih menunda praktik hingga akhir semester" |
+| Bab 1 P0135 | "agar saya tahu bagian mana yang harus diubah?" | Dua pertanyaan sebelumnya memakai "saya" |
+| Bab 2 P0101 | "sumber daya yang terbatas dan kurangnya dukungan pemangku kepentingan" | Kalimat sesudahnya menyuruh meminta izin uji coba sejak awal |
+| Tes Formatif dan Kuis Formatif | "Tes Formatif" (13 tempat diganti, termasuk "hasil kuis" menjadi "hasil tes" dan satu "Tes formatif Bab 2" menjadi huruf besar) | Aplikasi hanya memakai "Tes Formatif"; di tujuh berkas asal ada 21 "Tes Formatif" dan 13 "kuis" |
+| Kalimat "Dikirim melalui menu Mini Projek" di Bab 3, 4, 6 | "Berkas Bab 1 proposal itu dikirim", "Berkas Bab 2 proposal itu dikirim", "Berkas Bab 3 proposal itu dikirim" | Semula "Berkas ini dikirim"; pemeriksa menunjukkan "berkas" terdekat di Bab 4 dan 6 adalah berkas AM yang justru tidak diunggah |
+| "ADDIE/4D" dan "ADDIE vs 4D" di Penutup P0031, P0052, P0097 dan Bab 6 P0091 | "(model di Bab 5)", "model-model pengembangan di Bab 5", "(model pengembangan, Bab 5)" | Bab 5 kini membahas tujuh model; Bab 5 P0009 menulis "ADDIE, 4D, atau model lain" |
+
+Lima tafsiran putaran kedua (Bab 6 P0009 "data", Bab 1 P0047, Bab 2 P0104, Bab 6 P0171, tujuh titik koma di tabel) dibiarkan.
+
+Pemeriksa akhir (1 agen opus) memeriksa versi pertama: klaim pembanding, sisa bentuk lama, dan halaman benar; 5 sanggahan. Diterima dan diperbaiki: "Berkas ini" yang ambigu di Bab 4 dan 6, "satu dari tujuh model" yang lebih sempit dari Bab 5 (jadi "model di Bab 5"), "Tes formatif Bab 2" huruf kecil, angka hitungan Tes/Kuis dan alasan nama di aplikasi (dibetulkan di tabel ini), serta pengecekan sisa yang tidak menghentikan skrip (kini keluar dengan galat bila ada sisa). Ditolak: penomoran "Tabel Bagian I.n" untuk Pendahuluan, karena gambar Pendahuluan juga bernomor 1.n dan Penutup sudah merujuknya sebagai "Gambar 1.2 (Bagian I)".
+
+Cara memeriksa ulang, dari `.claude/cadangan-227/`: `python cek227.py asal hasil` harus berakhir `SEMUA LOLOS`, dan `python betul227.py asal <folder-baru>` keluar tanpa baris "sisa".
