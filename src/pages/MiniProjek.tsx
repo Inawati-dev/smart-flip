@@ -92,7 +92,7 @@ export function MiniProjek() {
 
   return (
     <Layout>
-      <div className="p-4 md:p-6 max-w-[1080px]">
+      <div className="p-4 md:p-6">
         <div className="flex items-center gap-3 flex-wrap mb-1">
           <h1 className="font-display text-2xl font-bold text-brown">Mini Projek</h1>
           <MataKuliahSelect />
