@@ -108,6 +108,21 @@ describe('ModulList', () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
+  // Antrean #288: rak mahasiswa tetap rapat; PDF pertemuan kedua jadi kartu kedua tepat sesudah kartu pertama topiknya.
+  it('shows a mahasiswa a second card only for a topic with a second-meeting PDF', async () => {
+    mockAuth.role = 'mahasiswa'
+    const queryClient = new QueryClient()
+    const modul = NINE_MODULES.map((m, i) => (i === 0 ? { ...m, pdf_path_2: '/books/modul-01b.pdf' } : m))
+    queryClient.setQueryData(['modules', 'course', 1], modul)
+    queryClient.setQueryData(['progress', 'all'], {})
+
+    renderModulList(queryClient)
+
+    await waitFor(() => expect(screen.getAllByText(/^Topik 0\d/).length).toBe(10))
+    expect([...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/ebook?book=1&p=2')).toBe(true)
+    expect(screen.queryByRole('region')).toBeNull()
+  })
+
   it('shows a rak of 9 topic cards for a dosen, without redirecting', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()

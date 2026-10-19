@@ -29,7 +29,7 @@ import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconTrash, IconDocument, IconGear } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
-import { KartuTopik, ChipRak } from '../components/KartuTopik'
+import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
 import { formatTanggal, tanggalLokal, labelPertemuan, nomorPertemuan } from '../lib/jadwal'
@@ -231,7 +231,7 @@ export function DosenModulRak() {
   }
 
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
-  const jumlahPdf = sorted.filter((m) => m.pdf_path).length
+  const jumlahPdf = sorted.filter((m) => m.pdf_path || m.pdf_path_2).length // salah satu pertemuan cukup (antrean #287)
 
   // Urutan topik (antrean #104): seret kartu di rak atau lewat modal.
   const [urutkanOpen, setUrutkanOpen] = useState(false)
@@ -864,7 +864,7 @@ export function ModulList() {
             {sorted.length === 0 ? (
               <p className="text-brown-3">Belum ada topik di mata kuliah ini.</p>
             ) : (
-              <div className={KISI_TOPIK}>
+              <Rak>
                 {sorted.map((m, i) => {
                   const status = statusOf(m.id)
                   const entry = progress[moduleIdToPath(m.id)]
@@ -890,10 +890,9 @@ export function ModulList() {
                   const label = labelPertemuan(i, m.minggu_mulai)
                   const terkunci = status === 'locked'
                   const judulKunci = bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`
-                  return (
-                    <KelompokTopik key={m.id} nomor={m.order_num} label={label} judul={m.title}>
+                  const kartuPertama = (
                       <KartuTopik
-                        ringkas
+                        key={m.id}
                         nomor={m.order_num}
                         pertemuan={m.pdf_path_2 ? `Pertemuan ${nomorPertemuan(i, m.minggu_mulai, 1)}` : label}
                         judul={m.title}
@@ -907,10 +906,15 @@ export function ModulList() {
                         judulKunci={judulKunci}
                         to={`/modul/${m.id}`}
                       />
-                      {/* PDF pertemuan kedua hanya tampil bila dosen memasangnya (antrean #285). */}
-                      {m.pdf_path_2 && (
+                  )
+                  // Satu PDF: kartu biasa seperti dulu, supaya rak tetap rapat (antrean #288).
+                  if (!m.pdf_path_2) return kartuPertama
+                  // PDF pertemuan kedua hanya tampil bila dosen memasangnya (antrean #285): kartu kedua tepat sesudah
+                  // kartu pertama. Tanpa pembungkus selebar dua kolom, supaya kisi tidak meninggalkan sel kosong (temuan pemeriksa #288).
+                  return [
+                    kartuPertama,
                         <KartuTopik
-                          ringkas
+                          key={`${m.id}-2`}
                           nomor={m.order_num}
                           pertemuan={`Pertemuan ${nomorPertemuan(i, m.minggu_mulai, 2)}`}
                           judul={m.title}
@@ -920,12 +924,10 @@ export function ModulList() {
                           terkunci={terkunci}
                           judulKunci={judulKunci}
                           to={`/ebook?book=${m.id}&p=2`}
-                        />
-                      )}
-                    </KelompokTopik>
-                  )
+                        />,
+                  ]
                 })}
-              </div>
+              </Rak>
             )}
           </>
         )}
