@@ -100,7 +100,7 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
           <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
             Buka di Tab Baru
           </a>
-          <button type="button" onClick={onClose} aria-label="Tutup pratinjau" className="btn btn-secondary btn-icon">
+          <button type="button" onClick={onClose} aria-label="Tutup pratinjau" className="btn btn-secondary btn-icon btn-sm">
             <IconX size={16} />
           </button>
         </div>

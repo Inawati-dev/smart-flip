@@ -24,9 +24,11 @@ export interface KartuVideoProps {
   pertemuan?: string
   /** Dosen: buatkan gambar kecil video unggahan bila belum ada (antrean #275). */
   buatSampul?: boolean
+  /** Kartu di dalam kelompok topik (antrean #279): judul topik sudah di kepala kelompok, kartu hanya menulis `pertemuan`. */
+  ringkas?: boolean
 }
 
-export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKunci, to, onClick, aksi, warna, pertemuan, buatSampul }: KartuVideoProps) {
+export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKunci, to, onClick, aksi, warna, pertemuan, buatSampul, ringkas }: KartuVideoProps) {
   // YouTube: gambar dari YouTube. Unggahan: <video>.sampul.jpg di bucket (antrean #275); gagal dimuat = gradasi warna.
   const yt = url ? thumbnailUrl(url) : null
   const unggah = url && !yt ? urlSampulVideo(url) : null
@@ -72,7 +74,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
   const bisaKlik = !terkunci && (to || onClick)
   const label = `Putar video topik ${nomor}${pertemuan ? `, ${pertemuan.toLowerCase()}` : ''}: ${judul}`
   return (
-    <div className={`flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
+    <div className={`@container flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
       {bisaKlik && to ? (
         <Link to={to} className="block rounded-[10px] transition-transform hover:-translate-y-0.5" aria-label={label}>
           {kotak}
@@ -84,8 +86,14 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
       ) : (
         kotak
       )}
-      <span className="text-xs text-brown-3">{pertemuan ? `Topik ${nomor} · ${pertemuan}` : `Pertemuan ${nomor}`}</span>
-      <b className="text-sm font-semibold text-brown leading-snug -mt-1 line-clamp-2 min-h-[2.5rem]" title={judul}>{judul}</b>
+      {ringkas ? (
+        <b className="text-sm font-semibold text-brown leading-snug">{pertemuan}</b>
+      ) : (
+        <>
+          <span className="text-xs text-brown-3">{pertemuan ? `Topik ${nomor} · ${pertemuan}` : `Pertemuan ${nomor}`}</span>
+          <b className="text-sm font-semibold text-brown leading-snug -mt-1 line-clamp-2 min-h-[2.5rem]" title={judul}>{judul}</b>
+        </>
+      )}
       {chip && <div className="flex items-center justify-between gap-2">{chip}</div>}
       {aksi && <div className="grid grid-cols-2 gap-1.5 mt-auto">{aksi}</div>}
     </div>

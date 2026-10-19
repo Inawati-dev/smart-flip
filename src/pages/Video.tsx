@@ -16,10 +16,10 @@ import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconPlay } from '../components/icons'
 import { KartuVideo } from '../components/KartuVideo'
-import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
+import { ChipRak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
-import { formatTanggal, labelPertemuan } from '../lib/jadwal'
+import { formatTanggal, labelPertemuan, nomorPertemuan } from '../lib/jadwal'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -41,6 +41,24 @@ const PILIHAN_PERTEMUAN = [
   { value: '2', label: 'Pertemuan Kedua' },
 ]
 const urlPertemuan = (m: ModuleRow, p: PertemuanTopik) => (p === 2 ? m.video_url_2 : m.video_url) || ''
+
+// Kelompok satu topik di rak (antrean #279): judul topik sekali, di bawahnya kotak video tiap pertemuan.
+function KelompokTopik({ nomor, label, judul, children }: { nomor: number; label: string; judul: string; children: React.ReactNode }) {
+  return (
+    <section className="h-full rounded-xl border bg-ivory p-3 flex flex-col gap-3" style={BORDER} aria-label={`Topik ${nomor}: ${judul}`}>
+      <div className="min-w-0">
+        <span className="block text-xs text-brown-3">
+          Topik {nomor} · {label}
+        </span>
+        <h2 className="text-sm font-semibold text-brown leading-snug line-clamp-2" title={judul}>
+          {judul}
+        </h2>
+      </div>
+      <div className="grid grid-cols-2 gap-3 flex-1">{children}</div>
+    </section>
+  )
+}
+const KISI_TOPIK = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'
 
 function formatDuration(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return '—'
@@ -100,14 +118,11 @@ function VideoMahasiswa() {
   // /video tanpa id → rak semua topik (antrean #85 opsi B, mengganti alihkan
   // otomatis WP4 lama).
   if (current == null) {
-    // shortcut: durasi video pertemuan kedua hanya dari isian dosen (tanpa probe metadata); tambah probe bila sering kosong.
-    const detik = (m: ModuleRow) => {
-      const satu = m.video_url ? (m.duration_sec ?? durations[m.id] ?? null) : 0
-      const dua = m.video_url_2 ? (m.duration_sec_2 ?? null) : 0
-      return satu == null || dua == null ? null : satu + dua
-    }
-    const semuaDurasiTahu = sorted.length > 0 && sorted.every((m) => detik(m) != null)
-    const totalMenit = Math.round(sorted.reduce((s, m) => s + (detik(m) ?? 0), 0) / 60)
+    // Durasi tiap kotak video: isian dosen, atau metadata berkas (probe; kunci negatif = video pertemuan kedua).
+    const detikKotak = (m: ModuleRow, p: PertemuanTopik) => (p === 2 ? (m.duration_sec_2 ?? durations[-m.id]) : (m.duration_sec ?? durations[m.id])) ?? null
+    const kotak = sorted.flatMap((m) => ([1, 2] as const).filter((p) => urlPertemuan(m, p)).map((p) => detikKotak(m, p)))
+    const semuaDurasiTahu = kotak.length > 0 && kotak.every((d) => d != null)
+    const totalMenit = Math.round(kotak.reduce<number>((s, d) => s + (d ?? 0), 0) / 60)
     return (
       <Layout>
         <div className="p-4 md:p-6">
@@ -124,38 +139,47 @@ function VideoMahasiswa() {
           ) : (
             <>
               <p className="text-xs text-brown-3 mb-4">
-                {semuaDurasiTahu ? `${sorted.length} pertemuan · ${totalMenit} menit` : `${sorted.length} pertemuan`}
+                {`${sorted.length} topik · ${kotak.length} video`}
+                {semuaDurasiTahu ? ` · ${totalMenit} menit` : ''}
               </p>
-              <Rak>
+              <div className={KISI_TOPIK}>
                 {sorted.map((m, i) => {
-                  const parsed = parseVideoUrl(m.video_url)
                   const status = statusOf(m.id)
                   const prog = progressMap[m.id]
-                  const hasVideo = !!(m.video_url || m.video_url_2)
-                  // Selesai = semua video topik yang terpasang sudah ditonton.
-                  const selesai = (!m.video_url || !!prog?.done) && (!m.video_url_2 || !!prog?.done2)
-                  const chip = chipMahasiswa(status, hasVideo, (prog?.seconds ?? 0) + (prog?.seconds2 ?? 0), !!prog && selesai)
+                  const judulKunci = bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`
+                  // Kotak hanya untuk pertemuan yang punya video; topik tanpa video tetap satu kotak "Belum Ada Video".
+                  const ada = ([1, 2] as const).filter((p) => urlPertemuan(m, p))
                   return (
-                    <div key={m.id}>
-                      {parsed?.kind === 'file' && durations[m.id] == null && (
-                        <DurationProbe src={parsed.src} onDuration={(sec) => handleDuration(m.id, sec)} />
-                      )}
-                      <KartuVideo
-                        nomor={m.order_num}
-                        pertemuan={labelPertemuan(i, m.minggu_mulai)}
-                        judul={m.title}
-                        url={m.video_url || m.video_url_2}
-                        durasi={detik(m) ? formatDuration(detik(m)!) : undefined}
-                        chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
-                        terkunci={status === 'locked'}
-                        judulKunci={bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`}
-                        to={hasVideo ? `/video/${m.id}` : undefined}
-                        warna={warnaSampul(m.order_num)}
-                      />
-                    </div>
+                    <KelompokTopik key={m.id} nomor={m.order_num} label={labelPertemuan(i, m.minggu_mulai)} judul={m.title}>
+                      {(ada.length ? ada : ([1] as const)).map((p) => {
+                        const url = urlPertemuan(m, p)
+                        const parsed = parseVideoUrl(url)
+                        const kunci = p === 2 ? -m.id : m.id
+                        const dtk = detikKotak(m, p)
+                        const chip = chipMahasiswa(status, !!url, (p === 2 ? prog?.seconds2 : prog?.seconds) ?? 0, !!(p === 2 ? prog?.done2 : prog?.done))
+                        return (
+                          <div key={p}>
+                            {parsed?.kind === 'file' && dtk == null && <DurationProbe src={parsed.src} onDuration={(sec) => handleDuration(kunci, sec)} />}
+                            <KartuVideo
+                              ringkas
+                              nomor={m.order_num}
+                              pertemuan={`Pertemuan ${nomorPertemuan(i, m.minggu_mulai, p)}`}
+                              judul={m.title}
+                              url={url || null}
+                              durasi={dtk ? formatDuration(dtk) : undefined}
+                              chip={<ChipRak jenis={chip.jenis} label={chip.label} />}
+                              terkunci={status === 'locked'}
+                              judulKunci={judulKunci}
+                              to={url ? `/video/${m.id}${p === 2 ? '?p=2' : ''}` : undefined}
+                              warna={warnaSampul(m.order_num)}
+                            />
+                          </div>
+                        )
+                      })}
+                    </KelompokTopik>
                   )
                 })}
-              </Rak>
+              </div>
             </>
           )}
         </div>
@@ -484,7 +508,7 @@ function VideoDosen() {
         </div>
         <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
           <p className="text-xs text-brown-3">
-            {sorted.length} pertemuan · {punyaVideo} punya video
+            {sorted.length} topik · {punyaVideo} punya video
           </p>
           <button onClick={() => setUrutkanOpen(true)} disabled={sorted.length < 2} className="btn btn-secondary btn-sm">
             Urutkan
@@ -497,67 +521,74 @@ function VideoDosen() {
             Belum ada topik.
           </div>
         ) : (
-          <Rak>
-            {sorted.map((m, i) => {
-              const url = m.video_url || ''
-              const url2 = m.video_url_2 || ''
-              const parsed = parseVideoUrl(url)
-              const chip: { jenis: ChipJenis; label: string } = !url
-                ? { jenis: 'todo', label: 'Belum Ada Video' }
-                : parsed
-                  ? { jenis: 'ok', label: 'Tayang' }
-                  : { jenis: 'warn', label: 'Tautan Tidak Dikenal' }
-              return (
-                <div key={m.id} {...seretProps(m.id)}>
-                <KartuVideo
-                  nomor={m.order_num}
-                  pertemuan={labelPertemuan(i, m.minggu_mulai)}
-                  judul={m.title}
-                  url={m.video_url || url2}
-                  buatSampul
-                  durasi={m.duration_sec ? formatDuration(m.duration_sec) : undefined}
-                  chip={
-                    chip.jenis === 'warn' ? <ChipRak jenis="warn" label={chip.label} /> : url && url2 ? <ChipRak jenis="ok" label="2 Video" /> : undefined
-                  }
-                  onClick={url || url2 ? () => setPreviewUrl(url || url2) : undefined}
-                  warna={warnaSampul(m.order_num)}
-                  aksi={
-                    <>
-                      <button
-                        onClick={() => openEdit(m)}
-                        aria-label={url ? 'Ubah Video' : 'Tambah Video'}
-                        title={url ? 'Ubah Video' : 'Tambah Video'}
-                        className={`btn btn-secondary btn-sm w-full whitespace-nowrap ${url ? '' : 'col-span-2'}`}
-                      >
-                        <IconEdit size={13} /> <span className="hidden sm:inline">{url ? 'Ubah Video' : 'Tambah Video'}</span>
-                      </button>
-                      {url && (
+          <div className={KISI_TOPIK}>
+            {sorted.map((m, i) => (
+              <div key={m.id} {...seretProps(m.id)}>
+                <KelompokTopik nomor={m.order_num} label={labelPertemuan(i, m.minggu_mulai)} judul={m.title}>
+                  {([1, 2] as const).map((p) => {
+                    const url = urlPertemuan(m, p)
+                    const parsed = parseVideoUrl(url)
+                    const label = `Pertemuan ${nomorPertemuan(i, m.minggu_mulai, p)}`
+                    const dtk = p === 2 ? m.duration_sec_2 : m.duration_sec
+                    if (p === 2 && !url) {
+                      // Pertemuan kedua tanpa video: kotak tambah, bukan kartu kosong (antrean #279).
+                      return (
                         <button
+                          key={p}
                           type="button"
-                          onClick={() => setPreviewUrl(url)}
-                          aria-label="Pratinjau video"
-                          title="Pratinjau video"
-                          className="btn btn-secondary btn-sm w-full whitespace-nowrap"
+                          onClick={() => openEdit(m, 2)}
+                          title={`Tambah video untuk ${label.toLowerCase()}`}
+                          className="w-full aspect-video rounded-[10px] border border-dashed flex items-center justify-center px-2 text-center text-xs font-semibold text-terra hover:bg-bg3 transition-colors"
+                          style={BORDER}
                         >
-                          <IconPlay size={13} /> <span className="hidden sm:inline">Pratinjau</span>
+                          + Video {label}
                         </button>
-                      )}
-                      {/* Video pertemuan kedua topik (antrean #271): baris sendiri, teks tetap tampil di telepon supaya tidak tertukar dengan tombol di atasnya. */}
-                      <button
-                        type="button"
-                        onClick={() => openEdit(m, 2)}
-                        title={url2 ? 'Ubah video pertemuan kedua topik ini' : 'Tambah video untuk pertemuan kedua topik ini'}
-                        className="btn btn-secondary btn-sm w-full whitespace-nowrap col-span-2"
-                      >
-                        {url2 ? <IconEdit size={13} /> : '+'} {url2 ? 'Ubah Pertemuan Kedua' : 'Pertemuan Kedua'}
-                      </button>
-                    </>
-                  }
-                />
-                </div>
-              )
-            })}
-          </Rak>
+                      )
+                    }
+                    return (
+                      <KartuVideo
+                        key={p}
+                        ringkas
+                        nomor={m.order_num}
+                        pertemuan={label}
+                        judul={m.title}
+                        url={url || null}
+                        buatSampul
+                        durasi={dtk ? formatDuration(dtk) : undefined}
+                        chip={url && !parsed ? <ChipRak jenis="warn" label="Tautan Tidak Dikenal" /> : undefined}
+                        onClick={url ? () => setPreviewUrl(url) : undefined}
+                        warna={warnaSampul(m.order_num)}
+                        aksi={
+                          <>
+                            <button
+                              onClick={() => openEdit(m, p)}
+                              aria-label={`${url ? 'Ubah' : 'Tambah'} video ${label.toLowerCase()}`}
+                              title={url ? 'Ubah Video' : 'Tambah Video'}
+                              className={`btn btn-secondary btn-sm w-full whitespace-nowrap ${url ? '' : 'col-span-2'}`}
+                            >
+                              <IconEdit size={13} /> <span className={url ? 'hidden @min-[13rem]:inline' : 'hidden sm:inline'}>{url ? 'Ubah' : 'Tambah Video'}</span>
+                            </button>
+                            {url && (
+                              <button
+                                type="button"
+                                onClick={() => setPreviewUrl(url)}
+                                aria-label={`Pratinjau video ${label.toLowerCase()}`}
+                                title="Pratinjau video"
+                                className="btn btn-secondary btn-sm w-full whitespace-nowrap"
+                              >
+                                {/* label hanya bila kotak cukup lebar (antrean #279): kotak di kelompok bisa sesempit 140 px */}
+                                <IconPlay size={13} /> <span className="hidden @min-[13rem]:inline">Pratinjau</span>
+                              </button>
+                            )}
+                          </>
+                        }
+                      />
+                    )
+                  })}
+                </KelompokTopik>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

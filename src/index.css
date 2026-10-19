@@ -304,6 +304,10 @@ select:disabled {
   min-height: 44px;
   padding: 0;
 }
+/* Tombol ikon di bilah tombol kecil ikut tinggi .btn-sm (antrean #278): 36 px di layar 640 px ke atas, 44 px di telepon. */
+@media (min-width: 640px) {
+  .btn-icon.btn-sm { width: 36px; height: 36px; min-height: 36px; }
+}
 
 /* Tombol P1..Pn (PertemuanStepper.tsx, sapuan mahasiswa 16 Sep 2026) tetap
    bulat 44x44, bukan .btn. Hover sudah didapat gratis dari aturan

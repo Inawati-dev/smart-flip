@@ -22,6 +22,11 @@ export function labelPertemuan(indeks: number, mingguMulai?: number | null): str
   return `Pertemuan ${m}-${m + 1}`
 }
 
+/** Nomor pertemuan ke-`ke` (1 atau 2) topik ke-`indeks` menurut jadwal (antrean #279), mis. topik keempat pertemuan kedua = 10. */
+export function nomorPertemuan(indeks: number, mingguMulai: number | null | undefined, ke: 1 | 2): number {
+  return (mingguMulai ?? mingguBawaan(indeks)) + ke - 1
+}
+
 /** 'YYYY-MM-DD' dibaca sebagai tengah malam waktu setempat, bukan UTC. */
 export function tanggalLokal(iso: string): Date {
   const [y, m, d] = iso.slice(0, 10).split('-').map(Number)

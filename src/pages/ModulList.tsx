@@ -545,7 +545,7 @@ export function DosenModulRak() {
                     type="button"
                     onClick={handleAssignPdf}
                     disabled={!pickedPdfUrl || assigningPdf}
-                    className="btn btn-secondary btn-sm min-w-[8rem]"
+                    className="btn btn-secondary min-w-[8rem]"
                   >
                     {assigningPdf ? 'Memasang…' : 'Gunakan'}
                   </button>
@@ -763,7 +763,7 @@ function KelolaMataKuliahModal({ onClose }: { onClose: () => void }) {
             />
             <div className="flex gap-2.5 justify-end">
               {editId != null && (
-                <button onClick={resetForm} className="btn btn-secondary btn-sm">
+                <button onClick={resetForm} className="btn btn-secondary">
                   Batal Ubah
                 </button>
               )}

@@ -400,7 +400,7 @@ export function TugasAkhirPanel() {
                               )}
                             </td>
                             <td className="px-3 py-2.5 text-center">
-                              <button onClick={() => openGrade(s)} className="btn btn-secondary whitespace-nowrap">
+                              <button onClick={() => openGrade(s)} className="btn btn-secondary btn-sm whitespace-nowrap">
                                 {s.total != null ? 'Ubah Nilai' : 'Nilai'}
                               </button>
                             </td>

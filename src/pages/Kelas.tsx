@@ -564,7 +564,7 @@ export function KelasPanel() {
                                   onClick={() => setGolTarget(k)}
                                   title="Lihat dua kelompok hasil tes diagnostik"
                                   aria-label={`Hasil tes diagnostik kelas ${k.name}: ${GOLONGAN_LABEL.mahir} ${cepat}, ${GOLONGAN_LABEL.remedial} ${dalam}`}
-                                  className="btn btn-secondary whitespace-nowrap"
+                                  className="btn btn-secondary btn-sm whitespace-nowrap"
                                 >
                                   Cepat {cepat} · Mendalam {dalam}
                                 </button>
@@ -580,7 +580,7 @@ export function KelasPanel() {
                                     onClick={() => setDeleteTarget(k)}
                                     aria-label={`Hapus kelas ${k.name}`}
                                     title="Hapus kelas lama"
-                                    className="btn btn-danger btn-icon flex-shrink-0"
+                                    className="btn btn-danger btn-icon btn-sm flex-shrink-0"
                                   >
                                     <IconTrash size={15} />
                                   </button>

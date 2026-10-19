@@ -130,7 +130,7 @@ describe('Video (dosen)', () => {
   it('shows a preview button for a module with a URL', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
-    expect(screen.getByText('Ubah Video')).toBeTruthy()
+    expect(screen.getAllByTitle('Ubah Video').length).toBeGreaterThan(0) // label kotak kini 'Ubah' (antrean #279)
     const preview = document.querySelector('button[aria-label*="Putar video"]')
     expect(preview).toBeTruthy()
   })
@@ -147,7 +147,7 @@ describe('Video (dosen)', () => {
   it('shows a video file input in the Ubah tautan modal', async () => {
     renderVideo(1)
     await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
-    fireEvent.click(screen.getByText('Ubah Video'))
+    fireEvent.click(screen.getAllByTitle('Ubah Video')[0])
     const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm,.mp4,.webm"]')
     expect(input).toBeTruthy()
   })
@@ -157,7 +157,16 @@ describe('Video (dosen)', () => {
   it('shows "Ubah Video"/"Tambah Video" buttons per card', async () => {
     renderVideoRak()
     await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
-    expect(screen.getByText('Ubah Video')).toBeTruthy()
+    expect(screen.getAllByTitle('Ubah Video').length).toBeGreaterThan(0) // label kotak kini 'Ubah' (antrean #279)
     expect(screen.getByText('Tambah Video')).toBeTruthy()
+  })
+
+  // Antrean #279: rak dikelompokkan per topik; pertemuan kedua tanpa video jadi kotak tambah.
+  it('groups the rak per topik with a separate box for the second meeting', async () => {
+    renderVideoRak()
+    await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
+    expect(screen.getByRole('region', { name: 'Topik 1: Modul 1' })).toBeTruthy()
+    expect(screen.getByText('+ Video Pertemuan 2')).toBeTruthy()
+    expect(screen.getByText('+ Video Pertemuan 4')).toBeTruthy()
   })
 })
