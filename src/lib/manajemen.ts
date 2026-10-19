@@ -261,7 +261,8 @@ export async function buangBerkasYatim(urls: Array<string | null | undefined>): 
         .eq(pdf ? 'pdf_path_2' : 'video_url_2', url)
         .limit(1)
       if (kedua.error ? kedua.error.code !== '42703' : !kedua.data || kedua.data.length > 0) continue
-      await supabase.storage.from(pdf ? 'modul-pdf' : 'modul-video').remove(pdf ? [nama, nama + AKHIRAN_SAMPUL] : [nama])
+      // Gambar sampul ikut dibuang: PDF sejak antrean #192, video sejak antrean #275.
+      await supabase.storage.from(pdf ? 'modul-pdf' : 'modul-video').remove([nama, nama + AKHIRAN_SAMPUL])
     } catch (e) {
       console.warn('[manajemen] buangBerkasYatim gagal untuk', url, e)
     }
@@ -643,7 +644,7 @@ export async function listModulVideoFiles(): Promise<ModulVideoFile[]> {
   if (!isSupabaseConfigured) return []
   const [listRes, modulesRes0] = await Promise.all([
     supabase.storage.from('modul-video').list('', {
-      limit: 200,
+      limit: 400, // tiap video bisa punya satu berkas .sampul.jpg (antrean #275)
       sortBy: { column: 'created_at', order: 'desc' },
     }),
     supabase.from('modules').select('*, courses(name)'),
@@ -691,7 +692,7 @@ export async function deleteModulVideoFile(path: string): Promise<void> {
     (modulesRes ?? []).filter((m) => videoStorageObjectName((m as Record<string, string>)[k]) === path).map((m) => (m as { id: number }).id)
   const usedByIds = pakai('video_url')
   const usedByIds2 = pakai('video_url_2')
-  const { error } = await supabase.storage.from('modul-video').remove([path])
+  const { error } = await supabase.storage.from('modul-video').remove([path, path + AKHIRAN_SAMPUL])
   if (error) throw error
   if (usedByIds.length) {
     await supabase.from('modules').update({ video_url: null }).in('id', usedByIds)

@@ -284,13 +284,16 @@ export function DosenModulRak() {
             const judul = custom?.judul || m.title
             const fileName = m.pdf_path ? m.pdf_path.split('/').pop()?.split('?')[0] : null
             const hasPdf = !!m.pdf_path
+            const label = labelPertemuan(i, m.minggu_mulai)
+            // Satu PDF tanpa PDF kedua berlaku untuk dua pertemuan topik (antrean #277); kartu mengatakannya.
+            const satuPdf = hasPdf && !m.pdf_path_2
             return (
               <div key={m.id} {...seretProps(m.id)}>
               <KartuTopik
                 nomor={m.order_num}
-                pertemuan={labelPertemuan(i, m.minggu_mulai)}
+                pertemuan={satuPdf ? undefined : label}
                 judul={judul}
-                keterangan={fileName ? 'PDF' : 'Belum Ada PDF'}
+                keterangan={satuPdf ? `1 PDF untuk ${label}` : fileName ? (m.pdf_path_2 ? '2 PDF' : 'PDF') : 'Belum Ada PDF'}
                 adaPdf={!!fileName}
                 pdf={m.pdf_path}
                 buatSampul
@@ -328,15 +331,29 @@ export function DosenModulRak() {
                     >
                       <IconTrash size={13} /> <span className="hidden sm:inline">Hapus</span>
                     </button>
-                    {/* PDF pertemuan kedua topik (antrean #271): baris sendiri, teks tetap tampil di telepon. */}
-                    <button
-                      type="button"
-                      onClick={() => openPdfModal(m.id, 2)}
-                      title={m.pdf_path_2 ? 'Ganti PDF pertemuan kedua topik ini' : 'Tambah PDF untuk pertemuan kedua topik ini'}
-                      className="btn btn-secondary btn-sm w-full whitespace-nowrap col-span-2"
-                    >
-                      {m.pdf_path_2 ? <IconDocument size={13} /> : '+'} {m.pdf_path_2 ? 'Ganti PDF Pertemuan Kedua' : 'PDF Pertemuan Kedua'}
-                    </button>
+                    {/* PDF pertemuan kedua topik (antrean #271). Belum ada = tautan kecil, supaya tidak terkesan wajib (antrean #277). */}
+                    {m.pdf_path_2 ? (
+                      <button
+                        type="button"
+                        onClick={() => openPdfModal(m.id, 2)}
+                        title="Ganti PDF pertemuan kedua topik ini"
+                        className="btn btn-secondary btn-sm w-full whitespace-nowrap col-span-2"
+                      >
+                        <IconDocument size={13} /> Ganti PDF Pertemuan Kedua
+                      </button>
+                    ) : hasPdf ? (
+                      <button
+                        type="button"
+                        onClick={() => openPdfModal(m.id, 2)}
+                        title="Pertemuan kedua topik ini memakai PDF lain"
+                        className="col-span-2 min-h-11 sm:min-h-9 text-xs font-semibold text-terra whitespace-nowrap hover:underline underline-offset-2"
+                      >
+                        PDF lain di pertemuan kedua
+                      </button>
+                    ) : (
+                      // baris kosong setinggi tautan (dan tombol btn-sm: 44 px telepon, 36 px laptop) supaya tombol kartu bersebelahan tetap sejajar
+                      <span className="col-span-2 min-h-11 sm:min-h-9" aria-hidden="true" />
+                    )}
                   </>
                 }
               />

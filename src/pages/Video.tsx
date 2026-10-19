@@ -514,6 +514,7 @@ function VideoDosen() {
                   pertemuan={labelPertemuan(i, m.minggu_mulai)}
                   judul={m.title}
                   url={m.video_url || url2}
+                  buatSampul
                   durasi={m.duration_sec ? formatDuration(m.duration_sec) : undefined}
                   chip={
                     chip.jenis === 'warn' ? <ChipRak jenis="warn" label={chip.label} /> : url && url2 ? <ChipRak jenis="ok" label="2 Video" /> : undefined

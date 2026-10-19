@@ -1,6 +1,7 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { thumbnailUrl } from '../lib/video'
+import { urlSampulVideo, buatSampulVideo } from '../lib/sampulVideo'
 import { IconPlay } from './icons'
 
 // Kartu video di rak (antrean #85). Thumbnail 16:9: gambar YouTube bila
@@ -21,10 +22,23 @@ export interface KartuVideoProps {
   warna?: string
   /** Rentang pertemuan menurut jadwal, mis. "Pertemuan 9-10" (antrean #273); kosong = nomor topik. */
   pertemuan?: string
+  /** Dosen: buatkan gambar kecil video unggahan bila belum ada (antrean #275). */
+  buatSampul?: boolean
 }
 
-export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKunci, to, onClick, aksi, warna, pertemuan }: KartuVideoProps) {
-  const thumb = url ? thumbnailUrl(url) : null
+export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKunci, to, onClick, aksi, warna, pertemuan, buatSampul }: KartuVideoProps) {
+  // YouTube: gambar dari YouTube. Unggahan: <video>.sampul.jpg di bucket (antrean #275); gagal dimuat = gradasi warna.
+  const yt = url ? thumbnailUrl(url) : null
+  const unggah = url && !yt ? urlSampulVideo(url) : null
+  const [sampul, setSampul] = useState<{ url: string; tahap: 'coba' | 'membuat' | 'gagal'; versi: number }>({ url: '', tahap: 'coba', versi: 0 })
+  const s = sampul.url === url ? sampul : { url: url ?? '', tahap: 'coba' as const, versi: 0 }
+  const thumb = yt ?? (unggah && s.tahap === 'coba' ? (s.versi ? `${unggah}?v=${s.versi}` : unggah) : null)
+  function sampulGagal() {
+    if (yt || !url) return
+    if (!buatSampul || s.versi) return setSampul({ ...s, tahap: 'gagal' })
+    setSampul({ ...s, tahap: 'membuat' })
+    void buatSampulVideo(url).then((ok) => setSampul({ url, tahap: ok ? 'coba' : 'gagal', versi: ok ? Date.now() : 0 }))
+  }
   const dasar = warna ?? 'var(--cover-1)'
   const kotak = (
     <div
@@ -32,7 +46,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
       style={{ background: `linear-gradient(140deg, ${dasar}, color-mix(in srgb, ${dasar} 70%, black))`, color: 'var(--cover-ink)' }}
     >
       {thumb ? (
-        <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img src={thumb} alt="" loading="lazy" onError={sampulGagal} className="absolute inset-0 w-full h-full object-cover" />
       ) : (
         <span className="absolute left-3 top-2.5 text-[11px] tracking-[.08em] uppercase opacity-80">
           {pertemuan ?? `Pertemuan ${String(nomor).padStart(2, '0')}`}
