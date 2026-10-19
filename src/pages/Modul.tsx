@@ -15,7 +15,7 @@ import { PertemuanStepper } from '../components/PertemuanStepper'
 import { DosenModulRak } from './ModulList'
 import { IconBook, IconChart, IconPlay, IconEdit } from '../components/icons'
 import { SampulTopik } from '../components/KartuTopik'
-import { formatTanggal } from '../lib/jadwal'
+import { formatTanggal, labelPertemuan } from '../lib/jadwal'
 
 // progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
 // -- was rendering as-is ("2026-07-24T04:04:55.479+00:00") instead of a
@@ -95,7 +95,7 @@ export default function Modul() {
     <Layout>
       <div className="p-4 md:p-6">
         <h1 className="text-2xl font-bold text-brown mb-4">
-          Pertemuan {modul.order_num} · {modul.title}
+          {labelPertemuan(nomorTopik - 1, modul.minggu_mulai)} · {modul.title}
         </h1>
         <PertemuanStepper current={modul.id} basePath="/modul" statusOf={statusOf} />
 

@@ -14,7 +14,7 @@ import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner } from '../components/SoalRunner'
 import { IconLock } from '../components/icons'
-import { formatTanggal } from '../lib/jadwal'
+import { formatTanggal, nomorPertemuan } from '../lib/jadwal'
 import { ChipRak } from '../components/KartuTopik'
 
 // Tes formatif per topik (spec §4.3, §4.4, §9 WP6) — menggantikan Kuis.tsx:
@@ -109,7 +109,7 @@ export default function Formatif() {
     <Layout>
       <div className="p-4 md:p-6">
         <h1 className="font-display text-xl font-bold text-brown mb-4">
-          Tes Formatif · Pertemuan {modul.order_num} · {modul.title}
+          Tes Formatif · Pertemuan {nomorPertemuan(Math.max(0, idx), modul.minggu_mulai, 2)} · {modul.title}
         </h1>
         <PertemuanStepper current={moduleId} basePath="/asesmen/formatif" statusOf={statusOf} />
 

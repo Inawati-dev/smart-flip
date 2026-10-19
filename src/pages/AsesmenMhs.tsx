@@ -11,7 +11,7 @@ import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topi
 import { computeNGain } from '../lib/ngain'
 import { rincianDariBenar, rincianDariPercobaan, type RincianTopik } from '../lib/rincianTopik'
 import { useCourse } from '../contexts/CourseContext'
-import { formatTanggal } from '../lib/jadwal'
+import { formatTanggal, nomorPertemuan } from '../lib/jadwal'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner, TinjauanJawaban } from '../components/SoalRunner'
@@ -166,7 +166,7 @@ function AsesmenDaftar() {
                       style={BORDER}
                     >
                       <span className="text-sm text-brown-2">
-                        Pertemuan {i + 1} · {m.title}
+                        Pertemuan {nomorPertemuan(i, m.minggu_mulai, 2)} · {m.title}
                       </span>
                       <StatusChip label={label} />
                     </div>

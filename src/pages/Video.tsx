@@ -212,7 +212,7 @@ function VideoMahasiswa() {
         </Link>
         <div className="flex items-center gap-3 flex-wrap mb-4">
           <h1 className="text-2xl font-bold text-brown">
-            Pertemuan {modul.order_num} · {modul.title}
+            Pertemuan {nomorPertemuan(Math.max(0, idx), modul.minggu_mulai, pertemuan)} · {modul.title}
           </h1>
           <MataKuliahSelect />
         </div>
