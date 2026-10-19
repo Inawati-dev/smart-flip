@@ -19,7 +19,7 @@ import { KartuVideo } from '../components/KartuVideo'
 import { ChipRak, Rak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
-import { formatTanggal } from '../lib/jadwal'
+import { formatTanggal, labelPertemuan } from '../lib/jadwal'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -127,7 +127,7 @@ function VideoMahasiswa() {
                 {semuaDurasiTahu ? `${sorted.length} pertemuan · ${totalMenit} menit` : `${sorted.length} pertemuan`}
               </p>
               <Rak>
-                {sorted.map((m) => {
+                {sorted.map((m, i) => {
                   const parsed = parseVideoUrl(m.video_url)
                   const status = statusOf(m.id)
                   const prog = progressMap[m.id]
@@ -142,6 +142,7 @@ function VideoMahasiswa() {
                       )}
                       <KartuVideo
                         nomor={m.order_num}
+                        pertemuan={labelPertemuan(i, m.minggu_mulai)}
                         judul={m.title}
                         url={m.video_url || m.video_url_2}
                         durasi={detik(m) ? formatDuration(detik(m)!) : undefined}
@@ -497,7 +498,7 @@ function VideoDosen() {
           </div>
         ) : (
           <Rak>
-            {sorted.map((m) => {
+            {sorted.map((m, i) => {
               const url = m.video_url || ''
               const url2 = m.video_url_2 || ''
               const parsed = parseVideoUrl(url)
@@ -510,6 +511,7 @@ function VideoDosen() {
                 <div key={m.id} {...seretProps(m.id)}>
                 <KartuVideo
                   nomor={m.order_num}
+                  pertemuan={labelPertemuan(i, m.minggu_mulai)}
                   judul={m.title}
                   url={m.video_url || url2}
                   durasi={m.duration_sec ? formatDuration(m.duration_sec) : undefined}
@@ -565,7 +567,8 @@ function VideoDosen() {
         >
           <div
             className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
-            style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
+            // 1080 px supaya isian dan pratinjau berdampingan dan tombol Simpan terlihat tanpa digulir (antrean #274); modal lain tetap 760 px
+            style={{ maxWidth: 'min(1080px, 94vw)', boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url || editModul.video_url_2 ? 'Ubah Video' : 'Tambah Video'}</h3>
             <p className="text-xs text-brown-3 mb-3">{editModul.title}</p>
@@ -588,6 +591,10 @@ function VideoDosen() {
               {slot === 1 ? 'Video yang diputar di pertemuan pertama topik ini.' : 'Opsional: isi bila topik ini memakai video lain di pertemuan keduanya. Kosongkan bila tidak.'}
             </p>
 
+            {/* Dua kolom di laptop (antrean #274): isian di kiri, pratinjau di kanan, supaya modal muat tanpa digulir.
+                Telepon satu kolom dengan urutan lama: tautan, pratinjau, unggah. */}
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-6">
+              <div className="min-w-0 lg:col-start-1 lg:row-start-1">
             {/* Bagian 1: tautan. Pola sama dengan modal Ganti PDF (antrean #67):
                 subjudul kecil, isi di kiri, aksi di kanan, tanpa flex-wrap. */}
             <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Tempel Tautan</p>
@@ -619,8 +626,11 @@ function VideoDosen() {
               />
               <span className="text-xs text-brown-3">Tautan YouTube diisi manual, berkas unggahan terisi otomatis.</span>
             </div>
-            {parsedInput && (
-              <div className="mb-3 rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
+              </div>
+              <div className="min-w-0 mb-3 lg:mb-0 lg:col-start-2 lg:row-start-1 lg:row-span-2">
+                <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2 hidden lg:block">Pratinjau</p>
+                {parsedInput ? (
+                  <div className="rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
                 {parsedInput.kind === 'youtube' ? (
                   <iframe
                     src={parsedInput.embedUrl}
@@ -640,8 +650,13 @@ function VideoDosen() {
                   />
                 )}
               </div>
-            )}
-
+                ) : (
+                  <div className="hidden lg:flex items-center justify-center rounded-lg border border-dashed text-xs text-brown-3 text-center p-4" style={{ ...BORDER, aspectRatio: '16/9' }}>
+                    Pratinjau video tampil di sini sesudah tautan ditempel atau berkas diunggah.
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 lg:col-start-1 lg:row-start-2">
             {/* Bagian 2: unggah berkas */}
             <div className="pt-4 mt-1 border-t" style={BORDER}>
               <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Atau Unggah Berkas</p>
@@ -667,6 +682,8 @@ function VideoDosen() {
                 </button>
               </div>
               {videoFileError && <p className="text-xs mt-2" style={{ color: 'var(--danger)' }}>{videoFileError}</p>}
+            </div>
+              </div>
             </div>
 
             <div className="flex gap-2.5 justify-end pt-4 mt-4 border-t" style={BORDER}>

@@ -32,7 +32,7 @@ import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
-import { formatTanggal, tanggalLokal } from '../lib/jadwal'
+import { formatTanggal, tanggalLokal, labelPertemuan } from '../lib/jadwal'
 import { JadwalModal } from '../components/JadwalModal'
 import { WatermarkModal, LABEL_CAP, pilihanCap } from '../components/WatermarkModal'
 import { fetchModules } from '../lib/modules'
@@ -279,7 +279,7 @@ export function DosenModulRak() {
         <p className="text-brown-3">Belum ada topik. Tambah topik pertama.</p>
       ) : (
         <Rak>
-          {sorted.map((m) => {
+          {sorted.map((m, i) => {
             const custom = customs[m.id]
             const judul = custom?.judul || m.title
             const fileName = m.pdf_path ? m.pdf_path.split('/').pop()?.split('?')[0] : null
@@ -288,6 +288,7 @@ export function DosenModulRak() {
               <div key={m.id} {...seretProps(m.id)}>
               <KartuTopik
                 nomor={m.order_num}
+                pertemuan={labelPertemuan(i, m.minggu_mulai)}
                 judul={judul}
                 keterangan={fileName ? 'PDF' : 'Belum Ada PDF'}
                 adaPdf={!!fileName}
@@ -845,7 +846,7 @@ export function ModulList() {
               <p className="text-brown-3">Belum ada topik di mata kuliah ini.</p>
             ) : (
               <Rak>
-                {sorted.map((m) => {
+                {sorted.map((m, i) => {
                   const status = statusOf(m.id)
                   const entry = progress[moduleIdToPath(m.id)]
                   const pct = entry?.pct ?? 0
@@ -871,6 +872,7 @@ export function ModulList() {
                     <KartuTopik
                       key={m.id}
                       nomor={m.order_num}
+                      pertemuan={labelPertemuan(i, m.minggu_mulai)}
                       judul={m.title}
                       keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}
                       adaPdf={!!m.pdf_path}

@@ -104,9 +104,11 @@ describe('Video (mahasiswa)', () => {
     await waitFor(() => expect(screen.getByText(/belum memasang video/)).toBeTruthy())
   })
 
-  it('shows the rak at /video with "Pertemuan 1" and does not redirect to a single video', async () => {
+  // Antrean #273: label kartu mengikuti jadwal (topik pertama = pertemuan 1-2).
+  it('shows the rak at /video with "Topik 1 · Pertemuan 1-2" and does not redirect to a single video', async () => {
     renderVideoRak()
-    await waitFor(() => expect(screen.getByText('Pertemuan 1')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('Topik 1 · Pertemuan 1-2')).toBeTruthy())
+    expect(screen.getByText('Topik 2 · Pertemuan 3-4')).toBeTruthy()
     expect(screen.getByText('Modul 1')).toBeTruthy()
     expect(screen.getByText('Modul 2')).toBeTruthy()
   })

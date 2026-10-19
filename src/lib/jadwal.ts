@@ -13,6 +13,15 @@ export function mingguBawaan(indeks: number): number {
   return indeks < 3 ? 1 + 2 * indeks : 9 + 2 * (indeks - 3)
 }
 
+/**
+ * Label pertemuan topik ke-`indeks` menurut jadwal (antrean #273): minggu materi dan minggu sesudahnya,
+ * mis. topik keempat bawaan = "Pertemuan 9-10". Berlaku walau mata kuliah belum punya tanggal mulai.
+ */
+export function labelPertemuan(indeks: number, mingguMulai?: number | null): string {
+  const m = mingguMulai ?? mingguBawaan(indeks)
+  return `Pertemuan ${m}-${m + 1}`
+}
+
 /** 'YYYY-MM-DD' dibaca sebagai tengah malam waktu setempat, bukan UTC. */
 export function tanggalLokal(iso: string): Date {
   const [y, m, d] = iso.slice(0, 10).split('-').map(Number)

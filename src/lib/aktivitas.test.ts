@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { gabungKejadian, ringkasKelas, perluPerhatian, matriksProgres, type SumberAktivitas } from './aktivitas'
+import { gabungKejadian, keteranganVideo, ringkasKelas, perluPerhatian, matriksProgres, type SumberAktivitas } from './aktivitas'
 
 const MODULES = [
   { id: 1, orderNum: 1, title: 'Modul 1' },
@@ -202,5 +202,20 @@ describe('matriksProgres', () => {
     }
     const [baris] = matriksProgres(sumber)
     expect(baris.sel.map((s) => s.status)).toEqual(['L', 'R', '-'])
+  })
+})
+
+// Antrean #272: video pertemuan kedua tampil di umpan aktivitas dosen.
+describe('keteranganVideo', () => {
+  it('tanpa tontonan pertemuan kedua: teks lama', () => {
+    expect(keteranganVideo(3, { seconds: 40, done: false })).toBe('Video 3 ditonton')
+    expect(keteranganVideo(3, { seconds: 40, done: true, seconds2: 0, done2: false })).toBe('Video 3 selesai ditonton')
+  })
+  it('hanya pertemuan kedua yang ditonton', () => {
+    expect(keteranganVideo(3, { seconds: 0, done: false, seconds2: 90, done2: false })).toBe('Video 3 pertemuan kedua ditonton')
+    expect(keteranganVideo(3, { seconds: 0, done: false, seconds2: 0, done2: true })).toBe('Video 3 pertemuan kedua selesai ditonton')
+  })
+  it('kedua video ditonton', () => {
+    expect(keteranganVideo(3, { seconds: 120, done: true, seconds2: 30, done2: false })).toBe('Video 3: pertemuan pertama selesai ditonton, pertemuan kedua ditonton')
   })
 })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mingguBawaan, awalMinggu, jadwalTopik } from './jadwal'
+import { mingguBawaan, awalMinggu, jadwalTopik, labelPertemuan } from './jadwal'
 
 const iso = (t: Date) => `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
 
@@ -25,5 +25,19 @@ describe('jadwal', () => {
     expect([j.get(10)!.minggu, iso(j.get(10)!.materi), iso(j.get(10)!.formatif)]).toEqual([1, '2026-10-12', '2026-10-19'])
     expect([j.get(20)!.minggu, iso(j.get(20)!.materi), iso(j.get(20)!.formatif)]).toEqual([4, '2026-11-02', '2026-11-09'])
     expect(j.get(30)!.minggu).toBe(5)
+  })
+})
+
+// Antrean #273: label kartu mengikuti jadwal, bukan nomor urut topik.
+describe('labelPertemuan', () => {
+  it('bawaan melewati minggu 7 dan 8', () => {
+    expect(labelPertemuan(0)).toBe('Pertemuan 1-2')
+    expect(labelPertemuan(2)).toBe('Pertemuan 5-6')
+    expect(labelPertemuan(3)).toBe('Pertemuan 9-10')
+    expect(labelPertemuan(5)).toBe('Pertemuan 13-14')
+  })
+  it('minggu yang diatur dosen menang atas bawaan', () => {
+    expect(labelPertemuan(3, 4)).toBe('Pertemuan 4-5')
+    expect(labelPertemuan(3, null)).toBe('Pertemuan 9-10')
   })
 })

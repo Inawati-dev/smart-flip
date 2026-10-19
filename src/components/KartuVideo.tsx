@@ -19,9 +19,11 @@ export interface KartuVideoProps {
   aksi?: ReactNode
   /** Warna latar gradasi bila tanpa thumbnail; bawaan --cover-1. */
   warna?: string
+  /** Rentang pertemuan menurut jadwal, mis. "Pertemuan 9-10" (antrean #273); kosong = nomor topik. */
+  pertemuan?: string
 }
 
-export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKunci, to, onClick, aksi, warna }: KartuVideoProps) {
+export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKunci, to, onClick, aksi, warna, pertemuan }: KartuVideoProps) {
   const thumb = url ? thumbnailUrl(url) : null
   const dasar = warna ?? 'var(--cover-1)'
   const kotak = (
@@ -33,7 +35,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
         <img src={thumb} alt="" className="absolute inset-0 w-full h-full object-cover" />
       ) : (
         <span className="absolute left-3 top-2.5 text-[11px] tracking-[.08em] uppercase opacity-80">
-          Pertemuan {String(nomor).padStart(2, '0')}
+          {pertemuan ?? `Pertemuan ${String(nomor).padStart(2, '0')}`}
         </span>
       )}
       <span
@@ -54,7 +56,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
     </div>
   )
   const bisaKlik = !terkunci && (to || onClick)
-  const label = `Putar video pertemuan ${nomor}: ${judul}`
+  const label = `Putar video topik ${nomor}${pertemuan ? `, ${pertemuan.toLowerCase()}` : ''}: ${judul}`
   return (
     <div className={`flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
       {bisaKlik && to ? (
@@ -68,7 +70,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
       ) : (
         kotak
       )}
-      <span className="text-xs text-brown-3">Pertemuan {nomor}</span>
+      <span className="text-xs text-brown-3">{pertemuan ? `Topik ${nomor} · ${pertemuan}` : `Pertemuan ${nomor}`}</span>
       <b className="text-sm font-semibold text-brown leading-snug -mt-1 line-clamp-2 min-h-[2.5rem]" title={judul}>{judul}</b>
       {chip && <div className="flex items-center justify-between gap-2">{chip}</div>}
       {aksi && <div className="grid grid-cols-2 gap-1.5 mt-auto">{aksi}</div>}

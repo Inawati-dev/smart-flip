@@ -61,7 +61,20 @@ export interface VideoProgressLite {
   moduleId: number
   seconds: number
   done: boolean
+  /** Video pertemuan kedua topik (v50, antrean #272); kosong = tidak ada tontonan di sana. */
+  seconds2?: number
+  done2?: boolean
   updatedAt: string
+}
+
+// Satu baris video_progress memuat dua video topik (antrean #272); updated_at satu untuk keduanya,
+// jadi keterangan menyebut keadaan kedua video bila pertemuan kedua sudah ditonton.
+export function keteranganVideo(nomor: number, v: Pick<VideoProgressLite, 'seconds' | 'done' | 'seconds2' | 'done2'>): string {
+  const status = (selesai: boolean | undefined) => (selesai ? 'selesai ditonton' : 'ditonton')
+  const adaKedua = (v.seconds2 ?? 0) > 0 || !!v.done2
+  if (!adaKedua) return `Video ${nomor} ${status(v.done)}`
+  if (v.seconds <= 0 && !v.done) return `Video ${nomor} pertemuan kedua ${status(v.done2)}`
+  return `Video ${nomor}: pertemuan pertama ${status(v.done)}, pertemuan kedua ${status(v.done2)}`
 }
 
 export interface ModuleLite {
@@ -146,7 +159,7 @@ export function gabungKejadian(sumber: SumberAktivitas): Kejadian[] {
       kelasId: p?.classId ?? null,
       kelasNama: p?.kelasNama ?? null,
       jenis: 'video',
-      keterangan: v.done ? `Video ${m?.orderNum ?? v.moduleId} selesai ditonton` : `Video ${m?.orderNum ?? v.moduleId} ditonton`,
+      keterangan: keteranganVideo(m?.orderNum ?? v.moduleId, v),
     })
   }
 
@@ -370,7 +383,8 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       profilesQuery,
       supabase.from('quiz_attempts').select('user_id, module_id, score, kind, attempted_at, session_id').gte('attempted_at', since),
       supabase.from('user_progress').select('user_id, module_id, current_page, last_opened').gte('last_opened', since),
-      supabase.from('video_progress').select('user_id, module_id, seconds, done, updated_at').gte('updated_at', since),
+      // `*` supaya seconds_2/done_2 (v50) ikut terbaca.
+      supabase.from('video_progress').select('*').gte('updated_at', since),
       supabase.from('modules').select('id, order_num, title, course_id').order('order_num'),
     ])
     if (profilesRes.error) throw profilesRes.error
@@ -428,8 +442,10 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       module_id: number
       seconds: number
       done: boolean
+      seconds_2?: number
+      done_2?: boolean
       updated_at: string
-    }>).map((v) => ({ userId: v.user_id, moduleId: v.module_id, seconds: v.seconds, done: v.done, updatedAt: v.updated_at }))
+    }>).map((v) => ({ userId: v.user_id, moduleId: v.module_id, seconds: v.seconds, done: v.done, seconds2: v.seconds_2 ?? 0, done2: v.done_2 ?? false, updatedAt: v.updated_at }))
 
     const modules: ModuleLite[] = ((modulesRes.data ?? []) as Array<{ id: number; order_num: number; title: string; course_id?: number }>)
       .filter((m) => filter.courseId == null || (m.course_id ?? 1) === filter.courseId)
