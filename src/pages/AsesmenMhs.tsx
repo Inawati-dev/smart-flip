@@ -75,7 +75,7 @@ function PanelCard({
 }
 
 // §5a — /asesmen mahasiswa: kartu tes formatif topik aktif + panel
-// pre-test/post-test/mini projek + daftar 9 topik. Panel gaya belajar
+// pre-test/post-test/mini projek + daftar topik. Panel gaya belajar
 // (antrean #57 opsi A) diganti mini projek (dulu "tugas akhir", antrean #170) —
 // rute lamanya dibiarkan ada, tidak ditautkan lagi dari sini. Tautan ke tes
 // khusus dan tes kelompok juga dicabut (antrean #170); rutenya tetap ada.
@@ -154,7 +154,7 @@ function AsesmenDaftar() {
             )}
 
             <div className="mt-5">
-              <h3 className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-2.5">9 topik</h3>
+              <h3 className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-2.5">{sorted.length} topik</h3>
               <div className="flex flex-col gap-2">
                 {sorted.map((m, i) => {
                   const st = statusOf(m.id)

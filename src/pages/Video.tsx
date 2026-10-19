@@ -16,6 +16,7 @@ import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { IconEdit, IconPlay } from '../components/icons'
 import { KartuVideo } from '../components/KartuVideo'
+import { KelompokTopik, KISI_TOPIK } from '../components/KelompokTopik'
 import { ChipRak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
@@ -42,23 +43,6 @@ const PILIHAN_PERTEMUAN = [
 ]
 const urlPertemuan = (m: ModuleRow, p: PertemuanTopik) => (p === 2 ? m.video_url_2 : m.video_url) || ''
 
-// Kelompok satu topik di rak (antrean #279): judul topik sekali, di bawahnya kotak video tiap pertemuan.
-function KelompokTopik({ nomor, label, judul, children }: { nomor: number; label: string; judul: string; children: React.ReactNode }) {
-  return (
-    <section className="h-full rounded-xl border bg-ivory p-3 flex flex-col gap-3" style={BORDER} aria-label={`Topik ${nomor}: ${judul}`}>
-      <div className="min-w-0">
-        <span className="block text-xs text-brown-3">
-          Topik {nomor} · {label}
-        </span>
-        <h2 className="text-sm font-semibold text-brown leading-snug line-clamp-2" title={judul}>
-          {judul}
-        </h2>
-      </div>
-      <div className="grid grid-cols-2 gap-3 flex-1">{children}</div>
-    </section>
-  )
-}
-const KISI_TOPIK = 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4'
 
 function formatDuration(sec: number): string {
   if (!isFinite(sec) || sec <= 0) return '—'

@@ -123,6 +123,20 @@ describe('ModulList', () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
+  // Antrean #285: rak dosen dikelompokkan per topik; PDF pertemuan kedua yang belum ada jadi kotak tambah.
+  it('groups the dosen rak per topik with an add box for the second meeting PDF', async () => {
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
+    queryClient.setQueryData(['manajemen', 'customs', NINE_MODULES.map((m) => m.id)], {})
+
+    renderModulList(queryClient)
+
+    await waitFor(() => expect(screen.getAllByRole('region')).toHaveLength(9))
+    expect(screen.getByText('+ PDF Pertemuan 2')).toBeTruthy()
+    expect(screen.getByText('+ PDF Pertemuan 10')).toBeTruthy()
+  })
+
   // Antrean 16 Sep 2026: dosen bisa menambah dan menghapus modul dari tabel ini.
   it('shows a "Tambah topik" button for a dosen', async () => {
     mockAuth.role = 'dosen'

@@ -32,6 +32,8 @@ export interface KartuTopikProps {
   aksi?: ReactNode
   /** Rentang pertemuan menurut jadwal, mis. "Pertemuan 9-10" (antrean #273). */
   pertemuan?: string
+  /** Kartu di dalam kelompok topik (antrean #285): keterangan di bawah sampul hanya pertemuan dan keterangan. */
+  ringkas?: boolean
 }
 
 const WARNA = ['var(--cover-1)', 'var(--cover-2)', 'var(--cover-3)'] as const
@@ -45,17 +47,17 @@ export function warnaSampul(nomor: number): string {
 // Sejak antrean #192 sampulnya halaman pertama PDF, polos tanpa tulisan di
 // atasnya; nomor topik, judul, dan keterangan pindah ke bawah gambar. Topik
 // tanpa PDF, atau yang gambar sampulnya belum ada, memakai sampul rancangan.
-export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string }) {
+export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean }) {
   const src = urlSampul(props.pdf)
   // key: ganti PDF berarti mulai lagi dari mencoba memuat gambarnya.
   return src ? <SampulGambar key={src} src={src} {...props} /> : <SampulRancangan {...props} />
 }
 
-function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertemuan }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string }) {
+function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertemuan, ringkas }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean }) {
   // coba: memuat gambar. membuat: gambar belum ada dan dosen sedang membuatnya. gagal: pakai sampul rancangan.
   const [tahap, setTahap] = useState<'coba' | 'membuat' | 'gagal'>('coba')
   const [versi, setVersi] = useState(0)
-  if (tahap !== 'coba') return <SampulRancangan nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pertemuan={pertemuan} />
+  if (tahap !== 'coba') return <SampulRancangan nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pertemuan={pertemuan} ringkas={ringkas} />
   return (
     <div className="flex flex-col gap-1.5">
       <img
@@ -75,19 +77,26 @@ function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertem
           })
         }}
       />
-      <span className="block text-[13px] leading-snug">
-        <span className="block font-semibold text-brown line-clamp-2">{judul}</span>
-        <span className="block text-brown-3 tabular-nums">
-          Topik {String(nomor).padStart(2, '0')}
-          {pertemuan ? ` · ${pertemuan}` : ''}
-          {keterangan ? ` · ${keterangan}` : ''}
+      {ringkas ? (
+        <span className="block text-[13px] leading-snug">
+          <span className="block font-semibold text-brown">{pertemuan}</span>
+          {keterangan && <span className="block text-brown-3 tabular-nums">{keterangan}</span>}
         </span>
-      </span>
+      ) : (
+        <span className="block text-[13px] leading-snug">
+          <span className="block font-semibold text-brown line-clamp-2">{judul}</span>
+          <span className="block text-brown-3 tabular-nums">
+            Topik {String(nomor).padStart(2, '0')}
+            {pertemuan ? ` · ${pertemuan}` : ''}
+            {keterangan ? ` · ${keterangan}` : ''}
+          </span>
+        </span>
+      )}
     </div>
   )
 }
 
-function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pertemuan?: string }) {
+function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan, ringkas }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pertemuan?: string; ringkas?: boolean }) {
   return (
     <div
       className="w-full aspect-[3/4] flex flex-col justify-between p-3.5 pl-5 rounded-[4px_10px_10px_4px]"
@@ -100,12 +109,13 @@ function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan }: { nomo
     >
       <span className="text-[11px] tracking-[.08em] uppercase opacity-80">
         Topik {String(nomor).padStart(2, '0')}
-        {pertemuan && <span className="block">{pertemuan}</span>}
+        {pertemuan && !ringkas && <span className="block">{pertemuan}</span>}
       </span>
       <div>
         <div className="w-7 h-0.5 mb-2" style={{ background: 'var(--gold)' }} />
+        {/* dalam kelompok topik (antrean #285) judul sudah di kepala kelompok; sampul menulis pertemuannya */}
         <h3 className="font-display text-[17px] leading-tight font-semibold" style={{ color: 'var(--cover-ink)' }}>
-          {judul}
+          {ringkas && pertemuan ? pertemuan : judul}
         </h3>
       </div>
       {adaPdf == null ? (
@@ -123,12 +133,12 @@ function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan }: { nomo
   )
 }
 
-export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi, pertemuan }: KartuTopikProps) {
-  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} pertemuan={pertemuan} />
+export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi, pertemuan, ringkas }: KartuTopikProps) {
+  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} pertemuan={pertemuan} ringkas={ringkas} />
   const bisaKlik = !terkunci && (to || onClick)
-  const label = `Buka topik ${nomor}: ${judul}`
+  const label = ringkas && pertemuan ? `Buka ${pertemuan.toLowerCase()} topik ${nomor}: ${judul}` : `Buka topik ${nomor}: ${judul}`
   return (
-    <div className={`flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
+    <div className={`@container flex flex-col gap-2 h-full ${terkunci ? 'opacity-55' : ''}`} title={terkunci ? judulKunci : undefined} aria-disabled={terkunci || undefined}>
       {bisaKlik && to ? (
         <Link to={to} className="block rounded-[4px_10px_10px_4px] transition-transform hover:-translate-y-0.5" aria-label={label}>
           {sampul}

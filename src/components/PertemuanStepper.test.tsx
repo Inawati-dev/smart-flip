@@ -39,17 +39,19 @@ describe('PertemuanStepper', () => {
   it('renders one button per module (n = jumlah modul)', () => {
     const html = renderStepper()
     expect((html.match(/<button/g) ?? []).length).toBe(MODULES.length)
-    expect(html).toContain('P1')
-    expect(html).toContain('P2')
-    expect(html).toContain('P3')
+    // Antrean #283: nomor pertemuan pertama tiap topik menurut jadwal (dua minggu per topik).
+    expect(html).toContain('>P1<')
+    expect(html).toContain('>P3<')
+    expect(html).toContain('>P5<')
+    expect(html).toContain('Topik 2 · Pertemuan 3-4')
   })
 
   it('marks a locked pertemuan as disabled', () => {
     const html = renderStepper((id) => (id === 2 ? 'locked' : 'open'))
     // React renders boolean `disabled` as a bare attribute in SSR markup.
-    expect(html).toMatch(/P2<\/button>/)
+    expect(html).toMatch(/P3<\/button>/)
     const buttons = html.split('<button').slice(1)
-    const p2 = buttons.find((b) => b.includes('>P2<'))
-    expect(p2).toContain('disabled=""')
+    const p3 = buttons.find((b) => b.includes('>P3<'))
+    expect(p3).toContain('disabled=""')
   })
 })
