@@ -9,7 +9,7 @@ import { Select } from '../components/Select'
 import { PillGroup } from '../components/PillGroup'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { TugasAkhirPanel } from './TugasAkhir'
-import { IconEdit, IconTrash, IconGrip } from '../components/icons'
+import { IconEdit, IconTrash, IconGrip, IconX } from '../components/icons'
 
 // Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post
 // dari satu layar (quiz_questions, kolom kind). Dua jenis lama dicabut dari
@@ -422,8 +422,9 @@ function BankSoalTab() {
               <h3 className="font-display text-lg font-semibold text-brown">
                 {modalOpen === 'new' ? `Tambah Soal: ${KIND_LABELS[jenis]}` : `Ubah Soal: ${KIND_LABELS[jenis]}`}
               </h3>
-              <button onClick={closeModal} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
-                ×
+              {/* tombol tutup baku 44 px (antrean #280) */}
+              <button onClick={closeModal} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
+                <IconX size={16} />
               </button>
             </div>
 

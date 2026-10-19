@@ -25,7 +25,7 @@ import {
 } from '../lib/tesKelompok'
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
-import { IconUsers, IconChart, IconLock, IconTrash, IconLink } from '../components/icons'
+import { IconUsers, IconChart, IconLock, IconTrash, IconLink, IconX } from '../components/icons'
 
 // Tes kelompok (antrean #65 opsi A, keputusan Johan 16 Sep 2026). Dosen buat
 // sesi berisi N kelompok berkode; mahasiswa masuk kelompok lewat kode, tiap
@@ -376,9 +376,10 @@ export function DosenTesKelompokPanel() {
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-display text-lg font-semibold text-brown">Hasil - {hasilSession.name}</h3>
-              <button onClick={tutupHasil} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
-                ×
+              <h3 className="font-display text-lg font-semibold text-brown min-w-0 break-words">Hasil - {hasilSession.name}</h3>
+              {/* tombol tutup baku 44 px (antrean #280) */}
+              <button onClick={tutupHasil} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
+                <IconX size={16} />
               </button>
             </div>
 

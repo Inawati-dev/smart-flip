@@ -972,7 +972,7 @@ export function KelasPanel() {
                 type="button"
                 onClick={() => setKodeOpen(false)}
                 aria-label="Tutup"
-                className="w-9 h-9 -mr-1.5 rounded-[var(--radius-control)] flex items-center justify-center text-brown-3 flex-shrink-0"
+                className="btn btn-secondary btn-icon flex-shrink-0"
               >
                 <IconX size={16} />
               </button>

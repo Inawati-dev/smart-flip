@@ -27,7 +27,7 @@ import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
 import { PillGroup } from '../components/PillGroup'
 import { TanggalInput } from '../components/TanggalInput'
-import { IconTarget, IconLock, IconChart } from '../components/icons'
+import { IconTarget, IconLock, IconChart, IconX } from '../components/icons'
 
 // Tes khusus berkode (spec §4.6, §9 WP6b) - satu-satunya tes mahasiswa yang
 // dijaga kode; pre-test dan formatif tidak. Dua tampilan dipilih dari peran
@@ -423,9 +423,10 @@ export function DosenTesKhususPanel() {
             style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
             <div className="flex items-center justify-between mb-1">
-              <h3 className="font-display text-lg font-semibold text-brown">Hasil - {hasilSession.name}</h3>
-              <button onClick={() => setHasilSession(null)} aria-label="Tutup" className="w-8 h-8 rounded-lg flex items-center justify-center text-brown-3">
-                ×
+              <h3 className="font-display text-lg font-semibold text-brown min-w-0 break-words">Hasil - {hasilSession.name}</h3>
+              {/* tombol tutup baku 44 px (antrean #280) */}
+              <button onClick={() => setHasilSession(null)} aria-label="Tutup" className="btn btn-secondary btn-icon flex-shrink-0">
+                <IconX size={16} />
               </button>
             </div>
             <p className="text-sm text-brown-3 mb-4">
