@@ -17,23 +17,19 @@ import {
   uploadModulPdf,
   listModulPdfFiles,
   assignModulPdf,
-  PESAN_V50,
   type ModulCustom,
-  type PertemuanTopik,
 } from '../lib/manajemen'
-import { PillGroup } from '../components/PillGroup'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { IconEdit, IconTrash, IconDocument, IconGear } from '../components/icons'
+import { IconEdit, IconTrash, IconDocument, IconGear, IconEye } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
-import { formatTanggal, tanggalLokal, labelPertemuan, nomorPertemuan } from '../lib/jadwal'
-import { KelompokTopik, KISI_TOPIK } from '../components/KelompokTopik'
+import { formatTanggal, tanggalLokal, labelPertemuan } from '../lib/jadwal'
 import { JadwalModal } from '../components/JadwalModal'
 import { WatermarkModal, LABEL_CAP, pilihanCap } from '../components/WatermarkModal'
 import { fetchModules } from '../lib/modules'
@@ -176,22 +172,18 @@ export function DosenModulRak() {
   }
 
   const [pdfModalId, setPdfModalId] = useState<number | null>(null)
-  // PDF pertemuan pertama atau kedua topik (antrean #271).
-  const [pdfSlot, setPdfSlot] = useState<PertemuanTopik>(1)
   const [pdfFile, setPdfFile] = useState<File | null>(null)
   const [pdfError, setPdfError] = useState('')
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [pickedPdfUrl, setPickedPdfUrl] = useState('')
   const [assigningPdf, setAssigningPdf] = useState(false)
 
-  function openPdfModal(id: number, p: PertemuanTopik = 1) {
+  function openPdfModal(id: number) {
     setPdfModalId(id)
-    setPdfSlot(p)
     setPdfFile(null)
     setPdfError('')
     setPickedPdfUrl('')
   }
-  const pesanGagal = (e: unknown, biasa: string) => (e instanceof Error && e.message === PESAN_V50 ? PESAN_V50 : biasa)
 
   async function handleUploadPdf() {
     if (pdfModalId == null || !pdfFile) return
@@ -202,13 +194,13 @@ export function DosenModulRak() {
     setPdfError('')
     setUploadingPdf(true)
     try {
-      await uploadModulPdf(pdfModalId, pdfFile, pdfSlot)
+      await uploadModulPdf(pdfModalId, pdfFile)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       await queryClient.invalidateQueries({ queryKey: ['manajemen', 'modul-pdf-files'] })
       setPdfFile(null)
-      showToast(pdfSlot === 2 ? 'PDF pertemuan kedua berhasil diunggah' : 'PDF topik berhasil diunggah')
-    } catch (e) {
-      setPdfError(pesanGagal(e, 'Gagal mengunggah PDF. Coba lagi.'))
+      showToast('PDF topik berhasil diunggah')
+    } catch {
+      setPdfError('Gagal mengunggah PDF. Coba lagi.')
     } finally {
       setUploadingPdf(false)
     }
@@ -219,19 +211,19 @@ export function DosenModulRak() {
     setPdfError('')
     setAssigningPdf(true)
     try {
-      await assignModulPdf(pdfModalId, pickedPdfUrl, pdfSlot)
+      await assignModulPdf(pdfModalId, pickedPdfUrl)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       setPickedPdfUrl('')
       showToast('PDF topik dipasang dari file yang sudah ada')
-    } catch (e) {
-      setPdfError(pesanGagal(e, 'Gagal memasang PDF. Coba lagi.'))
+    } catch {
+      setPdfError('Gagal memasang PDF. Coba lagi.')
     } finally {
       setAssigningPdf(false)
     }
   }
 
   const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
-  const jumlahPdf = sorted.filter((m) => m.pdf_path || m.pdf_path_2).length // salah satu pertemuan cukup (antrean #287)
+  const jumlahPdf = sorted.filter((m) => m.pdf_path).length
 
   // Urutan topik (antrean #104): seret kartu di rak atau lewat modal.
   const [urutkanOpen, setUrutkanOpen] = useState(false)
@@ -279,90 +271,63 @@ export function DosenModulRak() {
       {sorted.length === 0 ? (
         <p className="text-brown-3">Belum ada topik. Tambah topik pertama.</p>
       ) : (
-        <div className={KISI_TOPIK}>
+        <Rak>
           {sorted.map((m, i) => {
             const custom = customs[m.id]
             const judul = custom?.judul || m.title
-            const label = labelPertemuan(i, m.minggu_mulai)
-            // Satu PDF tanpa PDF kedua berlaku untuk dua pertemuan topik (antrean #277): kotak pertama menulis rentangnya.
-            const satuPdf = !!m.pdf_path && !m.pdf_path_2
+            const hasPdf = !!m.pdf_path
             return (
               <div key={m.id} {...seretProps(m.id)}>
-                <KelompokTopik
-                  nomor={m.order_num}
-                  label={m.estimasi_menit ? `${label} · ± ${m.estimasi_menit} menit` : label}
-                  judul={judul}
-                  aksi={
-                    <>
-                      <button
-                        onClick={() => openEdit(m.id)}
-                        aria-label="Ubah topik"
-                        title="Ubah Topik"
-                        className="btn btn-secondary btn-sm w-full whitespace-nowrap"
-                      >
-                        <IconEdit size={13} /> <span className="hidden sm:inline">Ubah Topik</span>
+              {/* Satu PDF per topik untuk kedua pertemuannya (antrean #289); video yang dua per topik. */}
+              <KartuTopik
+                nomor={m.order_num}
+                pertemuan={labelPertemuan(i, m.minggu_mulai)}
+                judul={judul}
+                keterangan={hasPdf ? 'PDF' : 'Belum Ada PDF'}
+                adaPdf={hasPdf}
+                pdf={m.pdf_path}
+                buatSampul
+                kaki={m.estimasi_menit ? `± ${m.estimasi_menit} menit` : undefined}
+                aksi={
+                  <>
+                    <button
+                      onClick={() => openPdfModal(m.id)}
+                      aria-label="Ganti PDF"
+                      title="Ganti PDF"
+                      className="btn btn-secondary btn-sm w-full whitespace-nowrap"
+                    >
+                      <IconDocument size={13} /> <span className="hidden sm:inline">{hasPdf ? 'Ganti PDF' : 'Unggah PDF'}</span>
+                    </button>
+                    <button
+                      onClick={() => openEdit(m.id)}
+                      aria-label="Ubah topik"
+                      title="Ubah Topik"
+                      className="btn btn-secondary btn-sm w-full whitespace-nowrap"
+                    >
+                      <IconEdit size={13} /> <span className="hidden sm:inline">Ubah Topik</span>
+                    </button>
+                    {m.pdf_path ? (
+                      <PdfPreviewLink url={m.pdf_path} label="Pratinjau" compact />
+                    ) : (
+                      <button type="button" disabled aria-label="Pratinjau" title="Belum ada PDF" className="btn btn-secondary btn-sm w-full whitespace-nowrap">
+                        <IconEye size={13} /> <span className="hidden sm:inline">Pratinjau</span>
                       </button>
-                      <button
-                        onClick={() => setDeleteId(m.id)}
-                        aria-label={`Hapus topik ${judul}`}
-                        title="Hapus topik"
-                        className="btn btn-danger btn-sm w-full whitespace-nowrap"
-                      >
-                        <IconTrash size={13} /> <span className="hidden sm:inline">Hapus</span>
-                      </button>
-                    </>
-                  }
-                >
-                  {([1, 2] as const).map((p) => {
-                    const pdf = p === 2 ? m.pdf_path_2 : m.pdf_path
-                    const nomorP = `Pertemuan ${nomorPertemuan(i, m.minggu_mulai, p)}`
-                    if (p === 2 && !pdf) {
-                      // PDF pertemuan kedua belum ada: kotak tambah (antrean #285), sama dengan rak Video.
-                      return (
-                        <button
-                          key={p}
-                          type="button"
-                          onClick={() => openPdfModal(m.id, 2)}
-                          title={`Tambah PDF untuk ${nomorP.toLowerCase()}`}
-                          className="w-full aspect-[3/4] rounded-[4px_10px_10px_4px] border border-dashed flex items-center justify-center px-2 text-center text-xs font-semibold text-terra hover:bg-bg3 transition-colors"
-                          style={BORDER}
-                        >
-                          + PDF {nomorP}
-                        </button>
-                      )
-                    }
-                    return (
-                      <KartuTopik
-                        key={p}
-                        ringkas
-                        nomor={m.order_num}
-                        pertemuan={p === 1 && satuPdf ? label : nomorP}
-                        judul={judul}
-                        keterangan={pdf ? 'PDF' : 'Belum Ada PDF'}
-                        adaPdf={!!pdf}
-                        pdf={pdf}
-                        buatSampul
-                        aksi={
-                          <>
-                            <button
-                              onClick={() => openPdfModal(m.id, p)}
-                              aria-label={`${pdf ? 'Ganti' : 'Unggah'} PDF ${nomorP.toLowerCase()}`}
-                              title={pdf ? 'Ganti PDF' : 'Unggah PDF'}
-                              className={`btn btn-secondary btn-sm w-full whitespace-nowrap ${pdf ? '' : 'col-span-2'}`}
-                            >
-                              <IconDocument size={13} /> <span className="hidden @min-[13rem]:inline">{pdf ? 'Ganti' : 'Unggah PDF'}</span>
-                            </button>
-                            {pdf && <PdfPreviewLink url={pdf} label="Pratinjau" compact />}
-                          </>
-                        }
-                      />
-                    )
-                  })}
-                </KelompokTopik>
+                    )}
+                    <button
+                      onClick={() => setDeleteId(m.id)}
+                      aria-label={`Hapus topik ${judul}`}
+                      title="Hapus topik"
+                      className="btn btn-danger btn-sm w-full whitespace-nowrap"
+                    >
+                      <IconTrash size={13} /> <span className="hidden sm:inline">Hapus</span>
+                    </button>
+                  </>
+                }
+              />
               </div>
             )
           })}
-        </div>
+        </Rak>
       )}
 
       {(editId != null || creatingNew) && (
@@ -470,34 +435,10 @@ export function DosenModulRak() {
             style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
           >
             <h3 className="font-display text-lg font-semibold text-brown mb-3">Ganti PDF Topik</h3>
-            {/* Satu topik = dua pertemuan (antrean #271); PDF pertemuan kedua opsional. */}
-            <div className="mb-2">
-              <PillGroup
-                variant="tab"
-                ariaLabel="PDF untuk pertemuan"
-                options={[
-                  { value: '1', label: 'Pertemuan Pertama' },
-                  { value: '2', label: 'Pertemuan Kedua' },
-                ]}
-                value={String(pdfSlot)}
-                onChange={(v) => {
-                  setPdfSlot(v === '2' ? 2 : 1)
-                  setPdfFile(null)
-                  setPdfError('')
-                  setPickedPdfUrl('')
-                }}
-              />
-            </div>
             {(() => {
-              const m = modules.find((x) => x.id === pdfModalId)
-              const kini = pdfSlot === 2 ? m?.pdf_path_2 : m?.pdf_path
+              const kini = modules.find((x) => x.id === pdfModalId)?.pdf_path
               const nama = kini ? kini.split('/').pop()?.split('?')[0] : null
-              return (
-                <p className="text-xs text-brown-3 mb-4 break-words">
-                  {pdfSlot === 2 ? 'Opsional: PDF tambahan yang dibaca di pertemuan kedua topik ini. ' : ''}
-                  {nama ? `Berkas sekarang: ${nama}` : 'Belum ada berkas.'}
-                </p>
-              )
+              return <p className="text-xs text-brown-3 mb-4 break-words">{nama ? `Berkas sekarang: ${nama}` : 'Belum ada berkas.'}</p>
             })()}
 
             <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah Berkas Baru</p>
@@ -890,42 +831,23 @@ export function ModulList() {
                   const label = labelPertemuan(i, m.minggu_mulai)
                   const terkunci = status === 'locked'
                   const judulKunci = bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`
-                  const kartuPertama = (
-                      <KartuTopik
-                        key={m.id}
-                        nomor={m.order_num}
-                        pertemuan={m.pdf_path_2 ? `Pertemuan ${nomorPertemuan(i, m.minggu_mulai, 1)}` : label}
-                        judul={m.title}
-                        keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}
-                        adaPdf={!!m.pdf_path}
-                        pdf={m.pdf_path}
-                        persen={pct}
-                        kaki={m.estimasi_menit ? `${kaki} · ± ${m.estimasi_menit} menit` : kaki}
-                        chip={chip}
-                        terkunci={terkunci}
-                        judulKunci={judulKunci}
-                        to={`/modul/${m.id}`}
-                      />
+                  return (
+                  <KartuTopik
+                    key={m.id}
+                    nomor={m.order_num}
+                    pertemuan={label}
+                    judul={m.title}
+                    keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}
+                    adaPdf={!!m.pdf_path}
+                    pdf={m.pdf_path}
+                    persen={pct}
+                    kaki={m.estimasi_menit ? `${kaki} · ± ${m.estimasi_menit} menit` : kaki}
+                    chip={chip}
+                    terkunci={terkunci}
+                    judulKunci={judulKunci}
+                    to={`/modul/${m.id}`}
+                  />
                   )
-                  // Satu PDF: kartu biasa seperti dulu, supaya rak tetap rapat (antrean #288).
-                  if (!m.pdf_path_2) return kartuPertama
-                  // PDF pertemuan kedua hanya tampil bila dosen memasangnya (antrean #285): kartu kedua tepat sesudah
-                  // kartu pertama. Tanpa pembungkus selebar dua kolom, supaya kisi tidak meninggalkan sel kosong (temuan pemeriksa #288).
-                  return [
-                    kartuPertama,
-                        <KartuTopik
-                          key={`${m.id}-2`}
-                          nomor={m.order_num}
-                          pertemuan={`Pertemuan ${nomorPertemuan(i, m.minggu_mulai, 2)}`}
-                          judul={m.title}
-                          keterangan="PDF"
-                          adaPdf
-                          pdf={m.pdf_path_2}
-                          terkunci={terkunci}
-                          judulKunci={judulKunci}
-                          to={`/ebook?book=${m.id}&p=2`}
-                        />,
-                  ]
                 })}
               </Rak>
             )}

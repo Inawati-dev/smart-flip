@@ -108,8 +108,8 @@ describe('ModulList', () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
-  // Antrean #288: rak mahasiswa tetap rapat; PDF pertemuan kedua jadi kartu kedua tepat sesudah kartu pertama topiknya.
-  it('shows a mahasiswa a second card only for a topic with a second-meeting PDF', async () => {
+  // Antrean #289: satu PDF per topik untuk dua pertemuannya; PDF pertemuan kedua tidak membuat kartu kedua.
+  it('shows a mahasiswa one card per topic labelled with both meetings', async () => {
     mockAuth.role = 'mahasiswa'
     const queryClient = new QueryClient()
     const modul = NINE_MODULES.map((m, i) => (i === 0 ? { ...m, pdf_path_2: '/books/modul-01b.pdf' } : m))
@@ -118,9 +118,9 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByText(/^Topik 0\d/).length).toBe(10))
-    expect([...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/ebook?book=1&p=2')).toBe(true)
-    expect(screen.queryByRole('region')).toBeNull()
+    await waitFor(() => expect(screen.getAllByText(/^Topik 0\d/).length).toBe(9))
+    expect([...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/ebook?book=1&p=2')).toBe(false)
+    expect(screen.getAllByText('Pertemuan 1-2').length).toBeGreaterThan(0)
   })
 
   it('shows a rak of 9 topic cards for a dosen, without redirecting', async () => {
@@ -138,8 +138,8 @@ describe('ModulList', () => {
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
-  // Antrean #285: rak dosen dikelompokkan per topik; PDF pertemuan kedua yang belum ada jadi kotak tambah.
-  it('groups the dosen rak per topik with an add box for the second meeting PDF', async () => {
+  // Antrean #289: rak dosen satu kartu per topik berlabel rentang pertemuan, tanpa kotak PDF pertemuan kedua.
+  it('shows the dosen one PDF card per topic without a second-meeting PDF box', async () => {
     mockAuth.role = 'dosen'
     const queryClient = new QueryClient()
     queryClient.setQueryData(['modules', 'course', 1], NINE_MODULES)
@@ -147,9 +147,9 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByRole('region')).toHaveLength(9))
-    expect(screen.getByText('+ PDF Pertemuan 2')).toBeTruthy()
-    expect(screen.getByText('+ PDF Pertemuan 10')).toBeTruthy()
+    await waitFor(() => expect(screen.getAllByLabelText('Ganti PDF')).toHaveLength(9))
+    expect(screen.queryByText(/\+ PDF Pertemuan/)).toBeNull()
+    expect(screen.queryByRole('region')).toBeNull()
   })
 
   // Antrean 16 Sep 2026: dosen bisa menambah dan menghapus modul dari tabel ini.

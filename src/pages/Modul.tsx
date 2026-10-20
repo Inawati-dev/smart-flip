@@ -116,12 +116,6 @@ export default function Modul() {
                 ) : (
                   <p className="text-sm text-brown-3 mt-2">Dosen belum mengunggah PDF.</p>
                 )}
-                {/* PDF tambahan untuk pertemuan kedua topik (antrean #271). */}
-                {modul.pdf_path_2 && (
-                  <Link to={`/ebook?book=${modul.id}&p=2`} className="btn btn-secondary w-fit">
-                    <IconBook size={16} /> Baca Materi Pertemuan Kedua
-                  </Link>
-                )}
               </div>
             </div>
           </div>
