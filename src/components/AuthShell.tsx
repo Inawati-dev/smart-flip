@@ -1,4 +1,10 @@
 import type { ReactNode } from 'react'
+import { getTheme } from '../lib/theme'
+
+/** Kelas palet coklat halaman masuk/daftar/reset (antrean #326); tema gelap dibiarkan. */
+export function paletSampul(): string {
+  return getTheme() === 'light' ? ' palet-sampul' : ''
+}
 
 // Brand badge — rounded square (echoes SAKTI's IconRailV2 sidebar badge)
 // with the SMART-FLIP logo (antrean #300, A1 "Halaman Terbang ke Bintang").
@@ -47,7 +53,7 @@ function IntroDetails() {
 
 export function AuthShell({ children }: { children: ReactNode }) {
   return (
-    <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12">
+    <div className={`page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-6 sm:px-8 sm:py-10 lg:px-12 lg:py-12${paletSampul()}`}>
       <div
         className="w-full max-w-[860px] rounded-2xl p-5 sm:p-6 lg:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-9"
         style={{

@@ -708,3 +708,19 @@ a:hover .nav-tile-active {
   }
   .pembaca, .pembaca * { scrollbar-color: var(--pb-redup) transparent; }
 }
+
+/* Palet coklat sampul modul untuk halaman masuk, daftar, dan reset sandi
+   (antrean #326). Hanya dipasang di tema terang (paletSampul() di AuthShell.tsx);
+   aplikasi di dalamnya tetap memakai token tema biasa. */
+.palet-sampul {
+  --brown: color-mix(in srgb, var(--cover-3) 80%, #000);
+  --color-brown: color-mix(in srgb, var(--cover-3) 80%, #000);
+  --terra: var(--cover-3);
+  --color-terra: var(--cover-3);
+  --terra-d: color-mix(in srgb, var(--cover-3) 80%, #000);
+  --color-terra-d: color-mix(in srgb, var(--cover-3) 80%, #000);
+  --btn-bg: var(--cover-3);
+  --color-btn-bg: var(--cover-3);
+  --btn-text: var(--cover-ink);
+  --color-btn-text: var(--cover-ink);
+}

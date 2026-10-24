@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useNavigate, Link } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
-import { authInputClass, authInputStyle } from '../components/AuthShell'
+import { authInputClass, authInputStyle, paletSampul } from '../components/AuthShell'
 import { PasswordInput } from '../components/PasswordInput'
 import { LoginFlipCard, FlipPanel } from '../components/LoginFlipCard'
 import { LoginBook } from '../components/LoginBook'
@@ -358,7 +358,7 @@ export function Login() {
     )
 
     return (
-      <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-10 sm:py-14 overflow-x-clip">
+      <div className={`page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-10 sm:py-14 overflow-x-clip${paletSampul()}`}>
         <div className="w-full max-w-[400px]">
           <LoginBook
             open={flipped}
@@ -380,7 +380,7 @@ export function Login() {
 
   // ── Varian 'flip' (lama) — dipertahankan utuh sebagai jalur revert ──
   return (
-    <div className="page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-10 sm:py-14">
+    <div className={`page-fadein min-h-screen bg-cream flex items-center justify-center px-5 py-10 sm:px-10 sm:py-14${paletSampul()}`}>
       <div className="w-full max-w-[420px]">
         <LoginFlipCard
           flipped={flipped}
