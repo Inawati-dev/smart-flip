@@ -318,7 +318,7 @@ export async function deleteModul(moduleId: number): Promise<void> {
 // Unggah ke bucket modul-pdf lewat XMLHttpRequest supaya persen terkirim bisa
 // dilaporkan (supabase-js belum punya progres unggah). Mengembalikan null bila
 // XHR atau sesi tidak tersedia; pemanggil lalu jatuh ke supabase.storage.
-async function unggahDenganProgres(path: string, file: File, onProgress: (persen: number) => void): Promise<{ error: Error | null } | null> {
+async function unggahDenganProgres(path: string, file: File, onProgress: (persen: number) => void, bucket = 'modul-pdf', contentType = 'application/pdf'): Promise<{ error: Error | null } | null> {
   const base = import.meta.env.VITE_SUPABASE_URL as string | undefined
   const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
   if (typeof XMLHttpRequest === 'undefined' || !base || !anon) return null
@@ -331,11 +331,11 @@ async function unggahDenganProgres(path: string, file: File, onProgress: (persen
   if (!token) return null
   return new Promise((selesai) => {
     const xhr = new XMLHttpRequest()
-    xhr.open('POST', `${base}/storage/v1/object/modul-pdf/${encodeURIComponent(path)}`)
+    xhr.open('POST', `${base}/storage/v1/object/${bucket}/${encodeURIComponent(path)}`)
     xhr.setRequestHeader('Authorization', `Bearer ${token}`)
     xhr.setRequestHeader('apikey', anon)
     xhr.setRequestHeader('x-upsert', 'true')
-    xhr.setRequestHeader('Content-Type', 'application/pdf')
+    xhr.setRequestHeader('Content-Type', contentType)
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.min(100, Math.round((e.loaded / e.total) * 100)))
     }
@@ -423,7 +423,7 @@ function videoStorageObjectName(publicUrl: string | null | undefined): string | 
 // demo-mode local-only fallback), just against modules.video_url instead of
 // pdf_path, and keyed under the same videoUrlKey() localStorage slot that
 // saveVideoUrl's demo-mode fallback already uses.
-export async function uploadModulVideo(moduleId: number, file: File, pertemuan: PertemuanTopik = 1): Promise<string> {
+export async function uploadModulVideo(moduleId: number, file: File, pertemuan: PertemuanTopik = 1, onProgress?: (persen: number) => void): Promise<string> {
   const kolom = kol('video_url', pertemuan)
   if (pertemuan === 2 && !isSupabaseConfigured) throw new Error('Video pertemuan kedua butuh koneksi Supabase.')
   if (isSupabaseConfigured) {
@@ -437,10 +437,12 @@ export async function uploadModulVideo(moduleId: number, file: File, pertemuan: 
 
     const ext = file.type === 'video/webm' ? 'webm' : 'mp4'
     const path = `topik-${moduleId}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.${ext}`
-    const { error: uploadError } = await supabase.storage
-      .from('modul-video')
-      .upload(path, file, { upsert: true, contentType: file.type || 'video/mp4' })
+    const tipe = file.type || 'video/mp4'
+    const viaXhr = onProgress ? await unggahDenganProgres(path, file, onProgress, 'modul-video', tipe) : null
+    const { error: uploadError } =
+      viaXhr ?? (await supabase.storage.from('modul-video').upload(path, file, { upsert: true, contentType: tipe }))
     if (uploadError) throw uploadError
+    onProgress?.(100)
     const { data } = supabase.storage.from('modul-video').getPublicUrl(path)
     const { error: updateError } = await supabase
       .from('modules')

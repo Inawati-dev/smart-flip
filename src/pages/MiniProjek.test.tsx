@@ -144,6 +144,16 @@ describe('MiniProjek', () => {
     expect(await screen.findByText('Bab 1 terkirim')).toBeTruthy()
   })
 
+  it('langkah tautan prototipe hanya muncul di bab yang butuh tautan', async () => {
+    state.mulai = hariLalu(80)
+    tampil()
+    fireEvent.click(await screen.findByRole('button', { name: 'Kirim Bab 1 (.docx)' }))
+    expect(within(screen.getByRole('dialog')).queryByPlaceholderText('https://')).toBeNull()
+    fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Batal' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Kirim Bab 3 (.docx)' }))
+    expect(within(screen.getByRole('dialog')).getByText('Tautan prototipe')).toBeTruthy()
+  })
+
   it('Bab 3 menolak kirim tanpa tautan prototipe yang sah', async () => {
     state.mulai = hariLalu(80) // Topik 1 sampai 5 terbuka
     tampil()

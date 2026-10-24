@@ -22,9 +22,9 @@ import {
 import { isSupabaseConfigured } from '../lib/supabase'
 import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
-import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { IconTrash } from '../components/icons'
+import { IconTrash, IconDocument, IconUpload, IconEdit } from '../components/icons'
+import { ModalBerkas, LangkahBerkas, ZonaBerkas, BilahUnggah, LencanaSiap, ukuranBerkas } from '../components/ModalBerkas'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
 import { PembacaPdf, useCapAir } from '../components/PembacaPdf'
 import { KartuTopik, ChipRak, Rak, MenuAksi, ItemMenu } from '../components/KartuTopik'
@@ -59,13 +59,17 @@ function PratinjauLapis({ url, judul, onTutup }: { url: string; judul: string; o
   )
 }
 
-// Pratinjau berkas yang baru dipilih di modal Ganti PDF (antrean #292): halaman
-// pertama digambar ke canvas dari object URL, ditambah tombol untuk membuka semua halaman.
-function PratinjauBerkas({ file }: { file: File }) {
+// Pratinjau berkas yang baru dipilih di kolom kiri modal unggah (antrean #292,
+// tata letak #303 opsi A): halaman pertama digambar ke canvas dari object URL,
+// jumlah halaman dilaporkan ke pemanggil, dan tombol membuka semua halaman.
+export function PratinjauBerkas({ file, onHalaman }: { file: File; onHalaman?: (n: number) => void }) {
   const kanvas = useRef<HTMLCanvasElement>(null)
   const [url, setUrl] = useState<string | null>(null)
   const [gagal, setGagal] = useState(false)
   const [semua, setSemua] = useState(false)
+  const [halaman, setHalaman] = useState<number | null>(null)
+  const laporHalaman = useRef(onHalaman)
+  laporHalaman.current = onHalaman
   useEffect(() => {
     const u = URL.createObjectURL(file)
     let batal = false
@@ -75,15 +79,20 @@ function PratinjauBerkas({ file }: { file: File }) {
     setUrl(u)
     setGagal(false)
     setSemua(false)
+    setHalaman(null)
     void (async () => {
       try {
         const [pdfjs, pekerja] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.js?url')])
         pdfjs.GlobalWorkerOptions.workerSrc = pekerja.default
         const doc = await pdfjs.getDocument(u).promise
         try {
+          if (!batal) {
+            setHalaman(doc.numPages)
+            laporHalaman.current?.(doc.numPages)
+          }
           const hal = await doc.getPage(1)
           const dasar = hal.getViewport({ scale: 1 })
-          const viewport = hal.getViewport({ scale: (360 / dasar.width) * (window.devicePixelRatio || 1) })
+          const viewport = hal.getViewport({ scale: (270 / dasar.width) * (window.devicePixelRatio || 1) })
           const c = kanvas.current
           const ctx = c?.getContext('2d')
           if (batal || !c || !ctx) return
@@ -106,16 +115,40 @@ function PratinjauBerkas({ file }: { file: File }) {
     }
   }, [file])
   return (
-    <div className="mt-3 flex flex-col sm:flex-row gap-3 items-start" data-testid="pratinjau-berkas">
+    <div className="w-full flex flex-col items-center gap-3" data-testid="pratinjau-berkas">
+      <span className="self-start text-[11px] font-semibold uppercase tracking-wide text-brown-3">Pratinjau halaman 1</span>
       {gagal ? (
-        <p className="text-xs text-brown-3">Pratinjau halaman pertama tidak bisa ditampilkan.</p>
+        <p className="text-xs text-brown-3 py-8 text-center">Pratinjau halaman pertama tidak bisa ditampilkan.</p>
       ) : (
-        <canvas ref={kanvas} aria-label="Halaman pertama berkas yang dipilih" className="block w-full max-w-[200px] h-auto rounded border" style={{ ...BORDER, background: 'var(--bg3)' }} />
+        <canvas
+          ref={kanvas}
+          aria-label="Halaman pertama berkas yang dipilih"
+          className="block w-full max-w-[160px] md:max-w-[270px] h-auto rounded-md bg-ivory"
+          style={{ boxShadow: '0 10px 28px color-mix(in srgb, var(--shadow-color) 16%, transparent)' }}
+        />
       )}
-      <button type="button" onClick={() => setSemua(true)} disabled={!url} className="btn btn-secondary btn-sm">
+      <div className="flex gap-2 flex-wrap justify-center">
+        {halaman != null && (
+          <span className="px-3 py-1 rounded-full border bg-ivory text-[13px] font-semibold text-brown tabular-nums" style={BORDER}>{halaman} halaman</span>
+        )}
+        <span className="px-3 py-1 rounded-full border bg-ivory text-[13px] text-brown-3 tabular-nums" style={BORDER}>{ukuranBerkas(file.size)}</span>
+      </div>
+      <button type="button" onClick={() => setSemua(true)} disabled={!url} className="btn btn-secondary w-full">
         Lihat semua halaman
       </button>
       {semua && url && <PratinjauLapis url={url} judul={file.name} onTutup={() => setSemua(false)} />}
+    </div>
+  )
+}
+
+/** Kolom kiri modal unggah sebelum berkas dipilih. */
+function KosongPratinjau({ teks }: { teks: string }) {
+  return (
+    <div className="w-full flex flex-col items-center gap-3 py-6 md:py-16 text-center">
+      <span className="w-14 h-14 rounded-2xl flex items-center justify-center text-brown-3 bg-ivory border" style={BORDER}>
+        <IconDocument size={26} />
+      </span>
+      <p className="text-sm text-brown-3 max-w-[220px]">{teks}</p>
     </div>
   )
 }
@@ -212,7 +245,8 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
         if (createPdfFile) {
           setSavingStatus('Mengunggah PDF…')
           try {
-            await uploadModulPdf(newId, createPdfFile)
+            setPersenBaru(0)
+            await uploadModulPdf(newId, createPdfFile, 1, setPersenBaru)
             await queryClient.invalidateQueries({ queryKey: ['modules'] })
             await queryClient.invalidateQueries({ queryKey: ['manajemen', 'modul-pdf-files'] })
             showToast('Topik baru ditambahkan')
@@ -266,6 +300,8 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
   const [pickedPdfUrl, setPickedPdfUrl] = useState('')
   const [assigningPdf, setAssigningPdf] = useState(false)
   const [persenUnggah, setPersenUnggah] = useState(0)
+  const [halamanPdf, setHalamanPdf] = useState<number | null>(null)
+  const [persenBaru, setPersenBaru] = useState(0)
 
   function openPdfModal(id: number) {
     setPdfModalId(id)
@@ -400,16 +436,9 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
         </Rak>
       )}
 
-      {(editId != null || creatingNew) && (
-        <div
-          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
-        >
-          <div
-            className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
-          >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">{creatingNew ? 'Tambah Topik' : 'Ubah Topik'}</h3>
+      {(editId != null || creatingNew) && (() => {
+        const isian = (
+          <>
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
               Judul
               <input
@@ -444,32 +473,60 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
               />
               <span className="font-normal text-brown-3">Tampil di kartu topik mahasiswa sebagai "± n menit".</span>
             </label>
-            {creatingNew && (
-              <div className="mb-4">
-                <span className="block text-xs font-semibold text-brown-2 mb-1">PDF Topik (opsional)</span>
-                <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
-                  <FileInput
-                    accept="application/pdf,.pdf"
-                    label="Pilih PDF"
-                    hint="PDF, maks 20 MB"
-                    maxSizeMb={20}
-                    file={createPdfFile}
-                    onChange={setCreatePdfFile}
-                  />
-                </div>
-              </div>
-            )}
-            <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-              <button onClick={closeFormModal} className="btn btn-secondary">
-                Batal
-              </button>
-              <button onClick={saveEdit} disabled={saving || !formJudul.trim()} className="btn btn-primary min-w-[7.5rem]">
-                {saving ? savingStatus || 'Menyimpan…' : 'Simpan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )
+        const aksi = (
+          <>
+            <button type="button" onClick={closeFormModal} disabled={saving} className="btn btn-secondary">
+              Batal
+            </button>
+            <button type="button" onClick={saveEdit} disabled={saving || !formJudul.trim()} className="btn btn-primary min-w-[7.5rem]">
+              {saving ? (savingStatus ? 'Mengunggah…' : 'Menyimpan…') : creatingNew ? 'Tambah Topik' : 'Simpan'}
+            </button>
+          </>
+        )
+        // Ubah Topik: hanya isian, satu kolom. Tambah Topik: dua kolom dengan pratinjau PDF opsional (#304).
+        if (!creatingNew) {
+          return (
+            <ModalBerkas judul="Ubah Topik" ikon={<IconEdit size={20} />} lebar={640} onTutup={closeFormModal} sibuk={saving} aksi={aksi}>
+              {isian}
+            </ModalBerkas>
+          )
+        }
+        return (
+          <ModalBerkas
+            judul="Tambah Topik"
+            subjudul={`Topik ${String(modules.length + 1).padStart(2, '0')} · ${course?.name ?? ''}`}
+            ikon={<IconDocument size={20} />}
+            onTutup={closeFormModal}
+            sibuk={saving}
+            kiri={createPdfFile ? <PratinjauBerkas file={createPdfFile} /> : <KosongPratinjau teks="PDF boleh menyusul. Bila dipilih sekarang, pratinjau halaman pertama tampil di sini." />}
+            status={
+              saving && savingStatus ? (
+                <BilahUnggah persen={persenBaru} keterangan={createPdfFile ? `${createPdfFile.name} · jangan tutup jendela ini` : undefined} />
+              ) : createPdfFile ? (
+                <LencanaSiap>PDF siap diunggah</LencanaSiap>
+              ) : null
+            }
+            aksi={aksi}
+          >
+            <LangkahBerkas nomor={1} judul="Data topik" aktif>
+              <div>{isian}</div>
+            </LangkahBerkas>
+            <LangkahBerkas nomor={2} judul="PDF topik (opsional)" aktif={!!createPdfFile} akhir>
+              <ZonaBerkas
+                accept="application/pdf,.pdf"
+                label="Pilih PDF"
+                petunjuk="PDF, maks 20 MB."
+                maxSizeMb={20}
+                file={createPdfFile}
+                disabled={saving}
+                onChange={setCreatePdfFile}
+              />
+            </LangkahBerkas>
+          </ModalBerkas>
+        )
+      })()}
 
       {deleteId != null && (
         <div
@@ -495,92 +552,104 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
         </div>
       )}
 
-      {pdfModalId != null && (
-        <div
-          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(44,36,32,.55)', animation: 'fadeInBg 0.18s ease' }}
-        >
-          <div
-            className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
-            style={{ boxShadow: '0 16px 48px rgba(44,36,32,.25)', animation: 'slideUpModal 0.22s ease' }}
+      {pdfModalId != null && (() => {
+        const urut = [...modules].sort((a, b) => a.order_num - b.order_num)
+        const idx = urut.findIndex((x) => x.id === pdfModalId)
+        const m = urut[idx]
+        const kini = m?.pdf_path
+        const nama = kini ? kini.split('/').pop()?.split('?')[0] : null
+        const judulTopik = customs[pdfModalId]?.judul || m?.title || ''
+        return (
+          <ModalBerkas
+            judul={kini ? 'Ganti PDF Topik' : 'Unggah PDF Topik'}
+            subjudul={m ? `Topik ${String(idx + 1).padStart(2, '0')} · ${judulTopik} · ${labelPertemuan(idx, m.minggu_mulai)}` : undefined}
+            onTutup={() => setPdfModalId(null)}
+            sibuk={uploadingPdf}
+            kiri={pdfFile ? <PratinjauBerkas file={pdfFile} onHalaman={setHalamanPdf} /> : <KosongPratinjau teks="Pilih atau seret PDF untuk melihat pratinjau halaman pertama." />}
+            status={
+              uploadingPdf ? (
+                <BilahUnggah persen={persenUnggah} keterangan={pdfFile ? `${pdfFile.name} · jangan tutup jendela ini` : undefined} />
+              ) : pdfError ? (
+                <p className="text-[13px] text-danger" role="alert">{pdfError}</p>
+              ) : pdfFile ? (
+                <LencanaSiap>Siap diunggah</LencanaSiap>
+              ) : null
+            }
+            aksi={
+              <>
+                <button type="button" onClick={() => setPdfModalId(null)} disabled={uploadingPdf} className="btn btn-secondary">
+                  Batal
+                </button>
+                <button type="button" onClick={handleUploadPdf} disabled={!pdfFile || uploadingPdf} className="btn btn-primary min-w-[9rem]">
+                  <IconUpload size={16} /> {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
+                </button>
+              </>
+            }
           >
-            <h3 className="font-display text-lg font-semibold text-brown mb-3">Ganti PDF Topik</h3>
-            {(() => {
-              const kini = modules.find((x) => x.id === pdfModalId)?.pdf_path
-              const nama = kini ? kini.split('/').pop()?.split('?')[0] : null
-              return <p className="text-xs text-brown-3 mb-4 break-words">{nama ? `Berkas sekarang: ${nama}` : 'Belum ada berkas.'}</p>
-            })()}
-
-            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Unggah Berkas Baru</p>
-            <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
-              <FileInput
+            <LangkahBerkas nomor={1} judul="Berkas sekarang">
+              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] border bg-bg3 min-w-0" style={BORDER}>
+                <IconDocument size={18} className="text-brown-3 flex-shrink-0" />
+                <span className="flex-1 min-w-0 text-sm text-brown-2 truncate" title={nama ?? undefined}>{nama ?? 'Belum ada berkas'}</span>
+                {nama && <span className="text-xs text-brown-3 flex-shrink-0">{pdfFile ? 'akan diganti' : 'terpasang'}</span>}
+              </div>
+            </LangkahBerkas>
+            <LangkahBerkas nomor={2} judul="Pilih berkas baru" aktif>
+              <ZonaBerkas
                 accept="application/pdf,.pdf"
                 label="Pilih PDF"
-                hint="PDF, maks 20 MB"
+                petunjuk="PDF, maks 20 MB."
                 maxSizeMb={20}
                 file={pdfFile}
+                meta={halamanPdf != null ? `${halamanPdf} halaman` : undefined}
+                disabled={uploadingPdf}
                 onChange={(f) => {
                   setPdfFile(f)
+                  setHalamanPdf(null)
                   setPdfError('')
                 }}
               />
-              <button
-                type="button"
-                onClick={handleUploadPdf}
-                disabled={!pdfFile || uploadingPdf}
-                className="btn btn-primary btn-sm min-w-[8rem]"
-              >
-                {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
-              </button>
-            </div>
-            {pdfFile && <PratinjauBerkas file={pdfFile} />}
-            {uploadingPdf && (
-              <div className="mt-3" role="status">
-                <progress value={persenUnggah} max={100} className="w-full h-2 accent-[var(--terra)]" aria-label="Kemajuan unggah PDF" />
-                <p className="text-xs text-brown-3 mt-1 tabular-nums">Mengunggah… {persenUnggah}%</p>
-              </div>
-            )}
-
-            {isSupabaseConfigured && pdfFiles.length > 0 && (
-              <div className="pt-4 mt-4 border-t" style={BORDER}>
-                <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">
-                  Atau Pakai Berkas yang Sudah Ada
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-3 items-start">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Select
-                      value={pickedPdfUrl}
-                      onChange={setPickedPdfUrl}
-                      placeholder="Pilih file…"
-                      className="h-11 px-2.5 rounded-lg border text-sm text-brown flex-1 min-w-0"
-                      style={BORDER}
-                      options={pdfFiles.map((f) => ({
-                        value: f.url,
-                        label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
-                      }))}
-                    />
-                    {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau Berkas yang Dipilih" />}
+              {isSupabaseConfigured && pdfFiles.length > 0 && (
+                <>
+                  <div className="flex items-center gap-3 mt-2" aria-hidden="true">
+                    <span className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+                    <span className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">Atau pakai berkas yang sudah ada</span>
+                    <span className="flex-1 h-px" style={{ background: 'var(--border)' }} />
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleAssignPdf}
-                    disabled={!pickedPdfUrl || assigningPdf}
-                    className="btn btn-secondary min-w-[8rem]"
-                  >
-                    {assigningPdf ? 'Memasang…' : 'Gunakan'}
-                  </button>
-                </div>
-              </div>
-            )}
-            {pdfError && <p className="text-[11px] text-danger mt-2">{pdfError}</p>}
-            <div className="flex justify-end pt-4">
-              <button onClick={() => setPdfModalId(null)} className="btn btn-secondary">
-                Tutup
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                  <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] gap-2.5 items-start">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Select
+                        value={pickedPdfUrl}
+                        onChange={setPickedPdfUrl}
+                        placeholder="Pilih dari berkas yang sudah diunggah"
+                        className="h-11 px-2.5 rounded-lg border text-sm text-brown flex-1 min-w-0"
+                        style={BORDER}
+                        options={pdfFiles.map((f) => ({
+                          value: f.url,
+                          label: f.usedBy ? `${f.name}, dipakai: ${f.usedBy}` : `${f.name}: belum dipakai`,
+                        }))}
+                      />
+                      {pickedPdfUrl && <PdfPreviewLink url={pickedPdfUrl} label="Pratinjau Berkas yang Dipilih" />}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleAssignPdf}
+                      disabled={!pickedPdfUrl || assigningPdf || uploadingPdf}
+                      className="btn btn-secondary min-w-[7rem]"
+                    >
+                      {assigningPdf ? 'Memasang…' : 'Gunakan'}
+                    </button>
+                  </div>
+                </>
+              )}
+            </LangkahBerkas>
+            <LangkahBerkas nomor={3} judul="Unggah" akhir>
+              <p className="text-[13px] text-brown-3 leading-relaxed">
+                Berkas baru menggantikan berkas sekarang. Mahasiswa langsung membaca versi baru, dan berkas lama dihapus bila tidak dipakai topik lain.
+              </p>
+            </LangkahBerkas>
+          </ModalBerkas>
+        )
+      })()}
 
       {toast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 bg-brown text-white text-sm px-4 py-2.5 rounded-lg z-[700]">

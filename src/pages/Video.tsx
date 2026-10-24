@@ -12,9 +12,9 @@ import { PillGroup } from '../components/PillGroup'
 import { upsertVideoProgress, shouldSendTimeUpdate, fetchVideoProgressMap } from '../lib/videoProgress'
 import type { ModuleRow } from '../lib/modules'
 import { PreviewModal } from '../components/PdfPreviewLink'
-import { FileInput } from '../components/FileInput'
+import { ModalBerkas, LangkahBerkas, ZonaBerkas, BilahUnggah, LencanaSiap, ukuranBerkas } from '../components/ModalBerkas'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { IconEdit, IconPlay } from '../components/icons'
+import { IconEdit, IconPlay, IconVideo } from '../components/icons'
 import { KartuVideo } from '../components/KartuVideo'
 import { KelompokTopik, KISI_TOPIK } from '../components/KelompokTopik'
 import { ChipRak, warnaSampul } from '../components/KartuTopik'
@@ -381,6 +381,7 @@ function VideoDosen() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoFileError, setVideoFileError] = useState('')
+  const [persenUnggah, setPersenUnggah] = useState<number | null>(null)
   const [uploadingVideo, setUploadingVideo] = useState(false)
   // Durasi dalam menit (v26). YouTube tidak bisa dibaca klien, jadi dosen mengisi
   // manual; berkas unggahan terisi otomatis dari metadata.
@@ -422,37 +423,64 @@ function VideoDosen() {
 
   const MAX_VIDEO_BYTES = 100 * 1024 * 1024
 
-  async function handleUploadVideoFile() {
-    if (!editModul || !videoFile) return
-    if (videoFile.size > MAX_VIDEO_BYTES) {
-      setVideoFileError('Ukuran berkas maksimal 100 MB.')
+  // Pratinjau berkas lokal yang baru dipilih; URL objek dilepas saat berkas diganti atau modal ditutup.
+  const [fileSrc, setFileSrc] = useState<string | null>(null)
+  useEffect(() => {
+    if (!videoFile) {
+      setFileSrc(null)
       return
     }
-    setVideoFileError('')
-    setUploadingVideo(true)
-    try {
-      const url = await uploadModulVideo(editModul.id, videoFile, slot)
-      await queryClient.invalidateQueries({ queryKey: ['modules'] })
-      setUrlInput(url)
-      setVideoFile(null)
-      showToast('Video berhasil diunggah')
-    } catch (e) {
-      setVideoFileError(e instanceof Error && e.message === PESAN_V50 ? PESAN_V50 : 'Gagal mengunggah video. Coba lagi.')
-    } finally {
-      setUploadingVideo(false)
-    }
-  }
+    const u = URL.createObjectURL(videoFile)
+    setFileSrc(u)
+    return () => URL.revokeObjectURL(u)
+  }, [videoFile])
 
-  async function saveEdit() {
-    if (!editModul) return
+  // Pesan galat bila ada isian tautan yang tidak dikenal; `lewati` = tab yang akan diganti berkas.
+  function cekUrl(i: typeof isi, lewati?: PertemuanTopik): boolean {
     for (const p of [1, 2] as const) {
-      const u = isi[p].url.trim()
+      if (p === lewati) continue
+      const u = i[p].url.trim()
       if (u && !parseVideoUrl(u)) {
         setSlot(p)
         setUrlError('URL tidak dikenal. Pakai tautan YouTube atau file .mp4/.webm.')
-        return
+        return false
       }
     }
+    return true
+  }
+
+  // Satu tombol utama: bila ada berkas, unggah dulu, lalu simpan kedua isian.
+  async function handleSimpan() {
+    if (!editModul) return
+    let akhir = isi
+    if (videoFile) {
+      if (videoFile.size > MAX_VIDEO_BYTES) {
+        setVideoFileError('Ukuran berkas maksimal 100 MB.')
+        return
+      }
+      if (!cekUrl(isi, slot)) return
+      setVideoFileError('')
+      setUrlError('')
+      setPersenUnggah(0)
+      setUploadingVideo(true)
+      try {
+        const url = await uploadModulVideo(editModul.id, videoFile, slot, setPersenUnggah)
+        akhir = { ...isi, [slot]: { ...isi[slot], url } }
+        setIsi(akhir)
+        setVideoFile(null)
+      } catch (e) {
+        setVideoFileError(e instanceof Error && e.message === PESAN_V50 ? PESAN_V50 : 'Gagal mengunggah video. Coba lagi.')
+        return
+      } finally {
+        setUploadingVideo(false)
+      }
+    }
+    await saveEdit(akhir)
+  }
+
+  async function saveEdit(isi: Record<PertemuanTopik, { url: string; durasi: string }>) {
+    if (!editModul) return
+    if (!cekUrl(isi)) return
     setSaving(true)
     // Berkas lama dibuang sesudah KEDUA isian tersimpan, supaya video yang dipindah antartab tidak terhapus di tengah jalan.
     const lama = [editModul.video_url, editModul.video_url_2].filter((u): u is string => !!u && !Object.values(isi).some((s) => s.url.trim() === u))
@@ -576,143 +604,172 @@ function VideoDosen() {
         )}
       </div>
 
-      {editModul && (
-        <div
-          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-        >
-          <div
-            className="bg-ivory rounded-2xl modal-lebar p-6 my-8 overflow-x-hidden"
-            // 1080 px supaya isian dan pratinjau berdampingan dan tombol Simpan terlihat tanpa digulir (antrean #274); modal lain tetap 760 px
-            style={{ maxWidth: 'min(1080px, 94vw)', boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
+      {editModul && (() => {
+        const idxTopik = Math.max(sorted.findIndex((x) => x.id === editModul.id), 0)
+        const kini = urlPertemuan(editModul, slot)
+        const namaKini = kini ? kini.split('/').pop()?.split('?')[0] || kini : null
+        const berubah = !!videoFile || ([1, 2] as const).some((p) => isi[p].url.trim() !== urlPertemuan(editModul, p) || isi[p].durasi.trim() !== menitDari(p === 2 ? editModul.duration_sec_2 : editModul.duration_sec))
+        const sibuk = saving || uploadingVideo
+        const galat = urlError || videoFileError
+        return (
+          <ModalBerkas
+            judul={editModul.video_url || editModul.video_url_2 ? 'Ubah Video' : 'Tambah Video'}
+            subjudul={`Topik ${String(idxTopik + 1).padStart(2, '0')} · ${editModul.title} · Pertemuan ${nomorPertemuan(idxTopik, editModul.minggu_mulai, slot)}`}
+            ikon={<IconVideo size={20} />}
+            onTutup={closeEdit}
+            sibuk={sibuk}
+            kiri={
+              <>
+                {videoFile && fileSrc ? (
+                  <div className="w-full rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
+                    <video
+                      key={fileSrc}
+                      controls
+                      src={fileSrc}
+                      className="w-full h-full"
+                      onLoadedMetadata={(e) => {
+                        if (Number.isFinite(e.currentTarget.duration)) setDurasiMenit(String(Math.round(e.currentTarget.duration / 60)))
+                      }}
+                    />
+                  </div>
+                ) : parsedInput ? (
+                  <div className="w-full rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
+                    {parsedInput.kind === 'youtube' ? (
+                      <iframe
+                        src={parsedInput.embedUrl}
+                        title="Pratinjau video"
+                        className="w-full h-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <video
+                        controls
+                        src={parsedInput.src}
+                        className="w-full h-full"
+                        onLoadedMetadata={(e) => {
+                          if (durasiMenit.trim() === '' && Number.isFinite(e.currentTarget.duration)) setDurasiMenit(String(Math.round(e.currentTarget.duration / 60)))
+                        }}
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="w-full flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed text-xs text-brown-3 text-center p-4" style={{ ...BORDER, aspectRatio: '16/9' }}>
+                    <IconVideo size={24} />
+                    Tempel tautan atau pilih berkas video untuk melihat pratinjau.
+                  </div>
+                )}
+                {(durasiMenit.trim() !== '' || videoFile) && (
+                  <div className="flex gap-2 flex-wrap justify-center">
+                    {durasiMenit.trim() !== '' && <ChipRak jenis="todo" label={`Durasi ${durasiMenit} menit`} />}
+                    {videoFile && <ChipRak jenis="todo" label={ukuranBerkas(videoFile.size)} />}
+                  </div>
+                )}
+              </>
+            }
+            status={
+              uploadingVideo ? (
+                <BilahUnggah persen={persenUnggah} keterangan={videoFile ? `${videoFile.name} · jangan tutup jendela ini` : undefined} />
+              ) : galat ? (
+                <p className="text-[13px] text-danger" role="alert">{galat}</p>
+              ) : berubah ? (
+                <LencanaSiap>Siap disimpan</LencanaSiap>
+              ) : null
+            }
+            aksi={
+              <>
+                <button type="button" onClick={closeEdit} disabled={sibuk} className="btn btn-secondary">
+                  Batal
+                </button>
+                <button type="button" onClick={() => void handleSimpan()} disabled={sibuk} className="btn btn-primary min-w-[9rem]">
+                  {uploadingVideo ? 'Mengunggah…' : saving ? 'Menyimpan…' : videoFile ? 'Unggah dan Simpan' : 'Simpan'}
+                </button>
+              </>
+            }
           >
-            <h3 className="font-display text-lg font-bold text-brown mb-1">{editModul.video_url || editModul.video_url_2 ? 'Ubah Video' : 'Tambah Video'}</h3>
-            <p className="text-xs text-brown-3 mb-3">{editModul.title}</p>
             {/* Satu topik = dua pertemuan (antrean #271). Isian kedua opsional; Simpan menulis kedua tab. */}
-            <div className="mb-2">
+            <div className="mb-4">
               <PillGroup
                 variant="tab"
                 ariaLabel="Video untuk pertemuan"
                 options={PILIHAN_PERTEMUAN}
                 value={String(slot)}
                 onChange={(v) => {
+                  if (sibuk) return
                   setSlot(v === '2' ? 2 : 1)
                   setUrlError('')
                   setVideoFile(null)
                   setVideoFileError('')
                 }}
               />
+              <p className="text-xs text-brown-3 mt-2">
+                {slot === 1 ? 'Video yang diputar di pertemuan pertama topik ini.' : 'Opsional: isi bila topik ini memakai video lain di pertemuan keduanya. Kosongkan bila tidak.'}
+              </p>
             </div>
-            <p className="text-xs text-brown-3 mb-4">
-              {slot === 1 ? 'Video yang diputar di pertemuan pertama topik ini.' : 'Opsional: isi bila topik ini memakai video lain di pertemuan keduanya. Kosongkan bila tidak.'}
-            </p>
-
-            {/* Dua kolom di laptop (antrean #274): isian di kiri, pratinjau di kanan, supaya modal muat tanpa digulir.
-                Telepon satu kolom dengan urutan lama: tautan, pratinjau, unggah. */}
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-x-6">
-              <div className="min-w-0 lg:col-start-1 lg:row-start-1">
-            {/* Bagian 1: tautan. Pola sama dengan modal Ganti PDF (antrean #67):
-                subjudul kecil, isi di kiri, aksi di kanan, tanpa flex-wrap. */}
-            <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Tempel Tautan</p>
-            <input
-              value={urlInput}
-              onChange={(e) => {
-                setUrlInput(e.target.value)
-                setUrlError('')
-              }}
-              placeholder="https://youtube.com/watch?v=... atau .mp4"
-              className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown mb-2"
-              style={BORDER}
-            />
-            {urlError && <p className="text-xs mb-2" style={{ color: 'var(--danger)' }}>{urlError}</p>}
-            <div className="grid grid-cols-[auto_6rem_minmax(0,1fr)] items-center gap-2 mb-3">
-              <label htmlFor="durasi-menit" className="text-xs font-semibold text-brown-2 whitespace-nowrap">
-                Durasi (menit)
-              </label>
+            <LangkahBerkas nomor={1} judul="Video sekarang">
+              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] border bg-bg3 min-w-0" style={BORDER}>
+                <IconVideo size={18} className="text-brown-3 flex-shrink-0" />
+                <span className="flex-1 min-w-0 text-sm text-brown-2 truncate" title={namaKini ?? undefined}>{namaKini ?? 'Belum ada video'}</span>
+                {namaKini && <span className="text-xs text-brown-3 flex-shrink-0">{videoFile || urlInput.trim() !== kini ? 'akan diganti' : 'terpasang'}</span>}
+              </div>
+            </LangkahBerkas>
+            <LangkahBerkas nomor={2} judul="Tempel tautan YouTube" aktif>
               <input
-                id="durasi-menit"
-                type="number"
-                min={0}
-                inputMode="numeric"
-                value={durasiMenit}
-                onChange={(e) => setDurasiMenit(e.target.value)}
-                placeholder="12"
+                value={urlInput}
+                disabled={sibuk}
+                onChange={(e) => {
+                  setUrlInput(e.target.value)
+                  setUrlError('')
+                }}
+                aria-label="Tautan video"
+                placeholder="https://youtube.com/watch?v=... atau .mp4"
                 className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
                 style={BORDER}
               />
-              <span className="text-xs text-brown-3">Tautan YouTube diisi manual, berkas unggahan terisi otomatis.</span>
-            </div>
-              </div>
-              <div className="min-w-0 mb-3 lg:mb-0 lg:col-start-2 lg:row-start-1 lg:row-span-2">
-                <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2 hidden lg:block">Pratinjau</p>
-                {parsedInput ? (
-                  <div className="rounded-lg overflow-hidden bg-black" style={{ aspectRatio: '16/9' }}>
-                {parsedInput.kind === 'youtube' ? (
-                  <iframe
-                    src={parsedInput.embedUrl}
-                    title="Pratinjau video"
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                ) : (
-                  <video
-                    controls
-                    src={parsedInput.src}
-                    className="w-full h-full"
-                    onLoadedMetadata={(e) => {
-                      if (durasiMenit.trim() === '' && Number.isFinite(e.currentTarget.duration)) setDurasiMenit(String(Math.round(e.currentTarget.duration / 60)))
-                    }}
-                  />
-                )}
-              </div>
-                ) : (
-                  <div className="hidden lg:flex items-center justify-center rounded-lg border border-dashed text-xs text-brown-3 text-center p-4" style={{ ...BORDER, aspectRatio: '16/9' }}>
-                    Pratinjau video tampil di sini sesudah tautan ditempel atau berkas diunggah.
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0 lg:col-start-1 lg:row-start-2">
-            {/* Bagian 2: unggah berkas */}
-            <div className="pt-4 mt-1 border-t" style={BORDER}>
-              <p className="text-[11px] font-semibold text-brown-3 uppercase tracking-wide mb-2">Atau Unggah Berkas</p>
-              <div className="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-                <FileInput
-                  accept="video/mp4,video/webm,.mp4,.webm"
-                  label="Pilih Video"
-                  hint="MP4 atau WebM, maks 100 MB"
-                  maxSizeMb={100}
-                  file={videoFile}
-                  onChange={(f) => {
-                    setVideoFile(f)
-                    setVideoFileError('')
-                  }}
+              <div className="grid grid-cols-[auto_6rem_minmax(0,1fr)] items-center gap-2">
+                <label htmlFor="durasi-menit" className="text-xs font-semibold text-brown-2 whitespace-nowrap">
+                  Durasi (menit)
+                </label>
+                <input
+                  id="durasi-menit"
+                  type="number"
+                  min={0}
+                  inputMode="numeric"
+                  value={durasiMenit}
+                  disabled={sibuk}
+                  onChange={(e) => setDurasiMenit(e.target.value)}
+                  placeholder="12"
+                  className="w-full min-w-0 h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+                  style={BORDER}
                 />
-                <button
-                  type="button"
-                  onClick={() => void handleUploadVideoFile()}
-                  disabled={!videoFile || uploadingVideo}
-                  className="btn btn-primary btn-sm min-w-[8rem]"
-                >
-                  {uploadingVideo ? 'Mengunggah…' : 'Unggah'}
-                </button>
+                <span className="text-xs text-brown-3">Tautan YouTube diisi manual, berkas unggahan terisi otomatis.</span>
               </div>
-              {videoFileError && <p className="text-xs mt-2" style={{ color: 'var(--danger)' }}>{videoFileError}</p>}
-            </div>
+              <div className="flex items-center gap-3 mt-2" aria-hidden="true">
+                <span className="flex-1 h-px" style={{ background: 'var(--border)' }} />
+                <span className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">Atau unggah berkas</span>
+                <span className="flex-1 h-px" style={{ background: 'var(--border)' }} />
               </div>
-            </div>
-
-            <div className="flex gap-2.5 justify-end pt-4 mt-4 border-t" style={BORDER}>
-              <button onClick={closeEdit} className="btn btn-secondary">
-                Batal
-              </button>
-              <button onClick={saveEdit} disabled={saving} className="btn btn-primary min-w-[7.5rem]">
-                {saving ? 'Menyimpan…' : 'Simpan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <ZonaBerkas
+                accept="video/mp4,video/webm,.mp4,.webm"
+                label="Pilih Video"
+                petunjuk="MP4 atau WebM, maks 100 MB."
+                maxSizeMb={100}
+                file={videoFile}
+                disabled={sibuk}
+                onChange={(f) => {
+                  setVideoFile(f)
+                  setVideoFileError('')
+                }}
+              />
+            </LangkahBerkas>
+            <LangkahBerkas nomor={3} judul="Simpan" akhir>
+              <p className="text-[13px] text-brown-3 leading-relaxed">
+                Video baru menggantikan video sekarang untuk pertemuan ini. Berkas lama dihapus bila tidak dipakai pertemuan lain.
+              </p>
+            </LangkahBerkas>
+          </ModalBerkas>
+        )
+      })()}
 
       {toast && (
         <div

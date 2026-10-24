@@ -2,7 +2,8 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
 import { Layout } from '../components/Layout'
-import { FileInput } from '../components/FileInput'
+import { ModalBerkas, LangkahBerkas, ZonaBerkas, BilahUnggah, LencanaSiap } from '../components/ModalBerkas'
+import { IconDocument } from '../components/icons'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { usePaketMhs } from '../hooks/usePaketMhs'
 import {
@@ -410,18 +411,13 @@ function KirimModal({
   const tautanOk = !bab.butuhTautan || tautanSah(link)
   const siap = adaBerkas && cek.every(Boolean) && tautanOk
 
-  function pilih(f: File | null) {
-    if (f) {
-      try {
-        cekBerkasDocx(f)
-      } catch (e) {
-        setError(e instanceof Error ? e.message : 'Berkas tidak diterima.')
-        setFile(null)
-        return
-      }
+  function cekBerkas(f: File): string {
+    try {
+      cekBerkasDocx(f)
+      return ''
+    } catch (e) {
+      return e instanceof Error ? e.message : 'Berkas tidak diterima.'
     }
-    setError('')
-    setFile(f)
   }
 
   async function kirim() {
@@ -437,73 +433,109 @@ function KirimModal({
     }
   }
 
+  const nomorCatatan = bab.butuhTautan ? 3 : 2
+  const kurang = !adaBerkas ? 'Pilih berkas .docx' : !tautanOk ? 'Isi tautan prototipe' : 'Centang semua daftar periksa'
+
   return (
-    <Modal id="judul-kirim" judul={`${kiriman ? 'Kirim Ulang' : 'Kirim'} ${bab.judul}`}>
-      <div className="mb-3">
-        <span className="block text-[13px] font-semibold text-brown-2 mb-1.5">Berkas</span>
-        <FileInput
+    <ModalBerkas
+      judul={`${kiriman ? 'Kirim Ulang' : 'Kirim'} ${bab.judul}`}
+      subjudul={brief.title}
+      ikon={<IconDocument size={20} />}
+      lebar={640}
+      onTutup={onClose}
+      sibuk={saving}
+      status={
+        saving ? (
+          <BilahUnggah persen={null} keterangan="Jangan tutup jendela ini" />
+        ) : error ? (
+          <p className="text-[13px] text-danger" role="alert">{error}</p>
+        ) : siap ? (
+          <LencanaSiap>Siap dikirim</LencanaSiap>
+        ) : (
+          <p className="text-[13px] text-brown-3">{kurang}</p>
+        )
+      }
+      aksi={
+        <>
+          <button type="button" onClick={onClose} disabled={saving} className="btn btn-secondary">
+            Batal
+          </button>
+          <button type="button" onClick={() => void kirim()} disabled={!siap || saving} className="btn btn-primary min-w-[7.5rem]">
+            {saving ? 'Mengirim…' : 'Kirim'}
+          </button>
+        </>
+      }
+    >
+      <LangkahBerkas nomor={1} judul="Berkas" aktif={!!file}>
+        {kiriman?.file_name && !file && (
+          <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] border bg-bg3 min-w-0" style={BORDER}>
+            <IconDocument size={18} className="text-brown-3 flex-shrink-0" />
+            <span className="flex-1 min-w-0 text-sm text-brown-2 truncate" title={kiriman.file_name}>Berkas lama: {kiriman.file_name}</span>
+          </div>
+        )}
+        <ZonaBerkas
           accept={BERKAS_ACCEPT}
           label="Pilih Berkas"
-          hint={kiriman?.file_name && !file ? `Berkas lama: ${kiriman.file_name}. Hanya .docx, maks ${BERKAS_MAKS_MB} MB` : `Hanya .docx, maks ${BERKAS_MAKS_MB} MB`}
+          petunjuk={`Hanya .docx, maks ${BERKAS_MAKS_MB} MB.`}
           maxSizeMb={BERKAS_MAKS_MB}
           file={file}
-          onChange={pilih}
+          disabled={saving}
+          cekBerkas={cekBerkas}
+          onChange={(f) => {
+            setError('')
+            setFile(f)
+          }}
         />
-      </div>
+      </LangkahBerkas>
 
       {bab.butuhTautan && (
-        <label className="flex flex-col gap-1 text-[13px] font-semibold text-brown-2 mb-3">
-          Tautan Prototipe (Figma, Canva, draw.io, atau Sejenisnya)
-          <input
-            value={link}
-            onChange={(e) => setLink(e.target.value)}
-            placeholder="https://"
-            inputMode="url"
-            className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-            style={BORDER}
-          />
-          {link.trim() !== '' && !tautanSah(link) && <span className="text-[13px] font-normal text-danger">Tautan harus diawali http:// atau https://.</span>}
-        </label>
+        <LangkahBerkas nomor={2} judul="Tautan prototipe" aktif={tautanSah(link)}>
+          <label className="flex flex-col gap-1 text-[13px] text-brown-3">
+            Figma, Canva, draw.io, atau sejenisnya
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              disabled={saving}
+              placeholder="https://"
+              inputMode="url"
+              className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
+              style={BORDER}
+            />
+            {link.trim() !== '' && !tautanSah(link) && <span className="text-[13px] text-danger">Tautan harus diawali http:// atau https://.</span>}
+          </label>
+        </LangkahBerkas>
       )}
 
-      <label className="flex flex-col gap-1 text-[13px] font-semibold text-brown-2 mb-3">
-        Catatan untuk Dosen
+      <LangkahBerkas nomor={nomorCatatan} judul="Catatan untuk dosen (opsional)" aktif={note.trim() !== ''}>
         <textarea
           value={note}
           onChange={(e) => setNote(e.target.value)}
+          disabled={saving}
           rows={2}
+          aria-label="Catatan untuk dosen"
           placeholder="Boleh dikosongkan"
           className="rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y"
           style={BORDER}
         />
-      </label>
+      </LangkahBerkas>
 
-      <fieldset className="mb-3">
-        <legend className="text-[13px] font-semibold text-brown-3 uppercase tracking-wide mb-1">Daftar Periksa</legend>
-        {bab.periksa.map((p, i) => (
-          <label key={p} className="flex items-center gap-2.5 min-h-11 text-sm text-brown">
-            <input
-              type="checkbox"
-              checked={cek[i]}
-              onChange={(e) => setCek((c) => c.map((v, j) => (j === i ? e.target.checked : v)))}
-              className="w-5 h-5 shrink-0"
-            />
-            {p}
-          </label>
-        ))}
-      </fieldset>
-
-      {error && <p className="text-[13px] text-danger mb-3">{error}</p>}
-
-      <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-        <button type="button" onClick={onClose} className="btn btn-secondary">
-          Batal
-        </button>
-        <button type="button" onClick={() => void kirim()} disabled={!siap || saving} className="btn btn-primary min-w-[7.5rem]">
-          {saving ? 'Mengirim…' : 'Kirim'}
-        </button>
-      </div>
-    </Modal>
+      <LangkahBerkas nomor={nomorCatatan + 1} judul="Periksa sebelum kirim" aktif={cek.every(Boolean)} akhir>
+        <div>
+          {bab.periksa.map((p, i) => (
+            <label key={p} className="flex items-center gap-2.5 min-h-11 text-sm text-brown">
+              <input
+                type="checkbox"
+                checked={cek[i]}
+                disabled={saving}
+                onChange={(e) => setCek((c) => c.map((v, j) => (j === i ? e.target.checked : v)))}
+                className="w-5 h-5 shrink-0"
+              />
+              {p}
+            </label>
+          ))}
+        </div>
+      </LangkahBerkas>
+    </ModalBerkas>
   )
 }
 

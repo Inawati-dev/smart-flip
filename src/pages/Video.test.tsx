@@ -57,6 +57,9 @@ const FAKE_MODULES = [
   makeModule(2, null),
 ]
 
+const mockUpload = vi.hoisted(() => vi.fn())
+vi.mock('../lib/manajemen', async (orig) => ({ ...(await orig<typeof import('../lib/manajemen')>()), uploadModulVideo: mockUpload }))
+
 vi.mock('../lib/modules', () => ({
   fetchModules: async () => FAKE_MODULES,
   fetchModuleById: async (id: number) => FAKE_MODULES.find((m) => m.id === id) ?? null,
@@ -150,6 +153,27 @@ describe('Video (dosen)', () => {
     fireEvent.click(screen.getAllByTitle('Ubah Video')[0])
     const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm,.mp4,.webm"]')
     expect(input).toBeTruthy()
+  })
+
+  // Antrean #304: modal Ubah Video memakai kerangka ModalBerkas, satu tombol utama, progres nyata.
+  it('uses one primary button and shows the upload bar while uploading', async () => {
+    let selesai: (u: string) => void = () => {}
+    mockUpload.mockImplementation((_id: number, _f: File, _s: number, onProgress?: (p: number) => void) => {
+      onProgress?.(42)
+      return new Promise<string>((r) => (selesai = r))
+    })
+    renderVideo(1)
+    await waitFor(() => expect(screen.getByText('Modul 1')).toBeTruthy())
+    fireEvent.click(screen.getAllByTitle('Ubah Video')[0])
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Unggah' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Simpan' })).toBeTruthy()
+    const input = document.querySelector('input[type="file"][accept="video/mp4,video/webm,.mp4,.webm"]') as HTMLInputElement
+    fireEvent.change(input, { target: { files: [new File(['x'], 'v.mp4', { type: 'video/mp4' })] } })
+    fireEvent.click(screen.getByRole('button', { name: 'Unggah dan Simpan' }))
+    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('42%'))
+    expect(screen.getByRole('button', { name: 'Mengunggah…' })).toBeTruthy()
+    selesai('https://x.test/storage/v1/object/public/modul-video/v.mp4')
   })
 
   // Antrean #85: kartu Rak per topik punya tombol Ubah/Tambah video sendiri

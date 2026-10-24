@@ -228,29 +228,67 @@ const KonteksMenu = createContext<() => void>(() => {})
 export function MenuAksi({ tombol, ariaLabel, kelasTombol, rata = 'kiri', children }: { tombol: ReactNode; ariaLabel?: string; kelasTombol: string; rata?: 'kiri' | 'kanan'; children: ReactNode }) {
   const [buka, setBuka] = useState(false)
   const wadah = useRef<HTMLDivElement>(null)
+  const pemicu = useRef<HTMLButtonElement>(null)
+  const menu = useRef<HTMLDivElement>(null)
+  // Dibuka lewat papan ketik (Enter/Spasi: klik dengan detail 0): fokus langsung ke item pertama.
+  const lewatPapanKetik = useRef(false)
   useEffect(() => {
     if (!buka) return
-    const luar = (e: MouseEvent | TouchEvent) => {
+    const item = () => [...(menu.current?.querySelectorAll<HTMLButtonElement>('[role="menuitem"]:not(:disabled)') ?? [])]
+    if (lewatPapanKetik.current) item()[0]?.focus()
+    const luar = (e: MouseEvent | TouchEvent | FocusEvent) => {
       if (wadah.current && !wadah.current.contains(e.target as Node)) setBuka(false)
     }
-    const tombolEsc = (e: KeyboardEvent) => e.key === 'Escape' && setBuka(false)
+    // Antrean temuan pemeriksa #292-#301: Escape mengembalikan fokus ke tombol
+    // pemicu, panah atas/bawah berpindah item, dan fokus yang pindah ke luar
+    // (Tab ke kartu lain) menutup menu sehingga tidak ada dua menu terbuka.
+    const tombol = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setBuka(false)
+        pemicu.current?.focus()
+        return
+      }
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return
+      const daftar = item()
+      if (!daftar.length) return
+      e.preventDefault()
+      const i = daftar.indexOf(document.activeElement as HTMLButtonElement)
+      const arah = e.key === 'ArrowDown' ? 1 : -1
+      // Fokus belum di item (mis. masih di tombol): panah bawah ke item pertama, panah atas ke item terakhir.
+      const tuju = i < 0 ? (arah > 0 ? 0 : daftar.length - 1) : (i + arah + daftar.length) % daftar.length
+      daftar[tuju]?.focus()
+    }
     document.addEventListener('mousedown', luar)
     document.addEventListener('touchstart', luar)
-    document.addEventListener('keydown', tombolEsc)
+    document.addEventListener('focusin', luar)
+    document.addEventListener('keydown', tombol)
     return () => {
       document.removeEventListener('mousedown', luar)
       document.removeEventListener('touchstart', luar)
-      document.removeEventListener('keydown', tombolEsc)
+      document.removeEventListener('focusin', luar)
+      document.removeEventListener('keydown', tombol)
     }
   }, [buka])
   return (
     <div ref={wadah} className="relative inline-block">
-      <button type="button" aria-haspopup="menu" aria-expanded={buka} aria-label={ariaLabel} onClick={() => setBuka((b) => !b)} className={kelasTombol}>
+      <button
+        ref={pemicu}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={buka}
+        aria-label={ariaLabel}
+        onClick={(e) => {
+          lewatPapanKetik.current = e.detail === 0
+          setBuka((b) => !b)
+        }}
+        className={kelasTombol}
+      >
         {tombol}
       </button>
       {buka && (
         <KonteksMenu.Provider value={() => setBuka(false)}>
           <div
+            ref={menu}
             role="menu"
             className={`absolute z-[50] top-full mt-1 min-w-[12rem] rounded-xl border p-1 ${rata === 'kanan' ? 'right-0' : 'left-0'}`}
             style={{ background: 'var(--ivory)', borderColor: 'var(--border)', boxShadow: '0 10px 28px -10px color-mix(in srgb, var(--shadow-color) 45%, transparent)' }}

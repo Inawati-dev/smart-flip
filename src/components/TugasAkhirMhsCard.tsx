@@ -12,7 +12,8 @@ import {
   BERKAS_MAKS_MB,
 } from '../lib/tugasAkhir'
 import { useCourse } from '../contexts/CourseContext'
-import { FileInput } from './FileInput'
+import { BilahUnggah, LangkahBerkas, LencanaSiap, ModalBerkas, ZonaBerkas } from './ModalBerkas'
+import { IconDocument } from './icons'
 
 // Kartu mini projek (dulu "tugas akhir", antrean #170) di kolom kanan AsesmenDaftar (AsesmenMhs.tsx),
 // menggantikan PanelCard VARK (antrean #57 opsi A). Pola kartu meniru
@@ -204,64 +205,74 @@ function BriefItem({ project }: { project: FinalProject }) {
       )}
 
       {modalOpen && (
-        <div
-          className="fixed inset-0 z-[600] flex items-start justify-center p-4 overflow-y-auto"
-          style={{ background: 'var(--overlay)', animation: 'fadeInBg 0.18s ease' }}
-        >
-          <div
-            className="bg-ivory rounded-2xl modal-lebar p-6 my-8"
-            style={{ boxShadow: '0 16px 48px color-mix(in srgb, var(--shadow-color) 25%, transparent)', animation: 'slideUpModal 0.22s ease' }}
-          >
-            <h3 className="font-display text-lg font-semibold text-brown mb-4">
-              {submission ? 'Kirim Ulang Mini Projek' : 'Kirim Mini Projek'}
-            </h3>
-
-            <div className="mb-3">
-              <span className="block text-xs font-semibold text-brown-2 mb-1.5">Berkas</span>
-              <FileInput
-                accept={BERKAS_ACCEPT}
-                label="Pilih Berkas"
-                hint="Hanya berkas Word (.docx), maks 20 MB"
-                maxSizeMb={BERKAS_MAKS_MB}
-                file={file}
-                onChange={setFile}
-              />
-            </div>
-
-            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
-              Tautan (opsional)
-              <input
-                value={link}
-                onChange={(e) => setLink(e.target.value)}
-                placeholder="https://…"
-                className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown"
-                style={BORDER}
-              />
-            </label>
-
-            <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-3">
-              Catatan (opsional)
-              <textarea
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                rows={3}
-                className="rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y"
-                style={BORDER}
-              />
-            </label>
-
-            {error && <p className="text-xs text-danger mb-3">{error}</p>}
-
-            <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
-              <button onClick={() => setModalOpen(false)} className="btn btn-secondary">
+        <ModalBerkas
+          judul={submission ? 'Kirim Ulang Mini Projek' : 'Kirim Mini Projek'}
+          subjudul={project.title}
+          ikon={<IconDocument size={20} />}
+          lebar={760}
+          onTutup={() => setModalOpen(false)}
+          sibuk={saving}
+          status={
+            saving ? (
+              <BilahUnggah persen={null} />
+            ) : error ? (
+              <p className="text-[13px] text-danger" role="alert">{error}</p>
+            ) : file || link.trim() || submission?.file_path ? (
+              <LencanaSiap>Siap dikirim</LencanaSiap>
+            ) : null
+          }
+          aksi={
+            <>
+              <button type="button" onClick={() => setModalOpen(false)} disabled={saving} className="btn btn-secondary">
                 Batal
               </button>
-              <button onClick={() => void handleSubmit()} disabled={saving} className="btn btn-primary min-w-[7.5rem]">
+              <button type="button" onClick={() => void handleSubmit()} disabled={saving} className="btn btn-primary min-w-[7.5rem]">
                 {saving ? 'Mengirim…' : 'Kirim'}
               </button>
-            </div>
-          </div>
-        </div>
+            </>
+          }
+        >
+          <LangkahBerkas nomor={1} judul="Berkas" aktif={!!file}>
+            {submission?.file_name && (
+              <div className="flex items-center gap-3 px-3.5 py-3 rounded-[10px] border bg-bg3 min-w-0" style={BORDER}>
+                <IconDocument size={18} className="text-brown-3 flex-shrink-0" />
+                <span className="flex-1 min-w-0 text-sm text-brown-2 truncate" title={submission.file_name}>{submission.file_name}</span>
+                <span className="text-xs text-brown-3 flex-shrink-0">{file ? 'akan diganti' : 'terkirim'}</span>
+              </div>
+            )}
+            <ZonaBerkas
+              accept={BERKAS_ACCEPT}
+              label="Pilih Berkas"
+              petunjuk="Hanya berkas Word (.docx), maks 20 MB."
+              maxSizeMb={BERKAS_MAKS_MB}
+              file={file}
+              disabled={saving}
+              onChange={setFile}
+            />
+          </LangkahBerkas>
+          <LangkahBerkas nomor={2} judul="Tautan (opsional)" aktif={!!link.trim()}>
+            <input
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
+              placeholder="https://"
+              aria-label="Tautan"
+              disabled={saving}
+              className="h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown w-full"
+              style={BORDER}
+            />
+          </LangkahBerkas>
+          <LangkahBerkas nomor={3} judul="Catatan (opsional)" aktif={!!note.trim()} akhir>
+            <textarea
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              rows={3}
+              aria-label="Catatan"
+              disabled={saving}
+              className="rounded-[var(--radius-control)] border px-3 py-2 text-base text-brown resize-y w-full"
+              style={BORDER}
+            />
+          </LangkahBerkas>
+        </ModalBerkas>
       )}
 
       {toast && (

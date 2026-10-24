@@ -191,7 +191,7 @@ describe('ModulList', () => {
     await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
     fireEvent.click(screen.getByText(/\+ Tambah Topik/))
 
-    expect(screen.getByText('PDF Topik (opsional)')).toBeTruthy()
+    expect(screen.getByText('PDF topik (opsional)')).toBeTruthy()
     expect(document.querySelector('input[type="file"][accept="application/pdf,.pdf"]')).toBeTruthy()
   })
 
@@ -314,7 +314,7 @@ describe('ModulList', () => {
     expect(screen.getByText('Lihat semua halaman')).toBeTruthy()
     expect(dibuat).toHaveBeenCalled()
     fireEvent.click(screen.getAllByRole('button', { name: 'Unggah PDF' }).at(-1)!)
-    await waitFor(() => expect(screen.getByText('Mengunggah… 42%')).toBeTruthy())
+    await waitFor(() => expect(screen.getByText('42%')).toBeTruthy())
     selesai()
     await waitFor(() => expect(screen.queryByText('Ganti PDF Topik')).toBeNull())
     expect(screen.getByText('PDF topik berhasil diunggah')).toBeTruthy()
