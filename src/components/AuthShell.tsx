@@ -1,30 +1,22 @@
 import type { ReactNode } from 'react'
 
 // Brand badge — rounded square (echoes SAKTI's IconRailV2 sidebar badge)
-// with an open-book glyph, white on terra-d. Exported for reuse in
+// with the SMART-FLIP logo (antrean #300, A1 "Halaman Terbang ke Bintang").
+// Copy of public/assets/favicon.svg, the single source of every app icon
+// (scripts/buat_ikon.py): change both together. Exported for reuse in
 // Layout.tsx's sidebar toggle badge so the mark reads as one consistent
 // logo everywhere, not just here (mobile-only compact header).
 export function BrandMark({ size = 30 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" className="rounded-[8px] flex-shrink-0">
-      <rect width="32" height="32" rx="8" fill="var(--terra-d)" />
-      <path
-        d="M16 11C13.5 9.3 10.5 9 8 9.6V22.4C10.5 21.8 13.5 22.1 16 23.8"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M16 11C18.5 9.3 21.5 9 24 9.6V22.4C21.5 21.8 18.5 22.1 16 23.8"
-        fill="none"
-        stroke="#fff"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path d="M16 11V23.8" stroke="#fff" strokeWidth="1.4" opacity="0.6" />
+    <svg width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" className="flex-shrink-0">
+      <rect width="64" height="64" rx="15" fill="#1D5FA8" />
+      <g transform="translate(8 7) scale(0.75)">
+        <path d="M32 26C25 21 15 20 7 22v30c8-2 18-1 25 4z" fill="#FFFFFF" />
+        <path d="M32 26c7-5 17-6 25-4v30c-8-2-18-1-25 4z" fill="#BFE2FB" />
+        <path d="M32 26c5-9 14-14 25-13-6 4-14 11-25 25z" fill="#7CC4F6" />
+        <path d="M32 54c0-9-8-12-8-21M32 54c0-9 8-12 8-21" fill="none" stroke="#1D5FA8" strokeWidth="4.8" strokeLinecap="round" />
+        <path d="M32 0.5l2.9 5.9 6.5 1-4.7 4.6 1.1 6.4L32 15.3l-5.8 3.1 1.1-6.4-4.7-4.6 6.5-1z" fill="#F2B544" />
+      </g>
     </svg>
   )
 }
