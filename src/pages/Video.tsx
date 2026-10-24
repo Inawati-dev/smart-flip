@@ -516,14 +516,16 @@ function VideoDosen() {
   return (
     <Layout>
       <div className="p-4 md:p-6 pb-16">
-        <div className="flex items-center gap-3 flex-wrap mb-1">
-          <h1 className="font-display text-2xl font-bold text-brown">Video</h1>
+        {/* Kepala sama dengan rak Modul dosen (antrean #333): judul + ringkasan bertumpuk, pemilih mata kuliah, aksi di kanan. */}
+        <div className="flex items-center gap-x-3 gap-y-2 flex-wrap mb-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-brown leading-tight">Video</h1>
+            <p className="text-xs text-brown-3">
+              {sorted.length} topik · {sorted.length > 0 && punyaVideo === sorted.length ? 'semua punya video' : `${punyaVideo} punya video`}
+            </p>
+          </div>
           <MataKuliahSelect />
-        </div>
-        <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
-          <p className="text-xs text-brown-3">
-            {sorted.length} topik · {punyaVideo} punya video
-          </p>
+          <div className="flex-1" />
           <button onClick={() => setUrutkanOpen(true)} disabled={sorted.length < 2} className="btn btn-secondary btn-sm">
             Urutkan
           </button>
