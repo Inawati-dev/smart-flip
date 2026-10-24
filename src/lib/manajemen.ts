@@ -201,12 +201,25 @@ export async function createModulReturningId(data: {
   if (!isSupabaseConfigured) {
     throw new Error('createModulReturningId membutuhkan koneksi Supabase — tidak tersedia di mode demo.')
   }
+  // UNIQUE (course_id, order_num) sejak v23 (antrean #316): jumlah topik yang tampil bisa lebih kecil dari
+  // nomor terbesar yang tersimpan (topik nonaktif, nomor bolong), jadi nomor baru = max(usulan, terbesar + 1).
+  let orderNum = data.orderNum
+  if (data.courseId != null) {
+    const { data: terakhir } = await supabase
+      .from('modules')
+      .select('order_num')
+      .eq('course_id', data.courseId)
+      .order('order_num', { ascending: false })
+      .limit(1)
+    const terbesar = (terakhir?.[0]?.order_num as number | undefined) ?? 0
+    orderNum = Math.max(orderNum, terbesar + 1)
+  }
   const { data: inserted, error } = await supabase
     .from('modules')
     .insert({
       title: data.judul,
       description: data.deskripsi,
-      order_num: data.orderNum,
+      order_num: orderNum,
       ...(data.courseId != null ? { course_id: data.courseId } : {}),
       is_active: data.status !== 'nonaktif',
     })

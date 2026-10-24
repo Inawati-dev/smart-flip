@@ -265,8 +265,10 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
         showToast('Topik disimpan')
       }
       closeFormModal()
-    } catch {
-      showToast(creatingNew ? 'Gagal menambahkan topik' : 'Gagal menyimpan topik')
+    } catch (err) {
+      // Pesan asli ditampilkan (antrean #316) supaya penyebabnya terbaca, bukan hanya "gagal".
+      const pesan = err && typeof err === 'object' && 'message' in err ? String((err as { message: unknown }).message) : ''
+      showToast(`${creatingNew ? 'Gagal menambahkan topik' : 'Gagal menyimpan topik'}${pesan ? `: ${pesan}` : ''}`)
     } finally {
       setSaving(false)
       setSavingStatus('')
