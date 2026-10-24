@@ -337,7 +337,7 @@ export function ChipRak({ jenis, label }: { jenis: 'ok' | 'now' | 'todo' | 'warn
   )
 }
 
-/** Kisi rak: 2 kolom di telepon, isi otomatis dari 190 px ke atas. */
+/** Kisi rak (antrean #312): 2 kolom di telepon dan tablet, 4 kolom di laptop ke atas, jadi 8 modul = 2 baris x 4. */
 export function Rak({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3 sm:gap-4">{children}</div>
+  return <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-5">{children}</div>
 }
