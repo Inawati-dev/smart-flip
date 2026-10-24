@@ -9,7 +9,7 @@ import { PembacaPdf } from './PembacaPdf'
 // tidak dibangun ulang tiap rilis, jadi jangan menyiratkan isinya selalu terbaru.
 // Dipasang di Dashboard (dosen dan mahasiswa) dan Akun.
 export const ALAMAT_PANDUAN = '/panduan-smartflip.pdf'
-export const EDISI_PANDUAN = 'Edisi 1, 21 Okt 2026'
+export const EDISI_PANDUAN = 'Edisi 2, 24 Okt 2026'
 const JUMLAH_HALAMAN = 29
 
 export function TautanPanduan() {

@@ -6,9 +6,10 @@
   yang mengisi {{EDISI}}, {{TANGGAL}}, {{QR_MASUK}}, {{QR_DAFTAR}}, mencetaknya
   lewat Chrome headless ke public/panduan-smartflip.pdf, lalu menambah nomor
   halaman dan penanda bab (bookmark).
-  Gambar di gambar/ diambil 21 Okt 2026 di server dev dengan peran pratinjau
-  (VITE_UI_PREVIEW_ROLE) dan data contoh mode demo; halaman masuk dan daftar
-  dari situs produksi. Penanda bernomor (.pn) memakai koordinat persen gambar.
+  Gambar di gambar/ diambil ulang 24 Okt 2026 (Edisi 2, antrean #302) di server
+  dev 1600x1000 (telepon 360x800) dengan peran pratinjau (VITE_UI_PREVIEW_ROLE)
+  dan data contoh mode demo; halaman masuk dan daftar (u01, u01b, u02) dari situs
+  produksi 21 Okt 2026, tidak berubah karena tidak memuat logo. Penanda bernomor (.pn) memakai koordinat persen gambar.
 -->
 <html lang="id">
 <head>
@@ -231,10 +232,10 @@
   <h2>A1. Dashboard dan langkah berikutnya</h2>
   <figure>
     <div class="gb"><img src="gambar/m01-dasbor.jpg" alt="">
-      <span class="pn" style="left:2.6%;top:9.2%">1</span>
-      <span class="pn" style="left:8.2%;top:22.3%">2</span>
-      <span class="pn" style="left:6.8%;top:31.7%">3</span>
-      <span class="pn" style="left:78.4%;top:4.3%">4</span>
+      <span class="pn" style="left:2.6%;top:9.6%">1</span>
+      <span class="pn" style="left:7.8%;top:21.5%">2</span>
+      <span class="pn tg" style="left:7.6%;top:27.6%">3</span>
+      <span class="pn" style="left:79.3%;top:4.2%">4</span>
     </div>
     <figcaption>Gambar 3. Dashboard mahasiswa, <a href="https://smart-flips.vercel.app/dashboard">/dashboard</a>.</figcaption>
     <ul class="legenda">
@@ -244,7 +245,7 @@
       <li><b class="n">4</b>Mata kuliah yang sedang dibuka.</li>
     </ul>
   </figure>
-  <p>Di bagian atas tertulis status kelas Anda. "Belum Dipetakan" berarti tes diagnostik awal belum dikerjakan.</p>
+  <p>Di bagian atas tertulis status kelas Anda. "Belum Dipetakan" berarti tes diagnostik awal belum dikerjakan. Kotak <b>Panduan Pemakaian SMART-FLIP</b> di bawah ringkasan membuka panduan ini.</p>
 </section>
 
 <section class="bab" id="mhs-diagnostik">
@@ -303,10 +304,10 @@
   <p>Menu <b>Video</b> (<a href="https://smart-flips.vercel.app/video">/video</a>) mengelompokkan video per topik. Topik yang dipakai dua pertemuan bisa punya dua video. Klik salah satu untuk memutarnya.</p>
   <figure>
     <div class="gb"><img src="gambar/m05-video.jpg" alt="">
-      <span class="pn" style="left:6.8%;top:15.2%">1</span>
-      <span class="pn" style="left:6.8%;top:22.7%">2</span>
-      <span class="pn" style="left:6.8%;top:92.1%">3</span>
-      <span class="pn" style="left:78.8%;top:27.3%">4</span>
+      <span class="pn" style="left:6.5%;top:14.6%">1</span>
+      <span class="pn" style="left:6.5%;top:21.8%">2</span>
+      <span class="pn" style="left:6.5%;top:92%">3</span>
+      <span class="pn" style="left:79.6%;top:26.3%">4</span>
     </div>
     <figcaption>Gambar 8. Pemutar video, <a href="https://smart-flips.vercel.app/video/1">/video/1</a>.</figcaption>
     <ul class="legenda">
@@ -335,11 +336,12 @@
 
 <section class="bab" id="mhs-projek">
   <h2>A7. Mini projek dan akun</h2>
-  <p><b>Mini Projek</b> (<a href="https://smart-flips.vercel.app/mini-projek">/mini-projek</a>) berisi tugas rancangan proposal per bab dari dosen. Bila dosen belum membuat brief, halamannya menulis "Belum ada brief dari dosen".</p>
-  <p><b>Akun</b> (<a href="https://smart-flips.vercel.app/akun">/akun</a>) menampilkan ringkasan belajar, data diri, dan tombol ganti kata sandi.</p>
+  <p><b>Mini Projek</b> (<a href="https://smart-flips.vercel.app/mini-projek">/mini-projek</a>) berisi tugas rancangan proposal per bab dari dosen. Bila dosen belum membuatnya, halamannya menulis "Dosen belum membuat Paket Rancangan Proposal".</p>
+  <p>Tiap bab dikirim lewat tombol <b>Kirim Bab</b>. Di jendela yang terbuka, seret berkas .docx ke kotak unggah atau klik pilih berkas, isi tautan prototipe bila diminta, centang semua daftar periksa, lalu kirim. Tombol kirim baru aktif setelah semua daftar periksa dicentang. Bilah progres di bagian bawah jendela menunjukkan unggahan yang sedang berjalan.</p>
+  <p><b>Akun</b> (<a href="https://smart-flips.vercel.app/akun">/akun</a>) menampilkan ringkasan belajar dan data diri. Kata sandi diganti lewat tombol <b>Ubah</b>, di jendela Ubah Profil.</p>
   <figure>
     <div class="gb"><img src="gambar/m08-akun.jpg" alt=""></div>
-    <figcaption>Gambar 10. Halaman Akun mahasiswa. Tombol Ubah mengganti foto dan nama. NIM yang masih kosong bisa diisi sekali; setelah tersimpan tidak bisa diubah dari sini.</figcaption>
+    <figcaption>Gambar 10. Halaman Akun mahasiswa. Tombol Ubah membuka jendela Ubah Profil untuk mengganti foto, nama, dan kata sandi. NIM yang masih kosong bisa diisi sekali; setelah tersimpan tidak bisa diubah dari sini.</figcaption>
   </figure>
 </section>
 
@@ -370,11 +372,12 @@
     <figcaption>Gambar 12. Dashboard dosen, <a href="https://smart-flips.vercel.app/dashboard">/dashboard</a>.</figcaption>
   </figure>
   <ul>
-    <li><b>Saringan</b> di atas: mata kuliah, tahun angkatan, kelas, dan rentang waktu (misalnya 7 hari).</li>
-    <li><b>Kartu ringkasan</b>: mahasiswa aktif, tes diagnostik selesai, topik rata-rata kelas, rata-rata formatif, dan jumlah remedial.</li>
+    <li><b>Saringan</b> di atas: mata kuliah, tahun angkatan, kelas, dan rentang waktu (7 hari, 30 hari, atau Semester).</li>
+    <li><b>Empat kartu ringkasan</b>, masing-masing dengan pembanding: mahasiswa aktif dari seluruh mahasiswa, tes diagnostik awal yang sudah selesai (dibagi Jalur Cepat dan Belajar Mendalam), posisi kelas (rata-rata topik yang sedang dikerjakan), dan tes formatif (rata-rata dibanding batas lulus, serta jumlah percobaan remedial dalam 7 hari terakhir, apa pun rentang yang dipilih).</li>
     <li><b>Aktivitas</b>: modul dibaca, video ditonton, dan tes yang dikerjakan mahasiswa, terbaru di atas.</li>
     <li><b>Perlu Perhatian</b>: mahasiswa yang belum mulai atau tertinggal.</li>
     <li><b>Progres</b>: posisi tiap mahasiswa per topik.</li>
+    <li><b>Panduan Pemakaian SMART-FLIP</b>: Baca Panduan atau Unduh PDF.</li>
   </ul>
 </section>
 
@@ -382,50 +385,45 @@
   <h2>B2. Mengelola topik dan PDF modul</h2>
   <figure>
     <div class="gb"><img src="gambar/d02-modul.jpg" alt="">
-      <span class="pn bw" style="left:94.5%;top:12%">1</span>
-      <span class="pn bw" style="left:82%;top:12%">2</span>
-      <span class="pn bw" style="left:87.2%;top:12%">3</span>
-      <span class="pn" style="left:6.9%;top:48.8%">4</span>
-      <span class="pn ka" style="left:21.2%;top:48.8%">5</span>
-      <span class="pn" style="left:6.9%;top:53.2%">6</span>
-      <span class="pn ka" style="left:21.2%;top:53.2%">7</span>
+      <span class="pn bw" style="left:94.5%;top:7.5%">1</span>
+      <span class="pn bw" style="left:88%;top:7.5%">2</span>
+      <span class="pn ka" style="left:19%;top:42%">3</span>
+      <span class="pn tg" style="left:26%;top:49.4%">4</span>
     </div>
     <figcaption>Gambar 13. Rak modul dosen, <a href="https://smart-flips.vercel.app/modul">/modul</a>.</figcaption>
     <ul class="legenda">
-      <li><b class="n">1</b>Tambah Topik baru.</li>
-      <li><b class="n">2</b>Jadwal: minggu buka tiap topik. Label "Pertemuan a-b" di sampul mengikuti jadwal ini.</li>
-      <li><b class="n">3</b>Urutkan topik.</li>
-      <li><b class="n">4</b>Ganti PDF (atau Unggah PDF bila topik belum punya PDF).</li>
-      <li><b class="n">5</b>Ubah Topik: judul, deskripsi, perkiraan waktu belajar.</li>
-      <li><b class="n">6</b>Pratinjau PDF seperti yang dilihat mahasiswa.</li>
-      <li><b class="n">7</b>Hapus topik. Selalu ada konfirmasi lebih dulu.</li>
+      <li><b class="n">1</b>Tambah Topik: jendela berisi judul, deskripsi, perkiraan waktu belajar, dan PDF topik (PDF boleh menyusul).</li>
+      <li><b class="n">2</b>Menu Atur: Watermark PDF, Jadwal pertemuan (minggu buka tiap topik; label "Pertemuan a-b" di sampul mengikuti jadwal ini), Urutkan topik, dan Kelola mata kuliah.</li>
+      <li><b class="n">3</b>Menu titik tiga di tiap kartu (pada gambar sedang terbuka): Pratinjau PDF seperti yang dilihat mahasiswa, Ubah topik, dan Hapus topik. Hapus selalu meminta konfirmasi lebih dulu.</li>
+      <li><b class="n">4</b>Ganti PDF (atau Unggah PDF bila topik belum punya PDF). Mengklik sampul juga membuka pratinjau.</li>
     </ul>
   </figure>
+  <p>Menu titik tiga juga bisa dipakai dengan papan ketik: tekan Enter pada tombol titik tiga, pilih dengan panah atas atau bawah, lalu Enter. Escape menutup menu.</p>
   <h3>Mengunggah atau mengganti PDF</h3>
   <figure>
     <div class="gb"><img src="gambar/d03-ganti-pdf.jpg" alt="">
-      <span class="pn" style="left:26.8%;top:12.4%">1</span>
-      <span class="pn" style="left:26.9%;top:19.4%">2</span>
-      <span class="pn" style="left:64.9%;top:19.4%">3</span>
+      <span class="pn" style="left:20.3%;top:30%">1</span>
+      <span class="pn" style="left:43.6%;top:44%">2</span>
+      <span class="pn" style="left:71.4%;top:81.6%">3</span>
     </div>
     <figcaption>Gambar 14. Jendela Ganti PDF Topik.</figcaption>
     <ul class="legenda">
-      <li><b class="n">1</b>Nama berkas yang terpasang sekarang.</li>
-      <li><b class="n">2</b>Pilih PDF dari komputer. Ukuran paling besar 20 MB.</li>
-      <li><b class="n">3</b>Unggah PDF. Berkas lama diganti setelah unggahan selesai.</li>
+      <li><b class="n">1</b>Pratinjau halaman pertama berkas yang dipilih, dengan jumlah halaman dan ukurannya. Lihat semua halaman membuka seluruh isi PDF.</li>
+      <li><b class="n">2</b>Berkas baru: seret PDF ke kotak unggah atau klik Pilih PDF, paling besar 20 MB. Langkah 1 di atasnya menyebut berkas yang terpasang sekarang. Bila mata kuliah sudah punya PDF yang pernah diunggah, di bawah kotak unggah muncul pilihan memakainya lagi (tidak tampak di gambar contoh).</li>
+      <li><b class="n">3</b>Unggah PDF. Bilah progres muncul di bagian bawah jendela. Setelah selesai jendela menutup sendiri, dan berkas lama dihapus bila tidak dipakai topik lain.</li>
     </ul>
   </figure>
-  <div class="catatan">Satu topik memakai <b>satu PDF</b> untuk kedua pertemuannya. Yang bisa dua hanya video. Tombol <b>Watermark PDF</b> di atas rak menambahkan nama dan NIM pembaca, teks, atau gambar di tiap halaman PDF.</div>
+  <div class="catatan">Satu topik memakai <b>satu PDF</b> untuk kedua pertemuannya. Yang bisa dua hanya video. Pilihan <b>Watermark PDF</b> di menu Atur menambahkan nama dan NIM pembaca, teks, atau gambar di tiap halaman PDF.</div>
 </section>
 
 <section class="bab" id="dos-video">
   <h2>B3. Mengelola video pertemuan</h2>
   <figure>
     <div class="gb"><img src="gambar/d04-video.jpg" alt="">
-      <span class="pn" style="left:7.7%;top:36.2%">1</span>
-      <span class="pn" style="left:14.7%;top:36.2%">2</span>
-      <span class="pn" style="left:56%;top:24.4%">3</span>
-      <span class="pn" style="left:7.7%;top:65.3%">4</span>
+      <span class="pn" style="left:7.3%;top:35.4%">1</span>
+      <span class="pn tg" style="left:17.8%;top:31.6%">2</span>
+      <span class="pn tg" style="left:59.8%;top:19.5%">3</span>
+      <span class="pn" style="left:7.3%;top:63.8%">4</span>
     </div>
     <figcaption>Gambar 15. Rak video dosen, <a href="https://smart-flips.vercel.app/video">/video</a>. Tiap topik punya kotak untuk pertemuan pertama dan kedua.</figcaption>
     <ul class="legenda">
@@ -437,11 +435,11 @@
   </figure>
   <figure>
     <div class="gb"><img src="gambar/d05-ubah-video.jpg" alt="">
-      <span class="pn" style="left:17.3%;top:15.9%">1</span>
-      <span class="pn" style="left:16.5%;top:27.3%">2</span>
-      <span class="pn ka" style="left:28.6%;top:32.7%">3</span>
-      <span class="pn" style="left:16.5%;top:46.6%">4</span>
-      <span class="pn" style="left:75.8%;top:60.2%">5</span>
+      <span class="pn" style="left:40.9%;top:26.2%">1</span>
+      <span class="pn" style="left:43.6%;top:48.3%">2</span>
+      <span class="pn ka" style="left:55.6%;top:53.5%">3</span>
+      <span class="pn" style="left:43.6%;top:63.4%">4</span>
+      <span class="pn" style="left:71.4%;top:82.7%">5</span>
     </div>
     <figcaption>Gambar 16. Jendela Ubah Video.</figcaption>
     <ul class="legenda">
@@ -449,7 +447,7 @@
       <li><b class="n">2</b>Tempel tautan YouTube, atau</li>
       <li><b class="n">3</b>isi durasi dalam menit (hanya untuk tautan YouTube; durasi berkas unggahan terisi otomatis).</li>
       <li><b class="n">4</b>Pilih berkas video dari komputer: MP4 atau WebM, paling besar 100 MB.</li>
-      <li><b class="n">5</b>Simpan. Pratinjau di kanan menampilkan video yang akan tersimpan.</li>
+      <li><b class="n">5</b>Simpan. Pratinjau di kiri menampilkan video yang akan tersimpan. Saat berkas diunggah, bilah progres muncul di bagian bawah jendela, dan video lama dihapus setelah yang baru tersimpan.</li>
     </ul>
   </figure>
   <p>Gambar kecil (sampul) video unggahan dibuat otomatis saat rak Video dibuka oleh dosen.</p>
@@ -462,8 +460,9 @@
     <figcaption>Gambar 17. Hasil Kelas, <a href="https://smart-flips.vercel.app/asesmen">/asesmen</a>.</figcaption>
   </figure>
   <ul>
-    <li>Rata-rata tes diagnostik awal, rata-rata tes formatif, dan peningkatan skor kelas.</li>
-    <li><b>Batas Skor</b> menampilkan batas kelas Jalur Cepat dan batas lulus formatif. Klik untuk mengubahnya.</li>
+    <li>Tiga kartu: rata-rata tes diagnostik awal (dengan jumlah Jalur Cepat dan Belajar Mendalam), rata-rata tes formatif, dan peningkatan skor kelas dengan pita rendah (di bawah 0,3), sedang (0,3 sampai 0,7), dan tinggi (di atas 0,7).</li>
+    <li><b>Sebaran Peningkatan</b>: jumlah mahasiswa dengan peningkatan tinggi, sedang, dan rendah.</li>
+    <li><b>Batas Skor</b> (misalnya "Batas Skor: 80 dan 70") menampilkan batas kelas Jalur Cepat dan batas lulus formatif. Klik untuk mengubahnya.</li>
     <li>Grafik rata-rata formatif dan persentase lulus per topik. Garis putus-putus adalah ambang lulus.</li>
     <li>Tabel hasil per mahasiswa dan per topik di bagian bawah.</li>
   </ul>
@@ -490,7 +489,7 @@
     <figcaption>Gambar 19. Kelas, <a href="https://smart-flips.vercel.app/kelas">/kelas</a>. Di aplikasi asli, kotak Kode Mata Kuliah menampilkan kodenya. Di gambar contoh tertulis "Tidak tersedia di mode demo".</figcaption>
   </figure>
   <ul>
-    <li><b>Kode Mata Kuliah</b> dibagikan ke mahasiswa untuk diisi saat mendaftar.</li>
+    <li><b>Kode Mata Kuliah</b> dibagikan ke mahasiswa untuk diisi saat mendaftar. Pilih mata kuliah di dalam kotak itu untuk melihat kodenya.</li>
     <li>Kelas terbentuk sendiri dari tes diagnostik awal, paling banyak 25 mahasiswa per kelas. Dosen tidak perlu membuat kelas secara manual.</li>
     <li>Kartu atas menunjukkan jumlah kelas Belajar Mendalam, Jalur Cepat, total kelas, dan total mahasiswa.</li>
   </ul>
@@ -504,7 +503,8 @@
   </figure>
   <ul>
     <li><b>Kode Undangan Dosen</b>: kode yang diisi calon dosen saat mendaftar. Klik <b>Tampilkan Kode</b> untuk melihatnya.</li>
-    <li><b>Ganti Kata Sandi</b> dan <b>Kelola Akun Mahasiswa</b>.</li>
+    <li>Kata sandi diganti lewat tombol <b>Ubah</b>, di jendela Ubah Profil.</li>
+    <li><b>Kelola Akun Mahasiswa</b> ada di kotak Notifikasi.</li>
   </ul>
   <div class="catatan">Bagikan kode undangan dosen hanya ke orang yang berhak. Siapa pun yang memegang kode ini bisa membuat akun dosen.</div>
 </section>
