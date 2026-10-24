@@ -75,8 +75,10 @@ export function LoginBook({
             onClick={open ? undefined : onOpen}
             className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden select-none cursor-pointer"
             style={{
+              // Coklat sampul modul --cover-3 + tinta --cover-ink, sama dengan rak modul (antrean #325)
               background:
-                'linear-gradient(150deg, color-mix(in srgb, var(--brown) 94%, #000) 0%, color-mix(in srgb, var(--brown) 84%, #fff) 68%, var(--brown) 100%)',
+                'linear-gradient(150deg, color-mix(in srgb, var(--cover-3) 78%, #000) 0%, var(--cover-3) 68%, color-mix(in srgb, var(--cover-3) 88%, #000) 100%)',
+              color: 'var(--cover-ink)',
               boxShadow: '8px 12px 30px -12px rgba(62,54,46,.45)',
             }}
           >

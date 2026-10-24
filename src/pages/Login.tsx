@@ -320,25 +320,25 @@ export function Login() {
     const bookCover = (
       <>
         <div>
-          <h1 className="font-display font-light text-[2.7rem] leading-[1.02] tracking-tight text-cream mb-2">
+          <h1 className="font-display font-light text-[2.7rem] leading-[1.02] tracking-tight mb-2">
             Smart
             <br />
             Flip.{' '}
-            <span className="text-[1.3rem] align-middle text-terra font-semibold">5.0</span>
+            <span className="text-[1.3rem] align-middle font-semibold opacity-70">5.0</span>
           </h1>
           {/* Kredit penulis di bawah judul, gaya sampul buku sungguhan */}
-          <p className="font-display italic text-[0.82rem] text-cream/55 mb-3.5">
+          <p className="font-display italic text-[0.82rem] mb-3.5">
             oleh Inawati, S.IP., M.M.
           </p>
-          <p className="text-[0.84rem] leading-relaxed text-cream/65 mb-4">
+          <p className="text-[0.84rem] leading-relaxed mb-4">
             E-Modul Adaptif Metode Penelitian &amp; Pengembangan.
           </p>
-          <div className="flex flex-col gap-1 text-[0.78rem] text-cream/50 border-t border-white/10 pt-3 mb-4">
+          <div className="flex flex-col gap-1 text-[0.78rem] border-t border-white/15 pt-3 mb-4">
             <span>Fakultas Vokasi</span>
             <span>Universitas Negeri Malang</span>
             <span>Dana Internal UM 2026</span>
           </div>
-          <ul className="flex flex-col gap-1.5 text-[0.78rem] text-cream/45 list-disc pl-4">
+          <ul className="flex flex-col gap-1.5 text-[0.78rem] list-disc pl-4">
             <li>Modul PDF dan video untuk tiap pertemuan</li>
             <li>Tes diagnostik awal dan tes formatif tiap topik</li>
             <li>Topik terbuka bertahap setelah lulus tes formatif</li>
@@ -350,7 +350,7 @@ export function Login() {
           type="button"
           onClick={() => setFlipped(true)}
           className="btn btn-primary self-start mt-6"
-          style={{ color: 'var(--brown)' }}
+          style={{ background: 'var(--cover-ink)', color: 'var(--cover-3)' }}
         >
           Buka Buku →
         </button>
