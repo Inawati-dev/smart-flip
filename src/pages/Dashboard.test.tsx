@@ -47,7 +47,7 @@ vi.mock('../lib/aktivitas', async () => {
       { judul: 'Ani', keterangan: 'Belum mengerjakan tes diagnostik awal', tautan: '/analitik' },
       { judul: 'Budi', keterangan: 'Tidak aktif lebih dari 7 hari', tautan: '/analitik' },
     ],
-    matriksProgres: () => [{ userId: 'u1', nama: 'Ani', sel: [{ moduleId: 1, orderNum: 1, status: 'L' as const }] }],
+    matriksProgres: () => [{ userId: 'u1', nama: 'Ani', sel: [{ moduleId: 1, nomorBab: 1, status: 'L' as const }] }],
   }
 })
 
@@ -193,7 +193,7 @@ describe('DosenHome', () => {
     const tabProgres = await screen.findByRole('button', { name: /Progres/ })
     fireEvent.click(tabProgres)
     expect(await screen.findByText('Ani')).toBeTruthy()
-    expect(screen.getByText('M1')).toBeTruthy()
+    expect(screen.getByText('B1')).toBeTruthy()
   })
 })
 

@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import { AMBANG_FORMATIF } from './ambang'
+import { babSaja } from './jenisTopik'
 
 // Dashboard dosen = aktivitas kelas (spec §5.0, §9 WP9). Fungsi murni di
 // bawah (gabungKejadian, ringkasKelas, perluPerhatian, matriksProgres) hanya
@@ -81,6 +82,7 @@ export interface ModuleLite {
   id: number
   orderNum: number
   title: string
+  jenis?: string | null
 }
 
 export interface SumberAktivitas {
@@ -318,7 +320,8 @@ export function perluPerhatian(sumber: SumberAktivitas, opts: { now?: Date } = {
 
 export interface MatriksSel {
   moduleId: number
-  orderNum: number
+  /** Nomor Bab (1, 2, ...); Bagian tidak masuk matriks (antrean #322). */
+  nomorBab: number
   status: 'L' | 'R' | '-'
 }
 
@@ -332,16 +335,18 @@ export interface MatriksBaris {
 // ambang), 'R' = sudah dicoba tapi belum lulus (remedial), '-' = belum dicoba.
 export function matriksProgres(sumber: SumberAktivitas): MatriksBaris[] {
   const passScore = sumber.passScore ?? AMBANG_FORMATIF
-  const modules = [...sumber.modules].sort((a, b) => a.orderNum - b.orderNum)
+  const semua = [...sumber.modules].sort((a, b) => a.orderNum - b.orderNum)
+  // Bagian (Pendahuluan, Penutup) tanpa tes formatif, jadi kolomnya selalu kosong (antrean #322).
+  const modules = babSaja(semua).length ? babSaja(semua) : semua
   return sumber.profiles.map((p) => ({
     userId: p.id,
     nama: p.fullName,
-    sel: modules.map((m) => {
+    sel: modules.map((m, i) => {
       const scores = sumber.attempts
         .filter((a) => a.userId === p.id && a.kind === 'formatif' && a.moduleId === m.id)
         .map((a) => a.score)
       const status: MatriksSel['status'] = scores.length === 0 ? '-' : Math.max(...scores) >= passScore ? 'L' : 'R'
-      return { moduleId: m.id, orderNum: m.orderNum, status }
+      return { moduleId: m.id, nomorBab: i + 1, status }
     }),
   }))
 }
@@ -385,7 +390,7 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       supabase.from('user_progress').select('user_id, module_id, current_page, last_opened').gte('last_opened', since),
       // `*` supaya seconds_2/done_2 (v50) ikut terbaca.
       supabase.from('video_progress').select('*').gte('updated_at', since),
-      supabase.from('modules').select('id, order_num, title, course_id').order('order_num'),
+      supabase.from('modules').select('id, order_num, title, course_id, jenis').order('order_num'),
     ])
     if (profilesRes.error) throw profilesRes.error
 
@@ -447,12 +452,13 @@ export async function fetchSumberAktivitas(filter: FilterAktivitas): Promise<Sum
       updated_at: string
     }>).map((v) => ({ userId: v.user_id, moduleId: v.module_id, seconds: v.seconds, done: v.done, seconds2: v.seconds_2 ?? 0, done2: v.done_2 ?? false, updatedAt: v.updated_at }))
 
-    const modules: ModuleLite[] = ((modulesRes.data ?? []) as Array<{ id: number; order_num: number; title: string; course_id?: number }>)
+    const modules: ModuleLite[] = ((modulesRes.data ?? []) as Array<{ id: number; order_num: number; title: string; course_id?: number; jenis?: string | null }>)
       .filter((m) => filter.courseId == null || (m.course_id ?? 1) === filter.courseId)
       .map((m) => ({
         id: m.id,
         orderNum: m.order_num,
         title: m.title,
+        jenis: m.jenis,
       }))
     // Kejadian di topik mata kuliah lain dibuang; pre/post tanpa module_id
     // dipertahankan (jumlahnya kecil, course_id-nya tidak dibaca di sini).

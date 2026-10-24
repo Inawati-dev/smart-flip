@@ -415,7 +415,7 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
                       <th className="text-left px-3 py-2 text-xs font-semibold text-brown-3 whitespace-nowrap">Nama</th>
                       {matriks[0].sel.map((s) => (
                         <th key={s.moduleId} className="px-3 py-2 text-xs font-semibold text-brown-3 text-center">
-                          M{s.orderNum}
+                          B{s.nomorBab}
                         </th>
                       ))}
                     </tr>

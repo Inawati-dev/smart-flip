@@ -37,9 +37,19 @@ describe('computeModulDistribution', () => {
       { module_id: 20 }, // 1/4 = 25%
     ]
     expect(computeModulDistribution(modules, totalStudents, completedRows)).toEqual([
-      { label: 'Modul 1', pct: 75 },
-      { label: 'Modul 2', pct: 25 },
+      { label: 'Bab 1', pct: 75 },
+      { label: 'Bab 2', pct: 25 },
     ])
+  })
+
+  it('antrean #322: Bagian dilewati, label memakai nomor Bab', () => {
+    const modules = [
+      { id: 5, order_num: 1, jenis: 'bagian' },
+      { id: 10, order_num: 2, jenis: 'bab' },
+      { id: 20, order_num: 3 },
+      { id: 30, order_num: 4, jenis: 'bagian' },
+    ]
+    expect(computeModulDistribution(modules, 2, [{ module_id: 5 }, { module_id: 20 }]).map((d) => d.label + ':' + d.pct)).toEqual(['Bab 1:0', 'Bab 2:50'])
   })
 })
 

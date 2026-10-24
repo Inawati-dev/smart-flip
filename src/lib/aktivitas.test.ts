@@ -203,6 +203,23 @@ describe('matriksProgres', () => {
     const [baris] = matriksProgres(sumber)
     expect(baris.sel.map((s) => s.status)).toEqual(['L', 'R', '-'])
   })
+
+  it('antrean #322: kolom Bagian dilewati, nomor kolom = nomor Bab', () => {
+    const sumber: SumberAktivitas = {
+      profiles: [profil('u1', 'Mhs 1')],
+      modules: [
+        { id: 99, orderNum: 0, title: 'Pendahuluan', jenis: 'bagian' },
+        ...MODULES,
+        { id: 98, orderNum: 50, title: 'Penutup', jenis: 'bagian' },
+      ],
+      progress: [],
+      video: [],
+      attempts: [],
+    }
+    const [baris] = matriksProgres(sumber)
+    expect(baris.sel.map((s) => s.nomorBab)).toEqual([1, 2, 3])
+    expect(baris.sel.map((s) => s.moduleId)).not.toContain(99)
+  })
 })
 
 // Antrean #272: video pertemuan kedua tampil di umpan aktivitas dosen.

@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { babSaja } from './jenisTopik'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -88,13 +89,16 @@ export const DUMMY_KEPRAKTISAN_ASPEK: KepraktisanAspekItem[] = [
 // legacy/analitik.html (bucketKuisDist, stat-card math, CSV builder, sort). ──
 
 export function computeModulDistribution(
-  modules: { id: number; order_num: number }[],
+  modules: { id: number; order_num: number; jenis?: string | null }[],
   totalStudents: number,
   completedRows: { module_id: number }[],
 ): ModulDistItem[] {
-  return modules.map((m) => {
+  // Bagian (Pendahuluan, Penutup) dilewati; label memakai nomor Bab (antrean #322).
+  const urut = [...modules].sort((a, b) => a.order_num - b.order_num)
+  const bab = babSaja(urut).length ? babSaja(urut) : urut
+  return bab.map((m, i) => {
     const done = completedRows.filter((r) => r.module_id === m.id).length
-    return { label: 'Modul ' + m.order_num, pct: Math.round((done / totalStudents) * 100) }
+    return { label: 'Bab ' + (i + 1), pct: Math.round((done / totalStudents) * 100) }
   })
 }
 
@@ -341,7 +345,7 @@ export async function fetchModulDistribution(): Promise<ModulDistItem[] | null> 
   if (!isSupabaseConfigured) return null
   try {
     const [modulesRes, studentsRes, progressRes] = await Promise.all([
-      supabase.from('modules').select('id, order_num').order('order_num'),
+      supabase.from('modules').select('id, order_num, jenis').order('order_num'),
       supabase.from('profiles').select('id').eq('role', 'mahasiswa'),
       supabase.from('user_progress').select('module_id').eq('status', 'completed'),
     ])
