@@ -11,7 +11,7 @@ afterEach(cleanup)
 vi.mock('../lib/supabase', () => ({ supabase: {}, isSupabaseConfigured: false }))
 vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: { id: 'd1' }, profile: null, role: 'dosen', loading: false }) }))
 vi.mock('../contexts/CourseContext', () => ({
-  useCourse: () => ({ courses: [], courseId: 1, setCourseId: () => {}, course: { id: 1, name: 'Metode', ambang_diagnostik: 80 } }),
+  useCourse: () => ({ courses: [{ id: 1, name: 'Metode', is_active: true }, { id: 2, name: 'Statistik', is_active: true }], courseId: 1, setCourseId: () => {}, course: { id: 1, name: 'Metode', ambang_diagnostik: 80 } }),
 }))
 
 const k = (id: string, o: Partial<KelasWithCount>): KelasWithCount => ({
@@ -69,6 +69,15 @@ describe('KelasPanel (antrean #228)', () => {
     expect(screen.queryByLabelText(/Import CSV/)).toBeNull()
     expect(screen.getByText('Tidak tersedia di mode demo.')).toBeTruthy()
     expect(await screen.findByText(/2 mahasiswa belum tes diagnostik/)).toBeTruthy()
+  })
+
+  it('hanya satu pemilih mata kuliah dan ia ada di kartu Kode Mata Kuliah (antrean #296)', () => {
+    tampil()
+    const pemilih = screen.getAllByRole('combobox', { name: 'Pilih mata kuliah' })
+    expect(pemilih.length).toBe(1)
+    const kartuKode = screen.getByText('Kode Mata Kuliah').parentElement as HTMLElement
+    expect(kartuKode.contains(pemilih[0])).toBe(true)
+    expect(document.getElementById('daftar-kelas')!.contains(pemilih[0])).toBe(false)
   })
 
   it('kelas otomatis dengan nama sama di dua angkatan tampil terpisah di bawah judul angkatannya (antrean #239)', () => {

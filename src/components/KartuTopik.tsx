@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import { buatSampul, urlSampul } from '../lib/sampulPdf'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
@@ -34,6 +34,8 @@ export interface KartuTopikProps {
   pertemuan?: string
   /** Kartu di dalam kelompok topik (antrean #285): keterangan di bawah sampul hanya pertemuan dan keterangan. */
   ringkas?: boolean
+  /** Rak dosen (antrean #298): sampul membuka pratinjau, menu ⋯ memuat aksi lain, satu tombol Ganti/Unggah PDF di dasar kartu. Menggantikan `aksi`. */
+  dosen?: { onPratinjau: () => void; onUbah: () => void; onHapus: () => void; onGantiPdf: () => void }
 }
 
 const WARNA = ['var(--cover-1)', 'var(--cover-2)', 'var(--cover-3)'] as const
@@ -47,13 +49,13 @@ export function warnaSampul(nomor: number): string {
 // Sejak antrean #192 sampulnya halaman pertama PDF, polos tanpa tulisan di
 // atasnya; nomor topik, judul, dan keterangan pindah ke bawah gambar. Topik
 // tanpa PDF, atau yang gambar sampulnya belum ada, memakai sampul rancangan.
-export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean }) {
+export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean; tanpaKeterangan?: boolean }) {
   const src = urlSampul(props.pdf)
   // key: ganti PDF berarti mulai lagi dari mencoba memuat gambarnya.
   return src ? <SampulGambar key={src} src={src} {...props} /> : <SampulRancangan {...props} />
 }
 
-function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertemuan, ringkas }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean }) {
+function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertemuan, ringkas, tanpaKeterangan }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean; tanpaKeterangan?: boolean }) {
   // coba: memuat gambar. membuat: gambar belum ada dan dosen sedang membuatnya. gagal: pakai sampul rancangan.
   const [tahap, setTahap] = useState<'coba' | 'membuat' | 'gagal'>('coba')
   const [versi, setVersi] = useState(0)
@@ -77,7 +79,7 @@ function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertem
           })
         }}
       />
-      {ringkas ? (
+      {tanpaKeterangan ? null : ringkas ? (
         <span className="block text-[13px] leading-snug">
           <span className="block font-semibold text-brown">{pertemuan}</span>
           {keterangan && <span className="block text-brown-3 tabular-nums">{keterangan}</span>}
@@ -133,8 +135,9 @@ function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan, ringkas 
   )
 }
 
-export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi, pertemuan, ringkas }: KartuTopikProps) {
-  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} pertemuan={pertemuan} ringkas={ringkas} />
+export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi, pertemuan, ringkas, dosen }: KartuTopikProps) {
+  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} pertemuan={pertemuan} ringkas={ringkas} tanpaKeterangan={!!dosen} />
+  if (dosen) return <KartuDosen nomor={nomor} judul={judul} pdf={pdf} adaPdf={adaPdf} kaki={kaki} pertemuan={pertemuan} dosen={dosen} sampul={sampul} />
   const bisaKlik = !terkunci && (to || onClick)
   const label = ringkas && pertemuan ? `Buka ${pertemuan.toLowerCase()} topik ${nomor}: ${judul}` : `Buka topik ${nomor}: ${judul}`
   return (
@@ -163,6 +166,119 @@ export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, 
       )}
       {aksi && <div className="grid grid-cols-2 gap-1.5 mt-auto">{aksi}</div>}
     </div>
+  )
+}
+
+// Kartu rak dosen (antrean #298, opsi B). Tinggi kartu mengikuti baris kisi dan
+// tombol PDF didorong ke dasar (mt-auto), jadi tombol sejajar walau judul beda panjang.
+function KartuDosen({ nomor, judul, pdf, adaPdf, kaki, pertemuan, dosen, sampul }: { nomor: number; judul: string; pdf?: string | null; adaPdf?: boolean; kaki?: string; pertemuan?: string; dosen: NonNullable<KartuTopikProps['dosen']>; sampul: ReactNode }) {
+  const bisaPratinjau = !!pdf
+  return (
+    <div className="@container flex flex-col gap-2 h-full">
+      {bisaPratinjau ? (
+        <button type="button" onClick={dosen.onPratinjau} className="block w-full text-left rounded-[4px_10px_10px_4px] transition-transform hover:-translate-y-0.5" aria-label={`Pratinjau PDF ${judul}`}>
+          {sampul}
+        </button>
+      ) : (
+        sampul
+      )}
+      <p className="text-[13px] leading-snug font-semibold text-brown line-clamp-3 break-words" title={judul}>
+        {judul}
+      </p>
+      <div className="flex items-center justify-between gap-1 text-xs text-brown-3">
+        <span className="tabular-nums min-w-0">
+          Topik {String(nomor).padStart(2, '0')}
+          {pertemuan ? ` · ${pertemuan}` : ''}
+        </span>
+        <MenuAksi
+          ariaLabel={`Aksi lain untuk ${judul}`}
+          tombol="⋯"
+          kelasTombol="w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-lg text-lg leading-none text-brown-2 hover:bg-[var(--bg3)]"
+          rata="kanan"
+        >
+          <ItemMenu onPilih={dosen.onPratinjau} nonaktif={!bisaPratinjau}>
+            Pratinjau
+          </ItemMenu>
+          <ItemMenu onPilih={dosen.onUbah}>Ubah topik</ItemMenu>
+          <div role="separator" className="my-1 h-px" style={{ background: 'var(--border)' }} />
+          <ItemMenu onPilih={dosen.onHapus} bahaya>
+            Hapus topik
+          </ItemMenu>
+        </MenuAksi>
+      </div>
+      {kaki && <div className="text-xs text-brown-3 tabular-nums">{kaki}</div>}
+      <button
+        type="button"
+        onClick={dosen.onGantiPdf}
+        className="btn btn-secondary w-full mt-auto whitespace-nowrap"
+        style={{ color: 'var(--terra-d)', borderColor: 'var(--terra)' }}
+      >
+        {adaPdf ? 'Ganti PDF' : 'Unggah PDF'}
+      </button>
+    </div>
+  )
+}
+
+const KonteksMenu = createContext<() => void>(() => {})
+
+/**
+ * Menu kecil: tombol dengan aria-haspopup="menu", tutup lewat Escape, klik di luar, atau setelah memilih.
+ * Dipakai kepala rak dosen ("Atur") dan kartu topik ("⋯").
+ */
+export function MenuAksi({ tombol, ariaLabel, kelasTombol, rata = 'kiri', children }: { tombol: ReactNode; ariaLabel?: string; kelasTombol: string; rata?: 'kiri' | 'kanan'; children: ReactNode }) {
+  const [buka, setBuka] = useState(false)
+  const wadah = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!buka) return
+    const luar = (e: MouseEvent | TouchEvent) => {
+      if (wadah.current && !wadah.current.contains(e.target as Node)) setBuka(false)
+    }
+    const tombolEsc = (e: KeyboardEvent) => e.key === 'Escape' && setBuka(false)
+    document.addEventListener('mousedown', luar)
+    document.addEventListener('touchstart', luar)
+    document.addEventListener('keydown', tombolEsc)
+    return () => {
+      document.removeEventListener('mousedown', luar)
+      document.removeEventListener('touchstart', luar)
+      document.removeEventListener('keydown', tombolEsc)
+    }
+  }, [buka])
+  return (
+    <div ref={wadah} className="relative inline-block">
+      <button type="button" aria-haspopup="menu" aria-expanded={buka} aria-label={ariaLabel} onClick={() => setBuka((b) => !b)} className={kelasTombol}>
+        {tombol}
+      </button>
+      {buka && (
+        <KonteksMenu.Provider value={() => setBuka(false)}>
+          <div
+            role="menu"
+            className={`absolute z-[50] top-full mt-1 min-w-[12rem] rounded-xl border p-1 ${rata === 'kanan' ? 'right-0' : 'left-0'}`}
+            style={{ background: 'var(--ivory)', borderColor: 'var(--border)', boxShadow: '0 10px 28px -10px color-mix(in srgb, var(--shadow-color) 45%, transparent)' }}
+          >
+            {children}
+          </div>
+        </KonteksMenu.Provider>
+      )}
+    </div>
+  )
+}
+
+export function ItemMenu({ onPilih, nonaktif, bahaya, children }: { onPilih: () => void; nonaktif?: boolean; bahaya?: boolean; children: ReactNode }) {
+  const tutup = useContext(KonteksMenu)
+  return (
+    <button
+      type="button"
+      role="menuitem"
+      disabled={nonaktif}
+      onClick={() => {
+        tutup()
+        onPilih()
+      }}
+      className="w-full min-h-[44px] sm:min-h-[40px] px-3 text-left text-sm rounded-lg hover:bg-[var(--bg3)] disabled:opacity-50 disabled:cursor-not-allowed"
+      style={{ color: bahaya ? 'var(--danger)' : 'var(--brown)' }}
+    >
+      {children}
+    </button>
   )
 }
 

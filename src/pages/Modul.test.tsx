@@ -95,7 +95,7 @@ describe('Modul', () => {
     queryClient.setQueryData(['manajemen', 'customs', [1]], {})
 
     const html = renderModul(queryClient)
-    expect(html).toContain('Ubah Topik')
+    expect(html).toContain('Aksi lain untuk')
     expect(html).not.toContain('Baca Modul')
   })
 

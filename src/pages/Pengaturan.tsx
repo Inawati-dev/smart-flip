@@ -6,7 +6,6 @@ import { useKelasByDosen } from '../hooks/useKelas'
 import { computeNeedsAttentionStudents, saringPerluPerhatian, type StatusPerhatian } from '../lib/analitik'
 import { IconBell, IconLock } from '../components/icons'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
-import { GantiSandiKartu } from '../components/GantiSandiKartu'
 import { PillGroup } from '../components/PillGroup'
 import {
   MIN_INVITE_CODE_LENGTH,
@@ -204,8 +203,6 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
           </div>
         )}
         </div>
-
-        <GantiSandiKartu />
 
         <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
           <div className="flex items-center gap-2.5 mb-1 flex-wrap">

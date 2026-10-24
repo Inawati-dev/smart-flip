@@ -412,7 +412,11 @@ export function KelasPanel() {
       {/* Kode mata kuliah: satu kode untuk semua mahasiswa mata kuliah ini (antrean #228). */}
       <div className="bg-ivory rounded-2xl border px-4 py-3.5 mb-3 flex items-center justify-between gap-3 flex-wrap" style={BORDER}>
         <div className="min-w-0">
-          <div className="text-xs font-semibold text-brown-3">Kode Mata Kuliah{course?.name ? ` · ${course.name}` : ''}</div>
+          <div className="text-xs font-semibold text-brown-3 mb-1">Kode Mata Kuliah</div>
+          {/* Pemilih ini mengatur seluruh halaman (kode, kartu angka, daftar kelas), antrean #296. */}
+          <div className="mb-2 flex flex-wrap items-center gap-2 min-w-0">
+            <MataKuliahSelect size="sm" />
+          </div>
           {kode.isLoading ? (
             <div className="text-sm text-brown-3">Memuat…</div>
           ) : kode.error ? (
@@ -476,7 +480,6 @@ export function KelasPanel() {
                 Tampilkan Semua Kelas
               </button>
             )}
-            <MataKuliahSelect size="sm" />
             {daftarTahun.length > 1 && (
               <Select
                 size="sm"

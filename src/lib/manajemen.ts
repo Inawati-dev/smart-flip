@@ -315,7 +315,41 @@ export async function deleteModul(moduleId: number): Promise<void> {
 // pdf_path at the resulting public URL. Demo/localStorage mode has no
 // Storage backend, so it just stores the override locally instead — the
 // file itself never leaves the browser in that mode.
-export async function uploadModulPdf(moduleId: number, file: File, pertemuan: PertemuanTopik = 1): Promise<string> {
+// Unggah ke bucket modul-pdf lewat XMLHttpRequest supaya persen terkirim bisa
+// dilaporkan (supabase-js belum punya progres unggah). Mengembalikan null bila
+// XHR atau sesi tidak tersedia; pemanggil lalu jatuh ke supabase.storage.
+async function unggahDenganProgres(path: string, file: File, onProgress: (persen: number) => void): Promise<{ error: Error | null } | null> {
+  const base = import.meta.env.VITE_SUPABASE_URL as string | undefined
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
+  if (typeof XMLHttpRequest === 'undefined' || !base || !anon) return null
+  let token: string | undefined
+  try {
+    token = (await supabase.auth.getSession()).data.session?.access_token
+  } catch {
+    return null
+  }
+  if (!token) return null
+  return new Promise((selesai) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', `${base}/storage/v1/object/modul-pdf/${encodeURIComponent(path)}`)
+    xhr.setRequestHeader('Authorization', `Bearer ${token}`)
+    xhr.setRequestHeader('apikey', anon)
+    xhr.setRequestHeader('x-upsert', 'true')
+    xhr.setRequestHeader('Content-Type', 'application/pdf')
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.min(100, Math.round((e.loaded / e.total) * 100)))
+    }
+    xhr.onload = () => selesai({ error: xhr.status >= 200 && xhr.status < 300 ? null : new Error(`Unggah gagal (${xhr.status})`) })
+    xhr.onerror = () => selesai({ error: new Error('Unggah gagal (jaringan)') })
+    // Tanpa batas waktu, koneksi yang menggantung membuat tombol "Mengunggah…" tak pernah selesai.
+    xhr.timeout = 10 * 60_000
+    xhr.ontimeout = () => selesai({ error: new Error('Unggah gagal (waktu habis)') })
+    xhr.onabort = () => selesai({ error: new Error('Unggah dibatalkan') })
+    xhr.send(file)
+  })
+}
+
+export async function uploadModulPdf(moduleId: number, file: File, pertemuan: PertemuanTopik = 1, onProgress?: (persen: number) => void): Promise<string> {
   const kolom = kol('pdf_path', pertemuan)
   if (pertemuan === 2 && !isSupabaseConfigured) throw new Error('PDF pertemuan kedua butuh koneksi Supabase.')
   if (isSupabaseConfigured) {
@@ -334,10 +368,11 @@ export async function uploadModulPdf(moduleId: number, file: File, pertemuan: Pe
     // Pola nama `topik-` (antrean #90): satuan pertemuan disebut topik, dan nama
     // berkas ini bisa tampil di halaman Berkas.
     const path = `topik-${moduleId}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.pdf`
-    const { error: uploadError } = await supabase.storage
-      .from('modul-pdf')
-      .upload(path, file, { upsert: true, contentType: 'application/pdf' })
+    const viaXhr = onProgress ? await unggahDenganProgres(path, file, onProgress) : null
+    const { error: uploadError } =
+      viaXhr ?? (await supabase.storage.from('modul-pdf').upload(path, file, { upsert: true, contentType: 'application/pdf' }))
     if (uploadError) throw uploadError
+    onProgress?.(100)
     const { data } = supabase.storage.from('modul-pdf').getPublicUrl(path)
     const { error: updateError } = await supabase
       .from('modules')

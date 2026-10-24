@@ -39,6 +39,38 @@ const KATEGORI_BAR: Record<NGainCategory, string> = {
   rendah: 'var(--danger)',
 }
 
+// Bilah pembanding kartu ringkasan (antrean #294). Penanda = garis tegak di posisi ambang.
+function BilahSkor({ nilai, ambang, label }: { nilai: number | null; ambang: number; label: string }) {
+  const pct = (v: number) => Math.max(0, Math.min(100, v))
+  return (
+    <div role="img" aria-label={label} className="relative h-2 rounded-full mt-2.5" style={{ background: 'var(--border)' }}>
+      {nilai != null && (
+        <>
+          <div data-testid="bilah-isi" className="h-full rounded-full" style={{ width: `${pct(nilai)}%`, background: 'var(--terra)' }} />
+          <div
+            data-testid="bilah-penanda"
+            className="absolute -top-1 -bottom-1 w-0.5 rounded-sm"
+            style={{ left: `${pct(ambang)}%`, background: 'var(--brown)' }}
+          />
+        </>
+      )}
+    </div>
+  )
+}
+
+// Batas kategori mengikuti categorizeNGain di lib/ngain.ts (baris 41-45): <0,3 rendah, 0,3 sampai 0,7 sedang, >0,7 tinggi.
+const RUAS_KATEGORI: { kunci: NGainCategory; batas: string; warna: string }[] = [
+  { kunci: 'rendah', batas: '< 0,3', warna: 'var(--color-danger)' },
+  { kunci: 'sedang', batas: '0,3 sampai 0,7', warna: 'var(--color-warning)' },
+  { kunci: 'tinggi', batas: '> 0,7', warna: 'var(--color-success)' },
+]
+
+function selisihLulus(rata: number, ambang: number): string {
+  const d = Math.round(rata) - ambang
+  if (d === 0) return 'tepat di batas lulus'
+  return `${Math.abs(d)} poin di ${d < 0 ? 'bawah' : 'atas'} batas lulus`
+}
+
 function formatSkor(v: number | null): string {
   return v == null ? '—' : String(Math.round(v))
 }
@@ -263,29 +295,66 @@ export default function Asesmen() {
 
         {/* TIGA ANGKA */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
-          <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
+          <div className="bg-ivory border rounded-xl p-3.5 min-w-0" style={BORDER}>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Tes Diagnostik Awal</div>
-            <div className="font-display text-2xl font-bold text-brown">{formatSkor(peningkatan.rataPre)}</div>
-            <div className="text-xs text-brown-3 mt-1 tabular-nums">
-              {GOLONGAN_LABEL.mahir} {jumlahGolongan.mahir} · {GOLONGAN_LABEL.remedial} {jumlahGolongan.remedial}
-              {jumlahGolongan.belum > 0 && ` · Belum dipetakan ${jumlahGolongan.belum}`}
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="font-display text-2xl font-bold text-brown tabular-nums">{formatSkor(peningkatan.rataPre)}</div>
+              <div className="text-xs text-brown-3 tabular-nums">
+                {peningkatan.rataPre == null ? 'Belum ada data' : `dari 100 · ambang Jalur Cepat ${ambang.diagnostik}`}
+              </div>
+            </div>
+            <BilahSkor nilai={peningkatan.rataPre} ambang={ambang.diagnostik} label="Rata-rata tes diagnostik awal dibanding ambang Jalur Cepat" />
+            <div className="flex gap-2 flex-wrap mt-2.5 text-[11px] font-semibold tabular-nums">
+              <span className="px-2.5 py-1 rounded-full bg-sage/20 text-sage-d">{GOLONGAN_LABEL.mahir} {jumlahGolongan.mahir}</span>
+              <span className="px-2.5 py-1 rounded-full" style={{ background: 'var(--color-warning-soft)', color: 'var(--color-warning)' }}>
+                {GOLONGAN_LABEL.remedial} {jumlahGolongan.remedial}
+              </span>
+              {jumlahGolongan.belum > 0 && (
+                <span className="px-2.5 py-1 rounded-full text-brown-3" style={{ background: 'var(--border)' }}>Belum dipetakan {jumlahGolongan.belum}</span>
+              )}
             </div>
           </div>
-          <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
+          <div className="bg-ivory border rounded-xl p-3.5 min-w-0" style={BORDER}>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Tes Formatif</div>
-            <div className="font-display text-2xl font-bold text-brown">{formatSkor(peningkatan.rataPost)}</div>
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <div className="font-display text-2xl font-bold text-brown tabular-nums">{formatSkor(peningkatan.rataPost)}</div>
+              <div className="text-xs text-brown-3 tabular-nums">
+                {peningkatan.rataPost == null ? 'Belum ada data' : `dari 100 · lulus ${ambang.formatif}`}
+              </div>
+            </div>
+            <BilahSkor nilai={peningkatan.rataPost} ambang={ambang.formatif} label="Rata-rata tes formatif dibanding batas lulus" />
+            {peningkatan.rataPost != null && (
+              <div className="text-xs text-brown-3 mt-2.5 tabular-nums" data-testid="selisih-lulus">{selisihLulus(peningkatan.rataPost, ambang.formatif)}</div>
+            )}
           </div>
-          <div className="bg-ivory border rounded-xl p-3.5" style={BORDER}>
+          <div className="bg-ivory border rounded-xl p-3.5 min-w-0" style={BORDER}>
             <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1 flex items-center gap-1.5">
               <IconTrendingUp size={13} /> Peningkatan Skor Kelas
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="font-display text-2xl font-bold text-brown">{formatGain(peningkatan.rataPeningkatan)}</div>
+              <div className="font-display text-2xl font-bold text-brown tabular-nums">{formatGain(peningkatan.rataPeningkatan)}</div>
               {peningkatan.kategoriKelas && (
                 <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${KATEGORI_CLASS[peningkatan.kategoriKelas]}`}>
                   {KATEGORI_LABEL[peningkatan.kategoriKelas]}
                 </span>
               )}
+            </div>
+            {peningkatan.kategoriKelas == null && <div className="text-xs text-brown-3 mt-2.5">Belum ada data</div>}
+            <div className="grid grid-cols-3 gap-1 mt-2.5">
+              {RUAS_KATEGORI.map((r) => {
+                const aktif = peningkatan.kategoriKelas === r.kunci
+                return (
+                  <div key={r.kunci} className="min-w-0">
+                    <div
+                      data-testid={`ruas-${r.kunci}`}
+                      data-aktif={aktif ? 'ya' : 'tidak'}
+                      className="h-2 rounded-full"
+                      style={{ background: aktif ? r.warna : 'var(--border)' }}
+                    />
+                    <div className="text-[10px] text-brown-3 mt-1 text-center tabular-nums leading-tight">{r.batas}</div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

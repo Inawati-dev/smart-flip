@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
@@ -24,9 +24,10 @@ import { Layout } from '../components/Layout'
 import { Select } from '../components/Select'
 import { FileInput } from '../components/FileInput'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
-import { IconEdit, IconTrash, IconDocument, IconGear, IconEye } from '../components/icons'
+import { IconTrash } from '../components/icons'
 import { PdfPreviewLink } from '../components/PdfPreviewLink'
-import { KartuTopik, ChipRak, Rak } from '../components/KartuTopik'
+import { PembacaPdf, useCapAir } from '../components/PembacaPdf'
+import { KartuTopik, ChipRak, Rak, MenuAksi, ItemMenu } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
 import { formatTanggal, tanggalLokal, labelPertemuan } from '../lib/jadwal'
@@ -35,14 +36,101 @@ import { WatermarkModal, LABEL_CAP, pilihanCap } from '../components/WatermarkMo
 import { fetchModules } from '../lib/modules'
 
 const BORDER = { borderColor: 'var(--border)' } as const
+const BORDER_BG = { background: 'var(--border)' } as const
+
+// Pembaca PDF selayar penuh untuk satu alamat (pratinjau kartu dan "Lihat semua halaman").
+// Tanpa penyimpanan progres; watermark mengikuti setelan mata kuliah, seperti PdfPreviewLink.
+function PratinjauLapis({ url, judul, onTutup }: { url: string; judul: string; onTutup: () => void }) {
+  const cap = useCapAir()
+  return (
+    <PembacaPdf
+      src={url}
+      judul={judul}
+      cap={cap}
+      diAtasModal
+      onEscape={onTutup}
+      kiri={<span className="text-sm font-semibold truncate" title={judul}>{judul}</span>}
+      aksi={
+        <button type="button" onClick={onTutup} className="pembaca-tb on">
+          Tutup
+        </button>
+      }
+    />
+  )
+}
+
+// Pratinjau berkas yang baru dipilih di modal Ganti PDF (antrean #292): halaman
+// pertama digambar ke canvas dari object URL, ditambah tombol untuk membuka semua halaman.
+function PratinjauBerkas({ file }: { file: File }) {
+  const kanvas = useRef<HTMLCanvasElement>(null)
+  const [url, setUrl] = useState<string | null>(null)
+  const [gagal, setGagal] = useState(false)
+  const [semua, setSemua] = useState(false)
+  useEffect(() => {
+    const u = URL.createObjectURL(file)
+    let batal = false
+    // Render yang masih berjalan dibatalkan saat berkas diganti, supaya render
+    // baru ke kanvas yang sama tidak bertabrakan dan tampil "gagal".
+    let tugas: { cancel: () => void } | null = null
+    setUrl(u)
+    setGagal(false)
+    setSemua(false)
+    void (async () => {
+      try {
+        const [pdfjs, pekerja] = await Promise.all([import('pdfjs-dist'), import('pdfjs-dist/build/pdf.worker.min.js?url')])
+        pdfjs.GlobalWorkerOptions.workerSrc = pekerja.default
+        const doc = await pdfjs.getDocument(u).promise
+        try {
+          const hal = await doc.getPage(1)
+          const dasar = hal.getViewport({ scale: 1 })
+          const viewport = hal.getViewport({ scale: (360 / dasar.width) * (window.devicePixelRatio || 1) })
+          const c = kanvas.current
+          const ctx = c?.getContext('2d')
+          if (batal || !c || !ctx) return
+          c.width = viewport.width
+          c.height = viewport.height
+          const render = hal.render({ canvasContext: ctx, viewport })
+          tugas = render
+          await render.promise
+        } finally {
+          doc.destroy().catch(() => {})
+        }
+      } catch {
+        if (!batal) setGagal(true)
+      }
+    })()
+    return () => {
+      batal = true
+      tugas?.cancel()
+      URL.revokeObjectURL(u)
+    }
+  }, [file])
+  return (
+    <div className="mt-3 flex flex-col sm:flex-row gap-3 items-start" data-testid="pratinjau-berkas">
+      {gagal ? (
+        <p className="text-xs text-brown-3">Pratinjau halaman pertama tidak bisa ditampilkan.</p>
+      ) : (
+        <canvas ref={kanvas} aria-label="Halaman pertama berkas yang dipilih" className="block w-full max-w-[200px] h-auto rounded border" style={{ ...BORDER, background: 'var(--bg3)' }} />
+      )}
+      <button type="button" onClick={() => setSemua(true)} disabled={!url} className="btn btn-secondary btn-sm">
+        Lihat semua halaman
+      </button>
+      {semua && url && <PratinjauLapis url={url} judul={file.name} onTutup={() => setSemua(false)} />}
+    </div>
+  )
+}
 
 // Tabel kelola modul dosen — dipakai di /modul (daftar) dan /modul/:id (spec
 // §5.2, §9 WP5). Pola upload/ubah metadata ditiru dari Manajemen.tsx,
 // disederhanakan (tanpa reorder/bulk/hapus/tambah — itu tetap di sana).
-export function DosenModulRak() {
+// `kepala`: rak ikut menggambar judul "Modul" dan pemilih mata kuliah (antrean
+// #298); tanpa itu (Modul.tsx masih punya h1 sendiri) hanya ringkasan dan tombol.
+export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
   const queryClient = useQueryClient()
   const { courseId, course } = useCourse()
   const [jadwalOpen, setJadwalOpen] = useState(false)
+  const [kelolaOpen, setKelolaOpen] = useState(false)
+  const [pratinjau, setPratinjau] = useState<{ url: string; judul: string } | null>(null)
   const { data: modules = [] } = useModules()
   const moduleIds = useMemo(() => modules.map((m) => m.id), [modules])
   const { data: customs = {} } = useModulCustoms(moduleIds)
@@ -177,12 +265,14 @@ export function DosenModulRak() {
   const [uploadingPdf, setUploadingPdf] = useState(false)
   const [pickedPdfUrl, setPickedPdfUrl] = useState('')
   const [assigningPdf, setAssigningPdf] = useState(false)
+  const [persenUnggah, setPersenUnggah] = useState(0)
 
   function openPdfModal(id: number) {
     setPdfModalId(id)
     setPdfFile(null)
     setPdfError('')
     setPickedPdfUrl('')
+    setPersenUnggah(0)
   }
 
   async function handleUploadPdf() {
@@ -193,11 +283,13 @@ export function DosenModulRak() {
     }
     setPdfError('')
     setUploadingPdf(true)
+    setPersenUnggah(0)
     try {
-      await uploadModulPdf(pdfModalId, pdfFile)
+      await uploadModulPdf(pdfModalId, pdfFile, 1, setPersenUnggah)
       await queryClient.invalidateQueries({ queryKey: ['modules'] })
       await queryClient.invalidateQueries({ queryKey: ['manajemen', 'modul-pdf-files'] })
       setPdfFile(null)
+      setPdfModalId(null)
       showToast('PDF topik berhasil diunggah')
     } catch {
       setPdfError('Gagal mengunggah PDF. Coba lagi.')
@@ -241,30 +333,37 @@ export function DosenModulRak() {
 
   return (
     <>
-      <div className="flex items-center justify-between flex-wrap gap-2 mb-3">
-        <p className="text-sm text-brown-3">
-          {sorted.length} topik · {jumlahPdf} punya PDF
-        </p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <button
-            onClick={() => setCapOpen(true)}
-            disabled={!course}
-            title="Atur isi watermark di tiap halaman PDF: mati, nama dan NIM pembaca, teks, atau gambar"
-            className="btn btn-secondary btn-sm"
-          >
-            Watermark PDF: {LABEL_CAP[pilihanCap(course)]}
-          </button>
-          <button onClick={() => setJadwalOpen(true)} disabled={!course || sorted.length === 0} className="btn btn-secondary btn-sm">
-            Jadwal
-          </button>
-          <button onClick={() => setUrutkanOpen(true)} disabled={sorted.length < 2} className="btn btn-secondary btn-sm">
-            Urutkan
-          </button>
+      {/* Kepala rak satu baris (antrean #298/#299): judul + ringkasan, pemilih mata kuliah, menu Atur, Tambah Topik. */}
+      <div className="flex items-center gap-x-3 gap-y-2 flex-wrap mb-4">
+        <div className="min-w-0">
+          {kepala && <h1 className="text-2xl font-bold text-brown leading-tight">Modul</h1>}
+          <p className="text-xs text-brown-3">
+            {sorted.length} topik · {sorted.length > 0 && jumlahPdf === sorted.length ? 'semua ber-PDF' : `${jumlahPdf} punya PDF`}
+          </p>
+        </div>
+        {kepala && <MataKuliahSelect />}
+        <div className="flex-1" />
+        <div className="flex items-center gap-2">
+          <MenuAksi tombol="Atur ▾" kelasTombol="btn btn-secondary btn-sm" rata="kanan">
+            <ItemMenu onPilih={() => setCapOpen(true)} nonaktif={!course}>
+              Watermark PDF: {LABEL_CAP[pilihanCap(course)]}
+            </ItemMenu>
+            <ItemMenu onPilih={() => setJadwalOpen(true)} nonaktif={!course || sorted.length === 0}>
+              Jadwal pertemuan
+            </ItemMenu>
+            <ItemMenu onPilih={() => setUrutkanOpen(true)} nonaktif={sorted.length < 2}>
+              Urutkan topik
+            </ItemMenu>
+            <div role="separator" className="my-1 h-px" style={BORDER_BG} />
+            <ItemMenu onPilih={() => setKelolaOpen(true)}>Kelola mata kuliah</ItemMenu>
+          </MenuAksi>
           <button onClick={openCreate} className="btn btn-primary btn-sm">
             + Tambah Topik
           </button>
         </div>
       </div>
+      {kelolaOpen && <KelolaMataKuliahModal onClose={() => setKelolaOpen(false)} />}
+      {pratinjau && <PratinjauLapis url={pratinjau.url} judul={pratinjau.judul} onTutup={() => setPratinjau(null)} />}
       <UrutkanTopikModal open={urutkanOpen} modules={sorted} onClose={() => setUrutkanOpen(false)} onSimpan={simpanUrutan} />
       {jadwalOpen && course && <JadwalModal course={course} modules={sorted} onClose={() => setJadwalOpen(false)} />}
       {capOpen && course && <WatermarkModal course={course} onClose={() => setCapOpen(false)} onSaved={showToast} />}
@@ -288,41 +387,12 @@ export function DosenModulRak() {
                 pdf={m.pdf_path}
                 buatSampul
                 kaki={m.estimasi_menit ? `± ${m.estimasi_menit} menit` : undefined}
-                aksi={
-                  <>
-                    <button
-                      onClick={() => openPdfModal(m.id)}
-                      aria-label="Ganti PDF"
-                      title="Ganti PDF"
-                      className="btn btn-secondary btn-sm w-full whitespace-nowrap"
-                    >
-                      <IconDocument size={13} /> <span className="hidden sm:inline">{hasPdf ? 'Ganti PDF' : 'Unggah PDF'}</span>
-                    </button>
-                    <button
-                      onClick={() => openEdit(m.id)}
-                      aria-label="Ubah topik"
-                      title="Ubah Topik"
-                      className="btn btn-secondary btn-sm w-full whitespace-nowrap"
-                    >
-                      <IconEdit size={13} /> <span className="hidden sm:inline">Ubah Topik</span>
-                    </button>
-                    {m.pdf_path ? (
-                      <PdfPreviewLink url={m.pdf_path} label="Pratinjau" compact />
-                    ) : (
-                      <button type="button" disabled aria-label="Pratinjau" title="Belum ada PDF" className="btn btn-secondary btn-sm w-full whitespace-nowrap">
-                        <IconEye size={13} /> <span className="hidden sm:inline">Pratinjau</span>
-                      </button>
-                    )}
-                    <button
-                      onClick={() => setDeleteId(m.id)}
-                      aria-label={`Hapus topik ${judul}`}
-                      title="Hapus topik"
-                      className="btn btn-danger btn-sm w-full whitespace-nowrap"
-                    >
-                      <IconTrash size={13} /> <span className="hidden sm:inline">Hapus</span>
-                    </button>
-                  </>
-                }
+                dosen={{
+                  onPratinjau: () => m.pdf_path && setPratinjau({ url: m.pdf_path, judul }),
+                  onUbah: () => openEdit(m.id),
+                  onHapus: () => setDeleteId(m.id),
+                  onGantiPdf: () => openPdfModal(m.id),
+                }}
               />
               </div>
             )
@@ -463,6 +533,13 @@ export function DosenModulRak() {
                 {uploadingPdf ? 'Mengunggah…' : 'Unggah PDF'}
               </button>
             </div>
+            {pdfFile && <PratinjauBerkas file={pdfFile} />}
+            {uploadingPdf && (
+              <div className="mt-3" role="status">
+                <progress value={persenUnggah} max={100} className="w-full h-2 accent-[var(--terra)]" aria-label="Kemajuan unggah PDF" />
+                <p className="text-xs text-brown-3 mt-1 tabular-nums">Mengunggah… {persenUnggah}%</p>
+              </div>
+            )}
 
             {isSupabaseConfigured && pdfFiles.length > 0 && (
               <div className="pt-4 mt-4 border-t" style={BORDER}>
@@ -772,7 +849,6 @@ export function ModulList() {
   const { data: progress = {} } = useAllProgress()
   const { statusOf, bukaPada } = useTopikStatus()
   const ambangFormatif = useAmbang().formatif
-  const [kelolaOpen, setKelolaOpen] = useState(false)
 
   const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const lanjut = useMemo(
@@ -783,19 +859,14 @@ export function ModulList() {
   return (
     <Layout>
       <div className="p-4 md:p-6">
-        <div className="flex items-center gap-3 flex-wrap mb-4">
-          <h1 className="text-2xl font-bold text-brown">Modul</h1>
-          <MataKuliahSelect />
-          {role === 'dosen' && (
-            <button onClick={() => setKelolaOpen(true)} className="btn btn-secondary btn-sm" title="Tambah, ubah, atau hapus mata kuliah">
-              <IconGear size={14} /> Kelola Mata Kuliah
-            </button>
-          )}
-        </div>
         {role === 'dosen' ? (
-          <DosenModulRak />
+          <DosenModulRak kepala />
         ) : (
           <>
+            <div className="flex items-center gap-3 flex-wrap mb-4">
+              <h1 className="text-2xl font-bold text-brown">Modul</h1>
+              <MataKuliahSelect />
+            </div>
             <p className="text-sm text-brown-3 mb-4">{sorted.length} topik · dibaca sebagai flipbook</p>
             {lanjut && statusOf(lanjut.id) !== 'locked' && (
               <Link to={`/modul/${lanjut.id}`} className="btn btn-primary btn-sm inline-block mb-4">
@@ -853,7 +924,6 @@ export function ModulList() {
             )}
           </>
         )}
-        {kelolaOpen && <KelolaMataKuliahModal onClose={() => setKelolaOpen(false)} />}
       </div>
     </Layout>
   )

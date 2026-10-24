@@ -45,6 +45,20 @@ vi.mock('../contexts/CourseContext', () => ({
   }),
 }))
 
+const uploadMock = vi.hoisted(() => vi.fn())
+vi.mock('../lib/manajemen', async (asli) => ({ ...(await asli<typeof import('../lib/manajemen')>()), uploadModulPdf: uploadMock }))
+// pdfjs tidak jalan di jsdom: halaman pertama cukup berupa objek palsu (canvas jsdom tanpa konteks 2D).
+vi.mock('pdfjs-dist', () => ({
+  GlobalWorkerOptions: {},
+  getDocument: () => ({
+    promise: Promise.resolve({
+      numPages: 1,
+      getPage: async () => ({ getViewport: () => ({ width: 100, height: 140 }), render: () => ({ promise: Promise.resolve() }) }),
+      destroy: async () => {},
+    }),
+  }),
+}))
+
 const navigateMock = vi.hoisted(() => vi.fn())
 vi.mock('react-router', async (importOriginal) => {
   const actual = await importOriginal<typeof import('react-router')>()
@@ -134,7 +148,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
     expect(navigateMock).not.toHaveBeenCalled()
   })
 
@@ -147,7 +161,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByLabelText('Ganti PDF')).toHaveLength(9))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
     expect(screen.queryByText(/\+ PDF Pertemuan/)).toBeNull()
     expect(screen.queryByRole('region')).toBeNull()
   })
@@ -161,7 +175,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
     expect(screen.getByText(/Tambah Topik/)).toBeTruthy()
   })
 
@@ -174,7 +188,7 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
     fireEvent.click(screen.getByText(/\+ Tambah Topik/))
 
     expect(screen.getByText('PDF Topik (opsional)')).toBeTruthy()
@@ -189,8 +203,9 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
-    fireEvent.click(screen.getByLabelText('Hapus topik Modul 1'))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
+    fireEvent.click(screen.getByLabelText('Aksi lain untuk Modul 1'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Hapus topik' }))
 
     expect(screen.getByText(/Hapus Topik/)).toBeTruthy()
     expect(screen.getByText(/ikut terhapus/)).toBeTruthy()
@@ -207,16 +222,103 @@ describe('ModulList', () => {
 
     renderModulList(queryClient)
 
-    await waitFor(() => expect(screen.getAllByLabelText('Ubah topik')).toHaveLength(9))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
     expect(screen.getByLabelText('Pilih mata kuliah')).toBeTruthy()
-    expect(screen.getByText('Kelola Mata Kuliah')).toBeTruthy()
+    fireEvent.click(screen.getByText(/^Atur/))
+    expect(screen.getByRole('menuitem', { name: 'Kelola mata kuliah' })).toBeTruthy()
 
     // Antrean #141: tiap mata kuliah punya sakelar buka-tutup untuk mahasiswa.
-    fireEvent.click(screen.getByText('Kelola Mata Kuliah'))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Kelola mata kuliah' }))
     const sakelar = screen.getAllByRole('switch')
     expect(sakelar.map((s) => [s.textContent, s.getAttribute('aria-checked'), (s as HTMLButtonElement).disabled])).toEqual([
       ['Tutup Akses', 'true', false],
       ['Tutup Akses', 'true', false],
     ])
+  })
+
+  function renderDosen(modul: Array<{ id: number }> = NINE_MODULES) {
+    mockAuth.role = 'dosen'
+    const queryClient = new QueryClient()
+    queryClient.setQueryData(['modules', 'course', 1], modul)
+    queryClient.setQueryData(['manajemen', 'customs', modul.map((m) => m.id)], {})
+    renderModulList(queryClient)
+  }
+
+  // Antrean #298/#299: kepala rak satu baris dengan menu Atur.
+  it('dosen: kepala rak memuat ringkasan dan menu Atur yang menutup dengan Escape', async () => {
+    renderDosen()
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
+    expect(screen.getByText('9 topik · 0 punya PDF')).toBeTruthy()
+    const atur = screen.getByText(/^Atur/)
+    expect(atur.getAttribute('aria-haspopup')).toBe('menu')
+    expect(atur.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(atur)
+    expect(atur.getAttribute('aria-expanded')).toBe('true')
+    expect(screen.getAllByRole('menuitem').map((i) => i.textContent)).toEqual([
+      'Watermark PDF: Mati',
+      'Jadwal pertemuan',
+      'Urutkan topik',
+      'Kelola mata kuliah',
+    ])
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('menu')).toBeNull()
+    fireEvent.click(atur)
+    fireEvent.mouseDown(document.body)
+    expect(screen.queryByRole('menu')).toBeNull()
+  })
+
+  it('dosen: menu ⋯ kartu memuat Pratinjau (nonaktif tanpa PDF), Ubah topik, Hapus topik', async () => {
+    renderDosen()
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
+    fireEvent.click(screen.getByLabelText('Aksi lain untuk Modul 2'))
+    const [pratinjau, ubah, hapus] = screen.getAllByRole('menuitem') as HTMLButtonElement[]
+    expect([pratinjau.textContent, ubah.textContent, hapus.textContent]).toEqual(['Pratinjau', 'Ubah topik', 'Hapus topik'])
+    expect(pratinjau.disabled).toBe(true)
+    fireEvent.click(ubah)
+    expect(screen.queryByRole('menu')).toBeNull()
+    expect(screen.getByText('Ubah Topik')).toBeTruthy()
+  })
+
+  it('dosen: sampul tanpa PDF tidak menjadi tombol pratinjau', async () => {
+    renderDosen()
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
+    expect(screen.queryByLabelText(/^Pratinjau PDF/)).toBeNull()
+  })
+
+  it('dosen: sampul ber-PDF membuka pratinjau dan tombol Ganti PDF menggantikan Unggah PDF', async () => {
+    renderDosen(NINE_MODULES.map((m, i) => (i === 0 ? { ...m, pdf_path: '/books/modul-01.pdf' } : m)))
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(8))
+    expect(screen.getAllByText('Ganti PDF')).toHaveLength(1)
+    expect(screen.getByText('9 topik · 1 punya PDF')).toBeTruthy()
+    expect(screen.getByLabelText('Pratinjau PDF Modul 1')).toBeTruthy()
+  })
+
+  // Antrean #292: modal Ganti PDF, pratinjau berkas, progres, tutup otomatis.
+  it('dosen: modal Ganti PDF menampilkan pratinjau, progres, lalu menutup setelah sukses', async () => {
+    const dibuat = vi.fn(() => 'blob:uji')
+    const dicabut = vi.fn()
+    vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: dibuat, revokeObjectURL: dicabut }))
+    let selesai: () => void = () => {}
+    uploadMock.mockImplementation(async (_id: number, _f: File, _p: number, onProgress: (n: number) => void) => {
+      onProgress(42)
+      await new Promise<void>((r) => (selesai = r))
+      return 'x'
+    })
+    renderDosen()
+    await waitFor(() => expect(screen.getAllByText('Unggah PDF')).toHaveLength(9))
+    fireEvent.click(screen.getAllByText('Unggah PDF')[0])
+    expect(screen.getByText('Ganti PDF Topik')).toBeTruthy()
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+    fireEvent.change(input, { target: { files: [new File(['%PDF'], 'baru.pdf', { type: 'application/pdf' })] } })
+    await waitFor(() => expect(screen.getByTestId('pratinjau-berkas')).toBeTruthy())
+    expect(screen.getByText('Lihat semua halaman')).toBeTruthy()
+    expect(dibuat).toHaveBeenCalled()
+    fireEvent.click(screen.getAllByRole('button', { name: 'Unggah PDF' }).at(-1)!)
+    await waitFor(() => expect(screen.getByText('Mengunggah… 42%')).toBeTruthy())
+    selesai()
+    await waitFor(() => expect(screen.queryByText('Ganti PDF Topik')).toBeNull())
+    expect(screen.getByText('PDF topik berhasil diunggah')).toBeTruthy()
+    expect(dicabut).toHaveBeenCalledWith('blob:uji')
+    vi.unstubAllGlobals()
   })
 })

@@ -9,7 +9,10 @@ import type { ModuleRow } from '../lib/modules'
 import type { SumberAktivitas } from '../lib/aktivitas'
 import { Dashboard, DashboardMhs, DosenHome } from './Dashboard'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  uji.sumber = null
+})
 
 // Kartu Kabar Terbaru butuh penyedia kueri dan mata kuliah; uji Dashboard tidak memeriksanya.
 vi.mock('../components/KabarPaket', () => ({ KabarTerbaruCard: () => null }))
@@ -33,12 +36,13 @@ vi.mock('../lib/supabase', () => ({
 // tabnya pasti, terlepas dari logika rentang aktif/remedial di aktivitas.ts
 // (sudah dites sendiri lewat aktivitas.test.ts, bukan tanggung jawab tes ini).
 const SUMBER_KOSONG: SumberAktivitas = { profiles: [], attempts: [], progress: [], video: [], modules: [] }
+const uji = vi.hoisted(() => ({ sumber: null as SumberAktivitas | null }))
 
 vi.mock('../lib/aktivitas', async () => {
   const actual = await vi.importActual<typeof import('../lib/aktivitas')>('../lib/aktivitas')
   return {
     ...actual,
-    fetchSumberAktivitas: async () => SUMBER_KOSONG,
+    fetchSumberAktivitas: async () => uji.sumber ?? SUMBER_KOSONG,
     perluPerhatian: () => [
       { judul: 'Ani', keterangan: 'Belum mengerjakan tes diagnostik awal', tautan: '/analitik' },
       { judul: 'Budi', keterangan: 'Tidak aktif lebih dari 7 hari', tautan: '/analitik' },
@@ -190,5 +194,67 @@ describe('DosenHome', () => {
     fireEvent.click(tabProgres)
     expect(await screen.findByText('Ani')).toBeTruthy()
     expect(screen.getByText('M1')).toBeTruthy()
+  })
+})
+
+// Antrean #301: kepala satu baris + empat kartu bermakna.
+describe('DosenHome kepala dan kartu', () => {
+  const profil = (id: string) => ({ id, fullName: id, classId: null, kelasNama: null, createdAt: '2026-01-01T00:00:00Z', varkCompletedAt: null })
+  const baru = new Date().toISOString()
+  const mods = [1, 2, 3].map((n) => ({ id: n, orderNum: n, title: `T${n}` }))
+
+  function renderDosen() {
+    return render(
+      <QueryClientProvider client={new QueryClient()}>
+        <MemoryRouter>
+          <DosenHome nama="Dewi" />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+  }
+
+  it('kepala: sapaan, tanggal panjang hari ini, tombol rentang', async () => {
+    renderDosen()
+    expect(await screen.findByText('Halo, Dewi')).toBeTruthy()
+    expect(screen.getByText(/Dashboard Dosen · \S+, \d{1,2} \S+ \d{4}/)).toBeTruthy()
+    expect(screen.getByRole('button', { name: '30 hari' })).toBeTruthy()
+  })
+
+  it('belum ada formatif: kartu baru, "Topik 1 dari 3" (bukan P0), dan bilah langkah ke /modul', async () => {
+    uji.sumber = {
+      ...SUMBER_KOSONG,
+      modules: mods,
+      profiles: [profil('a'), profil('b')],
+      attempts: [
+        { userId: 'a', moduleId: null, score: 90, kind: 'pre', attemptedAt: baru, sessionId: null },
+        { userId: 'b', moduleId: null, score: 20, kind: 'pre', attemptedAt: baru, sessionId: null },
+      ],
+    }
+    renderDosen()
+    expect(await screen.findByText(/Jalur Cepat 1 · Belajar Mendalam 1/)).toBeTruthy()
+    // Rentang 7 hari: data percobaan terpotong, jadi "Belum ada" diberi keterangan rentang dan bilah langkah belum muncul.
+    expect(document.body.textContent).toContain('Belum ada dalam 7 hari')
+    expect(screen.queryByText(/Langkah berikutnya/)).toBeNull()
+    expect(document.body.textContent).toContain('dari 3')
+    expect(document.body.textContent).not.toContain('P0')
+    expect(screen.getByText(/Mahasiswa aktif · 7 HARI/i)).toBeTruthy()
+    expect(screen.getByText(/Batas lulus \d+ · remedial 7 hari: 0 percobaan/)).toBeTruthy()
+    // Rentang Semester: belum ada formatif sama sekali, bilah langkah muncul.
+    fireEvent.click(screen.getByRole('button', { name: 'Semester' }))
+    expect(await screen.findByText(/Langkah berikutnya: buka tes formatif Topik 1 supaya kelas bisa lanjut\./)).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Atur Jadwal Tes' }).getAttribute('href')).toBe('/modul')
+  })
+
+  it('sudah ada formatif: bilah langkah tidak tampil dan rata-rata formatif terlihat', async () => {
+    uji.sumber = {
+      ...SUMBER_KOSONG,
+      modules: mods,
+      profiles: [profil('a')],
+      attempts: [{ userId: 'a', moduleId: 1, score: 85, kind: 'formatif', attemptedAt: baru, sessionId: null }],
+    }
+    renderDosen()
+    expect(await screen.findByText('Semua membuka modul')).toBeTruthy()
+    expect(screen.queryByText(/Langkah berikutnya/)).toBeNull()
+    expect(screen.getByText('85')).toBeTruthy()
   })
 })

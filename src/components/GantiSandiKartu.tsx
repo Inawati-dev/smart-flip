@@ -28,7 +28,9 @@ export function pesanGalatSandi(err: unknown): string {
 // Antrean #248: pengguna yang sedang masuk mengganti kata sandinya sendiri,
 // terutama mahasiswa yang menerima sandi sementara dari dosen (antrean #246),
 // karena tautan "Lupa Kata Sandi" butuh email asli.
-export function GantiSandiKartu() {
+// `tanpaKartu` (antrean #297): tampil polos tanpa bingkai kartu, dipakai di
+// dalam modal Ubah Profil supaya tidak jadi kartu di dalam kartu.
+export function GantiSandiKartu({ tanpaKartu = false }: { tanpaKartu?: boolean } = {}) {
   const [buka, setBuka] = useState(false)
   const [sandi, setSandi] = useState('')
   const [ulang, setUlang] = useState('')
@@ -64,7 +66,7 @@ export function GantiSandiKartu() {
   }
 
   return (
-    <div className="bg-ivory rounded-2xl border p-5 flex flex-col" style={BORDER}>
+    <div className={tanpaKartu ? 'flex flex-col' : 'bg-ivory rounded-2xl border p-5 flex flex-col'} style={tanpaKartu ? undefined : BORDER}>
       <div className="flex items-center gap-2.5 mb-1">
         <IconLock size={18} className="text-brown-3" />
         <span className="text-sm font-semibold text-brown">Kata Sandi</span>

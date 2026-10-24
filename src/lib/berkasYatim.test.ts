@@ -7,11 +7,14 @@ const h = vi.hoisted(() => ({
   lama: null as string | null, // pdf_path topik sebelum diganti
   dipakai2: {} as Record<string, number>, // alamat -> jumlah topik yang menunjuknya di kolom pertemuan kedua (antrean #271)
   tanpaV50: false, // kolom `_2` belum ada (migration_v50 belum dijalankan)
+  token: null as string | null, // access_token sesi; null = tanpa sesi
+  unggahSupabase: 0, // berapa kali jalur supabase.storage.upload dipakai
 }))
 
 vi.mock('./supabase', () => ({
   isSupabaseConfigured: true,
   supabase: {
+    auth: { getSession: async () => ({ data: { session: h.token ? { access_token: h.token } : null } }) },
     from: () => ({
       select: () => ({
         eq: (kolom: string, url: string) => {
@@ -35,7 +38,10 @@ vi.mock('./supabase', () => ({
           h.dibuang.push([bucket, nama[0]])
           return { error: null }
         },
-        upload: async () => ({ error: null }),
+        upload: async () => {
+          h.unggahSupabase++
+          return { error: null }
+        },
         getPublicUrl: (path: string) => ({ data: { publicUrl: `https://x.supabase.co/storage/v1/object/public/${bucket}/${path}` } }),
       }),
     },
@@ -54,6 +60,8 @@ beforeEach(() => {
   h.lama = null
   h.dipakai2 = {}
   h.tanpaV50 = false
+  h.token = null
+  h.unggahSupabase = 0
 })
 
 describe('buangBerkasYatim: isian pertemuan kedua (antrean #271)', () => {
@@ -112,6 +120,52 @@ describe('uploadModulPdf', () => {
   it('membuang PDF lama yang tidak dipakai topik lain', async () => {
     h.lama = PDF
     await uploadModulPdf(1, berkas)
+    expect(h.dibuang).toEqual([['modul-pdf', 'modul-1-111.pdf']])
+  })
+
+  // Antrean #292: progres unggah lewat XMLHttpRequest, jatuh ke supabase.storage bila tanpa sesi.
+  it('tanpa sesi: jatuh ke supabase.storage dan tetap melapor 100%', async () => {
+    const persen: number[] = []
+    await uploadModulPdf(1, berkas, 1, (p) => persen.push(p))
+    expect(h.unggahSupabase).toBe(1)
+    expect(persen).toEqual([100])
+  })
+
+  it('dengan sesi: mengunggah lewat XHR, melapor persen, tidak memakai supabase.storage', async () => {
+    h.token = 'tok'
+    h.lama = PDF
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://x.supabase.co')
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'anon')
+    const dikirim: { url?: string; header: Record<string, string> } = { header: {} }
+    class XhrPalsu {
+      upload: { onprogress?: (e: unknown) => void } = {}
+      status = 200
+      onload?: () => void
+      onerror?: () => void
+      open(_m: string, url: string) {
+        dikirim.url = url
+      }
+      setRequestHeader(k: string, v: string) {
+        dikirim.header[k] = v
+      }
+      send() {
+        this.upload.onprogress?.({ lengthComputable: true, loaded: 1, total: 4 })
+        this.onload?.()
+      }
+    }
+    vi.stubGlobal('XMLHttpRequest', XhrPalsu)
+    const persen: number[] = []
+    try {
+      await uploadModulPdf(1, berkas, 1, (p) => persen.push(p))
+    } finally {
+      vi.unstubAllGlobals()
+      vi.unstubAllEnvs()
+    }
+    expect(h.unggahSupabase).toBe(0)
+    expect(persen).toEqual([25, 100])
+    expect(dikirim.url).toMatch(/^https:\/\/x\.supabase\.co\/storage\/v1\/object\/modul-pdf\/topik-1-\d+\.pdf$/)
+    expect(dikirim.header).toMatchObject({ Authorization: 'Bearer tok', apikey: 'anon', 'x-upsert': 'true', 'Content-Type': 'application/pdf' })
+    // berkas lama tetap dibuang sesudah jalur XHR (buangBerkasYatim terpanggil)
     expect(h.dibuang).toEqual([['modul-pdf', 'modul-1-111.pdf']])
   })
 })

@@ -79,7 +79,8 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     )
     expect(await screen.findByText('Ani')).toBeTruthy()
     const teks = document.body.textContent ?? ''
-    expect(teks).toContain('Jalur Cepat 1 · Belajar Mendalam 1')
+    expect(teks).toContain('Jalur Cepat 1')
+    expect(teks).toContain('Belajar Mendalam 1')
     expect(screen.getByText('Golongan')).toBeTruthy()
     expect(screen.getAllByText('Jalur Cepat').length).toBe(1)
     expect(screen.getAllByText('Belajar Mendalam').length).toBe(1)
@@ -113,5 +114,44 @@ describe('Asesmen — header dan grafik (spec asesmen 16 Sep 2026)', () => {
     // Ani: 80*.20 + 60*.20 + 100*.25 + 100*.35 = 88
     expect(screen.getByText('88')).toBeTruthy()
     expect(screen.getByText('2 dari 4 dinilai')).toBeTruthy()
+  })
+
+  // Antrean #294: pembanding visual pada tiga kartu ringkasan.
+  it('kartu ringkasan: penanda ambang, selisih lulus, ruas kategori aktif', async () => {
+    const queryClient = newQueryClient()
+    // pre 60, formatif 65: gain (65-60)/(100-60) = 0,125 rendah
+    queryClient.setQueryData(['asesmen-prepost', 1], [{ userId: 'a', nama: 'Ani', kelasId: 'A', pre: 60 }])
+    queryClient.setQueryData(['asesmen-formatif', 1], [
+      { id: 1, userId: 'a', nama: 'Ani', kelas: 'A', moduleId: 1, modulJudul: 'T1', score: 65, passed: false, attemptedAt: '2026-10-01' },
+    ])
+    render(
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={['/asesmen']}>
+          <Asesmen />
+        </MemoryRouter>
+      </QueryClientProvider>,
+    )
+    expect(await screen.findByText('Ani')).toBeTruthy()
+    const penanda = screen.getAllByTestId('bilah-penanda') as HTMLElement[]
+    expect(penanda.length).toBe(2)
+    expect(penanda[0].style.left).toBe('80%')
+    const teks = document.body.textContent ?? ''
+    expect(teks).toContain('dari 100 · ambang Jalur Cepat 80')
+    expect(teks).toMatch(/dari 100 · lulus [0-9]+/)
+    expect(screen.getByTestId('selisih-lulus').textContent).toBe('5 poin di bawah batas lulus')
+    expect((screen.getAllByTestId('bilah-isi')[0] as HTMLElement).style.width).toBe('60%')
+    expect(screen.getByTestId('ruas-rendah').getAttribute('data-aktif')).toBe('ya')
+    expect(screen.getByTestId('ruas-sedang').getAttribute('data-aktif')).toBe('tidak')
+    expect(screen.getByTestId('ruas-tinggi').getAttribute('data-aktif')).toBe('tidak')
+  })
+
+  it('kartu ringkasan tanpa data: bilah kosong dan "Belum ada data"', async () => {
+    renderPage()
+    expect(await screen.findByText('Hasil Kelas')).toBeTruthy()
+    expect(screen.queryAllByTestId('bilah-isi').length).toBe(0)
+    expect(screen.queryAllByTestId('bilah-penanda').length).toBe(0)
+    expect(screen.getAllByText('Belum ada data').length).toBeGreaterThanOrEqual(3)
+    expect(screen.queryByTestId('selisih-lulus')).toBeNull()
+    for (const k of ['rendah', 'sedang', 'tinggi']) expect(screen.getByTestId(`ruas-${k}`).getAttribute('data-aktif')).toBe('tidak')
   })
 })

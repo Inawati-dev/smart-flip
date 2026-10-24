@@ -100,6 +100,17 @@ describe('Akun', () => {
     expect(screen.queryByText('Keluar')).toBeNull()
   })
 
+  // Antrean #297: kata sandi pindah ke modal Ubah Profil, tanpa kartu sendiri.
+  it('kartu Kata Sandi tidak ada di halaman; tombol Ganti Kata Sandi ada di modal Ubah Profil', () => {
+    const queryClient = new QueryClient()
+    seedQueryCache(queryClient)
+    renderAkun(queryClient)
+    expect(screen.queryByText('Ganti Kata Sandi')).toBeNull()
+    fireEvent.click(screen.getByText('Ubah'))
+    expect(screen.getByText('Mengganti kata sandi tidak tersedia pada mode demo.')).toBeTruthy()
+    expect((screen.getByRole('button', { name: 'Ganti Kata Sandi' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   // Kelas pindah jadi halaman /kelas sendiri (koreksi Johan 16 Sep 2026
   // "page kelas ini dipindah jadi sidebar") — ?tab=kelas lama dialihkan.
   it('?tab=kelas dialihkan ke halaman /kelas', () => {

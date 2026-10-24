@@ -16,7 +16,7 @@ import {
   simpanBobotPaket,
   tenggatBawaan,
 } from '../lib/paketProposal'
-import { IconEdit, IconTrash } from './icons'
+import { IconChevronRight, IconEdit, IconTrash } from './icons'
 import { TanggalInput } from './TanggalInput'
 
 // Paket Rancangan Proposal, sisi dosen (antrean #179): kartu pembuat paket,
@@ -429,33 +429,13 @@ export function PaketProposalDosen({
           <div className="border-t px-4 py-3 flex flex-col gap-1" style={BORDER}>
             <p className="text-[13px] font-semibold text-brown-3 uppercase tracking-wide">Rubrik Tiap Mini Projek</p>
             {briefs.map((b) => (
-              <details key={b.id}>
-                <summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-brown">{`Rubrik ${b.title}`}</summary>
-                <ul className="flex flex-col gap-1.5 pb-3 list-none m-0 p-0">
-                  {b.rubric.map((r, i) => (
-                    <li key={`${i}-${r.nama}`} className="flex items-start gap-3 rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--bg3)' }}>
-                      <span className="flex-1 min-w-0">
-                        <span className="font-semibold text-brown block">{r.nama}</span>
-                        {r.ukur && <span className="text-[13px] text-brown-2 block">{r.ukur}</span>}
-                      </span>
-                      <span className="font-semibold text-brown tabular-nums shrink-0">{r.bobot}</span>
-                    </li>
-                  ))}
-                </ul>
-              </details>
+              <RubrikBaris key={b.id} judul={b.title} rubric={b.rubric} />
             ))}
           </div>
           <div className="border-t px-4 py-3 flex flex-col gap-1" style={BORDER}>
             <p className="text-[13px] font-semibold text-brown-3 uppercase tracking-wide">Aktivitas Mandiri yang Dilihat Mahasiswa di Tiap Topik</p>
             {AKTIVITAS_MANDIRI.map((a) => (
-              <details key={a.topik}>
-                <summary className="cursor-pointer min-h-11 flex items-center text-sm font-semibold text-brown">{`Topik ${a.topik}, hasilnya dipakai di ${babPaket(a.bab)?.judul ?? `Bab ${a.bab}`}`}</summary>
-                <ol className="pb-3 pl-5 m-0 flex flex-col gap-1 text-sm text-brown-2 list-decimal">
-                  {a.langkah.map((l, i) => (
-                    <li key={i} className="break-words">{l}</li>
-                  ))}
-                </ol>
-              </details>
+              <AktivitasBaris key={a.topik} judul={`Topik ${a.topik}, hasilnya dipakai di ${babPaket(a.bab)?.judul ?? `Bab ${a.bab}`}`} langkah={a.langkah} />
             ))}
           </div>
         </section>
@@ -494,5 +474,58 @@ export function PaketProposalDosen({
         </div>
       )}
     </>
+  )
+}
+
+const SUMMARY_CLS =
+  'flex items-center gap-2 cursor-pointer min-h-11 rounded-lg px-2 -mx-2 list-none [&::-webkit-details-marker]:hidden hover:bg-bg3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--terra)]'
+
+export function RubrikBaris({ judul, rubric }: { judul: string; rubric: { nama: string; ukur?: string; bobot: number }[] }) {
+  const total = rubric.reduce((n, r) => n + r.bobot, 0)
+  return (
+    <details className="group">
+      <summary className={SUMMARY_CLS}>
+        <IconChevronRight size={16} aria-hidden="true" className="shrink-0 text-brown-3 transition-transform group-open:rotate-90" />
+        <span className="flex-1 min-w-0 text-sm font-semibold text-brown break-words">{`Rubrik ${judul}`}</span>
+        <span className="shrink-0 text-[13px] text-brown-3 tabular-nums">{`${rubric.length} kriteria · ${total}`}</span>
+      </summary>
+      <ul className="flex flex-col gap-1.5 pt-1 pb-3 pl-6 list-none m-0">
+        {rubric.map((r, i) => (
+          <li key={`${i}-${r.nama}`} className="flex items-start gap-3 rounded-lg px-3 py-2 text-sm" style={{ background: 'var(--bg3)' }}>
+            <span className="flex-1 min-w-0">
+              <span className="font-semibold text-brown block">{r.nama}</span>
+              {r.ukur && <span className="text-[13px] text-brown-2 block">{r.ukur}</span>}
+            </span>
+            <span className="font-semibold text-brown tabular-nums shrink-0">{r.bobot}</span>
+          </li>
+        ))}
+      </ul>
+    </details>
+  )
+}
+
+export function AktivitasBaris({ judul, langkah }: { judul: string; langkah: string[] }) {
+  return (
+    <details className="group">
+      <summary className={SUMMARY_CLS}>
+        <IconChevronRight size={16} aria-hidden="true" className="shrink-0 text-brown-3 transition-transform group-open:rotate-90" />
+        <span className="flex-1 min-w-0 text-sm font-semibold text-brown break-words">{judul}</span>
+        <span className="shrink-0 text-[13px] text-brown-3 tabular-nums">{`${langkah.length} langkah`}</span>
+      </summary>
+      <ol className="list-none m-0 mt-1 mb-3 ml-6 p-3 rounded-lg flex flex-col gap-2 text-sm text-brown-2" style={{ background: 'var(--bg3)' }}>
+        {langkah.map((l, i) => (
+          <li key={i} className="flex items-start gap-3">
+            <span
+              aria-hidden="true"
+              className="shrink-0 w-6 h-6 rounded-full text-white text-[13px] font-semibold flex items-center justify-center tabular-nums"
+              style={{ background: 'var(--terra)' }}
+            >
+              {i + 1}
+            </span>
+            <span className="flex-1 min-w-0 break-words pt-0.5">{l}</span>
+          </li>
+        ))}
+      </ol>
+    </details>
   )
 }

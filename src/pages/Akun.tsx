@@ -17,6 +17,7 @@ import { FileInput } from '../components/FileInput'
 import { StatCard } from '../components/StatCard'
 import { PengaturanSections } from './Pengaturan'
 import { IconUser, IconGraduationCap, IconEdit } from '../components/icons'
+import { GantiSandiKartu } from '../components/GantiSandiKartu'
 import { TautanPanduan } from '../components/TautanPanduan'
 
 // /akun (WP-C) — Profil.tsx dilebur ke sini: kartu identitas dengan modal
@@ -300,6 +301,11 @@ export function Akun() {
                   <span className="text-[13px] font-normal text-brown-3">Angkatan ditetapkan saat pendaftaran.</span>
                 </label>
               )}
+            </div>
+
+            {/* Ganti kata sandi (antrean #297): modalnya z-[700], di atas modal ini (z-[600]). */}
+            <div className="mb-4 pt-4 border-t" style={BORDER}>
+              <GantiSandiKartu tanpaKartu />
             </div>
 
             <div className="flex gap-2.5">

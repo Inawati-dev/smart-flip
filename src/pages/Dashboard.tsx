@@ -12,7 +12,7 @@ import { cocokFilter, fetchMyKelas } from '../lib/kelas'
 import { hitungLangkah, type Langkah } from '../lib/langkah'
 import { useTopikStatus } from '../lib/topik'
 import { formatTanggal } from '../lib/jadwal'
-import { GOLONGAN_LABEL, GOLONGAN_CHIP, type Golongan } from '../lib/golongan'
+import { GOLONGAN_LABEL, GOLONGAN_CHIP, golonganDariSkor, type Golongan } from '../lib/golongan'
 import { useAmbang } from '../lib/ambang'
 import { TOTAL_MODULES, type ProgressMap } from '../lib/progress'
 import type { ModuleRow } from '../lib/modules'
@@ -20,7 +20,6 @@ import type { QuizAttemptWithModule } from '../lib/quizAttempts'
 import { WelcomeModal } from '../components/WelcomeModal'
 import { hasSeenOnboarding, markOnboardingSeen } from '../lib/onboarding'
 import { Layout } from '../components/Layout'
-import { Select } from '../components/Select'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { PillGroup } from '../components/PillGroup'
@@ -39,11 +38,8 @@ import {
 } from '../lib/aktivitas'
 import {
   IconTrendingUp,
-  IconUsers,
   IconFolder,
   IconCheck,
-  IconChart,
-  IconRefresh,
 } from '../components/icons'
 
 const BORDER = { borderColor: 'var(--border)' } as const
@@ -53,6 +49,30 @@ const HARI_OPTIONS: Array<{ value: FilterAktivitas['hari']; label: string }> = [
   { value: 30, label: '30 hari' },
   { value: 'semester', label: 'Semester' },
 ]
+
+function KartuRingkas({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-ivory rounded-2xl border p-4 flex flex-col gap-2 min-w-0" style={BORDER}>
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">{label}</p>
+      {children}
+    </div>
+  )
+}
+
+// Bilah 8 px; segmen berurutan sebanding bagian/total; penanda = garis tegak di nilai tertentu (skala total).
+function Bilah({ segmen, total, penanda }: { segmen: Array<{ bagian: number; warna: string }>; total: number; penanda?: number }) {
+  return (
+    <div className="relative h-2 rounded-full overflow-hidden flex" style={{ background: 'var(--border)' }} aria-hidden>
+      {total > 0 &&
+        segmen.map((g, i) => (
+          <span key={i} style={{ width: `${Math.min(100, (g.bagian / total) * 100)}%`, background: g.warna }} />
+        ))}
+      {penanda != null && total > 0 && (
+        <span className="absolute top-0 bottom-0 w-0.5" style={{ left: `${Math.min(100, (penanda / total) * 100)}%`, background: 'var(--brown)' }} />
+      )}
+    </div>
+  )
+}
 
 const STATUS_LABEL: Record<MatriksSel['status'], { label: string; bg: string; color: string }> = {
   L: { label: 'L', bg: 'var(--success-soft)', color: 'var(--success)' },
@@ -76,7 +96,7 @@ function StatusChip({ status }: { status: MatriksSel['status'] }) {
 // useQuery menarik 5 tabel sekaligus (fetchSumberAktivitas); 4 fungsi murni
 // di src/lib/aktivitas.ts mengubahnya jadi umpan, ringkasan, daftar
 // perhatian, dan matriks — tidak ada angka statis di halaman ini.
-export function DosenHome({ dosenId }: { dosenId?: string }) {
+export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }) {
   const { courseId } = useCourse()
   const { data: kelasList = [] } = useKelasByDosen(dosenId)
   const [tahun, setTahun] = useState<number | null>(null)
@@ -98,7 +118,8 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
   const idTunggal = kelasIdCocok.size === 1 ? [...kelasIdCocok][0] : null
   const kelasIdServer: FilterAktivitas['kelasId'] = !filterAktif ? 'semua' : (idTunggal ?? 'semua')
   const perluSaringKlien = filterAktif && idTunggal == null
-  const ambangFormatif = useAmbang().formatif
+  const ambang = useAmbang()
+  const ambangFormatif = ambang.formatif
   const filter = useMemo<FilterAktivitas>(
     () => ({ kelasId: kelasIdServer, hari, courseId, passScore: ambangFormatif }),
     [kelasIdServer, hari, courseId, ambangFormatif],
@@ -126,10 +147,34 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
   }, [sumberMentah, perluSaringKlien, kelasIdCocok])
 
   const kejadian = useMemo(() => (sumber ? gabungKejadian(sumber) : []), [sumber])
-  const ringkas = useMemo(() => (sumber ? ringkasKelas(sumber) : null), [sumber])
   const perhatian = useMemo(() => (sumber ? perluPerhatian(sumber) : []), [sumber])
   const profilMap = useMemo(() => new Map((sumber?.profiles ?? []).map((p) => [p.id, p])), [sumber])
   const matriks = useMemo(() => (sumber ? matriksProgres(sumber) : []), [sumber])
+
+  // Jendela aktif mengikuti rentang terpilih; 'semester' = semua data yang masuk.
+  const hariAktif = hari === 'semester' ? 36_500 : hari
+  const rentangLabel = HARI_OPTIONS.find((o) => o.value === hari)?.label.toUpperCase() ?? ''
+  const ringkas = useMemo(() => (sumber ? ringkasKelas(sumber, { hariAktif }) : null), [sumber, hariAktif])
+  const tanggalHariIni = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+  // Golongan per mahasiswa dari skor pre-test terbaru.
+  const golonganJumlah = useMemo(() => {
+    const skor = new Map<string, { s: number; t: string }>()
+    for (const a of sumber?.attempts ?? []) {
+      if (a.kind !== 'pre') continue
+      const lama = skor.get(a.userId)
+      if (!lama || a.attemptedAt >= lama.t) skor.set(a.userId, { s: a.score, t: a.attemptedAt })
+    }
+    const j = { mahir: 0, remedial: 0 }
+    for (const { s } of skor.values()) {
+      if (golonganDariSkor(s, ambang.diagnostik) === 'mahir') j.mahir++
+      else j.remedial++
+    }
+    return j
+  }, [sumber, ambang.diagnostik])
+  const adaFormatif = (sumber?.attempts ?? []).some((a) => a.kind === 'formatif')
+  const topikM = sumber?.modules.length ?? 0
+  const topikP = Number((ringkas?.topikRataRata ?? 'P0').slice(1)) || 0
+  const topikK = topikM > 0 ? Math.min(topikM, Math.max(1, topikP)) : topikP
 
   // Tab tersimpan di ?tab=. Bawaan 'aktivitas'; kalau belum ada ?tab di URL
   // dan sudah ada baris perlu perhatian, buka 'perhatian' dulu supaya
@@ -157,55 +202,122 @@ export function DosenHome({ dosenId }: { dosenId?: string }) {
 
   return (
     <div className="flex flex-col gap-5">
-      {/* Judul + lencana perlu perhatian */}
-      <div className="flex items-center justify-between gap-2 flex-wrap -mt-1 mb-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <p className="text-brown-3">Dashboard Dosen</p>
-          {perhatian.length > 0 && (
-            <Link
-              to="?tab=perhatian"
-              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-2 text-[11px] font-bold rounded-full"
-              style={{ background: 'var(--danger)', color: 'var(--btn-text)' }}
-            >
-              {perhatian.length} perlu perhatian
-            </Link>
-          )}
+      {/* Kepala: tanggal + sapaan di kiri, saringan di kanan (antrean #301) */}
+      <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+        <div className="min-w-0">
+          <p className="text-xs text-brown-3 flex items-center gap-2 flex-wrap">
+            <span>Dashboard Dosen · {tanggalHariIni}</span>
+            {perhatian.length > 0 && (
+              <Link
+                to="?tab=perhatian"
+                className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-2 text-[11px] font-bold rounded-full"
+                style={{ background: 'var(--danger)', color: 'var(--btn-text)' }}
+              >
+                {perhatian.length} perlu perhatian
+              </Link>
+            )}
+          </p>
+          <h1 className="text-2xl font-bold text-brown">Halo, {nama || 'Pengguna'}</h1>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <MataKuliahSelect size="sm" />
+          <KelasTahunFilter kelasList={kelasList} tahun={tahun} kelas={kelas} onChange={handleKelasTahunChange} />
+          <PillGroup
+            ariaLabel="Filter rentang waktu"
+            size="sm"
+            value={String(hari)}
+            onChange={(v) => handleHariChange(v === 'semester' ? 'semester' : (Number(v) as 7 | 30))}
+            options={HARI_OPTIONS.map((opt) => ({ value: String(opt.value), label: opt.label }))}
+          />
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="flex flex-wrap gap-2">
-        <MataKuliahSelect size="sm" />
-        <KelasTahunFilter kelasList={kelasList} tahun={tahun} kelas={kelas} onChange={handleKelasTahunChange} />
-        <Select
-          value={String(hari)}
-          onChange={(v) => handleHariChange(v === 'semester' ? 'semester' : (Number(v) as 7 | 30))}
-          aria-label="Filter rentang waktu"
-          size="sm"
-          options={HARI_OPTIONS.map((opt) => ({ value: String(opt.value), label: opt.label }))}
-        />
+      {/* Empat kartu ringkas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        <KartuRingkas label={`Mahasiswa aktif · ${rentangLabel}`}>
+          <p className="text-3xl font-bold text-brown tabular-nums">
+            {ringkas ? ringkas.aktif7Hari : '—'}
+            <span className="text-sm font-medium text-brown-2"> dari {ringkas?.totalMhs ?? '—'} mahasiswa</span>
+          </p>
+          <Bilah segmen={[{ bagian: ringkas?.aktif7Hari ?? 0, warna: 'var(--sage)' }]} total={ringkas?.totalMhs ?? 0} />
+          <p className="text-xs text-brown-3">
+            {!ringkas || ringkas.totalMhs === 0
+              ? 'Belum ada mahasiswa'
+              : ringkas.aktif7Hari >= ringkas.totalMhs
+                ? 'Semua membuka modul'
+                : `${ringkas.totalMhs - ringkas.aktif7Hari} belum aktif`}
+          </p>
+        </KartuRingkas>
+
+        <KartuRingkas label="Tes diagnostik awal">
+          <p className="text-3xl font-bold text-brown tabular-nums">
+            {ringkas ? ringkas.preSelesai : '—'}
+            <span className="text-sm font-medium text-brown-2"> dari {ringkas?.totalMhs ?? '—'} selesai</span>
+          </p>
+          <Bilah
+            segmen={[
+              { bagian: golonganJumlah.mahir, warna: 'var(--sage)' },
+              { bagian: golonganJumlah.remedial, warna: 'var(--warning)' },
+            ]}
+            total={ringkas?.totalMhs ?? 0}
+          />
+          <p className="text-xs text-brown-3">
+            {GOLONGAN_LABEL.mahir} {golonganJumlah.mahir} · {GOLONGAN_LABEL.remedial} {golonganJumlah.remedial}
+          </p>
+        </KartuRingkas>
+
+        <KartuRingkas label="Posisi kelas">
+          <p className="text-3xl font-bold text-brown tabular-nums">
+            {!ringkas ? '—' : topikM === 0 ? 'Belum ada topik' : `Topik ${topikK}`}
+            {topikM > 0 && <span className="text-sm font-medium text-brown-2"> dari {topikM}</span>}
+          </p>
+          <div className="flex gap-0.5" aria-hidden>
+            {Array.from({ length: topikM }, (_, i) => (
+              <span
+                key={i}
+                className="h-2 flex-1 rounded-sm"
+                style={{ background: i < topikK ? 'var(--terra)' : 'var(--border)' }}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-brown-3">Rata-rata topik yang sedang dikerjakan</p>
+        </KartuRingkas>
+
+        <KartuRingkas label="Tes formatif">
+          <p className="text-3xl font-bold text-brown tabular-nums">
+            {!ringkas ? '—' : adaFormatif ? ringkas.rataFormatif : 'Belum ada'}
+            {/* Data percobaan dipotong sesuai rentang, jadi "Belum ada" hanya berlaku untuk rentang itu. */}
+            {ringkas && hari !== 'semester' && (
+              <span className="text-sm font-medium text-brown-2"> dalam {rentangLabel.toLowerCase()}</span>
+            )}
+          </p>
+          <Bilah
+            segmen={[{ bagian: adaFormatif ? (ringkas?.rataFormatif ?? 0) : 0, warna: 'var(--terra)' }]}
+            total={100}
+            penanda={ambangFormatif}
+          />
+          <p className="text-xs text-brown-3">
+            Batas lulus {ambangFormatif} · remedial 7 hari: {ringkas?.remedial7Hari ?? 0} percobaan
+          </p>
+        </KartuRingkas>
       </div>
 
-      {/* 5 angka ringkas (kartu sesi tes khusus dihilangkan, antrean #170) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
-        <StatCard
-          icon={IconUsers}
-          val={ringkas ? `${ringkas.aktif7Hari}/${ringkas.totalMhs}` : '—'}
-          label="Mahasiswa Aktif 7 hari"
-          bar="var(--sage)"
-          to="/kelas"
-        />
-        <StatCard
-          icon={IconCheck}
-          val={ringkas ? `${ringkas.preSelesai}/${ringkas.totalMhs}` : '—'}
-          label="Tes Diagnostik Awal Selesai"
-          bar="var(--terra)"
-          to="/asesmen"
-        />
-        <StatCard icon={IconTrendingUp} val={ringkas?.topikRataRata ?? '—'} label="Topik Rata-rata Kelas" bar="var(--info)" to="/asesmen" />
-        <StatCard icon={IconChart} val={ringkas ? String(ringkas.rataFormatif) : '—'} label="Rata-rata Formatif" bar="var(--sage)" to="/asesmen" />
-        <StatCard icon={IconRefresh} val={ringkas ? String(ringkas.remedial7Hari) : '—'} label="Remedial 7 hari" bar="var(--terra)" to="/asesmen" />
-      </div>
+      {/* Langkah berikutnya: hanya bila jelas dari data. Percobaan formatif dipotong
+          sesuai rentang (fetchSumberAktivitas), jadi "belum ada formatif" baru pasti
+          pada rentang Semester. */}
+      {ringkas && !isLoading && hari === 'semester' && !adaFormatif && topikM > 0 && (
+        <div
+          className="bg-ivory rounded-2xl border px-4 py-3 flex flex-wrap items-center justify-between gap-3"
+          style={BORDER}
+        >
+          <p className="text-sm text-brown">
+            Langkah berikutnya: buka tes formatif Topik {topikK} supaya kelas bisa lanjut.
+          </p>
+          <Link to="/modul" className="btn btn-primary">
+            Atur Jadwal Tes
+          </Link>
+        </div>
+      )}
 
       {/* Tab: Aktivitas kelas / Perlu perhatian / Progres mahasiswa x topik */}
       <PillGroup
@@ -375,10 +487,7 @@ export function Dashboard() {
       <div className="p-6">
         {role === 'dosen' ? (
           <>
-            <h1 className="text-2xl font-bold text-brown mb-1">
-              Halo, {profile?.full_name || 'Pengguna'}
-            </h1>
-            <DosenHome dosenId={user?.id} />
+            <DosenHome dosenId={user?.id} nama={profile?.full_name ?? undefined} />
           </>
         ) : modules.length === 0 ? (
           <p className="text-brown-3">{modulesLoading ? 'Memuat…' : 'Belum ada topik. Dosen menambah topik lewat menu Modul.'}</p>

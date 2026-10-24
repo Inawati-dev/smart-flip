@@ -1,7 +1,10 @@
 import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 import { thumbnailUrl } from '../lib/video'
-import { urlSampulVideo, buatSampulVideo } from '../lib/sampulVideo'
+import { urlSampulVideo, buatSampulVideo, sampulGelap } from '../lib/sampulVideo'
+
+// Sampul yang sudah diperiksa terangnya sesi ini; satu pemeriksaan per video.
+const sudahDiperiksa = new Set<string>()
 import { IconPlay } from './icons'
 
 // Kartu video di rak (antrean #85). Thumbnail 16:9: gambar YouTube bila
@@ -41,6 +44,15 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
     setSampul({ ...s, tahap: 'membuat' })
     void buatSampulVideo(url).then((ok) => setSampul({ url, tahap: ok ? 'coba' : 'gagal', versi: ok ? Date.now() : 0 }))
   }
+  // Dosen: sampul tersimpan bisa berupa bingkai hitam (antrean #293); buat ulang sekali per sesi.
+  function sampulTermuat() {
+    if (!buatSampul || yt || !url || !unggah || sudahDiperiksa.has(url)) return
+    sudahDiperiksa.add(url)
+    void sampulGelap(unggah).then((gelap) => {
+      if (!gelap) return
+      void buatSampulVideo(url, true).then((ok) => ok && setSampul({ url, tahap: 'coba', versi: Date.now() }))
+    })
+  }
   const dasar = warna ?? 'var(--cover-1)'
   const kotak = (
     <div
@@ -48,7 +60,7 @@ export function KartuVideo({ nomor, judul, url, durasi, chip, terkunci, judulKun
       style={{ background: `linear-gradient(140deg, ${dasar}, color-mix(in srgb, ${dasar} 70%, black))`, color: 'var(--cover-ink)' }}
     >
       {thumb ? (
-        <img src={thumb} alt="" loading="lazy" onError={sampulGagal} className="absolute inset-0 w-full h-full object-cover" />
+        <img src={thumb} alt="" loading="lazy" onError={sampulGagal} onLoad={sampulTermuat} className="absolute inset-0 w-full h-full object-cover" />
       ) : (
         <span className="absolute left-3 top-2.5 text-[11px] tracking-[.08em] uppercase opacity-80">
           {pertemuan ?? `Pertemuan ${String(nomor).padStart(2, '0')}`}

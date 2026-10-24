@@ -56,8 +56,7 @@ export default function Modul() {
     return (
       <Layout>
         <div className="p-4 md:p-6">
-          <h1 className="text-2xl font-bold text-brown mb-4">Modul</h1>
-          <DosenModulRak />
+          <DosenModulRak kepala />
         </div>
       </Layout>
     )
