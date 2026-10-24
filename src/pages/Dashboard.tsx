@@ -27,6 +27,7 @@ import { PillGroup } from '../components/PillGroup'
 import { StatCard } from '../components/StatCard'
 import { ChipRak } from '../components/KartuTopik'
 import { timeAgo } from '../lib/forum'
+import { TautanPanduan } from '../components/TautanPanduan'
 import {
   fetchSumberAktivitas,
   gabungKejadian,
@@ -393,6 +394,9 @@ export function Dashboard() {
             identitas={{ nama: profile?.full_name || 'Mahasiswa', kelas: kelasSaya }}
           />
         )}
+        <div className="mt-6">
+          <TautanPanduan />
+        </div>
       </div>
     </Layout>
   )

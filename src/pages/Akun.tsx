@@ -17,6 +17,7 @@ import { FileInput } from '../components/FileInput'
 import { StatCard } from '../components/StatCard'
 import { PengaturanSections } from './Pengaturan'
 import { IconUser, IconGraduationCap, IconEdit } from '../components/icons'
+import { TautanPanduan } from '../components/TautanPanduan'
 
 // /akun (WP-C) — Profil.tsx dilebur ke sini: kartu identitas dengan modal
 // Ubah (nama, NIM/NIDN, avatar — logika dari Profil.tsx/lib/profil.ts),
@@ -231,6 +232,9 @@ export function Akun() {
         </div>
           }
         />
+        <div className="mt-4">
+          <TautanPanduan />
+        </div>
       </div>
 
       {editOpen && (
