@@ -94,17 +94,21 @@ export function LoginBook({
               programatik karena itu melewati hit-testing. */}
           <div
             className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-between gap-4 p-5 sm:p-8 pointer-events-none"
-            style={{ background: 'var(--bg3)' }}
+            // Sisi dalam sampul ikut coklat sampul (koreksi #325); teks tinta penuh supaya kontras >= 4,5:1
+            style={{
+              background: 'linear-gradient(210deg, color-mix(in srgb, var(--cover-3) 78%, #000) 0%, color-mix(in srgb, var(--cover-3) 90%, #000) 100%)',
+              color: 'var(--cover-ink)',
+            }}
           >
             {/* Tim pengembang, sama dengan panduan Edisi 3 (antrean #324) */}
-            <div className="flex flex-col gap-3 text-brown-2 text-[13px] leading-snug">
-              <p className="text-xs font-semibold uppercase tracking-wide text-brown-3">Tim Pengembang</p>
+            <div className="flex flex-col gap-3 text-[13px] leading-snug">
+              <p className="text-xs font-semibold uppercase tracking-wide">Tim Pengembang</p>
               <div>
-                <p className="text-brown-3 text-xs">Ketua</p>
-                <p className="font-medium text-brown">Inawati, S.IP., M.M.</p>
+                <p className="text-xs">Ketua</p>
+                <p className="font-semibold">Inawati, S.IP., M.M.</p>
               </div>
               <div>
-                <p className="text-brown-3 text-xs">Anggota</p>
+                <p className="text-xs">Anggota</p>
                 <ul className="flex flex-col gap-0.5">
                   {ANGGOTA.map((n) => (
                     <li key={n}>{n}</li>
@@ -112,7 +116,7 @@ export function LoginBook({
                 </ul>
               </div>
             </div>
-            <p className="font-display italic text-[11.5px] text-brown-3">
+            <p className="font-display italic text-[11.5px]">
               Edisi 5.0: Fakultas Vokasi UM
             </p>
           </div>
