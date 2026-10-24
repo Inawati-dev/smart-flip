@@ -21,7 +21,6 @@ const SPREAD_MIN_WIDTH = 900 // di bawah ini buku tampil satu halaman, bukan dua
 // Antrean #165 (Johan, 10 Okt 2026): "munculkan 1 page 1 page saja". Tampilan dua
 // halaman dimatikan; jalurnya dibiarkan supaya bisa dinyalakan lagi dari sini.
 const DUA_HALAMAN = false
-const LEBAR_BACA = 760 // lebar minimal satu halaman di layar lebar supaya teks terbaca; halaman boleh lebih tinggi dari layar
 // ponytail: tiap halaman dirender sekali pada lebar tetap lalu diskalakan CSS;
 // kalau zoom 200% di layar besar terlihat buram, render ulang per tingkat zoom.
 const LEBAR_RENDER = 1200
@@ -441,7 +440,8 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
       ? Math.max(160, Math.min(ukuran.w - 24, 900)) * zoom
       : dua
         ? Math.max(120, Math.min((ukuran.w - 32) / kolom, (ukuran.h - 44) * rasio)) * zoom
-        : Math.max(120, Math.min(ukuran.w - 32, Math.max((ukuran.h - 44) * rasio, LEBAR_BACA))) * zoom
+        : // Zoom 1 = pas layar: halaman utuh terlihat, lebar dan tinggi muat (antrean #328; dulu minimal 760 px)
+          Math.max(120, Math.min(ukuran.w - 32, (ukuran.h - 44) * rasio)) * zoom
   const tinggiHal = lebarHal / rasio
   const lembarTampil: number[] = []
   for (let i = Math.max(0, s - 2); i <= Math.min(jumlahLembar - 1, s + 1); i++) lembarTampil.push(i)
@@ -555,7 +555,15 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
               <button onClick={zoomOut} disabled={zoom <= ZOOM_MIN} title="Perkecil" aria-label="Perkecil" className="pembaca-tb kotak">
                 −
               </button>
-              <span className="text-xs font-semibold min-w-[40px] text-center">{Math.round(zoom * 100)}%</span>
+              <button
+                onClick={() => setZoom(1)}
+                disabled={zoom === 1}
+                title="Kembali pas layar"
+                aria-label="Pas layar"
+                className="pembaca-tb text-xs min-w-[48px] justify-center"
+              >
+                {zoom === 1 ? 'Pas' : `${Math.round(zoom * 100)}%`}
+              </button>
               <button onClick={zoomIn} disabled={zoom >= ZOOM_MAX} title="Perbesar" aria-label="Perbesar" className="pembaca-tb kotak">
                 +
               </button>
