@@ -6,6 +6,8 @@
   yang mengisi {{EDISI}}, {{TANGGAL}}, {{QR_MASUK}}, {{QR_DAFTAR}}, mencetaknya
   lewat Chrome headless ke public/panduan-smartflip.pdf, lalu menambah nomor
   halaman dan penanda bab (bookmark).
+  Edisi 3 (antrean #310/#311, 24 Okt 2026): rak 8 topik dengan sampul dari PDF modul asli (Topik 0 Pendahuluan
+  sampai Topik 7 Penutup), gambar baru d10 (Jadwal) dan d11 (Watermark), dan sampul belakang.
   Gambar di gambar/ diambil ulang 24 Okt 2026 (Edisi 2, antrean #302) di server
   dev 1600x1000 (telepon 360x800) dengan peran pratinjau (VITE_UI_PREVIEW_ROLE)
   dan data contoh mode demo; halaman masuk dan daftar (u01, u01b, u02) dari situs
@@ -61,7 +63,18 @@
   .sampul .pita h1 { color: #fff; font-size: 34pt; margin: 3mm 0 2mm; }
   .sampul .pita p { color: #E9E1D3; font-size: 12pt; margin: 0; }
   .sampul .tengah { flex: 1; display: flex; flex-direction: column; gap: 7mm; justify-content: center; padding: 8mm 0; }
-  .sampul .tengah img { width: 100%; border: 1px solid var(--garis); border-radius: 2mm; }
+  .sampul .tengah img { width: 100%; max-height: 118mm; object-fit: cover; object-position: top; border: 1px solid var(--garis); border-radius: 2mm; }
+  /* Sampul belakang (#311) */
+  .belakang { break-before: page; height: 262mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .belakang .pita { background: #3E362E; color: #fff; padding: 12mm 10mm; border-radius: 3mm; display: flex; gap: 8mm; align-items: center; }
+  .belakang .pita svg { width: 34mm; height: 34mm; flex-shrink: 0; }
+  .belakang .pita .nama { font-size: 26pt; font-weight: 700; color: #fff; line-height: 1.1; }
+  .belakang .pita .nama span { color: var(--terra); }
+  .belakang .pita p { color: #E9E1D3; font-size: 11pt; margin: 2mm 0 0; }
+  .belakang .isi { display: flex; gap: 10mm; align-items: flex-start; }
+  .belakang .isi .kiri { flex: 1; font-size: 10pt; }
+  .belakang .isi .kiri .judul { color: var(--biru); font-weight: 700; font-size: 11pt; margin: 0 0 2mm; }
+  .belakang .kaki { display: flex; justify-content: space-between; align-items: flex-end; font-size: 9.5pt; color: var(--redup); border-top: 1px solid var(--garis); padding-top: 4mm; }
   .sampul .tengah .baris { display: flex; gap: 10mm; align-items: center; justify-content: space-between; }
   .qr { text-align: center; font-size: 9pt; color: var(--redup); }
   .qr svg { width: 42mm; height: 42mm; display: block; margin: 0 auto 1.5mm; }
@@ -268,7 +281,7 @@
   <p>Menu <b>Modul</b> (<a href="https://smart-flips.vercel.app/modul">/modul</a>) menampilkan satu sampul untuk tiap topik. Label di sampul menyebut nomor topik dan pertemuan yang memakainya, misalnya "Topik 01, Pertemuan 1-2".</p>
   <figure>
     <div class="gb"><img src="gambar/m02-modul.jpg" alt=""></div>
-    <figcaption>Gambar 5. Rak modul. Status di bawah sampul: Siap Dibaca, Terkunci, atau Selesai. Tombol Lanjutkan Membaca membuka topik yang terakhir dibaca.</figcaption>
+    <figcaption>Gambar 5. Rak modul berisi 8 topik: Pendahuluan, Bab 1 sampai Bab 6, dan Penutup. Sampul tiap topik diambil dari halaman pertama PDF-nya. Di laptop rak tersusun 4 kolom (2 baris), di telepon 2 kolom. Status di bawah sampul: Siap Dibaca, Terkunci, atau Selesai. Tombol Lanjutkan Membaca membuka topik yang terakhir dibaca.</figcaption>
   </figure>
   <p>Topik yang terkunci terbuka sendiri bila syaratnya terpenuhi: tanggal buka dari dosen sudah lewat, dan (untuk kelas Belajar Mendalam) tes formatif topik sebelumnya sudah lulus. Klik sampul topik untuk membuka halaman topiknya.</p>
   <figure>
@@ -385,17 +398,17 @@
   <h2>B2. Mengelola topik dan PDF modul</h2>
   <figure>
     <div class="gb"><img src="gambar/d02-modul.jpg" alt="">
-      <span class="pn bw" style="left:94.5%;top:7.5%">1</span>
-      <span class="pn bw" style="left:88%;top:7.5%">2</span>
-      <span class="pn ka" style="left:19%;top:42%">3</span>
-      <span class="pn tg" style="left:26%;top:49.4%">4</span>
+      <span class="pn bw" style="left:94.5%;top:5.6%">1</span>
+      <span class="pn bw" style="left:88%;top:5.6%">2</span>
+      <span class="pn ka" style="left:29%;top:43.9%">3</span>
+      <span class="pn tg" style="left:41%;top:49.3%">4</span>
     </div>
     <figcaption>Gambar 13. Rak modul dosen, <a href="https://smart-flips.vercel.app/modul">/modul</a>.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Tambah Topik: jendela berisi judul, deskripsi, perkiraan waktu belajar, dan PDF topik (PDF boleh menyusul).</li>
       <li><b class="n">2</b>Menu Atur: Watermark PDF, Jadwal pertemuan (minggu buka tiap topik; label "Pertemuan a-b" di sampul mengikuti jadwal ini), Urutkan topik, dan Kelola mata kuliah.</li>
       <li><b class="n">3</b>Menu titik tiga di tiap kartu (pada gambar sedang terbuka): Pratinjau PDF seperti yang dilihat mahasiswa, Ubah topik, dan Hapus topik. Hapus selalu meminta konfirmasi lebih dulu.</li>
-      <li><b class="n">4</b>Ganti PDF (atau Unggah PDF bila topik belum punya PDF). Mengklik sampul juga membuka pratinjau.</li>
+      <li><b class="n">4</b>Ganti PDF (atau Unggah PDF bila topik belum punya PDF). Mengklik sampul juga membuka pratinjau. Sampul dibuat otomatis dari halaman pertama PDF saat dosen membuka rak; sebelum itu tampil sampul berwarna.</li>
     </ul>
   </figure>
   <p>Menu titik tiga juga bisa dipakai dengan papan ketik: tekan Enter pada tombol titik tiga, pilih dengan panah atas atau bawah, lalu Enter. Escape menutup menu.</p>
@@ -413,19 +426,57 @@
       <li><b class="n">3</b>Unggah PDF. Bilah progres muncul di bagian bawah jendela. Setelah selesai jendela menutup sendiri, dan berkas lama dihapus bila tidak dipakai topik lain.</li>
     </ul>
   </figure>
-  <div class="catatan">Satu topik memakai <b>satu PDF</b> untuk kedua pertemuannya. Yang bisa dua hanya video. Pilihan <b>Watermark PDF</b> di menu Atur menambahkan nama dan NIM pembaca, teks, atau gambar di tiap halaman PDF.</div>
+  <div class="catatan">Satu topik memakai <b>satu PDF</b> untuk kedua pertemuannya. Yang bisa dua hanya video. Pendahuluan dan Penutup masing-masing satu topik dengan PDF sendiri, jadi PDF tiap bab tidak bersambung ke bab lain.</div>
+  <h3>Jadwal pertemuan dan tanggal buka topik</h3>
+  <p>Buka menu <b>Atur</b> lalu <b>Jadwal pertemuan</b>. Tanggal buka tiap topik dihitung dari tanggal pertemuan pertama, atau diisi sendiri per topik.</p>
+  <figure>
+    <div class="gb"><img src="gambar/d10-jadwal.jpg" alt="">
+      <span class="pn" style="left:27.5%;top:22.2%">1</span>
+      <span class="pn" style="left:53.2%;top:31.1%">2</span>
+      <span class="pn bw" style="left:57.2%;top:46.2%">3</span>
+      <span class="pn ka" style="left:72.8%;top:43.9%">4</span>
+      <span class="pn" style="left:65%;top:87.4%">5</span>
+    </div>
+    <figcaption>Gambar 15. Jendela Jadwal Kuliah.</figcaption>
+    <ul class="legenda">
+      <li><b class="n">1</b>Tanggal pertemuan pertama. Kosongkan bila topik tidak perlu dikunci tanggal.</li>
+      <li><b class="n">2</b>Minggu ke-: topik dibuka di awal minggu itu. Angka kosong memakai bawaan (dua minggu per topik, minggu 7 dan 8 untuk cadangan dan UTS).</li>
+      <li><b class="n">3</b>Tanggal sendiri: pilih ini bila satu topik perlu dibuka pada tanggal tertentu, misalnya karena libur.</li>
+      <li><b class="n">4</b>Tanggal buka topik. Tanggal ini menang atas hitungan minggu, dan tes formatif topik itu dibuka tujuh hari sesudahnya. Paling lambat 52 minggu sesudah pertemuan pertama.</li>
+      <li><b class="n">5</b>Simpan.</li>
+    </ul>
+  </figure>
+  <h3>Watermark PDF</h3>
+  <p>Buka menu <b>Atur</b> lalu <b>Watermark PDF</b>. Watermark ditumpangkan di tiap halaman PDF yang dibuka mahasiswa.</p>
+  <figure>
+    <div class="gb"><img src="gambar/d11-watermark.jpg" alt="">
+      <span class="pn" style="left:27.5%;top:28.4%">1</span>
+      <span class="pn" style="left:27.5%;top:39.6%">2</span>
+      <span class="pn" style="left:27.5%;top:47.2%">3</span>
+      <span class="pn" style="left:27.5%;top:63.4%">4</span>
+      <span class="pn" style="left:50.3%;top:77.6%">5</span>
+    </div>
+    <figcaption>Gambar 16. Jendela Watermark PDF.</figcaption>
+    <ul class="legenda">
+      <li><b class="n">1</b>Isi watermark: Mati, Nama dan NIM pembaca (berbeda di tiap mahasiswa), Teks bebas, atau Gambar.</li>
+      <li><b class="n">2</b>Ukuran: Kecil, Sedang, atau Besar.</li>
+      <li><b class="n">3</b>Kerapatan: Renggang, Sedang, atau Rapat. Rapat menyusun tulisan hampir bersambung.</li>
+      <li><b class="n">4</b>Pratinjau menunjukkan hasilnya persis seperti di halaman PDF.</li>
+      <li><b class="n">5</b>Simpan. Setelan berlaku untuk semua topik di mata kuliah itu.</li>
+    </ul>
+  </figure>
 </section>
 
 <section class="bab" id="dos-video">
   <h2>B3. Mengelola video pertemuan</h2>
   <figure>
     <div class="gb"><img src="gambar/d04-video.jpg" alt="">
-      <span class="pn" style="left:7.3%;top:35.4%">1</span>
-      <span class="pn tg" style="left:17.8%;top:31.6%">2</span>
-      <span class="pn tg" style="left:59.8%;top:19.5%">3</span>
-      <span class="pn" style="left:7.3%;top:63.8%">4</span>
+      <span class="pn" style="left:38.3%;top:35.4%">1</span>
+      <span class="pn tg" style="left:48.7%;top:31.6%">2</span>
+      <span class="pn tg" style="left:28.8%;top:19.5%">3</span>
+      <span class="pn" style="left:7.3%;top:35.4%">4</span>
     </div>
-    <figcaption>Gambar 15. Rak video dosen, <a href="https://smart-flips.vercel.app/video">/video</a>. Tiap topik punya kotak untuk pertemuan pertama dan kedua.</figcaption>
+    <figcaption>Gambar 17. Rak video dosen, <a href="https://smart-flips.vercel.app/video">/video</a>. Tiap topik punya kotak untuk pertemuan pertama dan kedua.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Ubah video yang sudah ada.</li>
       <li><b class="n">2</b>Pratinjau video seperti yang dilihat mahasiswa.</li>
@@ -441,7 +492,7 @@
       <span class="pn" style="left:43.6%;top:63.4%">4</span>
       <span class="pn" style="left:71.4%;top:82.7%">5</span>
     </div>
-    <figcaption>Gambar 16. Jendela Ubah Video.</figcaption>
+    <figcaption>Gambar 18. Jendela Ubah Video.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Tab Pertemuan Pertama dan Pertemuan Kedua.</li>
       <li><b class="n">2</b>Tempel tautan YouTube, atau</li>
@@ -457,7 +508,7 @@
   <h2>B4. Hasil asesmen kelas</h2>
   <figure>
     <div class="gb"><img src="gambar/d06-asesmen.jpg" alt=""></div>
-    <figcaption>Gambar 17. Hasil Kelas, <a href="https://smart-flips.vercel.app/asesmen">/asesmen</a>.</figcaption>
+    <figcaption>Gambar 19. Hasil Kelas, <a href="https://smart-flips.vercel.app/asesmen">/asesmen</a>.</figcaption>
   </figure>
   <ul>
     <li>Tiga kartu: rata-rata tes diagnostik awal (dengan jumlah Jalur Cepat dan Belajar Mendalam), rata-rata tes formatif, dan peningkatan skor kelas dengan pita rendah (di bawah 0,3), sedang (0,3 sampai 0,7), dan tinggi (di atas 0,7).</li>
@@ -472,7 +523,7 @@
   <h2>B5. Bank soal dan mini projek</h2>
   <figure>
     <div class="gb"><img src="gambar/d07-bank-soal.jpg" alt=""></div>
-    <figcaption>Gambar 18. Bank Soal, <a href="https://smart-flips.vercel.app/asesmen/bank">/asesmen/bank</a>.</figcaption>
+    <figcaption>Gambar 20. Bank Soal, <a href="https://smart-flips.vercel.app/asesmen/bank">/asesmen/bank</a>.</figcaption>
   </figure>
   <ol>
     <li>Pilih tab <b>Soal</b> atau <b>Mini Projek</b>.</li>
@@ -486,7 +537,7 @@
   <h2>B6. Kelas dan kode mata kuliah</h2>
   <figure>
     <div class="gb"><img src="gambar/d08-kelas.jpg" alt=""></div>
-    <figcaption>Gambar 19. Kelas, <a href="https://smart-flips.vercel.app/kelas">/kelas</a>. Di aplikasi asli, kotak Kode Mata Kuliah menampilkan kodenya. Di gambar contoh tertulis "Tidak tersedia di mode demo".</figcaption>
+    <figcaption>Gambar 21. Kelas, <a href="https://smart-flips.vercel.app/kelas">/kelas</a>. Di aplikasi asli, kotak Kode Mata Kuliah menampilkan kodenya. Di gambar contoh tertulis "Tidak tersedia di mode demo".</figcaption>
   </figure>
   <ul>
     <li><b>Kode Mata Kuliah</b> dibagikan ke mahasiswa untuk diisi saat mendaftar. Pilih mata kuliah di dalam kotak itu untuk melihat kodenya.</li>
@@ -499,7 +550,7 @@
   <h2>B7. Akun dan kode undangan dosen</h2>
   <figure>
     <div class="gb"><img src="gambar/d09-akun.jpg" alt=""></div>
-    <figcaption>Gambar 20. Akun dosen, <a href="https://smart-flips.vercel.app/akun">/akun</a>.</figcaption>
+    <figcaption>Gambar 22. Akun dosen, <a href="https://smart-flips.vercel.app/akun">/akun</a>.</figcaption>
   </figure>
   <ul>
     <li><b>Kode Undangan Dosen</b>: kode yang diisi calon dosen saat mendaftar. Klik <b>Tampilkan Kode</b> untuk melihatnya.</li>
@@ -564,6 +615,33 @@
     <tr><td>Unggah PDF atau video gagal</td><td>Periksa ukuran berkas: PDF paling besar 20 MB, video MP4/WebM paling besar 100 MB. Coba lagi dengan koneksi yang lebih stabil.</td></tr>
   </table>
   <div class="catatan">Pertanyaan lain tentang isi perkuliahan atau akun: hubungi dosen pengampu mata kuliah.</div>
+</section>
+
+<!-- ========================= SAMPUL BELAKANG (#311) ========================= -->
+<section class="belakang">
+  <div class="pita">
+    {{LOGO}}
+    <div><div class="nama">SMART-FLIP <span>5.0</span></div>
+      <p>E-Modul Adaptif Metode Penelitian dan Pengembangan</p></div>
+  </div>
+  <div class="isi">
+    <div class="kiri">
+      <p class="judul">Tim pengembang</p>
+      <p>Ketua: Inawati, S.IP., M.M.<br>Anggota: Dr. Deka Dyah Utami, Viola Malta Ramadhani, Johan Iriawan Akbar, Aryadi, Natasya Adelia Ramadhanti</p>
+      <p class="judul" style="margin-top:5mm">Isi e-modul</p>
+      <p>Pendahuluan, Bab 1 sampai Bab 6, dan Penutup. Tiap topik berisi modul PDF yang dibaca seperti buku, video pertemuan, dan tes formatif. Tes diagnostik awal menentukan jalur belajar: Jalur Cepat atau Belajar Mendalam.</p>
+      <p class="judul" style="margin-top:5mm">Alamat</p>
+      <p class="alamat"><a href="https://smart-flips.vercel.app/">smart-flips.vercel.app</a></p>
+    </div>
+    <div>
+      <div class="qr">{{QR_MASUK}}Halaman masuk</div>
+      <div class="qr" style="margin-top:4mm">{{QR_DAFTAR}}Daftar akun baru</div>
+    </div>
+  </div>
+  <div class="kaki">
+    <div><b>Fakultas Vokasi, Universitas Negeri Malang</b><br>Penelitian Dana Internal (Non-APBN) UM 2026</div>
+    <div style="text-align:right">Panduan Pemakaian SMART-FLIP 5.0<br>{{EDISI}}, {{TANGGAL}}</div>
+  </div>
 </section>
 
 </body>

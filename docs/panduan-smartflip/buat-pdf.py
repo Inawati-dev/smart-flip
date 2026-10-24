@@ -25,7 +25,7 @@ AKAR = os.path.dirname(os.path.dirname(DIR))
 KELUARAN = os.path.join(AKAR, 'public', 'panduan-smartflip.pdf')
 
 # Harus sama dengan EDISI_PANDUAN di src/components/TautanPanduan.tsx.
-EDISI = 'Edisi 2'
+EDISI = 'Edisi 3'
 TANGGAL = '24 Oktober 2026'
 SITUS = 'https://smart-flips.vercel.app'
 
@@ -35,6 +35,12 @@ PERAMBAN = [
     r'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe',
     shutil.which('chrome') or '', shutil.which('google-chrome') or '', shutil.which('msedge') or '',
 ]
+
+
+def logo() -> str:
+    """Logo aplikasi untuk sampul belakang (#311), diambil dari sumber tunggal ikon public/assets/favicon.svg."""
+    svg = open(os.path.join(DIR, '..', '..', 'public', 'assets', 'favicon.svg'), encoding='utf-8').read()
+    return re.sub(r'<\?xml[^>]*>', '', svg).strip()
 
 
 def qr(url: str) -> str:
@@ -61,7 +67,7 @@ def rapikan(pdf: str, judul_bab: list[str]) -> int:
     doc = fitz.open(pdf)
     toc = []
     for i, hal in enumerate(doc):
-        if i > 0:  # sampul tanpa nomor
+        if 0 < i < len(doc) - 1:  # sampul depan dan sampul belakang (#311) tanpa nomor
             w, h = hal.rect.width, hal.rect.height
             hal.insert_text((w / 2 - 6, h - 22), str(i + 1), fontsize=8.5, color=(0.42, 0.36, 0.31))
             hal.insert_text((42, h - 22), 'Panduan Pemakaian SMART-FLIP 5.0', fontsize=7.5, color=(0.6, 0.55, 0.5))
@@ -92,7 +98,8 @@ def rapikan(pdf: str, judul_bab: list[str]) -> int:
 def main() -> None:
     sumber = open(os.path.join(DIR, 'panduan.html'), encoding='utf-8').read()
     isi = (sumber.replace('{{EDISI}}', EDISI).replace('{{TANGGAL}}', TANGGAL)
-           .replace('{{QR_MASUK}}', qr(SITUS + '/')).replace('{{QR_DAFTAR}}', qr(SITUS + '/register')))
+           .replace('{{QR_MASUK}}', qr(SITUS + '/')).replace('{{QR_DAFTAR}}', qr(SITUS + '/register'))
+           .replace('{{LOGO}}', logo()))
     assert '{{' not in isi, 'masih ada isian templat yang belum terganti'
     judul_bab = [re.sub(r'<[^>]+>', '', m) for m in re.findall(r'<h[12][^>]*>(.*?)</h[12]>', isi.split('<section class="bab"', 1)[1])]
     # Berkas cetak juga di temp; <base> menjaga alamat gambar/ tetap menunjuk folder ini.
