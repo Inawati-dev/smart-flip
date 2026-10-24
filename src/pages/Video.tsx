@@ -21,7 +21,7 @@ import { ChipRak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
 import { formatTanggal, labelPertemuan, nomorPertemuan } from '../lib/jadwal'
-import { babSaja } from '../lib/jenisTopik'
+import { babSaja, nomorBabDi } from '../lib/jenisTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -380,7 +380,7 @@ function VideoDosen() {
   const [urlError, setUrlError] = useState('')
   const [saving, setSaving] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [preview, setPreview] = useState<{ url: string; judul: string } | null>(null)
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [videoFileError, setVideoFileError] = useState('')
   const [persenUnggah, setPersenUnggah] = useState<number | null>(null)
@@ -543,6 +543,9 @@ function VideoDosen() {
                     const url = urlPertemuan(m, p)
                     const parsed = parseVideoUrl(url)
                     const label = `Pertemuan ${nomorPertemuan(i, m.minggu_mulai, p)}`
+                    // Kepala pratinjau: Bab, pertemuan, dan judul topik, bukan nama berkas (antrean #327).
+                    const nBab = nomorBabDi(sorted, i)
+                    const judulPratinjau = nBab != null ? `Bab ${nBab} · ${label} · ${m.title}` : `${m.title} · ${label}`
                     const dtk = p === 2 ? m.duration_sec_2 : m.duration_sec
                     if (p === 2 && !url) {
                       // Pertemuan kedua tanpa video: kotak tambah, bukan kartu kosong (antrean #279).
@@ -570,7 +573,7 @@ function VideoDosen() {
                         buatSampul
                         durasi={dtk ? formatDuration(dtk) : undefined}
                         chip={url && !parsed ? <ChipRak jenis="warn" label="Tautan Tidak Dikenal" /> : undefined}
-                        onClick={url ? () => setPreviewUrl(url) : undefined}
+                        onClick={url ? () => setPreview({ url, judul: judulPratinjau }) : undefined}
                         warna={warnaSampul(m.order_num)}
                         aksi={
                           <>
@@ -585,7 +588,7 @@ function VideoDosen() {
                             {url && (
                               <button
                                 type="button"
-                                onClick={() => setPreviewUrl(url)}
+                                onClick={() => setPreview({ url, judul: judulPratinjau })}
                                 aria-label={`Pratinjau video ${label.toLowerCase()}`}
                                 title="Pratinjau video"
                                 className="btn btn-secondary btn-sm w-full whitespace-nowrap"
@@ -782,7 +785,7 @@ function VideoDosen() {
         </div>
       )}
 
-      {previewUrl && <PreviewModal url={previewUrl} title="Pratinjau video" onClose={() => setPreviewUrl(null)} />}
+      {preview && <PreviewModal url={preview.url} judul={preview.judul} title="Pratinjau video" onClose={() => setPreview(null)} />}
     </Layout>
   )
 }

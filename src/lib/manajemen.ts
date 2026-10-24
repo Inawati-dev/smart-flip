@@ -1,5 +1,6 @@
 import { AKHIRAN_SAMPUL } from './sampulPdf'
 import { supabase, isSupabaseConfigured } from './supabase'
+import { nomorBabDi } from './jenisTopik'
 
 // Mirrors legacy/data-layer.js's "MANAJEMEN MODUL" section (saveModulCustom /
 // getModulCustom / saveModulOrder / getModulOrder) — dosen edits module
@@ -340,6 +341,43 @@ export async function deleteModul(moduleId: number): Promise<void> {
 // pdf_path at the resulting public URL. Demo/localStorage mode has no
 // Storage backend, so it just stores the override locally instead — the
 // file itself never leaves the browser in that mode.
+/** Potongan nama berkas dari judul: huruf kecil tanpa aksen, selain huruf/angka jadi "-", maks 40 karakter. */
+export function slugJudul(judul: string): string {
+  return judul
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40)
+    .replace(/-+$/, '')
+}
+
+/** Dasar nama berkas unggahan: "bab-1-judul" untuk Bab, "bagian-judul" untuk Bagian (antrean #327). */
+export function dasarNamaBerkas(urut: Array<{ id: number; title: string; jenis?: string | null }>, moduleId: number): string {
+  const i = urut.findIndex((m) => m.id === moduleId)
+  if (i < 0) return `topik-${moduleId}`
+  const slug = slugJudul(urut[i].title)
+  const n = nomorBabDi(urut, i)
+  const dasar = n != null ? `bab-${n}` : 'bagian'
+  return slug ? `${dasar}-${slug}` : n != null ? dasar : `topik-${moduleId}`
+}
+
+// Nama berkas mengikuti Bab dan judul topik di mata kuliahnya; gagal membaca daftar topik = pola lama `topik-{id}`.
+async function namaBerkasTopik(moduleId: number): Promise<string> {
+  try {
+    const { data: satu } = await supabase.from('modules').select('course_id').eq('id', moduleId).maybeSingle()
+    let q = supabase.from('modules').select('id, title, jenis, order_num').order('order_num')
+    const courseId = (satu as { course_id?: number | null } | null)?.course_id
+    if (courseId != null) q = q.eq('course_id', courseId)
+    const { data, error } = await q
+    if (error || !data) return `topik-${moduleId}`
+    return dasarNamaBerkas(data as Array<{ id: number; title: string; jenis?: string | null }>, moduleId)
+  } catch {
+    return `topik-${moduleId}`
+  }
+}
+
 // Unggah ke bucket modul-pdf lewat XMLHttpRequest supaya persen terkirim bisa
 // dilaporkan (supabase-js belum punya progres unggah). Mengembalikan null bila
 // XHR atau sesi tidak tersedia; pemanggil lalu jatuh ke supabase.storage.
@@ -390,9 +428,8 @@ export async function uploadModulPdf(moduleId: number, file: File, pertemuan: Pe
     if (prevError && pertemuan === 2) throw galatKedua(prevError)
     const lama = (prevRow as Record<string, string | null> | null)?.[kolom] ?? undefined
 
-    // Pola nama `topik-` (antrean #90): satuan pertemuan disebut topik, dan nama
-    // berkas ini bisa tampil di halaman Berkas.
-    const path = `topik-${moduleId}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.pdf`
+    // Nama berkas memuat Bab dan judul topik (antrean #327; dulu `topik-{id}`, antrean #90), dan tampil di halaman Berkas.
+    const path = `${await namaBerkasTopik(moduleId)}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.pdf`
     const viaXhr = onProgress ? await unggahDenganProgres(path, file, onProgress) : null
     const { error: uploadError } =
       viaXhr ?? (await supabase.storage.from('modul-pdf').upload(path, file, { upsert: true, contentType: 'application/pdf' }))
@@ -461,7 +498,7 @@ export async function uploadModulVideo(moduleId: number, file: File, pertemuan: 
     const prevUrl = (prevRow as Record<string, string | null> | null)?.[kolom] ?? null
 
     const ext = file.type === 'video/webm' ? 'webm' : 'mp4'
-    const path = `topik-${moduleId}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.${ext}`
+    const path = `${await namaBerkasTopik(moduleId)}${pertemuan === 2 ? '-p2' : ''}-${Date.now()}.${ext}`
     const tipe = file.type || 'video/mp4'
     const viaXhr = onProgress ? await unggahDenganProgres(path, file, onProgress, 'modul-video', tipe) : null
     const { error: uploadError } =

@@ -63,7 +63,8 @@ function PratinjauPdf({ url, title, onClose }: { url: string; title: string; onC
 
 // Modal pemutar video. Klik latar gelap tidak menutupnya (antrean #167);
 // tutup lewat tombol silang atau Escape. PDF tidak lewat sini lagi (lihat PratinjauPdf).
-export function PreviewModal({ url, title, onClose }: { url: string; title: string; onClose: () => void }) {
+// `judul` (antrean #327): teks kepala, mis. "Bab 1 · Pertemuan 2 · Judul"; tanpa itu nama berkas yang tampil.
+export function PreviewModal({ url, title, judul, onClose }: { url: string; title: string; judul?: string; onClose: () => void }) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose()
@@ -94,8 +95,8 @@ export function PreviewModal({ url, title, onClose }: { url: string; title: stri
         }}
       >
         <div className="flex items-center gap-3 px-4 py-2.5 border-b" style={{ borderColor: 'var(--border)' }}>
-          <span className="text-sm font-semibold text-brown truncate flex-1" title={fileName}>
-            {fileName}
+          <span className="text-sm font-semibold text-brown truncate flex-1" title={judul ? `${judul} (${fileName})` : fileName}>
+            {judul ?? fileName}
           </span>
           <a href={url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary btn-sm">
             Buka di Tab Baru
