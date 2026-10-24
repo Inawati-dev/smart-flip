@@ -17,6 +17,7 @@ import {
   type FinalSubmission,
 } from '../lib/tugasAkhir'
 import { bobotPaket, babPaket, nilaiMiniProjek, statusBab, tautanSah, type BabPaket, type StatusBab } from '../lib/paketProposal'
+import { babSaja } from '../lib/jenisTopik'
 
 // Halaman mahasiswa untuk Paket Rancangan Proposal (antrean #179): empat Mini
 // Projek berurutan. Rancangan layar: canvas "Mini Projek Rancangan Proposal".
@@ -317,7 +318,8 @@ function KartuBab({
         {status === 'belum' && (
           <>
             {topikSumber.map((n) => {
-              const modul = modulesUrut[n - 1]
+              // n = nomor Bab; Bagian (Pendahuluan, Penutup) dilewati (antrean #321).
+              const modul = babSaja(modulesUrut)[n - 1]
               return modul ? (
                 <Link key={n} to={`/modul/${modul.id}#aktivitas-mandiri`} className="btn btn-secondary btn-sm no-underline">
                   Bahan Topik {n}

@@ -16,6 +16,7 @@ import { DosenModulRak } from './ModulList'
 import { IconBook, IconChart, IconPlay, IconEdit } from '../components/icons'
 import { SampulTopik } from '../components/KartuTopik'
 import { formatTanggal, labelPertemuan } from '../lib/jadwal'
+import { indeksJadwal, isBagian, labelNomor, nomorBabDi } from '../lib/jenisTopik'
 
 // progress.lastOpened is stored as a raw ISO string (new Date().toISOString())
 // -- was rendering as-is ("2026-07-24T04:04:55.479+00:00") instead of a
@@ -72,7 +73,7 @@ export default function Modul() {
       <Layout>
         <div className="p-8 text-center">
           <p className="text-brown mb-3">
-            {bukaPada(modul.id) ? `Topik ini dibuka ${formatTanggal(bukaPada(modul.id)!)}.` : `Selesaikan topik ${modul.order_num - 1} dulu.`}
+            {bukaPada(modul.id) ? `Topik ini dibuka ${formatTanggal(bukaPada(modul.id)!)}.` : 'Selesaikan tes formatif topik sebelumnya dulu.'}
           </p>
           <Link to="/modul" className="text-terra text-sm font-semibold inline-flex items-center min-h-11">
             ← Kembali
@@ -86,15 +87,17 @@ export default function Modul() {
   const prog = progress[moduleIdToPath(modul.id)]
   const pct = prog?.pct ?? 0
   const hasPdf = !!(modul.pdf_path || modul.path)
-  // Nomor topik = urutan modul di daftar mata kuliahnya (1, 2, ...).
-  const urut = [...daftarModul].sort((a, b) => a.order_num - b.order_num).findIndex((m) => m.id === modul.id)
-  const nomorTopik = urut >= 0 ? urut + 1 : modul.order_num
+  // Nomor Bab = urutan di antara topik ber-jenis Bab (antrean #321); Bagian (Pendahuluan, Penutup) tanpa nomor Bab.
+  const daftarUrut = [...daftarModul].sort((a, b) => a.order_num - b.order_num)
+  const urut = daftarUrut.findIndex((m) => m.id === modul.id)
+  const bagian = isBagian(modul)
+  const nomorTopik = urut >= 0 ? nomorBabDi(daftarUrut, urut) : modul.order_num
 
   return (
     <Layout>
       <div className="p-4 md:p-6">
         <h1 className="text-2xl font-bold text-brown mb-4">
-          {labelPertemuan(nomorTopik - 1, modul.minggu_mulai)} · {modul.title}
+          {labelPertemuan(indeksJadwal(daftarUrut, Math.max(0, urut)), modul.minggu_mulai)} · {modul.title}
         </h1>
         <PertemuanStepper current={modul.id} basePath="/modul" statusOf={statusOf} />
 
@@ -102,7 +105,7 @@ export default function Modul() {
           <div className="bg-ivory border rounded-xl p-5" style={{ borderColor: 'var(--border)' }}>
             <div className="flex gap-5 flex-col sm:flex-row">
               <div className="w-[140px] flex-shrink-0">
-                <SampulTopik nomor={modul.order_num} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum Ada PDF'} adaPdf={hasPdf} pdf={modul.pdf_path} />
+                <SampulTopik nomor={modul.order_num} labelNomor={urut >= 0 ? labelNomor(daftarUrut, urut) : undefined} judul={modul.title} keterangan={hasPdf ? 'PDF' : 'Belum Ada PDF'} adaPdf={hasPdf} pdf={modul.pdf_path} />
               </div>
               <div className="flex flex-col gap-2">
                 {modul.sub && <p className="text-sm text-brown-3">{modul.sub}</p>}
@@ -140,8 +143,12 @@ export default function Modul() {
             <div>
               <h2 className="font-bold text-brown mb-2 text-sm">Langkah Berikutnya</h2>
               <div className="flex flex-col gap-2">
+                {bagian ? (
+                  <p className="text-xs text-brown-3">Bagian ini berisi bacaan saja, tanpa video dan tes formatif.</p>
+                ) : (
+                <>
                 <Link to={`/video/${modul.id}`} className="btn btn-secondary">
-                  <IconPlay size={14} /> Tonton Video {modul.order_num}
+                  <IconPlay size={14} /> Tonton Video {nomorTopik ?? modul.order_num}
                 </Link>
                 {formatifPada(modul.id) && status !== 'done' ? (
                   <p className="text-xs text-brown-3">Tes formatif dibuka {formatTanggal(formatifPada(modul.id)!)}.</p>
@@ -150,12 +157,14 @@ export default function Modul() {
                     <IconEdit size={14} /> {status === 'done' ? 'Lihat Hasil Tes Formatif' : 'Kerjakan Tes Formatif'}
                   </Link>
                 )}
+                </>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {adaPaket && aktivitasTopik(nomorTopik) && (
+        {adaPaket && nomorTopik != null && aktivitasTopik(nomorTopik) && (
           <AktivitasMandiriPanel nomorTopik={nomorTopik} judulTopik={modul.title} peran={role} />
         )}
 

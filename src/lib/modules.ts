@@ -1,5 +1,8 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 
+/** Jenis topik (v54, antrean #321). */
+export type JenisTopik = 'bab' | 'bagian'
+
 export interface ModuleRow {
   id: number
   course_id: number
@@ -19,6 +22,8 @@ export interface ModuleRow {
   minggu_mulai?: number | null
   /** Tanggal buka materi topik yang diisi sendiri (v53, antrean #309), 'YYYY-MM-DD'; menang atas minggu_mulai. */
   tanggal_buka?: string | null
+  /** Jenis topik (v54, antrean #321): 'bab' topik biasa, 'bagian' Pendahuluan/Penutup tanpa video dan tes formatif. */
+  jenis?: JenisTopik
   /** Perkiraan waktu belajar topik dalam menit (v33, antrean #119 WP-3); kosong = tidak ditampilkan. */
   estimasi_menit?: number | null
   path: string
@@ -49,6 +54,7 @@ export function normalizeModuleRow(row: Record<string, unknown>): ModuleRow {
     minggu_mulai: (row.minggu_mulai as number) ?? null,
     tanggal_buka: (row.tanggal_buka as string) ?? null,
     estimasi_menit: (row.estimasi_menit as number) ?? null,
+    jenis: row.jenis === 'bagian' ? 'bagian' : 'bab',
     path: (row.path as string) || (row.pdf_path as string) || '',
     videoId: (row.videoId as string) ?? null,
     color: (row.color as string) || 'var(--sage)',

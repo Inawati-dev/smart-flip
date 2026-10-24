@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabase'
+import { indeksJadwal } from './jenisTopik'
 
 // Jadwal mata kuliah (antrean #153). Dosen mengisi tanggal pertemuan pertama
 // (courses.mulai_kuliah) dan, bila perlu, minggu ke berapa tiap topik dibuka
@@ -72,7 +73,7 @@ export function mingguMentah(mulai: string, tanggal: string): number {
  */
 export function jadwalTopik(
   mulai: string | null | undefined,
-  modulesUrut: Array<{ id: number; minggu_mulai?: number | null; tanggal_buka?: string | null }>,
+  modulesUrut: Array<{ id: number; minggu_mulai?: number | null; tanggal_buka?: string | null; jenis?: string | null }>,
 ): Map<number, JadwalTopik> | null {
   const peta = new Map<number, JadwalTopik>()
   modulesUrut.forEach((m, i) => {
@@ -80,9 +81,9 @@ export function jadwalTopik(
       const materi = tanggalLokal(m.tanggal_buka)
       const formatif = new Date(materi)
       formatif.setDate(formatif.getDate() + 7)
-      peta.set(m.id, { minggu: mulai ? mingguDariTanggal(mulai, m.tanggal_buka) : mingguBawaan(i), materi, formatif })
+      peta.set(m.id, { minggu: mulai ? mingguDariTanggal(mulai, m.tanggal_buka) : mingguBawaan(indeksJadwal(modulesUrut, i)), materi, formatif })
     } else if (mulai) {
-      const minggu = m.minggu_mulai ?? mingguBawaan(i)
+      const minggu = m.minggu_mulai ?? mingguBawaan(indeksJadwal(modulesUrut, i))
       peta.set(m.id, { minggu, materi: awalMinggu(mulai, minggu), formatif: awalMinggu(mulai, minggu + 1) })
     }
   })

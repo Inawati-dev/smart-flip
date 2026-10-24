@@ -19,6 +19,7 @@ import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { ChipRak } from '../components/KartuTopik'
 import { golonganDariSkor, simpanSkorPreDemo, GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
+import { babSaja } from '../lib/jenisTopik'
 
 // Asesmen sisi mahasiswa (spec §4, §9 WP6): satu komponen, tiga tampilan
 // dipilih dari path — App.tsx sudah memasang route /asesmen, /asesmen/pre,
@@ -84,7 +85,8 @@ function AsesmenDaftar() {
   const ambang = useAmbang()
   const { data: modules = [] } = useModules()
   const { statusOf, bukaPada, formatifPada } = useTopikStatus()
-  const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  // Tes formatif hanya untuk Bab; Bagian (Pendahuluan, Penutup) tidak punya tes (antrean #321).
+  const sorted = babSaja([...modules].sort((a, b) => a.order_num - b.order_num))
   const topikAktif = sorted.find((m) => statusOf(m.id) === 'open') ?? sorted.find((m) => statusOf(m.id) === 'done')
 
   const { data: attemptsAktif = [] } = useQuizAttempts(topikAktif?.id ?? 0)
@@ -123,6 +125,7 @@ function AsesmenDaftar() {
           current={topikAktif?.id ?? sorted[0]?.id ?? 0}
           basePath="/asesmen/formatif"
           statusOf={statusOf}
+          tanpaBagian
         />
 
         <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6 mt-6">
@@ -201,7 +204,7 @@ function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinj
   const ambang = useAmbang()
   const { data: modules = [] } = useModules()
   const { statusOf } = useTopikStatus()
-  const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  const sorted = babSaja([...modules].sort((a, b) => a.order_num - b.order_num))
   const golongan = golonganDariSkor(skor, ambang.diagnostik)
   const warna = golongan === 'mahir' ? 'var(--success)' : 'var(--warning)'
   const pertama = sorted.find((m) => statusOf(m.id) === 'open')
@@ -209,7 +212,7 @@ function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinj
     golongan === 'mahir'
       ? ['Pilih topik mana pun, semuanya sudah terbuka.', `Kerjakan tes formatif tiap topik sampai skor ${ambang.formatif}.`, 'Sesudah semua topik selesai, lanjut ke mini projek.']
       : [
-          `Mulai dari Topik ${pertama?.order_num ?? 1}: baca modul dan tonton videonya.`,
+          `Mulai dari Topik ${pertama ? sorted.indexOf(pertama) + 1 : 1}: baca modul dan tonton videonya.`,
           `Kerjakan tes formatifnya sampai skor ${ambang.formatif}.`,
           'Topik berikutnya terbuka sesudah itu, begitu seterusnya.',
         ]
@@ -258,7 +261,7 @@ function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinj
         </ol>
         <div className="flex flex-wrap gap-2 mt-auto">
           <Link to={golongan === 'mahir' || !pertama ? '/modul' : `/modul/${pertama.id}`} className="btn btn-primary">
-            {golongan === 'mahir' || !pertama ? 'Pilih Topik' : `Mulai Topik ${pertama.order_num}`}
+            {golongan === 'mahir' || !pertama ? 'Pilih Topik' : `Mulai Topik ${sorted.indexOf(pertama) + 1}`}
           </Link>
           {adaTinjauan && (
             <button onClick={() => document.getElementById('tinjauan-jawaban')?.scrollIntoView?.({ behavior: 'smooth' })} className="btn btn-secondary">
@@ -282,7 +285,7 @@ function HasilDiagnostik({ skor, adaTinjauan, rincian }: { skor: number; adaTinj
         ) : (
           <ul>
             {barisTopik.map(({ m, r }) => (
-              <BarisRincian key={m.id} nama={`${m.order_num}. ${m.title}`} benar={r.benar} total={r.total} />
+              <BarisRincian key={m.id} nama={`${sorted.findIndex((x) => x.id === m.id) + 1 || m.order_num}. ${m.title}`} benar={r.benar} total={r.total} />
             ))}
             {tanpaTanda && <BarisRincian nama="Belum Ditandai Topik" benar={tanpaTanda.benar} total={tanpaTanda.total} />}
           </ul>

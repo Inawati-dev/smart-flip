@@ -6,6 +6,7 @@ import type { ModuleRow } from '../lib/modules'
 import { jadwalTopik, mingguBawaan, mingguDariTanggal, mingguMentah, simpanJadwal } from '../lib/jadwal'
 import { TanggalInput } from './TanggalInput'
 import { PillGroup } from './PillGroup'
+import { indeksJadwal, labelNomor } from '../lib/jenisTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 const KOTAK = 'h-11 rounded-[var(--radius-control)] border px-3 text-base text-brown tabular-nums'
@@ -59,7 +60,7 @@ export function JadwalModal({ course, modules, onClose }: { course: Course; modu
   const pratinjau = sah
     ? jadwalTopik(
         mulai || null,
-        urut.map((m) => ({ id: m.id, minggu_mulai: mode[m.id] === 'tanggal' ? null : angka(m.id), tanggal_buka: tanggalSendiri(m.id) })),
+        urut.map((m) => ({ id: m.id, jenis: m.jenis, minggu_mulai: mode[m.id] === 'tanggal' ? null : angka(m.id), tanggal_buka: tanggalSendiri(m.id) })),
       )
     : null
 
@@ -117,7 +118,7 @@ export function JadwalModal({ course, modules, onClose }: { course: Course; modu
               <li key={m.id} className="row-divider flex flex-col gap-2 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
                 <div className="min-w-0">
                   <div className="text-sm font-semibold text-brown line-clamp-2">
-                    Topik {m.order_num} · {m.title}
+                    {labelNomor(urut, i, false)} · {m.title}
                   </div>
                   <div className="text-[11px] text-brown-3">
                     {j
@@ -154,7 +155,7 @@ export function JadwalModal({ course, modules, onClose }: { course: Course; modu
                       min={1}
                       max={52}
                       aria-label={`Minggu ke berapa topik ${m.order_num} dibuka`}
-                      placeholder={String(mingguBawaan(i))}
+                      placeholder={String(mingguBawaan(indeksJadwal(urut, i)))}
                       value={minggu[m.id] ?? ''}
                       onChange={(e) => setMinggu((s) => ({ ...s, [m.id]: e.target.value }))}
                       className={`${KOTAK} w-20 flex-shrink-0 text-center`}

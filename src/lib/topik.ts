@@ -17,6 +17,7 @@ import { isSupabaseConfigured, supabase } from './supabase'
 import { useCourse } from '../contexts/CourseContext'
 import { golonganDariSkor, bacaSkorPreDemo, type Golongan } from './golongan'
 import { jadwalTopik } from './jadwal'
+import { isBagian } from './jenisTopik'
 
 export type TopikStatus = 'done' | 'open' | 'locked'
 
@@ -140,7 +141,7 @@ function useTopikPre() {
 // 'done' kalau topik itu sendiri sudah >= passScore. Golongan Mahir
 // (antrean #105) membuka semua topik begitu pre-test selesai.
 export function hitungStatusTopik(
-  modulesUrut: Array<{ id: number }>,
+  modulesUrut: Array<{ id: number; jenis?: string | null }>,
   bestFormatif: Record<number, number>,
   preDone: boolean,
   passScore: number = AMBANG_FORMATIF,
@@ -152,8 +153,13 @@ export function hitungStatusTopik(
     const idx = modulesUrut.findIndex((m) => m.id === moduleId)
     if (idx === -1) return 'locked'
     const ownScore = bestFormatif[moduleId] ?? 0
-    const gateOpen = !preDone ? false : mahir || idx === 0 ? true : (bestFormatif[modulesUrut[idx - 1].id] ?? 0) >= passScore
+    // Bagian (Pendahuluan, Penutup; antrean #321) tanpa tes formatif: tidak pernah mengunci dan tidak dikunci
+    // tes; Bab menunggu tes formatif Bab sebelumnya (Bagian di antaranya dilewati).
+    const bagian = isBagian(modulesUrut[idx])
+    const babSebelum = [...modulesUrut.slice(0, idx)].reverse().find((m) => !isBagian(m))
+    const gateOpen = !preDone ? false : mahir || bagian || !babSebelum ? true : (bestFormatif[babSebelum.id] ?? 0) >= passScore
     if (!gateOpen) return 'locked'
+    if (bagian) return materiBuka && !materiBuka(moduleId) ? 'locked' : 'open'
     // Yang sudah lulus tidak dikunci ulang walau jadwal diisi belakangan.
     if (ownScore >= passScore) return 'done'
     if (materiBuka && !materiBuka(moduleId)) return 'locked'

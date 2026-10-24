@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useModules } from '../hooks/useModules'
 import { labelPertemuan, nomorPertemuan } from '../lib/jadwal'
+import { babSaja, indeksJadwal, isBagian, labelNomor } from '../lib/jenisTopik'
 
 export type PertemuanStatus = 'done' | 'open' | 'locked'
 
@@ -13,14 +14,19 @@ export function PertemuanStepper({
   current,
   basePath,
   statusOf = () => 'open',
+  tanpaBagian = false,
 }: {
   current: number
   basePath: string
   statusOf?: (moduleId: number) => PertemuanStatus
+  /** Lewati topik ber-jenis Bagian (antrean #321): halaman Video dan tes formatif. */
+  tanpaBagian?: boolean
 }) {
   const { data: modules = [] } = useModules()
   const navigate = useNavigate()
-  const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  const semua = [...modules].sort((a, b) => a.order_num - b.order_num)
+  // Video dan tes formatif tidak punya Bagian (antrean #321), jadi stepper di halaman itu hanya memuat Bab.
+  const sorted = tanpaBagian ? babSaja(semua) : semua
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Pertemuan">
@@ -33,8 +39,8 @@ export function PertemuanStepper({
             key={m.id}
             type="button"
             disabled={locked}
-            title={locked ? 'Selesaikan topik n-1 dulu' : `Topik ${i + 1} · ${labelPertemuan(i, m.minggu_mulai)}`}
-            aria-label={`Topik ${i + 1} · ${labelPertemuan(i, m.minggu_mulai)}${locked ? ', terkunci' : ''}`}
+            title={locked ? 'Selesaikan topik sebelumnya dulu' : `${labelNomor(sorted, i, false)} · ${labelPertemuan(indeksJadwal(sorted, i), m.minggu_mulai)}`}
+            aria-label={`${labelNomor(sorted, i, false)} · ${labelPertemuan(indeksJadwal(sorted, i), m.minggu_mulai)}${locked ? ', terkunci' : ''}`}
             onClick={() => navigate(`${basePath}/${m.id}`)}
             aria-current={active ? 'page' : undefined}
             className="step-pill shrink-0 w-11 h-11 rounded-full border flex items-center justify-center text-sm font-semibold"
@@ -45,7 +51,7 @@ export function PertemuanStepper({
               opacity: locked ? 0.5 : 1,
             }}
           >
-            P{nomorPertemuan(i, m.minggu_mulai, 1)}
+            {isBagian(m) ? labelNomor(sorted, i).replace('Bagian ', '') : `P${nomorPertemuan(indeksJadwal(sorted, i), m.minggu_mulai, 1)}`}
           </button>
         )
       })}

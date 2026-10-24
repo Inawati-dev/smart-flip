@@ -21,6 +21,7 @@ import { ChipRak, warnaSampul } from '../components/KartuTopik'
 import { UrutkanTopikModal, useSeretTopik } from '../components/UrutkanTopik'
 import { useAmbang } from '../lib/ambang'
 import { formatTanggal, labelPertemuan, nomorPertemuan } from '../lib/jadwal'
+import { babSaja } from '../lib/jenisTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -32,8 +33,9 @@ export default function Video() {
   return role === 'dosen' ? <VideoDosen /> : <VideoMahasiswa />
 }
 
+// Video hanya untuk Bab; Bagian (Pendahuluan, Penutup; antrean #321) tidak punya video.
 function sortModules(modules: ModuleRow[]) {
-  return [...modules].sort((a, b) => a.order_num - b.order_num)
+  return babSaja([...modules].sort((a, b) => a.order_num - b.order_num))
 }
 
 // Satu topik memakai dua pertemuan (antrean #271): isian kedua opsional, di kolom `_2`.
@@ -134,7 +136,7 @@ function VideoMahasiswa() {
                   // Kotak hanya untuk pertemuan yang punya video; topik tanpa video tetap satu kotak "Belum Ada Video".
                   const ada = ([1, 2] as const).filter((p) => urlPertemuan(m, p))
                   return (
-                    <KelompokTopik key={m.id} nomor={m.order_num} label={labelPertemuan(i, m.minggu_mulai)} judul={m.title}>
+                    <KelompokTopik key={m.id} nomor={i + 1} label={labelPertemuan(i, m.minggu_mulai)} judul={m.title}>
                       {(ada.length ? ada : ([1] as const)).map((p) => {
                         const url = urlPertemuan(m, p)
                         const parsed = parseVideoUrl(url)
@@ -146,7 +148,7 @@ function VideoMahasiswa() {
                             {parsed?.kind === 'file' && dtk == null && <DurationProbe src={parsed.src} onDuration={(sec) => handleDuration(kunci, sec)} />}
                             <KartuVideo
                               ringkas
-                              nomor={m.order_num}
+                              nomor={i + 1}
                               pertemuan={`Pertemuan ${nomorPertemuan(i, m.minggu_mulai, p)}`}
                               judul={m.title}
                               url={url || null}
@@ -200,12 +202,12 @@ function VideoMahasiswa() {
           </h1>
           <MataKuliahSelect />
         </div>
-        <PertemuanStepper current={current} basePath="/video" statusOf={statusOf} />
+        <PertemuanStepper current={current} basePath="/video" statusOf={statusOf} tanpaBagian />
 
         {status === 'locked' ? (
           <div className="mt-6 p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
             <p className="text-brown-2 mb-3 text-sm">
-              {bukaPada(modul.id) ? `Topik ini dibuka ${formatTanggal(bukaPada(modul.id)!)}.` : `Selesaikan topik ${modul.order_num - 1} dulu.`}
+              {bukaPada(modul.id) ? `Topik ini dibuka ${formatTanggal(bukaPada(modul.id)!)}.` : 'Selesaikan tes formatif topik sebelumnya dulu.'}
             </p>
             <Link to="/video" className="text-terra font-semibold text-sm inline-flex items-center min-h-11">
               ← Kembali
@@ -536,7 +538,7 @@ function VideoDosen() {
           <div className={KISI_TOPIK}>
             {sorted.map((m, i) => (
               <div key={m.id} {...seretProps(m.id)}>
-                <KelompokTopik nomor={m.order_num} label={labelPertemuan(i, m.minggu_mulai)} judul={m.title}>
+                <KelompokTopik nomor={i + 1} label={labelPertemuan(i, m.minggu_mulai)} judul={m.title}>
                   {([1, 2] as const).map((p) => {
                     const url = urlPertemuan(m, p)
                     const parsed = parseVideoUrl(url)
@@ -561,7 +563,7 @@ function VideoDosen() {
                       <KartuVideo
                         key={p}
                         ringkas
-                        nomor={m.order_num}
+                        nomor={i + 1}
                         pertemuan={label}
                         judul={m.title}
                         url={url || null}

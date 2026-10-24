@@ -16,6 +16,7 @@ import { SoalRunner } from '../components/SoalRunner'
 import { IconLock } from '../components/icons'
 import { formatTanggal, nomorPertemuan } from '../lib/jadwal'
 import { ChipRak } from '../components/KartuTopik'
+import { babSaja, isBagian } from '../lib/jenisTopik'
 
 // Tes formatif per topik (spec §4.3, §4.4, §9 WP6) — menggantikan Kuis.tsx:
 // bank soal diambil dari quiz_questions kind='formatif' (bukan modules.kuis),
@@ -67,8 +68,19 @@ export default function Formatif() {
       </Layout>
     )
   }
+  if (isBagian(modul)) {
+    return (
+      <Layout>
+        <div className="p-6 text-center">
+          <p className="text-brown mb-3">{modul.title} berisi bacaan saja, tanpa tes formatif.</p>
+          <Link to={`/modul/${modul.id}`} className="btn btn-secondary">Baca {modul.title}</Link>
+        </div>
+      </Layout>
+    )
+  }
 
-  const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  // Nomor dan topik berikutnya dihitung di antara Bab saja (antrean #321).
+  const sorted = babSaja([...modules].sort((a, b) => a.order_num - b.order_num))
   const idx = sorted.findIndex((m) => m.id === moduleId)
   const status = statusOf(moduleId)
   const bestScore = attempts.length ? Math.max(...attempts.map((a) => a.score)) : null
@@ -111,14 +123,14 @@ export default function Formatif() {
         <h1 className="font-display text-xl font-bold text-brown mb-4">
           Tes Formatif · Pertemuan {nomorPertemuan(Math.max(0, idx), modul.minggu_mulai, 2)} · {modul.title}
         </h1>
-        <PertemuanStepper current={moduleId} basePath="/asesmen/formatif" statusOf={statusOf} />
+        <PertemuanStepper current={moduleId} basePath="/asesmen/formatif" statusOf={statusOf} tanpaBagian />
 
         <div className="mt-6">
           {status === 'locked' ? (
             <div className="p-6 rounded-xl bg-ivory border text-center" style={BORDER}>
               <IconLock size={28} className="mx-auto mb-3 text-brown-3" />
               <p className="text-brown-2 mb-3 text-sm">
-                {bukaPada(moduleId) ? `Topik ini dibuka ${formatTanggal(bukaPada(moduleId)!)}.` : `Selesaikan topik ${modul.order_num - 1} dulu.`}
+                {bukaPada(moduleId) ? `Topik ini dibuka ${formatTanggal(bukaPada(moduleId)!)}.` : 'Selesaikan tes formatif topik sebelumnya dulu.'}
               </p>
               <Link to="/asesmen" className="inline-flex items-center min-h-11 text-terra font-semibold text-sm">
                 ← Kembali
@@ -146,7 +158,7 @@ export default function Formatif() {
               <p className="text-brown-2 mb-1 text-sm">Tes formatif topik ini dibuka {formatTanggal(formatifPada(moduleId)!)}.</p>
               <p className="text-brown-3 mb-3 text-xs">Tes dibuka di pertemuan kedua topik. Baca modul dan tonton videonya dulu.</p>
               <Link to={`/modul/${moduleId}`} className="btn btn-secondary">
-                Baca Topik {modul.order_num}
+                Baca Topik {idx >= 0 ? idx + 1 : modul.order_num}
               </Link>
             </div>
           ) : soal.length === 0 ? (

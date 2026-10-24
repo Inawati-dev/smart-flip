@@ -27,6 +27,8 @@ export interface ModulCustom {
   pdfPath?: string
   /** Perkiraan waktu belajar (menit, v33). `undefined` = jangan ubah, `null` = kosongkan. */
   estimasiMenit?: number | null
+  /** Jenis topik (v54, antrean #321). `undefined` = jangan ubah. */
+  jenis?: 'bab' | 'bagian'
 }
 
 const CUSTOM_KEY_PREFIX = 'sfp_modul_custom_'
@@ -63,7 +65,8 @@ function lsSet(key: string, value: unknown): void {
 // `status !== 'nonaktif'`, so 'draf' and 'terkunci' both persist as
 // is_active: true — the aktif/draf/terkunci distinction only round-trips
 // through localStorage, never through Supabase's is_active boolean.
-export async function saveModulCustom(moduleId: number, data: ModulCustom): Promise<void> {
+/** Mengembalikan pesan untuk dosen bila sebagian isian belum bisa disimpan (kolom migrasi belum ada), selain itu null. */
+export async function saveModulCustom(moduleId: number, data: ModulCustom): Promise<string | null> {
   if (isSupabaseConfigured) {
     try {
       const update: Record<string, unknown> = {
@@ -73,19 +76,28 @@ export async function saveModulCustom(moduleId: number, data: ModulCustom): Prom
       }
       if (data.pdfPath) update.pdf_path = data.pdfPath
       if (data.estimasiMenit !== undefined) update.estimasi_menit = data.estimasiMenit
+      if (data.jenis !== undefined) update.jenis = data.jenis
+      let catatan: string | null = null
       let { error } = await supabase.from('modules').update(update).eq('id', moduleId)
+      // Kolom jenis belum ada (v54 belum dijalankan): simpan sisanya dan beri tahu dosen.
+      if (error && 'jenis' in update && (error.code === '42703' || error.code === 'PGRST204' || /jenis/.test(error.message))) {
+        delete update.jenis
+        catatan = 'Jenis topik belum tersimpan. Jalankan migration_v54_jenis_topik.sql di Supabase dulu.'
+        ;({ error } = await supabase.from('modules').update(update).eq('id', moduleId))
+      }
       // Kolom estimasi_menit belum ada (v33 belum dijalankan): simpan sisanya, jangan gagalkan semuanya.
       if (error && 'estimasi_menit' in update && (error.code === '42703' || /estimasi_menit/.test(error.message))) {
         delete update.estimasi_menit
         ;({ error } = await supabase.from('modules').update(update).eq('id', moduleId))
       }
       if (error) throw error
-      return
+      return catatan
     } catch (e) {
       console.warn('[manajemen] saveModulCustom → Supabase gagal, fallback localStorage:', e)
     }
   }
   lsSet(customKey(moduleId), data)
+  return null
 }
 
 // Dosen sets the pemutar URL for a module (spec §5.1, §9 WP4). Same

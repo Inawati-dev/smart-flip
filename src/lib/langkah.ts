@@ -2,6 +2,7 @@ import type { ProgressMap } from './progress'
 import { moduleIdToPath, halamanTerjauh } from './progress'
 import type { QuizAttemptWithModule } from './quizAttempts'
 import { AMBANG_FORMATIF } from './ambang'
+import { babSaja } from './jenisTopik'
 
 // Status "langkah berikutnya" mahasiswa di Dashboard (§4.0 spec WP8).
 // WP8 hanya tahu baca-modul dan formatif — 'video ditonton' belum tercatat
@@ -23,6 +24,7 @@ interface ModuleLite {
   id: number
   order_num: number
   title: string
+  jenis?: string | null
 }
 
 interface HitungLangkahInput {
@@ -43,7 +45,9 @@ export function hitungLangkah({
   attempts,
   passScore = AMBANG_FORMATIF,
 }: HitungLangkahInput): LangkahResult {
-  const sorted = [...modules].sort((a, b) => a.order_num - b.order_num)
+  // Hanya Bab yang punya tes formatif; Bagian (Pendahuluan, Penutup; antrean #321) tidak dihitung sebagai topik aktif.
+  const semua = [...modules].sort((a, b) => a.order_num - b.order_num)
+  const sorted = babSaja(semua).length ? babSaja(semua) : semua
   if (sorted.length === 0) {
     // Modul belum termuat — keadaan transisi, Dashboard menampilkan "Memuat…".
     return { topikAktif: { id: 0, orderNum: 0, title: '' }, langkah: 'baca', topikSelesai: 0 }
@@ -74,7 +78,7 @@ export function hitungLangkah({
     : undefined
 
   return {
-    topikAktif: { id: active.id, orderNum: active.order_num, title: active.title },
+    topikAktif: { id: active.id, orderNum: sorted.indexOf(active) + 1, title: active.title },
     langkah,
     halaman,
     topikSelesai,

@@ -33,7 +33,9 @@ import { useAmbang } from '../lib/ambang'
 import { formatTanggal, tanggalLokal, labelPertemuan } from '../lib/jadwal'
 import { JadwalModal } from '../components/JadwalModal'
 import { WatermarkModal, LABEL_CAP, pilihanCap } from '../components/WatermarkModal'
-import { fetchModules } from '../lib/modules'
+import { fetchModules, type JenisTopik } from '../lib/modules'
+import { PillGroup } from '../components/PillGroup'
+import { indeksJadwal, labelNomor } from '../lib/jenisTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 const BORDER_BG = { background: 'var(--border)' } as const
@@ -187,6 +189,7 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
   const [formJudul, setFormJudul] = useState('')
   const [formDeskripsi, setFormDeskripsi] = useState('')
   const [formMenit, setFormMenit] = useState('')
+  const [formJenis, setFormJenis] = useState<JenisTopik>('bab')
   const [saving, setSaving] = useState(false)
   const [savingStatus, setSavingStatus] = useState('')
   const [createPdfFile, setCreatePdfFile] = useState<File | null>(null)
@@ -199,6 +202,7 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
     setFormJudul(custom?.judul || m?.title || '')
     setFormDeskripsi(custom?.deskripsi || m?.description || '')
     setFormMenit(m?.estimasi_menit ? String(m.estimasi_menit) : '')
+    setFormJenis(m?.jenis === 'bagian' ? 'bagian' : 'bab')
   }
 
   function openCreate() {
@@ -207,6 +211,7 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
     setFormJudul('')
     setFormDeskripsi('')
     setFormMenit('')
+    setFormJenis('bab')
     setCreatePdfFile(null)
   }
 
@@ -240,7 +245,9 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
         // nomor urut topik baru = jumlah topik mata kuliah ini + 1.
         const nextOrderNum = modules.length + 1
         const newId = await createModulReturningId({ judul, deskripsi: formDeskripsi.trim(), orderNum: nextOrderNum, courseId })
-        if (menit != null) await saveModulCustom(newId, { judul, deskripsi: formDeskripsi.trim(), estimasiMenit: menit })
+        let catatanJenis: string | null = null
+        if (menit != null || formJenis === 'bagian') catatanJenis = await saveModulCustom(newId, { judul, deskripsi: formDeskripsi.trim(), estimasiMenit: menit ?? undefined, jenis: formJenis })
+        if (catatanJenis) showToast(catatanJenis)
         await queryClient.invalidateQueries({ queryKey: ['modules'] })
         if (createPdfFile) {
           setSavingStatus('Mengunggah PDF…')
@@ -258,11 +265,12 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
           showToast('Topik baru ditambahkan')
         }
       } else if (editId != null) {
-        const data: ModulCustom = { ...customs[editId], judul, deskripsi: formDeskripsi.trim(), estimasiMenit: menit }
-        await saveModulCustom(editId, data)
+        const jenisLama = modules.find((x) => x.id === editId)?.jenis === 'bagian' ? 'bagian' : 'bab'
+        const data: ModulCustom = { ...customs[editId], judul, deskripsi: formDeskripsi.trim(), estimasiMenit: menit, ...(formJenis !== jenisLama ? { jenis: formJenis } : {}) }
+        const catatanJenis = await saveModulCustom(editId, data)
         await queryClient.invalidateQueries({ queryKey: ['manajemen', 'customs'] })
         await queryClient.invalidateQueries({ queryKey: ['modules'] })
-        showToast('Topik disimpan')
+        showToast(catatanJenis ?? 'Topik disimpan')
       }
       closeFormModal()
     } catch (err) {
@@ -418,7 +426,8 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
               {/* Satu PDF per topik untuk kedua pertemuannya (antrean #289); video yang dua per topik. */}
               <KartuTopik
                 nomor={m.order_num}
-                pertemuan={labelPertemuan(i, m.minggu_mulai)}
+                labelNomor={labelNomor(sorted, i)}
+                pertemuan={labelPertemuan(indeksJadwal(sorted, i), m.minggu_mulai)}
                 judul={judul}
                 keterangan={hasPdf ? 'PDF' : 'Belum Ada PDF'}
                 adaPdf={hasPdf}
@@ -460,6 +469,24 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
                 style={BORDER}
               />
             </label>
+            <div className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
+              <span>Jenis Topik</span>
+              <PillGroup
+                ariaLabel="Jenis topik"
+                size="sm"
+                value={formJenis}
+                onChange={(v) => setFormJenis(v as JenisTopik)}
+                options={[
+                  { value: 'bab', label: 'Bab' },
+                  { value: 'bagian', label: 'Bagian (Pendahuluan, Penutup)' },
+                ]}
+              />
+              <span className="font-normal text-brown-3">
+                {formJenis === 'bagian'
+                  ? 'Bacaan saja: tanpa video dan tes formatif, tidak mengunci topik sesudahnya, tanpa nomor Bab.'
+                  : 'Topik biasa: PDF, video, dan tes formatif.'}
+              </span>
+            </div>
             <label className="flex flex-col gap-1 text-xs font-semibold text-brown-2 mb-4">
               Perkiraan Waktu Belajar (menit)
               <input
@@ -564,7 +591,7 @@ export function DosenModulRak({ kepala = false }: { kepala?: boolean }) {
         return (
           <ModalBerkas
             judul={kini ? 'Ganti PDF Topik' : 'Unggah PDF Topik'}
-            subjudul={m ? `Topik ${String(idx + 1).padStart(2, '0')} · ${judulTopik} · ${labelPertemuan(idx, m.minggu_mulai)}` : undefined}
+            subjudul={m ? `${labelNomor(sorted, idx)} · ${judulTopik} · ${labelPertemuan(indeksJadwal(sorted, idx), m.minggu_mulai)}` : undefined}
             onTutup={() => setPdfModalId(null)}
             sibuk={uploadingPdf}
             kiri={pdfFile ? <PratinjauBerkas file={pdfFile} onHalaman={setHalamanPdf} /> : <KosongPratinjau teks="Pilih atau seret PDF untuk melihat pratinjau halaman pertama." />}
@@ -970,13 +997,14 @@ export function ModulList() {
                     ) : (
                       <ChipRak jenis="now" label={pct > 0 ? 'Sedang Dibaca' : 'Siap Dibaca'} />
                     )
-                  const label = labelPertemuan(i, m.minggu_mulai)
+                  const label = labelPertemuan(indeksJadwal(sorted, i), m.minggu_mulai)
                   const terkunci = status === 'locked'
                   const judulKunci = bukaPada(m.id) ? `Dibuka ${formatTanggal(bukaPada(m.id)!)}` : `Selesaikan tes formatif topik sebelumnya (skor ${ambangFormatif}) dulu`
                   return (
                   <KartuTopik
                     key={m.id}
                     nomor={m.order_num}
+                    labelNomor={labelNomor(sorted, i)}
                     pertemuan={label}
                     judul={m.title}
                     keterangan={m.pdf_path ? (total ? `${total} hal` : 'PDF') : 'Belum Ada PDF'}

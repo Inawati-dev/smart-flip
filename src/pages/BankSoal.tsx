@@ -10,6 +10,7 @@ import { PillGroup } from '../components/PillGroup'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { TugasAkhirPanel } from './TugasAkhir'
 import { IconEdit, IconTrash, IconGrip, IconX } from '../components/icons'
+import { babSaja } from '../lib/jenisTopik'
 
 // Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post
 // dari satu layar (quiz_questions, kolom kind). Dua jenis lama dicabut dari
@@ -102,6 +103,8 @@ function BankSoalTab() {
   const queryClient = useQueryClient()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: modules = [] } = useModules()
+  // Soal formatif hanya untuk Bab; nomor Bab melewati Bagian (Pendahuluan, Penutup; antrean #321).
+  const babList = babSaja([...modules].sort((a, b) => a.order_num - b.order_num))
   const { courseId } = useCourse()
 
   // Tautan lama ke jenis yang sudah dicabut (atau jenis tak dikenal apa pun)
@@ -316,7 +319,7 @@ function BankSoalTab() {
               onChange={(v) => selectModul(parseInt(v, 10))}
               aria-label="Pilih topik"
               size="sm"
-              options={modules.map((m) => ({ value: String(m.id), label: `Bab ${m.order_num}. ${m.title}` }))}
+              options={babList.map((m, i) => ({ value: String(m.id), label: `Bab ${i + 1}. ${m.title}` }))}
             />
           )}
         </div>
@@ -435,7 +438,7 @@ function BankSoalTab() {
                   value={String(modalTopikId ?? '')}
                   onChange={(v) => setModalTopikId(v ? parseInt(v, 10) : null)}
                   aria-label="Pilih topik yang diuji soal ini"
-                  options={[{ value: '', label: 'Belum Ditandai' }, ...modules.map((m) => ({ value: String(m.id), label: `Bab ${m.order_num}. ${m.title}` }))]}
+                  options={[{ value: '', label: 'Belum Ditandai' }, ...babList.map((m, i) => ({ value: String(m.id), label: `Bab ${i + 1}. ${m.title}` }))]}
                 />
                 <span className="font-normal text-brown-3">Dipakai untuk menampilkan jumlah benar per topik di hasil mahasiswa. Boleh dikosongkan.</span>
               </label>
@@ -448,7 +451,7 @@ function BankSoalTab() {
                   value={String(modalModuleId ?? '')}
                   onChange={(v) => setModalModuleId(parseInt(v, 10))}
                   aria-label="Pilih topik"
-                  options={modules.map((m) => ({ value: String(m.id), label: `Bab ${m.order_num}. ${m.title}` }))}
+                  options={babList.map((m, i) => ({ value: String(m.id), label: `Bab ${i + 1}. ${m.title}` }))}
                 />
               </label>
             )}

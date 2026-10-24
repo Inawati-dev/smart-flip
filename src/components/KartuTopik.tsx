@@ -32,6 +32,8 @@ export interface KartuTopikProps {
   aksi?: ReactNode
   /** Rentang pertemuan menurut jadwal, mis. "Pertemuan 9-10" (antrean #273). */
   pertemuan?: string
+  /** Pengganti "Topik 01", mis. "Bagian I" untuk Pendahuluan (antrean #321). */
+  labelNomor?: string
   /** Kartu di dalam kelompok topik (antrean #285): keterangan di bawah sampul hanya pertemuan dan keterangan. */
   ringkas?: boolean
   /** Rak dosen (antrean #298): sampul membuka pratinjau, menu ⋯ memuat aksi lain, satu tombol Ganti/Unggah PDF di dasar kartu. Menggantikan `aksi`. */
@@ -49,17 +51,17 @@ export function warnaSampul(nomor: number): string {
 // Sejak antrean #192 sampulnya halaman pertama PDF, polos tanpa tulisan di
 // atasnya; nomor topik, judul, dan keterangan pindah ke bawah gambar. Topik
 // tanpa PDF, atau yang gambar sampulnya belum ada, memakai sampul rancangan.
-export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean; tanpaKeterangan?: boolean }) {
+export function SampulTopik(props: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean; tanpaKeterangan?: boolean; labelNomor?: string }) {
   const src = urlSampul(props.pdf)
   // key: ganti PDF berarti mulai lagi dari mencoba memuat gambarnya.
   return src ? <SampulGambar key={src} src={src} {...props} /> : <SampulRancangan {...props} />
 }
 
-function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertemuan, ringkas, tanpaKeterangan }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean; tanpaKeterangan?: boolean }) {
+function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertemuan, ringkas, tanpaKeterangan, labelNomor }: { src: string; nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pdf?: string | null; buat?: boolean; pertemuan?: string; ringkas?: boolean; tanpaKeterangan?: boolean; labelNomor?: string }) {
   // coba: memuat gambar. membuat: gambar belum ada dan dosen sedang membuatnya. gagal: pakai sampul rancangan.
   const [tahap, setTahap] = useState<'coba' | 'membuat' | 'gagal'>('coba')
   const [versi, setVersi] = useState(0)
-  if (tahap !== 'coba') return <SampulRancangan nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pertemuan={pertemuan} ringkas={ringkas} />
+  if (tahap !== 'coba') return <SampulRancangan nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pertemuan={pertemuan} ringkas={ringkas} labelNomor={labelNomor} />
   return (
     <div className="flex flex-col gap-1.5">
       <img
@@ -88,7 +90,7 @@ function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertem
         <span className="block text-[13px] leading-snug">
           <span className="block font-semibold text-brown line-clamp-2">{judul}</span>
           <span className="block text-brown-3 tabular-nums">
-            Topik {String(nomor).padStart(2, '0')}
+            {labelNomor ?? `Topik ${String(nomor).padStart(2, '0')}`}
             {pertemuan ? ` · ${pertemuan}` : ''}
             {keterangan ? ` · ${keterangan}` : ''}
           </span>
@@ -98,7 +100,7 @@ function SampulGambar({ src, nomor, judul, keterangan, adaPdf, pdf, buat, pertem
   )
 }
 
-function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan, ringkas }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pertemuan?: string; ringkas?: boolean }) {
+function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan, ringkas, labelNomor }: { nomor: number; judul: string; keterangan?: string; adaPdf?: boolean; pertemuan?: string; ringkas?: boolean; labelNomor?: string }) {
   return (
     <div
       className="w-full aspect-[3/4] flex flex-col justify-between p-3.5 pl-5 rounded-[4px_10px_10px_4px]"
@@ -110,7 +112,7 @@ function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan, ringkas 
       }}
     >
       <span className="text-[11px] tracking-[.08em] uppercase opacity-80">
-        Topik {String(nomor).padStart(2, '0')}
+        {labelNomor ?? `Topik ${String(nomor).padStart(2, '0')}`}
         {pertemuan && !ringkas && <span className="block">{pertemuan}</span>}
       </span>
       <div>
@@ -135,9 +137,9 @@ function SampulRancangan({ nomor, judul, keterangan, adaPdf, pertemuan, ringkas 
   )
 }
 
-export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi, pertemuan, ringkas, dosen }: KartuTopikProps) {
-  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} pertemuan={pertemuan} ringkas={ringkas} tanpaKeterangan={!!dosen} />
-  if (dosen) return <KartuDosen nomor={nomor} judul={judul} pdf={pdf} adaPdf={adaPdf} kaki={kaki} pertemuan={pertemuan} dosen={dosen} sampul={sampul} />
+export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, persen, kaki, chip, terkunci, judulKunci, to, onClick, aksi, pertemuan, ringkas, dosen, labelNomor }: KartuTopikProps) {
+  const sampul = <SampulTopik nomor={nomor} judul={judul} keterangan={keterangan} adaPdf={adaPdf} pdf={pdf} buat={buatSampul} pertemuan={pertemuan} ringkas={ringkas} tanpaKeterangan={!!dosen} labelNomor={labelNomor} />
+  if (dosen) return <KartuDosen nomor={nomor} judul={judul} pdf={pdf} adaPdf={adaPdf} kaki={kaki} pertemuan={pertemuan} dosen={dosen} sampul={sampul} labelNomor={labelNomor} />
   const bisaKlik = !terkunci && (to || onClick)
   const label = ringkas && pertemuan ? `Buka ${pertemuan.toLowerCase()} topik ${nomor}: ${judul}` : `Buka topik ${nomor}: ${judul}`
   return (
@@ -171,7 +173,7 @@ export function KartuTopik({ nomor, judul, keterangan, adaPdf, pdf, buatSampul, 
 
 // Kartu rak dosen (antrean #298, opsi B). Tinggi kartu mengikuti baris kisi dan
 // tombol PDF didorong ke dasar (mt-auto), jadi tombol sejajar walau judul beda panjang.
-function KartuDosen({ nomor, judul, pdf, adaPdf, kaki, pertemuan, dosen, sampul }: { nomor: number; judul: string; pdf?: string | null; adaPdf?: boolean; kaki?: string; pertemuan?: string; dosen: NonNullable<KartuTopikProps['dosen']>; sampul: ReactNode }) {
+function KartuDosen({ nomor, judul, pdf, adaPdf, kaki, pertemuan, dosen, sampul, labelNomor }: { nomor: number; judul: string; pdf?: string | null; adaPdf?: boolean; kaki?: string; pertemuan?: string; dosen: NonNullable<KartuTopikProps['dosen']>; sampul: ReactNode; labelNomor?: string }) {
   const bisaPratinjau = !!pdf
   return (
     <div className="@container flex flex-col gap-2 h-full">
@@ -187,7 +189,7 @@ function KartuDosen({ nomor, judul, pdf, adaPdf, kaki, pertemuan, dosen, sampul 
       </p>
       <div className="flex items-center justify-between gap-1 text-xs text-brown-3">
         <span className="tabular-nums min-w-0">
-          Topik {String(nomor).padStart(2, '0')}
+          {labelNomor ?? `Topik ${String(nomor).padStart(2, '0')}`}
           {pertemuan ? ` · ${pertemuan}` : ''}
         </span>
         <MenuAksi

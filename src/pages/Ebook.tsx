@@ -7,6 +7,7 @@ import { Layout } from '../components/Layout'
 import { SampulTopik } from '../components/KartuTopik'
 import { PembacaPdf, useCapAir, type StatusPdf } from '../components/PembacaPdf'
 import { IconWarning, IconBook, IconChevronRight } from '../components/icons'
+import { labelNomor } from '../lib/jenisTopik'
 
 // Halaman Ebook mahasiswa (antrean #148, #166). Pembaca PDF selayar penuhnya
 // ada di components/PembacaPdf.tsx dan dipakai juga oleh pratinjau dosen;
@@ -178,6 +179,8 @@ export function Ebook() {
   const moduleId = Number.isFinite(parsedModuleId) ? parsedModuleId : null
   const { data: modules = [] } = useModules()
   const catalog = useMemo(() => modules.filter((m) => !!(m.path || m.pdf_path)), [modules])
+  // Label "Topik 01"/"Bagian I" dihitung dari daftar lengkap, bukan hanya yang ber-PDF (antrean #321).
+  const urutSemua = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const currentModule = moduleId != null ? modules.find((m) => m.id === moduleId) : undefined
   const src = currentModule?.path || currentModule?.pdf_path || ''
   const cap = useCapAir()
@@ -249,10 +252,10 @@ export function Ebook() {
                   <button
                     key={m.id}
                     onClick={() => setSearchParams({ book: String(m.id) })}
-                    aria-label={`Buka topik ${m.order_num}: ${m.title}`}
+                    aria-label={`Buka ${labelNomor(urutSemua, urutSemua.findIndex((x) => x.id === m.id), false)}: ${m.title}`}
                     className="block w-full text-left rounded-[4px_10px_10px_4px] transition-transform hover:-translate-y-0.5"
                   >
-                    <SampulTopik nomor={m.order_num} judul={m.title} keterangan="PDF" adaPdf pdf={m.pdf_path} />
+                    <SampulTopik nomor={m.order_num} labelNomor={labelNomor(urutSemua, urutSemua.findIndex((x) => x.id === m.id))} judul={m.title} keterangan="PDF" adaPdf pdf={m.pdf_path} />
                   </button>
                 ))}
               </div>

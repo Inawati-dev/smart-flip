@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabase'
 import type { FinalProject, FinalSubmission, RubrikKriteria } from './tugasAkhir'
 import { awalMinggu, jadwalTopik } from './jadwal'
+import { babSaja } from './jenisTopik'
 
 // Paket Rancangan Proposal (antrean #179, keputusan Johan 10 dan 11 Okt 2026).
 // Empat Mini Projek berurutan: Bab 1 dari Topik 1 sampai 3, Bab 2 dari Topik 4,
@@ -180,7 +181,7 @@ export function statusBab(
   return terbuka ? 'belum' : 'terkunci'
 }
 
-type ModulJadwal = { id: number; minggu_mulai?: number | null; tanggal_buka?: string | null }
+type ModulJadwal = { id: number; minggu_mulai?: number | null; tanggal_buka?: string | null; jenis?: string | null }
 
 /**
  * Pembuat `topikTerbuka` untuk statusBab: topik ke-n terbuka bila tanggal
@@ -195,7 +196,8 @@ export function topikTerbukaDari(
   const jadwal = jadwalTopik(mulai, modulesUrut)
   if (!jadwal) return () => true
   return (nomor) => {
-    const j = jadwal.get(modulesUrut[nomor - 1]?.id)
+    // Nomor topik di paket = nomor Bab; Bagian (Pendahuluan, Penutup) dilewati (antrean #321).
+    const j = jadwal.get(babSaja(modulesUrut)[nomor - 1]?.id)
     // Mata kuliah yang topiknya lebih sedikit tidak punya jadwal untuk topik ini;
     // dianggap terbuka supaya bab tidak terkunci selamanya.
     return !j || now.getTime() >= j.materi.getTime()
@@ -211,7 +213,7 @@ export function tenggatBawaan(mulai: string | null | undefined, modulesUrut: Mod
   const jadwal = jadwalTopik(mulai, modulesUrut)
   return PAKET_PROPOSAL.map((bab) => {
     if (!jadwal || !mulai || bab.bukaTopik == null) return null
-    const j = jadwal.get(modulesUrut[Math.max(...bab.topik) - 1]?.id)
+    const j = jadwal.get(babSaja(modulesUrut)[Math.max(...bab.topik) - 1]?.id)
     return j ? awalMinggu(mulai, j.minggu + 2).toISOString() : null
   })
 }
@@ -327,7 +329,7 @@ export function kabarPaket(
       return
     }
     if (k) return
-    const buka = bab.bukaTopik == null ? bab3?.graded_at ?? null : jadwal?.get(modulesUrut[bab.bukaTopik - 1]?.id)?.materi.toISOString() ?? null
+    const buka = bab.bukaTopik == null ? bab3?.graded_at ?? null : jadwal?.get(babSaja(modulesUrut)[bab.bukaTopik - 1]?.id)?.materi.toISOString() ?? null
     if (!buka || new Date(buka).getTime() > now.getTime()) return
     const tenggat = brief.deadline
       ? `Tenggat ${new Date(brief.deadline).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}.`

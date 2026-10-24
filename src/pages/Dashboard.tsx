@@ -41,6 +41,7 @@ import {
   IconFolder,
   IconCheck,
 } from '../components/icons'
+import { babSaja } from '../lib/jenisTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
@@ -537,7 +538,7 @@ export function DashboardMhs({
   formatifPada?: (id: number) => Date | null
 }) {
   const hasil = hitungLangkah({ modules, progress, attempts, passScore: ambangFormatif })
-  const totalModules = modules.length || TOTAL_MODULES
+  const totalModules = babSaja(modules).length || modules.length || TOTAL_MODULES
   const actions = langkahActions(hasil.topikAktif.id, hasil.topikAktif.orderNum)
   const materiDibuka = bukaPada?.(hasil.topikAktif.id) ?? null
   const tesDibuka = formatifPada?.(hasil.topikAktif.id) ?? null
