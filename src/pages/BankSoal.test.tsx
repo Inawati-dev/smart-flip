@@ -123,6 +123,31 @@ describe('BankSoal', () => {
     mockDeleteKuisSoal.mockReset()
   })
 
+  it('antrean #330: tanpa ?modul, tes formatif memilih Bab 1, bukan Pendahuluan (Bagian)', async () => {
+    FAKE_MODULES.unshift({ ...makeModule(9), order_num: 0, title: 'Pendahuluan', jenis: 'bagian' } as (typeof FAKE_MODULES)[number])
+    try {
+      mockFetchBankSoal.mockResolvedValue([])
+      renderBankSoal('/asesmen/bank?jenis=formatif')
+      await waitFor(() => expect(mockFetchBankSoal).toHaveBeenCalledWith('formatif', 1, expect.anything()))
+      expect(mockFetchBankSoal).not.toHaveBeenCalledWith('formatif', 9, expect.anything())
+    } finally {
+      FAKE_MODULES.shift()
+    }
+  })
+
+  it('antrean #329: tombol Impor Soal membuka modal dengan Unduh Templat', async () => {
+    mockFetchBankSoal.mockResolvedValue([])
+    renderBankSoal('/asesmen/bank?jenis=formatif&modul=2')
+    const tombol = (await screen.findByRole('button', { name: /Impor Soal/ })) as HTMLButtonElement
+    // nonaktif sampai daftar soal selesai dimuat (urutan impor dihitung dari daftar itu)
+    await waitFor(() => expect(tombol.disabled).toBe(false))
+    fireEvent.click(tombol)
+    const dialog = await screen.findByRole('dialog', { name: 'Impor Soal' })
+    expect(within(dialog).getByText('Soal masuk ke Bab 2. Modul 2.')).toBeTruthy()
+    expect(within(dialog).getByRole('button', { name: /Unduh Templat/ })).toBeTruthy()
+    expect((within(dialog).getByRole('button', { name: /Impor 0 Soal/ }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it('renders one table row per formatif question returned by fetchBankSoal', async () => {
     mockFetchBankSoal.mockResolvedValue([makeSoal(1), makeSoal(2)])
     renderBankSoal('/asesmen/bank?jenis=formatif&modul=1')

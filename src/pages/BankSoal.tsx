@@ -9,7 +9,8 @@ import { Select } from '../components/Select'
 import { PillGroup } from '../components/PillGroup'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { TugasAkhirPanel } from './TugasAkhir'
-import { IconEdit, IconTrash, IconGrip, IconX } from '../components/icons'
+import { IconEdit, IconTrash, IconGrip, IconX, IconUpload } from '../components/icons'
+import { ImporSoalModal } from '../components/ImporSoalModal'
 import { babSaja } from '../lib/jenisTopik'
 
 // Bank soal terpadu — dosen mengelola jenis soal pre/formatif/post
@@ -104,7 +105,7 @@ function BankSoalTab() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: modules = [] } = useModules()
   // Soal formatif hanya untuk Bab; nomor Bab melewati Bagian (Pendahuluan, Penutup; antrean #321).
-  const babList = babSaja([...modules].sort((a, b) => a.order_num - b.order_num))
+  const babList = useMemo(() => babSaja([...modules].sort((a, b) => a.order_num - b.order_num)), [modules])
   const { courseId } = useCourse()
 
   // Tautan lama ke jenis yang sudah dicabut (atau jenis tak dikenal apa pun)
@@ -112,7 +113,8 @@ function BankSoalTab() {
   const jenisParam = searchParams.get('jenis') as FilterKind | null
   const jenis: FilterKind = jenisParam != null && KIND_ORDER.includes(jenisParam) ? jenisParam : 'pre'
   const modulParam = searchParams.get('modul')
-  const modulId = modulParam ? parseInt(modulParam, 10) : (modules[0]?.id ?? null)
+  // Bawaan Bab 1, bukan topik pertama: Pendahuluan (Bagian) tidak ada di pilihan Bab (antrean #330).
+  const modulId = modulParam ? parseInt(modulParam, 10) : (babList[0]?.id ?? null)
 
   const bankQuery = useQuery({
     queryKey: ['bank-soal', jenis, jenis === 'formatif' ? modulId : null, courseId],
@@ -148,7 +150,7 @@ function BankSoalTab() {
   // tidak ikut terhapus (spec A.7) — beda dari setSearchParams({...}) lama
   // yang mengganti seluruh query string.
   function selectJenis(k: FilterKind) {
-    const modId = k === 'formatif' ? (modulId ?? modules[0]?.id) : null
+    const modId = k === 'formatif' ? (modulId ?? babList[0]?.id) : null
     setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       next.set('jenis', k)
@@ -183,7 +185,7 @@ function BankSoalTab() {
     setPertanyaan('')
     setOpsi(['', '', '', ''])
     setJawaban(0)
-    setModalModuleId(modulId ?? modules[0]?.id ?? null)
+    setModalModuleId(modulId ?? babList[0]?.id ?? null)
     setModalTopikId(null)
     setNextOrderNum(maxOrder + 1)
   }
@@ -193,7 +195,7 @@ function BankSoalTab() {
     setPertanyaan(r.question)
     setOpsi(r.options.length === 4 ? [...r.options] : [...r.options, '', '', '', ''].slice(0, 4))
     setJawaban(r.answer_idx ?? 0)
-    setModalModuleId(r.module_id ?? modulId ?? modules[0]?.id ?? null)
+    setModalModuleId(r.module_id ?? modulId ?? babList[0]?.id ?? null)
     setModalTopikId(r.topik_id)
   }
 
@@ -240,6 +242,33 @@ function BankSoalTab() {
       showToast('Gagal menyimpan soal')
     } finally {
       setSaving(false)
+    }
+  }
+
+  // ── Modal Impor Soal (antrean #329) ──
+  const [imporOpen, setImporOpen] = useState(false)
+  const imporAwal = rows.reduce((m, r) => Math.max(m, r.order_num), 0) + 1
+  const babAktif = babList.findIndex((m) => m.id === modulId)
+
+  async function simpanImpor(soal: { question: string; options: string[]; answer_idx: number; explanation: string | null; topik_id: number | null }, urutanKe: number) {
+    await createKuisSoal({
+      kind: jenis,
+      module_id: isFormatif ? modulId : null,
+      course_id: courseId,
+      question: soal.question,
+      options: soal.options,
+      answer_idx: soal.answer_idx,
+      explanation: soal.explanation,
+      order_num: imporAwal + urutanKe,
+      ...(isPre ? { topik_id: soal.topik_id } : {}),
+    })
+  }
+
+  async function tutupImpor(jumlah: number) {
+    setImporOpen(false)
+    if (jumlah > 0) {
+      await invalidate()
+      showToast(`${jumlah} soal diimpor`)
     }
   }
 
@@ -323,9 +352,14 @@ function BankSoalTab() {
             />
           )}
         </div>
-        <button onClick={openAddModal} className="btn btn-primary btn-sm">
-          + Tambah Soal
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          <button onClick={() => setImporOpen(true)} disabled={(isFormatif && modulId == null) || !bankQuery.isSuccess} className="btn btn-secondary btn-sm">
+            <IconUpload size={15} /> Impor Soal
+          </button>
+          <button onClick={openAddModal} className="btn btn-primary btn-sm">
+            + Tambah Soal
+          </button>
+        </div>
       </div>
       <div className="mb-3" />
 
@@ -410,6 +444,17 @@ function BankSoalTab() {
             </table>
           </div>
         </div>
+
+      {imporOpen && (
+        <ImporSoalModal
+          judulJenis={KIND_LABELS[jenis]}
+          namaBab={isFormatif && babAktif >= 0 ? `Bab ${babAktif + 1}. ${babList[babAktif].title}` : null}
+          denganTopik={isPre}
+          babList={babList}
+          simpan={simpanImpor}
+          onClose={tutupImpor}
+        />
+      )}
 
       {/* Modal Tambah/Ubah */}
       {modalOpen != null && (
