@@ -19,6 +19,7 @@ import { PengaturanSections } from './Pengaturan'
 import { IconUser, IconGraduationCap, IconEdit } from '../components/icons'
 import { GantiSandiKartu } from '../components/GantiSandiKartu'
 import { TautanPanduan } from '../components/TautanPanduan'
+import { EVENT_MULAI_TUR } from '../lib/turPanduan'
 
 // /akun (WP-C) — Profil.tsx dilebur ke sini: kartu identitas dengan modal
 // Ubah (nama, NIM/NIDN, avatar — logika dari Profil.tsx/lib/profil.ts),
@@ -233,8 +234,14 @@ export function Akun() {
         </div>
           }
         />
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-3">
           <TautanPanduan />
+          {/* Tur panduan menu (antrean #331); dijalankan Layout */}
+          {(isDosen || preTestDone) && (
+            <button type="button" onClick={() => dispatchEvent(new Event(EVENT_MULAI_TUR))} className="btn btn-secondary self-start">
+              Ulangi Tur Panduan
+            </button>
+          )}
         </div>
       </div>
 

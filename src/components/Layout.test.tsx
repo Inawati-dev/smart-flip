@@ -15,6 +15,8 @@ const mockAuth = vi.hoisted(() => ({
 }))
 
 vi.mock('./KabarPaket', () => ({ TitikKabarPaket: () => null }))
+const mockPre = vi.hoisted(() => ({ data: true as boolean | undefined }))
+vi.mock('../lib/topik', () => ({ usePreTestDone: () => ({ data: mockPre.data }) }))
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
@@ -153,5 +155,96 @@ describe('Layout theme toggle', () => {
     fireEvent.click(buttons[0])
     expect(screen.getAllByLabelText('Ganti ke tema terang').length).toBeGreaterThan(0)
     expect(localStorage.getItem('sfp_theme')).toBe('dark')
+  })
+})
+
+// Antrean #332: mahasiswa sebelum tes diagnostik awal hanya melihat Asesmen dan Akun.
+// Antrean #331: tur panduan sekali per akun sesudah WelcomeModal ditutup.
+describe('Layout: menu terbatas dan tur panduan', () => {
+  beforeEach(() => {
+    mockIsSupabaseConfigured.value = false
+    mockAuth.profile = { full_name: 'Uji', avatar_url: null }
+    localStorage.clear()
+  })
+  afterEach(() => {
+    mockPre.data = true
+    localStorage.clear()
+  })
+
+  it('mahasiswa belum tes diagnostik: hanya /asesmen dan /akun', () => {
+    mockAuth.user = { id: 'm1', email: 'm@x' }
+    mockAuth.role = 'mahasiswa'
+    mockPre.data = false
+    // dihitung dari butir menu (data-tur), bukan tautan logo ke /dashboard
+    const menu = [...renderLayout().matchAll(/data-tur="(\/[^"]*)"/g)].map((m) => m[1])
+    expect([...new Set(menu)]).toEqual(['/asesmen', '/akun'])
+  })
+
+  it('mahasiswa sudah tes diagnostik: semua menu mahasiswa', () => {
+    mockAuth.user = { id: 'm1', email: 'm@x' }
+    mockAuth.role = 'mahasiswa'
+    mockPre.data = true
+    expect(presentNavHrefs(renderLayout())).toEqual(['/dashboard', '/modul', '/video', '/asesmen', '/mini-projek', '/akun'])
+  })
+
+  it('dosen tidak terpengaruh status tes diagnostik', () => {
+    mockAuth.user = { id: 'd1', email: 'd@x' }
+    mockAuth.role = 'dosen'
+    mockPre.data = false
+    expect(presentNavHrefs(renderLayout())).toContain('/kelas')
+  })
+
+  function renderDom(path = '/dashboard') {
+    return render(
+      <MemoryRouter initialEntries={[path]}>
+        <Layout>
+          <p>isi</p>
+        </Layout>
+      </MemoryRouter>,
+    )
+  }
+
+  it('tur muncul sesudah WelcomeModal ditutup, sekali per akun', () => {
+    mockAuth.user = { id: 'd1', email: 'd@x' }
+    mockAuth.role = 'dosen'
+    localStorage.setItem('sfp_onboarded_dos_v1', '1')
+    renderDom()
+    const dialog = screen.getByRole('dialog')
+    expect(dialog.textContent).toContain('Dashboard')
+    expect(dialog.textContent).toContain('1 / 8')
+    fireEvent.click(screen.getByRole('button', { name: 'Lewati' }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(localStorage.getItem('sfp_tur_v1_d1')).toBe('1')
+    cleanup()
+    renderDom()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('tur tidak muncul sebelum WelcomeModal ditutup, atau untuk mahasiswa yang belum tes diagnostik', () => {
+    mockAuth.user = { id: 'd1', email: 'd@x' }
+    mockAuth.role = 'dosen'
+    renderDom()
+    expect(screen.queryByRole('dialog')).toBeNull()
+    cleanup()
+    mockAuth.user = { id: 'm1', email: 'm@x' }
+    mockAuth.role = 'mahasiswa'
+    mockPre.data = false
+    localStorage.setItem('sfp_onboarded_v1', '1')
+    renderDom()
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('tur otomatis tidak muncul di luar Dashboard (mis. halaman tes), dan Esc menutup walau fokus di luar kartu', () => {
+    mockAuth.user = { id: 'd2', email: 'd@x' }
+    mockAuth.role = 'dosen'
+    localStorage.setItem('sfp_onboarded_dos_v1', '1')
+    renderDom('/asesmen/pre')
+    expect(screen.queryByRole('dialog')).toBeNull()
+    cleanup()
+    renderDom()
+    expect(screen.getByRole('dialog')).toBeTruthy()
+    ;(document.activeElement as HTMLElement | null)?.blur()
+    fireEvent.keyDown(document.body, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 })

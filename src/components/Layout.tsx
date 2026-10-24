@@ -1,9 +1,12 @@
 import { TitikKabarPaket } from './KabarPaket'
-import { useState, type ComponentType, type ReactNode } from 'react'
+import { useEffect, useReducer, useState, type ComponentType, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
-import { resetOnboarding } from '../lib/onboarding'
+import { resetOnboarding, hasSeenOnboarding, EVENT_ONBOARDING_SELESAI } from '../lib/onboarding'
+import { usePreTestDone } from '../lib/topik'
+import { LANGKAH_DOSEN, LANGKAH_MAHASISWA, EVENT_MULAI_TUR, sudahTur, tandaiTur } from '../lib/turPanduan'
+import { TurPanduan } from './TurPanduan'
 import { LogoutModal } from './LogoutModal'
 import { BrandMark } from './AuthShell'
 import { useTheme } from '../hooks/useTheme'
@@ -65,7 +68,45 @@ export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation()
   const { user, role, profile } = useAuth()
   const [logoutOpen, setLogoutOpen] = useState(false)
-  const navItems = NAV_ITEMS.filter((item) => (!item.dosenOnly || role === 'dosen') && (!item.mahasiswaOnly || role === 'mahasiswa'))
+  const { data: preTestDone } = usePreTestDone()
+  // Mahasiswa yang belum menyelesaikan tes diagnostik awal hanya melihat Asesmen dan Akun (antrean #332);
+  // halaman lain memang dialihkan ke /asesmen/pre oleh ProtectedRoute sampai tes selesai.
+  // Hanya bila sudah pasti belum (false), bukan saat masih memuat: mahasiswa lama tidak melihat menu berkedip.
+  const menuTerbatas = role === 'mahasiswa' && preTestDone === false
+  const navItems = NAV_ITEMS.filter(
+    (item) =>
+      (!item.dosenOnly || role === 'dosen') &&
+      (!item.mahasiswaOnly || role === 'mahasiswa') &&
+      (!menuTerbatas || item.to === '/asesmen' || item.to === '/akun'),
+  )
+
+  // Tur panduan (antrean #331): sekali per akun sesudah WelcomeModal ditutup; mahasiswa sesudah tes diagnostik.
+  const [turManual, setTurManual] = useState(false)
+  const [turSelesai, setTurSelesai] = useState(false)
+  const [, segarkan] = useReducer((x: number) => x + 1, 0)
+  useEffect(() => {
+    const mulai = () => setTurManual(true)
+    addEventListener(EVENT_MULAI_TUR, mulai)
+    addEventListener(EVENT_ONBOARDING_SELESAI, segarkan)
+    return () => {
+      removeEventListener(EVENT_MULAI_TUR, mulai)
+      removeEventListener(EVENT_ONBOARDING_SELESAI, segarkan)
+    }
+  }, [])
+  const idTur = user?.id ?? 'demo'
+  const turTampil =
+    !!role &&
+    !menuTerbatas &&
+    // Tur otomatis hanya di Dashboard, supaya tidak menimpa halaman tes yang sedang dikerjakan.
+    (turManual || (!turSelesai && location.pathname === '/dashboard' && hasSeenOnboarding(role) && !sudahTur(idTur)))
+  const langkahTur = (role === 'dosen' ? LANGKAH_DOSEN : LANGKAH_MAHASISWA).filter(
+    (l) => l.sasaran === 'tema' || navItems.some((n) => n.to === l.sasaran),
+  )
+  function selesaiTur() {
+    tandaiTur(idTur)
+    setTurManual(false)
+    setTurSelesai(true)
+  }
   const currentActive = activeTo(location.pathname, navItems)
   const { theme, toggle: toggleTheme } = useTheme()
   const themeToggleLabel = theme === 'light' ? 'Ganti ke tema gelap' : 'Ganti ke tema terang'
@@ -126,6 +167,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <Link
                 key={item.to}
                 to={item.to}
+                data-tur={item.to}
                 aria-current={active ? 'page' : undefined}
                 className="group relative flex w-[68px] flex-col items-center gap-1 rounded-xl p-[6px]"
               >
@@ -171,6 +213,7 @@ export function Layout({ children }: { children: ReactNode }) {
           onClick={toggleTheme}
           title={themeToggleLabel}
           aria-label={themeToggleLabel}
+          data-tur="tema"
           className="w-10 h-10 rounded-[var(--radius-control)] flex items-center justify-center text-brown-2 hover:bg-bg3 transition-colors"
         >
           {theme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
@@ -197,6 +240,7 @@ export function Layout({ children }: { children: ReactNode }) {
               onClick={toggleTheme}
               title={themeToggleLabel}
               aria-label={themeToggleLabel}
+              data-tur="tema"
               className="w-11 h-11 rounded-full border border-[color:var(--border)] flex items-center justify-center text-brown-2"
             >
               {theme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
@@ -226,6 +270,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <Link
               key={item.to}
               to={item.to}
+              data-tur={item.to}
               aria-current={active ? 'page' : undefined}
               className="flex-1 min-w-11 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold"
               style={{ color: active ? 'var(--nav-tile-active-fg)' : 'var(--brown3)' }}
@@ -239,6 +284,8 @@ export function Layout({ children }: { children: ReactNode }) {
           )
         })}
       </nav>
+
+      {turTampil && <TurPanduan langkah={langkahTur} onSelesai={selesaiTur} />}
 
       <LogoutModal
         open={logoutOpen}

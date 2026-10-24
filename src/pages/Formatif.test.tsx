@@ -37,6 +37,7 @@ vi.mock('../lib/acak', async (importOriginal) => {
 
 vi.mock('../lib/topik', () => ({
   useTopikStatus: () => ({ statusOf: () => 'open', bukaPada: () => null, formatifPada: () => null, loading: false }),
+  usePreTestDone: () => ({ data: true }),
 }))
 
 const MODULE_BASE = {

@@ -10,6 +10,7 @@ afterEach(cleanup)
 vi.mock('../lib/topik', () => ({
   // Kunci topik diuji di lib/topik.test.ts; halaman ini diuji dengan semua topik terbuka.
   useTopikStatus: () => ({ statusOf: () => 'open', bukaPada: () => null, formatifPada: () => null, loading: false }),
+  usePreTestDone: () => ({ data: true }),
 }))
 vi.mock('../lib/supabase', () => ({
   supabase: {

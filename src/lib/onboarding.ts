@@ -26,7 +26,11 @@ export function markOnboardingSeen(role: OnboardingRole): void {
   } catch {
     // ignore — worst case the modal reappears next visit, not destructive
   }
+  // Layout menunggu WelcomeModal ditutup sebelum memulai tur panduan (antrean #331).
+  dispatchEvent(new Event(EVENT_ONBOARDING_SELESAI))
 }
+
+export const EVENT_ONBOARDING_SELESAI = 'sfp-onboarding-selesai'
 
 export function resetOnboarding(role: OnboardingRole): void {
   try {
