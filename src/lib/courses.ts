@@ -27,6 +27,9 @@ export interface Course {
   watermark_teks?: string | null
   /** Data URL PNG, sudah dikecilkan dan ditipiskan di peramban (components/WatermarkModal.tsx). */
   watermark_gambar?: string | null
+  /** Ukuran dan kerapatan watermark (v52, antrean #308); kosong sebelum migrasi = sedang. */
+  watermark_ukuran?: 'kecil' | 'sedang' | 'besar' | null
+  watermark_kerapatan?: 'renggang' | 'sedang' | 'rapat' | null
 }
 
 export const DEMO_COURSES: Course[] = [
@@ -121,7 +124,7 @@ export async function createCourse(input: { code: string; name: string; descript
   return data as Course
 }
 
-export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active' | 'ambang_diagnostik' | 'ambang_formatif' | 'watermark_pdf' | 'watermark_jenis' | 'watermark_teks' | 'watermark_gambar'>>): Promise<void> {
+export async function updateCourse(id: number, patch: Partial<Pick<Course, 'code' | 'name' | 'description' | 'is_active' | 'ambang_diagnostik' | 'ambang_formatif' | 'watermark_pdf' | 'watermark_jenis' | 'watermark_teks' | 'watermark_gambar' | 'watermark_ukuran' | 'watermark_kerapatan'>>): Promise<void> {
   if (!isSupabaseConfigured) throw new Error('Mengubah mata kuliah butuh koneksi Supabase.')
   const { data, error } = await supabase.from('courses').update(patch).eq('id', id).select('id')
   if (error) throw error

@@ -180,7 +180,7 @@ export function statusBab(
   return terbuka ? 'belum' : 'terkunci'
 }
 
-type ModulJadwal = { id: number; minggu_mulai?: number | null }
+type ModulJadwal = { id: number; minggu_mulai?: number | null; tanggal_buka?: string | null }
 
 /**
  * Pembuat `topikTerbuka` untuk statusBab: topik ke-n terbuka bila tanggal

@@ -5,6 +5,7 @@ import { authInputClass, authInputStyle } from '../components/AuthShell'
 import { PasswordInput } from '../components/PasswordInput'
 import { LoginFlipCard, FlipPanel } from '../components/LoginFlipCard'
 import { LoginBook } from '../components/LoginBook'
+import { resetSemuaOnboarding } from '../lib/onboarding'
 
 // REVERT MODE — ganti ke 'flip' untuk balik ke tampilan kartu flip lama
 // (satu baris, tanpa hapus kode). Bisa juga dites tanpa redeploy lewat URL:
@@ -96,6 +97,8 @@ export function Login() {
         password,
       })
       if (signInError) throw signInError
+      // Tiap login baru memunculkan modal Selamat Datang sekali (antrean #306).
+      resetSemuaOnboarding()
 
       let { data: profile, error: profileError } = await supabase
         .from('profiles')

@@ -193,7 +193,7 @@ function KartuDosen({ nomor, judul, pdf, adaPdf, kaki, pertemuan, dosen, sampul 
         <MenuAksi
           ariaLabel={`Aksi lain untuk ${judul}`}
           tombol="⋯"
-          kelasTombol="w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-lg text-lg leading-none text-brown-2 hover:bg-[var(--bg3)]"
+          kelasTombol="w-10 h-10 shrink-0 inline-flex items-center justify-center rounded-lg border border-[var(--border)] bg-ivory text-lg leading-none text-brown hover:bg-[var(--bg3)]"
           rata="kanan"
         >
           <ItemMenu onPilih={dosen.onPratinjau} nonaktif={!bisaPratinjau}>

@@ -71,9 +71,8 @@ export function Layout({ children }: { children: ReactNode }) {
   const themeToggleLabel = theme === 'light' ? 'Ganti ke tema gelap' : 'Ganti ke tema terang'
 
   async function doLogout() {
-    // Onboarding is "seen" per-browser (localStorage), not per-session — reset
-    // it on logout so the next login (even the same person, same browser)
-    // shows WelcomeModal again, instead of only ever once per browser forever.
+    // Onboarding "seen" lives in localStorage (antrean #306) — reset it on
+    // logout so the next login shows WelcomeModal once again.
     if (role) resetOnboarding(role)
     try {
       await supabase.auth.signOut()

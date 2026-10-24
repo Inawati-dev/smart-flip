@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { mingguBawaan, awalMinggu, jadwalTopik, labelPertemuan } from './jadwal'
+import { mingguBawaan, awalMinggu, jadwalTopik, labelPertemuan, mingguDariTanggal } from './jadwal'
 
 const iso = (t: Date) => `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
 
@@ -39,5 +39,26 @@ describe('labelPertemuan', () => {
   it('minggu yang diatur dosen menang atas bawaan', () => {
     expect(labelPertemuan(3, 4)).toBe('Pertemuan 4-5')
     expect(labelPertemuan(3, null)).toBe('Pertemuan 9-10')
+  })
+})
+
+// Antrean #309: tanggal buka yang diisi sendiri menang atas hitungan minggu.
+describe('tanggal_buka', () => {
+  it('menang atas minggu, formatif +7 hari, minggu turunan dari tanggal mulai', () => {
+    const j = jadwalTopik('2026-10-12', [{ id: 1 }, { id: 2, minggu_mulai: 4, tanggal_buka: '2026-11-04' }])!
+    const t = j.get(2)!
+    expect([iso(t.materi), iso(t.formatif), t.minggu]).toEqual(['2026-11-04', '2026-11-11', 4])
+    expect(j.get(1)!.minggu).toBe(1)
+  })
+  it('mingguDariTanggal: batas minggu dan minimal 1', () => {
+    expect(mingguDariTanggal('2026-10-12', '2026-10-18')).toBe(1)
+    expect(mingguDariTanggal('2026-10-12', '2026-10-19')).toBe(2)
+    expect(mingguDariTanggal('2026-10-12', '2026-09-01')).toBe(1)
+  })
+  it('tanpa tanggal mulai hanya topik ber-tanggal sendiri yang punya jadwal', () => {
+    const j = jadwalTopik(null, [{ id: 1 }, { id: 2, tanggal_buka: '2026-11-04' }])!
+    expect(j.has(1)).toBe(false)
+    expect(iso(j.get(2)!.materi)).toBe('2026-11-04')
+    expect(jadwalTopik(null, [{ id: 1, tanggal_buka: null }])).toBeNull()
   })
 })

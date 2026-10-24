@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { updateCourse, isMissingCourseSchema, type Course } from '../lib/courses'
-import { capAir, POLA_GAMBAR_CAP } from './PembacaPdf'
+import { capAir, capGambar, POLA_GAMBAR_CAP, type UkuranCap, type KerapatanCap } from './PembacaPdf'
 import { PillGroup } from './PillGroup'
 import { FileInput } from './FileInput'
 
@@ -21,6 +21,19 @@ export function pilihanCap(course: Course | null | undefined): Pilihan {
   if (course.watermark_jenis === 'teks' && course.watermark_teks?.trim()) return 'teks'
   return 'nama'
 }
+
+// Antrean #308: pilihan ukuran dan kerapatan (kolom v52).
+const OPSI_UKURAN: { value: UkuranCap; label: string }[] = [
+  { value: 'kecil', label: 'Kecil' },
+  { value: 'sedang', label: 'Sedang' },
+  { value: 'besar', label: 'Besar' },
+]
+const OPSI_KERAPATAN: { value: KerapatanCap; label: string }[] = [
+  { value: 'renggang', label: 'Renggang' },
+  { value: 'sedang', label: 'Sedang' },
+  { value: 'rapat', label: 'Rapat' },
+]
+const PESAN_V52 = 'Ukuran dan kerapatan belum tersimpan. Jalankan migration_v52_watermark_ukuran.sql di Supabase dulu.'
 
 // Gambar unggahan dijadikan satu ubin watermark: ukuran ubin sama dengan ubin
 // teks di capAir (340x220), gambar dimuat utuh di tengah dan ditipiskan, latar
@@ -63,6 +76,8 @@ export function WatermarkModal({ course, onClose, onSaved }: { course: Course; o
   const [pilih, setPilih] = useState<Pilihan>(pilihanCap(course))
   const [teks, setTeks] = useState(course.watermark_teks ?? '')
   const [gambar, setGambar] = useState(POLA_GAMBAR_CAP.test(course.watermark_gambar ?? '') ? (course.watermark_gambar as string) : '')
+  const [ukuran, setUkuran] = useState<UkuranCap>(course.watermark_ukuran ?? 'sedang')
+  const [kerapatan, setKerapatan] = useState<KerapatanCap>(course.watermark_kerapatan ?? 'sedang')
   const [saving, setSaving] = useState(false)
   const [galat, setGalat] = useState('')
 
@@ -82,8 +97,8 @@ export function WatermarkModal({ course, onClose, onSaved }: { course: Course; o
     pilih === 'mati'
       ? null
       : pilih === 'gambar'
-        ? gambar && `url("${gambar}")`
-        : capAir(pilih === 'teks' ? teks.trim() || 'Teks watermark' : 'Nama Mahasiswa · NIM')
+        ? gambar && capGambar(gambar, ukuran, kerapatan)
+        : capAir(pilih === 'teks' ? teks.trim() || 'Teks watermark' : 'Nama Mahasiswa · NIM', ukuran, kerapatan)
 
   async function simpan() {
     if (pilih === 'teks' && !teks.trim()) return setGalat('Isi teks watermark dulu.')
@@ -94,12 +109,28 @@ export function WatermarkModal({ course, onClose, onSaved }: { course: Course; o
     if (pilih !== 'mati' && pilih !== (course.watermark_jenis ?? 'nama')) patch.watermark_jenis = pilih
     if (pilih === 'teks' && teks.trim() !== (course.watermark_teks ?? '')) patch.watermark_teks = teks.trim()
     if (pilih === 'gambar' && gambar !== (course.watermark_gambar ?? '')) patch.watermark_gambar = gambar
+    // Kolom v52 juga hanya dikirim bila berubah, sama alasannya.
+    const adaV52 = pilih !== 'mati' && (ukuran !== (course.watermark_ukuran ?? 'sedang') || kerapatan !== (course.watermark_kerapatan ?? 'sedang'))
+    if (adaV52) {
+      patch.watermark_ukuran = ukuran
+      patch.watermark_kerapatan = kerapatan
+    }
     setSaving(true)
     setGalat('')
     try {
-      await updateCourse(course.id, patch)
+      let pesanV52 = ''
+      try {
+        await updateCourse(course.id, patch)
+      } catch (e) {
+        if (!adaV52 || !isMissingCourseSchema(e)) throw e
+        // Kolom v52 belum ada: simpan sisanya tanpa dua kolom itu supaya setelan lain tidak hilang.
+        const { watermark_ukuran: _u, watermark_kerapatan: _k, ...sisa } = patch
+        await updateCourse(course.id, sisa)
+        pesanV52 = PESAN_V52
+      }
       await queryClient.invalidateQueries({ queryKey: ['courses'] })
-      onSaved(pilih === 'mati' ? 'Watermark PDF dimatikan' : `Watermark PDF: ${LABEL_CAP[pilih]}`)
+      const ok = pilih === 'mati' ? 'Watermark PDF dimatikan' : `Watermark PDF: ${LABEL_CAP[pilih]}`
+      onSaved(pesanV52 ? `${ok}. ${pesanV52}` : ok)
       onClose()
     } catch (e) {
       setGalat(
@@ -164,11 +195,24 @@ export function WatermarkModal({ course, onClose, onSaved }: { course: Course; o
         )}
 
         {pilih !== 'mati' && (
+          <div className="mb-4 flex flex-col gap-3">
+            <div>
+              <div className="text-xs font-semibold text-brown-2 mb-1">Ukuran</div>
+              <PillGroup ariaLabel="Ukuran watermark" value={ukuran} onChange={(v) => setUkuran(v as UkuranCap)} options={OPSI_UKURAN} />
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-brown-2 mb-1">Kerapatan</div>
+              <PillGroup ariaLabel="Kerapatan watermark" value={kerapatan} onChange={(v) => setKerapatan(v as KerapatanCap)} options={OPSI_KERAPATAN} />
+            </div>
+          </div>
+        )}
+
+        {pilih !== 'mati' && (
           <div className="mb-4">
             <div className="text-xs font-semibold text-brown-2 mb-1">Pratinjau</div>
             <div
               data-testid="pratinjau-cap"
-              className="h-36 rounded-[var(--radius-control)] border flex items-center justify-center text-xs text-brown-3"
+              className="h-52 rounded-[var(--radius-control)] border flex items-center justify-center text-xs text-brown-3"
               style={{ ...BORDER, backgroundColor: '#fff', backgroundImage: pratinjau || undefined, backgroundRepeat: 'repeat' }}
             >
               {!pratinjau && 'Belum ada gambar yang dipilih.'}
