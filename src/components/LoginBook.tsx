@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 
+// Urutan anggota sama dengan panduan (antrean #323): Johan paling akhir.
+const ANGGOTA = ['Dr. Deka Dyah Utami', 'Viola Malta Ramadhani', 'Aryadi', 'Natasya Adelia Ramadhanti', 'Johan Iriawan Akbar']
+
 // "Sampul Berdiri 3D" (Opsi C) — buku berdiri agak miring dengan tepi
 // halaman & punggung kelihatan; sampul depan berengsel di kiri dan membuka
 // penuh ke "halaman pertama" yang berisi form login. Murni CSS transform,
@@ -88,9 +91,25 @@ export function LoginBook({
               "Buka Buku" — bug yang tidak ketahuan lewat .click()
               programatik karena itu melewati hit-testing. */}
           <div
-            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex items-end p-5 pointer-events-none"
+            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-between gap-4 p-5 sm:p-8 pointer-events-none"
             style={{ background: 'var(--bg3)' }}
           >
+            {/* Tim pengembang, sama dengan panduan Edisi 3 (antrean #324) */}
+            <div className="flex flex-col gap-3 text-brown-2 text-[13px] leading-snug">
+              <p className="text-xs font-semibold uppercase tracking-wide text-brown-3">Tim Pengembang</p>
+              <div>
+                <p className="text-brown-3 text-xs">Ketua</p>
+                <p className="font-medium text-brown">Inawati, S.IP., M.M.</p>
+              </div>
+              <div>
+                <p className="text-brown-3 text-xs">Anggota</p>
+                <ul className="flex flex-col gap-0.5">
+                  {ANGGOTA.map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
             <p className="font-display italic text-[11.5px] text-brown-3">
               Edisi 5.0: Fakultas Vokasi UM
             </p>
