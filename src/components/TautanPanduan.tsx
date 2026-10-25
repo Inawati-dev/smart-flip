@@ -10,7 +10,7 @@ import { PembacaPdf } from './PembacaPdf'
 // Dipasang di Dashboard (dosen dan mahasiswa) dan Akun.
 export const ALAMAT_PANDUAN = '/panduan-smartflip.pdf'
 export const EDISI_PANDUAN = 'Edisi 4, 25 Okt 2026'
-const JUMLAH_HALAMAN = 33
+const JUMLAH_HALAMAN = 37
 
 export function TautanPanduan() {
   const [baca, setBaca] = useState(false)

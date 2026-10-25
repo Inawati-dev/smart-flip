@@ -8,7 +8,7 @@
   halaman dan penanda bab (bookmark).
   Edisi 3 (antrean #310/#311, 24 Okt 2026): rak 8 topik dengan sampul dari PDF modul asli (Topik 0 Pendahuluan
   sampai Topik 7 Penutup), gambar baru d10 (Jadwal) dan d11 (Watermark), dan sampul belakang.
-  Edisi 4 (antrean #340, 25 Okt 2026): Lampiran 3 Cuplikan kode sumber (satu halaman, sebelum sampul belakang).
+  Edisi 4 (antrean #340, diulang #341, 25 Okt 2026): Lampiran 3 Cuplikan kode sumber, lima halaman kode tampilan halaman inti, sebelum sampul belakang.
   Gambar di gambar/ diambil ulang 24 Okt 2026 (Edisi 2, antrean #302) di server
   dev 1600x1000 (telepon 360x800) dengan peran pratinjau (VITE_UI_PREVIEW_ROLE)
   dan data contoh mode demo; halaman masuk dan daftar (u01, u01b, u02) dari situs
@@ -94,6 +94,7 @@
     background: #FAF8F3; border: 1px solid var(--garis); border-left: 1.2mm solid var(--biru); border-radius: 1.5mm; padding: 3mm 4mm; margin: 2mm 0 3mm; break-inside: avoid; color: var(--teks); }
   pre.kode .ket { color: var(--redup); font-weight: 600; }
   table.ringkas { font-size: 8.8pt; }
+  p.ket-kode { font-size: 9.5pt; color: var(--redup); margin-bottom: 1mm; }
   table.ringkas td, table.ringkas th { padding: 1.3mm 2.2mm; }
 </style>
 </head>
@@ -625,52 +626,271 @@
   <div class="catatan">Pertanyaan lain tentang isi perkuliahan atau akun: hubungi dosen pengampu mata kuliah.</div>
 </section>
 
-<!-- ============================ LAMPIRAN 3 (#340) ============================ -->
-<!-- Satu halaman. Angka di tabel dihitung 25 Okt 2026 dengan `git ls-files` (tanpa berkas .test) dan `wc -l`.
-     Cuplikan disalin persis dari src/lib/golongan.ts dan src/lib/topik.ts tanpa baris komentar di dalamnya; perbarui bila fungsinya berubah. -->
+<!-- ============================ LAMPIRAN 3 (#340, diulang #341) ============================ -->
+<!-- Lima halaman, satu potongan kode tampilan per halaman inti. Potongan disalin persis dari commit 99b9dbf8
+     (lekuk kiri dirapatkan, baris komentar dibuang), dibuat skrip buat_lampiran3.py sesi 25 Okt 2026. Nama berkas sengaja tidak dicetak (koreksi Johan #341):
+     1. Dashboard mahasiswa: src/pages/Dashboard.tsx baris 604-632
+     2. Pembaca modul flipbook: src/pages/Ebook.tsx baris 276-315
+     3. Video pertemuan: src/pages/Video.tsx baris 193-239
+     4. Tes formatif: src/pages/Formatif.tsx baris 128-184
+     5. Dashboard dosen: src/pages/Dashboard.tsx baris 218-268
+     Angka berkas dihitung 25 Okt 2026 dengan git ls-files (tanpa berkas .test) dan wc -l. -->
 <section class="bab" id="kode">
   <h2>Lampiran 3. Cuplikan kode sumber</h2>
-  <p>SMART-FLIP ditulis dengan React 19, TypeScript, dan Vite, memakai Supabase (PostgreSQL dan autentikasi), dan tayang di Vercel. Tabel berikut memetakan folder kode; cuplikan di bawahnya adalah inti sifat adaptif SMART-FLIP.</p>
+  <p>SMART-FLIP ditulis dengan React dan TypeScript. Kode sumbernya terdiri dari 109 berkas program (24.846 baris), ditambah berkas basis data dan tes otomatis:</p>
   <table class="ringkas">
-    <tr><th style="width:26%">Folder</th><th style="width:16%">Ukuran</th><th>Isi</th></tr>
-    <tr><td><code>src/pages</code></td><td>20 berkas, 10.536 baris</td><td>Satu berkas per halaman: Dashboard, Modul, Video, Asesmen, Bank Soal, Kelas, Akun, Mini Projek</td></tr>
-    <tr><td><code>src/components</code></td><td>39 berkas, 6.574 baris</td><td>Bagian layar yang dipakai ulang: pembaca PDF flipbook, kartu topik, modal, lonceng notifikasi</td></tr>
-    <tr><td><code>src/lib</code></td><td>38 berkas, 7.157 baris</td><td>Aturan dan data: jalur belajar, kunci topik, skor tes, jadwal, peningkatan skor</td></tr>
-    <tr><td><code>database</code></td><td>55 berkas migrasi</td><td>Tabel, aturan akses per peran (Row Level Security), dan fungsi basis data</td></tr>
-    <tr><td>Tes otomatis</td><td>92 berkas</td><td>Tes otomatis Vitest untuk aturan dan halaman, dijalankan pengembang dengan <code>pnpm test</code></td></tr>
+    <tr><th style="width:24%">Jenis berkas</th><th style="width:20%">Jumlah</th><th>Isi</th></tr>
+    <tr><td>Halaman</td><td>20 berkas, 10.536 baris</td><td>Dashboard, Modul, Pembaca modul, Video, Asesmen, Tes formatif, Bank Soal, Kelas, Akun, Mini Projek</td></tr>
+    <tr><td>Komponen tampilan</td><td>39 berkas, 6.574 baris</td><td>Pembaca PDF flipbook, kartu topik, kartu angka, modal, lonceng notifikasi</td></tr>
+    <tr><td>Aturan dan data</td><td>38 berkas, 7.157 baris</td><td>Jalur belajar, kunci topik, skor tes, jadwal buka, peningkatan skor</td></tr>
+    <tr><td>Pendukung</td><td>12 berkas, 579 baris</td><td>Rute aplikasi, data akun dan mata kuliah yang sedang dipakai, pengambil data bersama</td></tr>
+    <tr><td>Basis data</td><td>55 berkas</td><td>Tabel, aturan akses per peran, dan fungsi basis data</td></tr>
+    <tr><td>Tes otomatis</td><td>92 berkas</td><td>Uji aturan dan halaman</td></tr>
   </table>
-  <h3>Jalur belajar dan kunci topik</h3>
-  <p>Skor tes diagnostik awal menentukan jalur. Jalur Cepat membuka semua topik sekaligus. Belajar Mendalam membuka Bab berikutnya hanya bila tes formatif Bab sebelumnya mencapai batas lulus.</p>
-<pre class="kode"><span class="ket">// src/lib/golongan.ts</span>
-export function golonganDariSkor(skor: number | null | undefined, ambang: number = AMBANG_DIAGNOSTIK): Golongan {
-  if (skor == null) return 'belum'
-  return skor &gt;= ambang ? 'mahir' : 'remedial'
-}
+  <p>Halaman ini dan empat halaman berikutnya menampilkan potongan kode tampilan dari lima halaman inti SMART-FLIP.</p>
 
-<span class="ket">// src/lib/topik.ts</span>
-export function hitungStatusTopik(
-  modulesUrut: Array&lt;{ id: number; jenis?: string | null }&gt;,
-  bestFormatif: Record&lt;number, number&gt;,
-  preDone: boolean,
-  passScore: number = AMBANG_FORMATIF,
-  mahir: boolean = false,
-  materiBuka?: (moduleId: number) =&gt; boolean,
-): (moduleId: number) =&gt; TopikStatus {
-  return (moduleId: number) =&gt; {
-    const idx = modulesUrut.findIndex((m) =&gt; m.id === moduleId)
-    if (idx === -1) return 'locked'
-    const ownScore = bestFormatif[moduleId] ?? 0
-    const bagian = isBagian(modulesUrut[idx])
-    const babSebelum = [...modulesUrut.slice(0, idx)].reverse().find((m) =&gt; !isBagian(m))
-    const gateOpen = !preDone ? false : mahir || bagian || !babSebelum ? true : (bestFormatif[babSebelum.id] ?? 0) &gt;= passScore
-    if (!gateOpen) return 'locked'
-    if (bagian) return materiBuka &amp;&amp; !materiBuka(moduleId) ? 'locked' : 'open'
-    if (ownScore &gt;= passScore) return 'done'
-    if (materiBuka &amp;&amp; !materiBuka(moduleId)) return 'locked'
-    return 'open'
-  }
-}</pre>
-  <div class="catatan">Arti nilai di kode: <b>mahir</b> = Jalur Cepat, <b>remedial</b> = Belajar Mendalam, <b>belum</b> = belum ada skor tes diagnostik (batas bawaan 80). Status topik: <b>locked</b> terkunci, <b>open</b> siap dibaca, <b>done</b> selesai (tes formatif mencapai batas lulus, bawaan 70). <b>bagian</b> = Pendahuluan dan Penutup, tanpa tes formatif. <b>materiBuka</b> = jadwal buka dari dosen.</div>
+  <h3>1. Dashboard mahasiswa</h3>
+  <p class="ket-kode">Halaman pertama sesudah masuk. Menampilkan topik aktif dan kotak Langkah Berikutnya, yang tombolnya berganti sesuai kemajuan belajar: baca modul, tonton video, atau kerjakan tes formatif.</p>
+<pre class="kode">&lt;p className="text-brown-3 mb-4"&gt;
+  Topik &#123;hasil.topikAktif.orderNum} dari &#123;totalModules} · &#123;hasil.topikAktif.title}
+&lt;/p&gt;
+
+&lt;div className="bg-ivory rounded-2xl border p-5 mb-4" style=&#123;BORDER}&gt;
+  &lt;div className="text-xs font-semibold text-brown-3 uppercase tracking-wide mb-3"&gt;
+    Langkah Berikutnya
+  &lt;/div&gt;
+  &#123;utama === 'selesai-semua' ? (
+    &lt;p className="text-brown-2 text-sm"&gt;
+      Semua topik selesai. Lanjutkan ke mini projek.
+    &lt;/p&gt;
+  ) : materiDibuka ? (
+    &lt;p className="text-brown-2 text-sm"&gt;
+      Topik &#123;hasil.topikAktif.orderNum} dibuka &#123;formatTanggal(materiDibuka)}.
+    &lt;/p&gt;
+  ) : (
+    &lt;div className="flex flex-wrap gap-2"&gt;
+      &lt;Link to=&#123;actions[utama].to} className="btn btn-primary"&gt;
+        &#123;actions[utama].label}
+      &lt;/Link&gt;
+      &#123;langkahLain.map((k) =&gt; (
+        &lt;Link key=&#123;k} to=&#123;actions[k].to} className="btn btn-secondary"&gt;
+          &#123;actions[k].label}
+        &lt;/Link&gt;
+      ))}
+    &lt;/div&gt;
+  )}
+&lt;/div&gt;</pre>
+</section>
+
+<section class="bab kode-lanjut">
+  <h3>2. Pembaca modul flipbook</h3>
+  <p class="ket-kode">Membuka PDF modul sebagai buku yang bisa dibalik, dengan tautan kembali ke Modul di kop. Bila PDF gagal dimuat, halaman menampilkan pesannya dan tombol Kembali ke Modul.</p>
+<pre class="kode">&#123;galat &amp;&amp; (
+  &lt;div className="flex flex-1 flex-col items-center justify-center gap-3 py-16 text-center max-w-sm"&gt;
+    &lt;IconWarning size=&#123;40} className="text-danger" /&gt;
+    &lt;p className="text-sm text-brown-2 whitespace-pre-line"&gt;&#123;galat}&lt;/p&gt;
+    &lt;Link to="/modul" className="btn btn-primary mt-2"&gt;
+      Kembali ke Modul
+    &lt;/Link&gt;
+  &lt;/div&gt;
+)}
+
+&#123;moduleId != null &amp;&amp; src &amp;&amp; (
+  &lt;PembacaPdf
+    key=&#123;moduleId}
+    src=&#123;src}
+    judul=&#123;currentModule?.title || 'Ebook'}
+    cap=&#123;cap}
+    tampilStatus=&#123;false}
+    onStatus=&#123;(status, pesan) =&gt; setLaporan((l) =&gt; (l.id === moduleId &amp;&amp; l.status === status &amp;&amp; l.pesan === pesan ? l : &#123; id: moduleId, status, pesan }))}
+    onHalaman=&#123;catatBaca.onHalaman}
+    persenTercatat=&#123;catatBaca.tercatat}
+    kiri=&#123;
+      &lt;&gt;
+        &lt;Link to="/modul" className="hover:underline flex-shrink-0 pembaca-redup"&gt;Modul&lt;/Link&gt;
+        &lt;IconChevronRight size=&#123;12} className="flex-shrink-0 pembaca-redup" /&gt;
+        &lt;h1 className="text-xs font-semibold truncate"&gt;
+          &lt;Link to=&#123;`/modul/$&#123;moduleId}`} className="hover:underline"&gt;
+            &#123;currentModule?.title || 'Ebook'}
+          &lt;/Link&gt;
+        &lt;/h1&gt;
+      &lt;/&gt;
+    }
+    aksi=&#123;
+      &lt;Link to="/modul" className="pembaca-tb"&gt;
+        ← Modul
+      &lt;/Link&gt;
+    }
+  /&gt;
+)}</pre>
+</section>
+
+<section class="bab kode-lanjut">
+  <h3>3. Video pertemuan</h3>
+  <p class="ket-kode">Memutar video pertemuan pertama atau kedua tiap topik. Topik yang belum terbuka menampilkan tanggal buka atau syaratnya.</p>
+<pre class="kode">return (
+  &lt;Layout&gt;
+    &lt;div className="p-4 md:p-6"&gt;
+      &lt;Link to="/video" className="text-terra text-xs font-semibold inline-flex items-center min-h-11 mb-1"&gt;
+        ← Semua Video
+      &lt;/Link&gt;
+      &lt;div className="flex items-center gap-3 flex-wrap mb-4"&gt;
+        &lt;h1 className="text-2xl font-bold text-brown"&gt;
+          Pertemuan &#123;nomorPertemuan(Math.max(0, idx), modul.minggu_mulai, pertemuan)} · &#123;modul.title}
+        &lt;/h1&gt;
+        &lt;MataKuliahSelect /&gt;
+      &lt;/div&gt;
+      &lt;PertemuanStepper current=&#123;current} basePath="/video" statusOf=&#123;statusOf} tanpaBagian /&gt;
+
+      &#123;status === 'locked' ? (
+        &lt;div className="mt-6 p-6 rounded-xl bg-ivory border text-center" style=&#123;BORDER}&gt;
+          &lt;p className="text-brown-2 mb-3 text-sm"&gt;
+            &#123;bukaPada(modul.id) ? `Topik ini dibuka $&#123;formatTanggal(bukaPada(modul.id)!)}.` : 'Selesaikan tes formatif topik sebelumnya dulu.'}
+          &lt;/p&gt;
+          &lt;Link to="/video" className="text-terra font-semibold text-sm inline-flex items-center min-h-11"&gt;
+            ← Kembali
+          &lt;/Link&gt;
+        &lt;/div&gt;
+      ) : (
+        &lt;div className="mt-6 grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6"&gt;
+          &lt;div className="min-w-0 flex flex-col gap-3"&gt;
+            &#123;duaVideo &amp;&amp; (
+              &lt;PillGroup
+                ariaLabel="Video pertemuan"
+                options=&#123;PILIHAN_PERTEMUAN}
+                value=&#123;String(pertemuan)}
+                onChange=&#123;(v) =&gt; setCari(v === '2' ? &#123; p: '2' } : &#123;}, &#123; replace: true })}
+              /&gt;
+            )}
+            &lt;VideoPlayer
+              key=&#123;`$&#123;modul.id}-$&#123;pertemuan}`}
+              modul=&#123;modul}
+              pertemuan=&#123;pertemuan}
+              sudahSelesai=&#123;(pertemuan === 2 ? prog?.done2 : prog?.done) ?? false}
+            /&gt;
+          &lt;/div&gt;
+          &lt;SetelahVideoPanel current=&#123;current} idx=&#123;idx} sorted=&#123;sorted} /&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  &lt;/Layout&gt;
+)</pre>
+</section>
+
+<section class="bab kode-lanjut">
+  <h3>4. Tes formatif</h3>
+  <p class="ket-kode">Menampilkan keadaan tes formatif: terkunci, sudah lulus, belum dibuka, atau lembar soal acak yang dikerjakan satu per satu.</p>
+<pre class="kode">&lt;div className="mt-6"&gt;
+  &#123;status === 'locked' ? (
+    &lt;div className="p-6 rounded-xl bg-ivory border text-center" style=&#123;BORDER}&gt;
+      &lt;IconLock size=&#123;28} className="mx-auto mb-3 text-brown-3" /&gt;
+      &lt;p className="text-brown-2 mb-3 text-sm"&gt;
+        &#123;bukaPada(moduleId) ? `Topik ini dibuka $&#123;formatTanggal(bukaPada(moduleId)!)}.` : 'Selesaikan tes formatif topik sebelumnya dulu.'}
+      &lt;/p&gt;
+      &lt;Link to="/asesmen" className="inline-flex items-center min-h-11 text-terra font-semibold text-sm"&gt;
+        ← Kembali
+      &lt;/Link&gt;
+    &lt;/div&gt;
+  ) : status === 'done' &amp;&amp; !acak &amp;&amp; !modal ? (
+    &lt;div className="p-7 rounded-xl bg-ivory border text-center" style=&#123;BORDER}&gt;
+      &lt;div className="flex justify-center mb-3"&gt;
+        &lt;ChipRak jenis="ok" label="Sudah Lulus" /&gt;
+      &lt;/div&gt;
+      &lt;p className="text-brown-2 text-sm mb-1"&gt;
+        Skor terbaik kamu: &lt;strong&gt;&#123;bestScore}&lt;/strong&gt;. Batas lulus &#123;ambang.formatif}.
+      &lt;/p&gt;
+      &lt;p className="text-sm text-brown-3 mb-5"&gt;Tes formatif topik ini sudah tertutup untukmu.&lt;/p&gt;
+      &#123;nextModul &amp;&amp; (
+        &lt;Link to=&#123;`/modul/$&#123;nextModul.id}`} className="btn btn-primary"&gt;
+          Lanjut ke Topik &#123;idx + 2}
+        &lt;/Link&gt;
+      )}
+    &lt;/div&gt;
+  ) : formatifPada(moduleId) &amp;&amp; !acak ? (
+    &lt;div className="p-6 rounded-xl bg-ivory border text-center" style=&#123;BORDER}&gt;
+      &lt;IconLock size=&#123;28} className="mx-auto mb-3 text-brown-3" /&gt;
+      &lt;p className="text-brown-2 mb-1 text-sm"&gt;Tes formatif topik ini dibuka &#123;formatTanggal(formatifPada(moduleId)!)}.&lt;/p&gt;
+      &lt;p className="text-brown-3 mb-3 text-xs"&gt;Tes dibuka di pertemuan kedua topik. Baca modul dan tonton videonya dulu.&lt;/p&gt;
+      &lt;Link to=&#123;`/modul/$&#123;moduleId}`} className="btn btn-secondary"&gt;
+        Baca Topik &#123;idx &gt;= 0 ? idx + 1 : modul.order_num}
+      &lt;/Link&gt;
+    &lt;/div&gt;
+  ) : soal.length === 0 ? (
+    &lt;div className="p-6 rounded-xl bg-ivory border text-center" style=&#123;BORDER}&gt;
+      &lt;p className="text-brown-2 text-sm"&gt;Dosen belum menyiapkan soal untuk topik ini.&lt;/p&gt;
+    &lt;/div&gt;
+  ) : acak ? (
+    &lt;SoalRunner
+      total=&#123;acak.tampil.length}
+      q=&#123;acak.tampil[currentQ]}
+      currentQ=&#123;currentQ}
+      selected=&#123;jawaban[currentQ] ?? -1}
+      isSubmitted=&#123;submitted[currentQ] ?? false}
+      saving=&#123;saving}
+      onSelect=&#123;(i) =&gt; &#123;
+        if (submitted[currentQ]) return
+        setJawaban((a) =&gt; (&#123; ...a, [currentQ]: i }))
+        setSubmitted((s) =&gt; (&#123; ...s, [currentQ]: true }))
+      }}
+      onPrev=&#123;() =&gt; setCurrentQ((c) =&gt; Math.max(0, c - 1))}
+      onNext=&#123;() =&gt; setCurrentQ((c) =&gt; Math.min(acak.tampil.length - 1, c + 1))}
+      onFinish=&#123;handleFinish}
+    /&gt;</pre>
+</section>
+
+<section class="bab kode-lanjut">
+  <h3>5. Dashboard dosen</h3>
+  <p class="ket-kode">Ringkasan kelas untuk dosen: saringan mata kuliah, kelas, dan rentang waktu, lalu kartu mahasiswa aktif dan hasil tes diagnostik awal.</p>
+<pre class="kode">return (
+  &lt;div className="flex flex-col gap-5"&gt;
+    &#123;sasaranIngat &amp;&amp; (
+      &lt;IngatkanModal sasaran=&#123;sasaranIngat} mataKuliah=&#123;course?.name} onClose=&#123;() =&gt; setSasaranIngat(null)} /&gt;
+    )}
+    &lt;div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3"&gt;
+      &lt;div className="min-w-0"&gt;
+        &lt;p className="text-xs text-brown-3 flex items-center gap-2 flex-wrap"&gt;
+          &lt;span&gt;Dashboard Dosen · &#123;tanggalHariIni}&lt;/span&gt;
+          &#123;perhatian.length &gt; 0 &amp;&amp; (
+            &lt;Link
+              to="?tab=perhatian"
+              className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-2 text-[11px] font-bold rounded-full"
+              style=&#123;&#123; background: 'var(--danger)', color: 'var(--btn-text)' }}
+            &gt;
+              &#123;perhatian.length} perlu perhatian
+            &lt;/Link&gt;
+          )}
+        &lt;/p&gt;
+        &lt;h1 className="text-2xl font-bold text-brown"&gt;Halo, &#123;nama || 'Pengguna'}&lt;/h1&gt;
+      &lt;/div&gt;
+      &lt;div className="flex flex-wrap items-center gap-2"&gt;
+        &lt;MataKuliahSelect size="sm" /&gt;
+        &lt;KelasTahunFilter kelasList=&#123;kelasList} tahun=&#123;tahun} kelas=&#123;kelas} onChange=&#123;handleKelasTahunChange} /&gt;
+        &lt;PillGroup
+          ariaLabel="Filter rentang waktu"
+          size="sm"
+          value=&#123;String(hari)}
+          onChange=&#123;(v) =&gt; handleHariChange(v === 'semester' ? 'semester' : (Number(v) as 7 | 30))}
+          options=&#123;HARI_OPTIONS.map((opt) =&gt; (&#123; value: String(opt.value), label: opt.label }))}
+        /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3"&gt;
+      &lt;KartuRingkas label=&#123;`Mahasiswa aktif · $&#123;rentangLabel}`} to="/kelas"&gt;
+        &lt;p className="text-3xl font-bold text-brown tabular-nums"&gt;
+          &#123;ringkas ? ringkas.aktif7Hari : '—'}
+          &lt;span className="text-sm font-medium text-brown-2"&gt; dari &#123;ringkas?.totalMhs ?? '—'} mahasiswa&lt;/span&gt;
+        &lt;/p&gt;
+        &lt;Bilah segmen=&#123;[&#123; bagian: ringkas?.aktif7Hari ?? 0, warna: 'var(--sage)' }]} total=&#123;ringkas?.totalMhs ?? 0} /&gt;
+        &lt;p className="text-xs text-brown-3"&gt;
+          &#123;!ringkas || ringkas.totalMhs === 0
+            ? 'Belum ada mahasiswa'
+            : ringkas.aktif7Hari &gt;= ringkas.totalMhs
+              ? 'Semua membuka modul'
+              : `$&#123;ringkas.totalMhs - ringkas.aktif7Hari} belum aktif`}
+        &lt;/p&gt;
+      &lt;/KartuRingkas&gt;</pre>
+
 </section>
 
 <!-- ========================= SAMPUL BELAKANG (#311) ========================= -->
