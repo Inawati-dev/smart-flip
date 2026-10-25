@@ -1,4 +1,6 @@
 import { KabarTerbaruCard } from '../components/KabarPaket'
+import { IngatkanModal, PengingatMhsCard, type SasaranPengingat } from '../components/Pengingat'
+import { dalamJeda, fetchPengingatTerakhir } from '../lib/pengingat'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
@@ -99,8 +101,9 @@ function StatusChip({ status }: { status: MatriksSel['status'] }) {
 // di src/lib/aktivitas.ts mengubahnya jadi umpan, ringkasan, daftar
 // perhatian, dan matriks — tidak ada angka statis di halaman ini.
 export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }) {
-  const { courseId } = useCourse()
+  const { courseId, course } = useCourse()
   const { data: kelasList = [] } = useKelasByDosen(dosenId)
+  const [sasaranIngat, setSasaranIngat] = useState<SasaranPengingat[] | null>(null)
   const [tahun, setTahun] = useState<number | null>(null)
   const [kelas, setKelas] = useState<string | null>(null)
   const [hari, setHari] = useState<FilterAktivitas['hari']>(7)
@@ -150,6 +153,16 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
 
   const kejadian = useMemo(() => (sumber ? gabungKejadian(sumber) : []), [sumber])
   const perhatian = useMemo(() => (sumber ? perluPerhatian(sumber) : []), [sumber])
+  // Pengingat terakhir per mahasiswa (antrean #338): tombol Ingatkan dikunci 24 jam.
+  const idPerhatian = useMemo(() => perhatian.flatMap((p) => (p.userId ? [p.userId] : [])), [perhatian])
+  const { data: terakhirIngat = {} } = useQuery({
+    queryKey: ['pengingat-terakhir', idPerhatian],
+    queryFn: () => fetchPengingatTerakhir(idPerhatian),
+    enabled: idPerhatian.length > 0,
+  })
+  const bolehIngat: SasaranPengingat[] = perhatian.flatMap((p) =>
+    p.userId && !dalamJeda(terakhirIngat[p.userId]) ? [{ userId: p.userId, nama: p.judul, keterangan: p.keterangan }] : [],
+  )
   const profilMap = useMemo(() => new Map((sumber?.profiles ?? []).map((p) => [p.id, p])), [sumber])
   const matriks = useMemo(() => (sumber ? matriksProgres(sumber) : []), [sumber])
 
@@ -204,6 +217,9 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
 
   return (
     <div className="flex flex-col gap-5">
+      {sasaranIngat && (
+        <IngatkanModal sasaran={sasaranIngat} mataKuliah={course?.name} onClose={() => setSasaranIngat(null)} />
+      )}
       {/* Kepala: tanggal + sapaan di kiri, saringan di kanan (antrean #301) */}
       <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
         <div className="min-w-0">
@@ -389,17 +405,37 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
             {perhatian.length === 0 ? (
               <p className="text-brown-3 text-sm px-2 py-1">Belum ada yang perlu diperhatikan</p>
             ) : (
-              perhatian.map((p, i) => (
-                <Link
-                  key={i}
-                  to={p.tautan}
-                  className="flex items-center justify-between gap-2 px-3 min-h-11 rounded-lg border text-sm"
-                  style={BORDER}
-                >
-                  <span className="font-medium text-brown">{p.judul}</span>
-                  <span className="text-brown-3 text-xs">{p.keterangan}</span>
-                </Link>
-              ))
+              <>
+                {bolehIngat.length > 1 && (
+                  <button type="button" onClick={() => setSasaranIngat(bolehIngat)} className="btn btn-primary btn-sm self-end">
+                    Ingatkan semua ({bolehIngat.length})
+                  </button>
+                )}
+                {perhatian.map((p, i) => {
+                  const terakhir = p.userId ? terakhirIngat[p.userId] : undefined
+                  const terkunci = dalamJeda(terakhir)
+                  return (
+                    <div key={i} className="flex flex-wrap sm:flex-nowrap items-center gap-2 px-3 py-1.5 rounded-lg border text-sm" style={BORDER}>
+                      <Link to={p.tautan} className="flex-1 min-w-0 flex flex-wrap items-center justify-between gap-x-2 min-h-11">
+                        <span className="font-medium text-brown">{p.judul}</span>
+                        <span className="text-brown-3 text-xs">{p.keterangan}</span>
+                      </Link>
+                      {p.userId &&
+                        (terkunci ? (
+                          <span className="text-xs text-brown-3 whitespace-nowrap">Diingatkan {timeAgo(terakhir!)}</span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setSasaranIngat([{ userId: p.userId!, nama: p.judul, keterangan: p.keterangan }])}
+                            className="btn btn-secondary btn-sm shrink-0"
+                          >
+                            Ingatkan
+                          </button>
+                        ))}
+                    </div>
+                  )
+                })}
+              </>
             )}
           </div>
         )}
@@ -595,6 +631,7 @@ export function DashboardMhs({
         )}
       </div>
 
+      <PengingatMhsCard />
       <KabarTerbaruCard />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">

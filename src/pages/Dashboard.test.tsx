@@ -16,6 +16,7 @@ afterEach(() => {
 
 // Kartu Kabar Terbaru butuh penyedia kueri dan mata kuliah; uji Dashboard tidak memeriksanya.
 vi.mock('../components/KabarPaket', () => ({ KabarTerbaruCard: () => null }))
+vi.mock('../components/Pengingat', () => ({ PengingatMhsCard: () => null, IngatkanModal: () => null }))
 vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
