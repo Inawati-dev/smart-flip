@@ -110,11 +110,26 @@ export function PanelLonceng({
 }) {
   const [buka, setBuka] = useState(false)
   const akar = useRef<HTMLDivElement>(null)
+  const tombol = useRef<HTMLButtonElement>(null)
+  const panel = useRef<HTMLDivElement>(null)
+
+  // Fokus keyboard (antrean #343): saat dibuka pindah ke butir pertama (tanpa butir: tombol kaki, lalu panel);
+  // Esc dan pilih butir mengembalikannya ke tombol lonceng. Klik di luar tidak memindah fokus.
+  function tutup(kembalikanFokus: boolean) {
+    setBuka(false)
+    if (kembalikanFokus) tombol.current?.focus()
+  }
+
+  useEffect(() => {
+    if (!buka) return
+    const p = panel.current
+    ;(p?.querySelector<HTMLElement>('li button, button') ?? p)?.focus()
+  }, [buka])
 
   useEffect(() => {
     if (!buka) return
     const luar = (e: MouseEvent) => { if (!akar.current?.contains(e.target as Node)) setBuka(false) }
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setBuka(false) }
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') tutup(true) }
     document.addEventListener('mousedown', luar)
     document.addEventListener('keydown', esc)
     return () => {
@@ -135,13 +150,14 @@ export function PanelLonceng({
       : 'fixed left-4 right-4 top-[66px]'
 
   function pilih(b: ButirLonceng) {
-    setBuka(false)
+    tutup(true)
     b.buka()
   }
 
   return (
     <div ref={akar} className="relative">
       <button
+        ref={tombol}
         type="button"
         onClick={() => setBuka((v) => !v)}
         title={label}
@@ -164,9 +180,11 @@ export function PanelLonceng({
       </button>
       {buka && (
         <div
+          ref={panel}
+          tabIndex={-1}
           role="dialog"
           aria-label="Notifikasi"
-          className={`${panelKelas} z-[500] rounded-2xl border border-[color:var(--border)] bg-ivory flex flex-col max-h-[min(480px,75dvh)]`}
+          className={`${panelKelas} z-[500] outline-none rounded-2xl border border-[color:var(--border)] bg-ivory flex flex-col max-h-[min(480px,75dvh)]`}
           style={{ boxShadow: '0 8px 32px color-mix(in srgb, var(--shadow-color) 20%, transparent)', animation: 'slideUpModal 0.2s ease' }}
         >
           <p className="px-4 pt-3.5 pb-2 text-[11px] font-semibold uppercase tracking-wide text-brown-3">Notifikasi</p>
@@ -179,7 +197,7 @@ export function PanelLonceng({
                   <button
                     type="button"
                     onClick={() => pilih(b)}
-                    className="w-full text-left rounded-xl px-3 py-2.5 min-h-11 flex gap-2.5 hover:bg-bg3 transition-colors"
+                    className="w-full text-left rounded-xl px-3 py-2.5 min-h-11 flex gap-2.5 hover:bg-bg3 transition-colors focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]"
                   >
                     <span
                       className="mt-1.5 w-2 h-2 rounded-full shrink-0"
@@ -200,7 +218,7 @@ export function PanelLonceng({
             </ul>
           )}
           {kaki && (
-            <button type="button" onClick={() => { setBuka(false); kaki.buka() }} className="btn btn-secondary btn-sm mx-3 mb-3">
+            <button type="button" onClick={() => { tutup(true); kaki.buka() }} className="btn btn-secondary btn-sm mx-3 mb-3">
               {kaki.label}
             </button>
           )}

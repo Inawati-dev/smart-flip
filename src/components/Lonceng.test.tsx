@@ -32,6 +32,34 @@ describe('PanelLonceng', () => {
     expect(screen.queryByRole('dialog')).toBeNull()
   })
 
+  it('fokus pindah ke butir pertama saat dibuka; Esc dan pilih butir mengembalikannya ke tombol lonceng', () => {
+    render(<PanelLonceng letak="atas" butir={butir(2)} jumlahBaru={0} kosong="Kosong" />)
+    const tombol = screen.getByRole('button', { name: 'Notifikasi' })
+    fireEvent.click(tombol)
+    expect(document.activeElement?.textContent).toContain('Judul 0')
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(document.activeElement).toBe(tombol)
+    fireEvent.click(tombol)
+    fireEvent.click(screen.getByText('Judul 1'))
+    expect(document.activeElement).toBe(tombol)
+  })
+
+  it('panel kosong menerima fokus; klik di luar tidak memindah fokus ke tombol', () => {
+    render(
+      <>
+        <PanelLonceng letak="atas" butir={[]} jumlahBaru={0} kosong="Kosong" />
+        <input aria-label="lain" />
+      </>,
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Notifikasi' }))
+    expect(document.activeElement).toBe(screen.getByRole('dialog', { name: 'Notifikasi' }))
+    const lain = screen.getByRole('textbox', { name: 'lain' })
+    lain.focus()
+    fireEvent.mouseDown(lain)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(lain)
+  })
+
   it('tanpa butir menampilkan teks kosong; tombol kaki dipanggil', () => {
     const kaki = vi.fn()
     render(<PanelLonceng letak="atas" butir={[]} jumlahBaru={0} kosong="Belum ada notifikasi." kaki={{ label: 'Buka', buka: kaki }} />)
