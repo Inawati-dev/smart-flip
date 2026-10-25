@@ -15,6 +15,7 @@ const mockAuth = vi.hoisted(() => ({
 }))
 
 vi.mock('./KabarPaket', () => ({ TitikKabarPaket: () => null }))
+vi.mock('./Lonceng', () => ({ Lonceng: () => null }))
 const mockPre = vi.hoisted(() => ({ data: true as boolean | undefined }))
 vi.mock('../lib/topik', () => ({ usePreTestDone: () => ({ data: mockPre.data }) }))
 vi.mock('../lib/supabase', () => ({
@@ -211,7 +212,7 @@ describe('Layout: menu terbatas dan tur panduan', () => {
     renderDom()
     const dialog = screen.getByRole('dialog')
     expect(dialog.textContent).toContain('Dashboard')
-    expect(dialog.textContent).toContain('1 / 8')
+    expect(dialog.textContent).toContain('1 / 9')
     fireEvent.click(screen.getByRole('button', { name: 'Lewati' }))
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(localStorage.getItem('sfp_tur_v1_d1')).toBe('1')

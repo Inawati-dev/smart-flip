@@ -216,7 +216,7 @@ export function PengaturanSections({ kepala }: { kepala?: ReactNode } = {}) {
             )}
           </div>
           {!isDosen ? (
-            <p className="text-xs text-brown-3">Segera hadir: atur notifikasi email &amp; in-app di sini.</p>
+            <p className="text-xs text-brown-3">Pengingat dari dosen dan kabar Mini Projek muncul di lonceng di kepala halaman. Angka merah menandai yang belum dibaca.</p>
           ) : needsAttention.length === 0 ? (
             <p className="text-xs text-brown-3 mt-1">
               Semua mahasiswa sudah mulai modul &amp; tes diagnostik. Tidak ada yang perlu ditindaklanjuti.

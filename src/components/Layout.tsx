@@ -8,6 +8,7 @@ import { usePreTestDone } from '../lib/topik'
 import { LANGKAH_DOSEN, LANGKAH_MAHASISWA, EVENT_MULAI_TUR, sudahTur, tandaiTur } from '../lib/turPanduan'
 import { TurPanduan } from './TurPanduan'
 import { LogoutModal } from './LogoutModal'
+import { Lonceng } from './Lonceng'
 import { BrandMark } from './AuthShell'
 import { useTheme } from '../hooks/useTheme'
 import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconMoon, IconSun, IconUsers, IconClipboard, IconDocument } from './icons'
@@ -100,7 +101,7 @@ export function Layout({ children }: { children: ReactNode }) {
     // Tur otomatis hanya di Dashboard, supaya tidak menimpa halaman tes yang sedang dikerjakan.
     (turManual || (!turSelesai && location.pathname === '/dashboard' && hasSeenOnboarding(role) && !sudahTur(idTur)))
   const langkahTur = (role === 'dosen' ? LANGKAH_DOSEN : LANGKAH_MAHASISWA).filter(
-    (l) => l.sasaran === 'tema' || navItems.some((n) => n.to === l.sasaran),
+    (l) => l.sasaran === 'tema' || l.sasaran === 'lonceng' || navItems.some((n) => n.to === l.sasaran),
   )
   function selesaiTur() {
     tandaiTur(idTur)
@@ -209,6 +210,7 @@ export function Layout({ children }: { children: ReactNode }) {
             initialsOf(profile?.full_name)
           )}
         </Link>
+        <Lonceng letak="rel" />
         <button
           onClick={toggleTheme}
           title={themeToggleLabel}
@@ -236,6 +238,7 @@ export function Layout({ children }: { children: ReactNode }) {
             <span className="font-display font-bold text-brown">Smart Flip</span>
           </Link>
           <div className="flex items-center gap-2">
+            <Lonceng letak="atas" />
             <button
               onClick={toggleTheme}
               title={themeToggleLabel}
