@@ -8,6 +8,7 @@
   halaman dan penanda bab (bookmark).
   Edisi 3 (antrean #310/#311, 24 Okt 2026): rak 8 topik dengan sampul dari PDF modul asli (Topik 0 Pendahuluan
   sampai Topik 7 Penutup), gambar baru d10 (Jadwal) dan d11 (Watermark), dan sampul belakang.
+  Edisi 4 (antrean #340, 25 Okt 2026): Lampiran 3 Cuplikan kode sumber (satu halaman, sebelum sampul belakang).
   Gambar di gambar/ diambil ulang 24 Okt 2026 (Edisi 2, antrean #302) di server
   dev 1600x1000 (telepon 360x800) dengan peran pratinjau (VITE_UI_PREVIEW_ROLE)
   dan data contoh mode demo; halaman masuk dan daftar (u01, u01b, u02) dari situs
@@ -88,6 +89,12 @@
   .alur { display: flex; gap: 2mm; align-items: stretch; margin: 3mm 0 4mm; }
   .alur div { flex: 1; background: var(--biru-t); border-radius: 2mm; padding: 2.5mm; font-size: 9pt; }
   .alur div b { display: block; color: var(--biru); font-size: 9.5pt; margin-bottom: .8mm; }
+  /* Lampiran 3 (#340): fon teks biasa (aturan fon angka: tanpa fon mono bernol bertitik), spasi dilebarkan supaya indentasi terbaca. */
+  pre.kode { font-family: inherit; font-size: 7.8pt; line-height: 1.32; word-spacing: .12em; white-space: pre-wrap; font-variant-numeric: tabular-nums;
+    background: #FAF8F3; border: 1px solid var(--garis); border-left: 1.2mm solid var(--biru); border-radius: 1.5mm; padding: 3mm 4mm; margin: 2mm 0 3mm; break-inside: avoid; color: var(--teks); }
+  pre.kode .ket { color: var(--redup); font-weight: 600; }
+  table.ringkas { font-size: 8.8pt; }
+  table.ringkas td, table.ringkas th { padding: 1.3mm 2.2mm; }
 </style>
 </head>
 <body>
@@ -160,6 +167,7 @@
     <a href="#dos-akun">B7. Akun dan kode undangan dosen</a>
     <a class="utama" href="#link">Lampiran 1. Link akses</a>
     <a class="utama" href="#masalah">Lampiran 2. Masalah yang sering muncul</a>
+    <a class="utama" href="#kode">Lampiran 3. Cuplikan kode sumber</a>
   </div>
   <div class="catatan">Semua tulisan biru di PDF ini bisa diklik dan membuka halaman yang dimaksud. Gambar di panduan ini memakai data contoh, jadi nama, angka, dan judul topik bisa berbeda dari kelas Anda.</div>
 </section>
@@ -615,6 +623,54 @@
     <tr><td>Unggah PDF atau video gagal</td><td>Periksa ukuran berkas: PDF paling besar 20 MB, video MP4/WebM paling besar 100 MB. Coba lagi dengan koneksi yang lebih stabil.</td></tr>
   </table>
   <div class="catatan">Pertanyaan lain tentang isi perkuliahan atau akun: hubungi dosen pengampu mata kuliah.</div>
+</section>
+
+<!-- ============================ LAMPIRAN 3 (#340) ============================ -->
+<!-- Satu halaman. Angka di tabel dihitung 25 Okt 2026 dengan `git ls-files` (tanpa berkas .test) dan `wc -l`.
+     Cuplikan disalin persis dari src/lib/golongan.ts dan src/lib/topik.ts tanpa baris komentar di dalamnya; perbarui bila fungsinya berubah. -->
+<section class="bab" id="kode">
+  <h2>Lampiran 3. Cuplikan kode sumber</h2>
+  <p>SMART-FLIP ditulis dengan React 19, TypeScript, dan Vite, memakai Supabase (PostgreSQL dan autentikasi), dan tayang di Vercel. Tabel berikut memetakan folder kode; cuplikan di bawahnya adalah inti sifat adaptif SMART-FLIP.</p>
+  <table class="ringkas">
+    <tr><th style="width:26%">Folder</th><th style="width:16%">Ukuran</th><th>Isi</th></tr>
+    <tr><td><code>src/pages</code></td><td>20 berkas, 10.536 baris</td><td>Satu berkas per halaman: Dashboard, Modul, Video, Asesmen, Bank Soal, Kelas, Akun, Mini Projek</td></tr>
+    <tr><td><code>src/components</code></td><td>39 berkas, 6.574 baris</td><td>Bagian layar yang dipakai ulang: pembaca PDF flipbook, kartu topik, modal, lonceng notifikasi</td></tr>
+    <tr><td><code>src/lib</code></td><td>38 berkas, 7.157 baris</td><td>Aturan dan data: jalur belajar, kunci topik, skor tes, jadwal, peningkatan skor</td></tr>
+    <tr><td><code>database</code></td><td>55 berkas migrasi</td><td>Tabel, aturan akses per peran (Row Level Security), dan fungsi basis data</td></tr>
+    <tr><td>Tes otomatis</td><td>92 berkas</td><td>Tes otomatis Vitest untuk aturan dan halaman, dijalankan pengembang dengan <code>pnpm test</code></td></tr>
+  </table>
+  <h3>Jalur belajar dan kunci topik</h3>
+  <p>Skor tes diagnostik awal menentukan jalur. Jalur Cepat membuka semua topik sekaligus. Belajar Mendalam membuka Bab berikutnya hanya bila tes formatif Bab sebelumnya mencapai batas lulus.</p>
+<pre class="kode"><span class="ket">// src/lib/golongan.ts</span>
+export function golonganDariSkor(skor: number | null | undefined, ambang: number = AMBANG_DIAGNOSTIK): Golongan {
+  if (skor == null) return 'belum'
+  return skor &gt;= ambang ? 'mahir' : 'remedial'
+}
+
+<span class="ket">// src/lib/topik.ts</span>
+export function hitungStatusTopik(
+  modulesUrut: Array&lt;{ id: number; jenis?: string | null }&gt;,
+  bestFormatif: Record&lt;number, number&gt;,
+  preDone: boolean,
+  passScore: number = AMBANG_FORMATIF,
+  mahir: boolean = false,
+  materiBuka?: (moduleId: number) =&gt; boolean,
+): (moduleId: number) =&gt; TopikStatus {
+  return (moduleId: number) =&gt; {
+    const idx = modulesUrut.findIndex((m) =&gt; m.id === moduleId)
+    if (idx === -1) return 'locked'
+    const ownScore = bestFormatif[moduleId] ?? 0
+    const bagian = isBagian(modulesUrut[idx])
+    const babSebelum = [...modulesUrut.slice(0, idx)].reverse().find((m) =&gt; !isBagian(m))
+    const gateOpen = !preDone ? false : mahir || bagian || !babSebelum ? true : (bestFormatif[babSebelum.id] ?? 0) &gt;= passScore
+    if (!gateOpen) return 'locked'
+    if (bagian) return materiBuka &amp;&amp; !materiBuka(moduleId) ? 'locked' : 'open'
+    if (ownScore &gt;= passScore) return 'done'
+    if (materiBuka &amp;&amp; !materiBuka(moduleId)) return 'locked'
+    return 'open'
+  }
+}</pre>
+  <div class="catatan">Arti nilai di kode: <b>mahir</b> = Jalur Cepat, <b>remedial</b> = Belajar Mendalam, <b>belum</b> = belum ada skor tes diagnostik (batas bawaan 80). Status topik: <b>locked</b> terkunci, <b>open</b> siap dibaca, <b>done</b> selesai (tes formatif mencapai batas lulus, bawaan 70). <b>bagian</b> = Pendahuluan dan Penutup, tanpa tes formatif. <b>materiBuka</b> = jadwal buka dari dosen.</div>
 </section>
 
 <!-- ========================= SAMPUL BELAKANG (#311) ========================= -->
