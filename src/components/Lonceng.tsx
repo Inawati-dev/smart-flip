@@ -143,10 +143,10 @@ export function PanelLonceng({
     letak === 'rel'
       ? 'w-10 h-10 rounded-[var(--radius-control)] hover:bg-bg3'
       : 'w-11 h-11 rounded-full border border-[color:var(--border)]'
-  // Rel laptop di kiri bawah: panel di kanan rel, rata bawah. Telepon: panel penuh lebar di bawah kepala 58 px.
+  // Rel laptop (lonceng di bawah logo, antrean #344): panel di kanan rel, rata atas. Telepon: panel penuh lebar di bawah kepala 58 px.
   const panelKelas =
     letak === 'rel'
-      ? 'fixed left-[88px] bottom-4 w-[360px]'
+      ? 'fixed left-[88px] top-4 w-[360px]'
       : 'fixed left-4 right-4 top-[66px]'
 
   function pilih(b: ButirLonceng) {

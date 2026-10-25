@@ -159,6 +159,10 @@ export function Layout({ children }: { children: ReactNode }) {
         <Link to="/dashboard" className="mb-4 flex items-center justify-center" aria-label="Dashboard">
           <BrandMark size={30} />
         </Link>
+        {/* Lonceng di atas rel, di bawah logo (antrean #344): lencana terlihat sejak halaman dibuka, panel turun sejajar judul. */}
+        <div className="mb-3">
+          <Lonceng letak="rel" />
+        </div>
 
         <nav className="flex-1 flex flex-col items-center gap-1.5 w-full px-2">
           {navItems.map((item) => {
@@ -210,7 +214,6 @@ export function Layout({ children }: { children: ReactNode }) {
             initialsOf(profile?.full_name)
           )}
         </Link>
-        <Lonceng letak="rel" />
         <button
           onClick={toggleTheme}
           title={themeToggleLabel}
