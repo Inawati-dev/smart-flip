@@ -442,13 +442,59 @@ function PreTest() {
             </button>
           </div>
         ) : (
-          <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
-            <p className="text-brown-2 mb-1">Kerjakan tes diagnostik awal {course ? `mata kuliah ${course.name}` : ''} dulu.</p>
-            <p className="text-sm text-brown-3 mb-1">{Math.min(soal.length, SOAL_TAMPIL_DIAGNOSTIK)} soal{soal.length > SOAL_TAMPIL_DIAGNOSTIK ? ` diambil acak dari ${soal.length}` : ''} · tanpa kode · skor {ambang.diagnostik} ke atas masuk {GOLONGAN_LABEL.mahir} dan semua topik langsung terbuka</p>
-            <p className="text-xs text-brown-3 mb-5">Tiap mata kuliah punya tes diagnostik awal sendiri, jadi tes ini hanya untuk mata kuliah yang sedang dipilih.</p>
-            <button onClick={mulai} className="btn btn-primary">
-              Mulai
-            </button>
+          // Kartu pembuka (antrean #334): tujuan, tiga fakta, dua jalur hasil, lalu tombol mulai.
+          <div className="bg-ivory border rounded-2xl p-5 sm:p-7 max-w-3xl mx-auto flex flex-col gap-5" style={BORDER}>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-brown-3">Langkah pertama sebelum belajar</p>
+              <h2 className="text-lg sm:text-xl font-bold text-brown mt-1">
+                Kenali kemampuan awalmu{course ? ` di ${course.name}` : ''}
+              </h2>
+              <p className="text-sm text-brown-2 mt-1.5 leading-relaxed">
+                Tes ini memetakan pemahamanmu sebelum materi dimulai. Hasilnya menentukan jalur belajarmu, jadi kerjakan sendiri sesuai pemahamanmu sekarang.
+              </p>
+            </div>
+
+            {/* Tiga kolom juga di telepon supaya tombol Mulai Tes tetap di atas lipatan layar */}
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+              {[
+                {
+                  angka: `${Math.min(soal.length, SOAL_TAMPIL_DIAGNOSTIK)} soal`,
+                  ket: soal.length > SOAL_TAMPIL_DIAGNOSTIK ? `acak dari ${soal.length}` : 'pilihan ganda',
+                },
+                { angka: 'Tanpa kode', ket: 'langsung mulai' },
+                { angka: `Batas ${ambang.diagnostik}`, ket: 'penentu jalur' },
+              ].map((f) => (
+                <div key={f.angka} className="rounded-xl border p-2.5 sm:p-3.5 bg-cream" style={BORDER}>
+                  <div className="text-[15px] sm:text-base font-bold text-brown leading-tight">{f.angka}</div>
+                  <div className="text-[13px] text-brown-3 mt-0.5 leading-snug">{f.ket}</div>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <p className="text-sm font-semibold text-brown mb-2">Sesudah tes, kamu masuk salah satu jalur:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div className="rounded-xl border p-3.5" style={BORDER}>
+                  <ChipRak jenis={GOLONGAN_CHIP.mahir} label={`${GOLONGAN_LABEL.mahir} · skor ${ambang.diagnostik} ke atas`} />
+                  <p className="text-[13px] text-brown-2 mt-2 leading-snug">Semua topik langsung terbuka. Kerjakan tes formatif tiap topik dalam urutan mana pun.</p>
+                </div>
+                <div className="rounded-xl border p-3.5" style={BORDER}>
+                  <ChipRak jenis={GOLONGAN_CHIP.remedial} label={`${GOLONGAN_LABEL.remedial} · di bawah ${ambang.diagnostik}`} />
+                  <p className="text-[13px] text-brown-2 mt-2 leading-snug">
+                    Topik terbuka satu per satu: topik berikutnya terbuka sesudah tes formatif topik sebelumnya mencapai skor {ambang.formatif}.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center gap-3 pt-1">
+              <p className="text-xs text-brown-3 sm:flex-1">
+                Tiap mata kuliah punya tes diagnostik awal sendiri. Tes ini hanya untuk mata kuliah yang sedang dipilih.
+              </p>
+              <button onClick={mulai} className="btn btn-primary w-full sm:w-auto">
+                Mulai Tes →
+              </button>
+            </div>
           </div>
         )}
       </div>

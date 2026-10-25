@@ -12,6 +12,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "smart-flipbook-vite-mahasiswa",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set VITE_UI_PREVIEW_ROLE=mahasiswa&& npx vite --port 5174 --strictPort"],
+      "port": 5174
     }
   ]
 }

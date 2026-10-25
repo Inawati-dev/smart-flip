@@ -72,7 +72,7 @@ describe('AsesmenMhs — pre-test (spec §9 WP6 poin 5b)', () => {
     queryClient.setQueryData(['attempts-by-kind', 'pre', 1], [])
     renderAt('/asesmen/pre', queryClient)
 
-    fireEvent.click(await screen.findByText('Mulai'))
+    fireEvent.click(await screen.findByText('Mulai Tes →'))
     fireEvent.click(screen.getByText('Salah satu'))
     expect(document.body.textContent).not.toMatch(/Jawaban kamu|Jawaban benar/)
     // Pilihan masih boleh diganti sebelum dikirim.
