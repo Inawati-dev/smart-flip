@@ -21,6 +21,7 @@ import type { NGainCategory } from '../lib/ngain'
 import { ambangDari } from '../lib/ambang'
 import { updateCourse, isMissingCourseSchema, type Course } from '../lib/courses'
 import { ChipRak } from '../components/KartuTopik'
+import { KARTU_DASAR } from '../components/StatCard'
 import { golonganDariSkor, GOLONGAN_LABEL, GOLONGAN_CHIP } from '../lib/golongan'
 import { fetchProjectsDosen, fetchSubmissionsDosen } from '../lib/tugasAkhir'
 import { bobotPaket, briefPaket, nilaiMiniProjek } from '../lib/paketProposal'
@@ -295,16 +296,16 @@ export default function Asesmen() {
 
         {/* TIGA ANGKA */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
-          <div className="bg-ivory border rounded-xl p-3.5 min-w-0" style={BORDER}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Tes Diagnostik Awal</div>
+          <div className={KARTU_DASAR}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">Rata-rata Tes Diagnostik Awal</div>
             <div className="flex items-baseline gap-2 flex-wrap">
-              <div className="font-display text-2xl font-bold text-brown tabular-nums">{formatSkor(peningkatan.rataPre)}</div>
+              <div className="text-3xl font-bold text-brown tabular-nums">{formatSkor(peningkatan.rataPre)}</div>
               <div className="text-xs text-brown-3 tabular-nums">
                 {peningkatan.rataPre == null ? 'Belum ada data' : `dari 100 · ambang Jalur Cepat ${ambang.diagnostik}`}
               </div>
             </div>
             <BilahSkor nilai={peningkatan.rataPre} ambang={ambang.diagnostik} label="Rata-rata tes diagnostik awal dibanding ambang Jalur Cepat" />
-            <div className="flex gap-2 flex-wrap mt-2.5 text-[11px] font-semibold tabular-nums">
+            <div className="flex gap-2 flex-wrap text-[11px] font-semibold tabular-nums">
               <span className="px-2.5 py-1 rounded-full bg-sage/20 text-sage-d">{GOLONGAN_LABEL.mahir} {jumlahGolongan.mahir}</span>
               <span className="px-2.5 py-1 rounded-full" style={{ background: 'var(--color-warning-soft)', color: 'var(--color-warning)' }}>
                 {GOLONGAN_LABEL.remedial} {jumlahGolongan.remedial}
@@ -314,33 +315,33 @@ export default function Asesmen() {
               )}
             </div>
           </div>
-          <div className="bg-ivory border rounded-xl p-3.5 min-w-0" style={BORDER}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1">Rata-rata Tes Formatif</div>
+          <div className={KARTU_DASAR}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">Rata-rata Tes Formatif</div>
             <div className="flex items-baseline gap-2 flex-wrap">
-              <div className="font-display text-2xl font-bold text-brown tabular-nums">{formatSkor(peningkatan.rataPost)}</div>
+              <div className="text-3xl font-bold text-brown tabular-nums">{formatSkor(peningkatan.rataPost)}</div>
               <div className="text-xs text-brown-3 tabular-nums">
                 {peningkatan.rataPost == null ? 'Belum ada data' : `dari 100 · lulus ${ambang.formatif}`}
               </div>
             </div>
             <BilahSkor nilai={peningkatan.rataPost} ambang={ambang.formatif} label="Rata-rata tes formatif dibanding batas lulus" />
             {peningkatan.rataPost != null && (
-              <div className="text-xs text-brown-3 mt-2.5 tabular-nums" data-testid="selisih-lulus">{selisihLulus(peningkatan.rataPost, ambang.formatif)}</div>
+              <div className="text-xs text-brown-3 tabular-nums" data-testid="selisih-lulus">{selisihLulus(peningkatan.rataPost, ambang.formatif)}</div>
             )}
           </div>
-          <div className="bg-ivory border rounded-xl p-3.5 min-w-0" style={BORDER}>
-            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 mb-1 flex items-center gap-1.5">
+          <div className={KARTU_DASAR}>
+            <div className="text-[11px] font-semibold uppercase tracking-wide text-brown-3 flex items-center gap-1.5">
               <IconTrendingUp size={13} /> Peningkatan Skor Kelas
             </div>
             <div className="flex items-center gap-2 flex-wrap">
-              <div className="font-display text-2xl font-bold text-brown tabular-nums">{formatGain(peningkatan.rataPeningkatan)}</div>
+              <div className="text-3xl font-bold text-brown tabular-nums">{formatGain(peningkatan.rataPeningkatan)}</div>
               {peningkatan.kategoriKelas && (
                 <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${KATEGORI_CLASS[peningkatan.kategoriKelas]}`}>
                   {KATEGORI_LABEL[peningkatan.kategoriKelas]}
                 </span>
               )}
             </div>
-            {peningkatan.kategoriKelas == null && <div className="text-xs text-brown-3 mt-2.5">Belum ada data</div>}
-            <div className="grid grid-cols-3 gap-1 mt-2.5">
+            {peningkatan.kategoriKelas == null && <div className="text-xs text-brown-3">Belum ada data</div>}
+            <div className="grid grid-cols-3 gap-1">
               {RUAS_KATEGORI.map((r) => {
                 const aktif = peningkatan.kategoriKelas === r.kunci
                 return (

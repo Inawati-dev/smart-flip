@@ -174,7 +174,7 @@ export function Akun() {
       <div className="p-4 md:p-6 pb-16">
         <h1 className="font-display text-2xl font-bold text-brown mb-4">Akun</h1>
 
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {isDosen ? (
             <>
               <StatCard bar="var(--terra)" val={String(dosenSummary.totalStudents)} label="Mahasiswa Terdaftar" to="/kelas" />

@@ -23,7 +23,7 @@ import { Layout } from '../components/Layout'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { KelasTahunFilter } from '../components/KelasTahunFilter'
 import { PillGroup } from '../components/PillGroup'
-import { StatCard } from '../components/StatCard'
+import { StatCard, KARTU_DASAR, KARTU_KLIK } from '../components/StatCard'
 import { ChipRak } from '../components/KartuTopik'
 import { timeAgo } from '../lib/forum'
 import { TautanPanduan } from '../components/TautanPanduan'
@@ -51,12 +51,13 @@ const HARI_OPTIONS: Array<{ value: FilterAktivitas['hari']; label: string }> = [
   { value: 'semester', label: 'Semester' },
 ]
 
-function KartuRingkas({ label, children }: { label: string; children: React.ReactNode }) {
+// Kartu bisa diklik ke halaman rinciannya (antrean #336); kelas dari StatCard (#337).
+function KartuRingkas({ label, to, children }: { label: string; to: string; children: React.ReactNode }) {
   return (
-    <div className="bg-ivory rounded-2xl border p-4 flex flex-col gap-2 min-w-0" style={BORDER}>
+    <Link to={to} className={`${KARTU_DASAR} ${KARTU_KLIK}`}>
       <p className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">{label}</p>
       {children}
-    </div>
+    </Link>
   )
 }
 
@@ -235,7 +236,7 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
 
       {/* Empat kartu ringkas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
-        <KartuRingkas label={`Mahasiswa aktif · ${rentangLabel}`}>
+        <KartuRingkas label={`Mahasiswa aktif · ${rentangLabel}`} to="/kelas">
           <p className="text-3xl font-bold text-brown tabular-nums">
             {ringkas ? ringkas.aktif7Hari : '—'}
             <span className="text-sm font-medium text-brown-2"> dari {ringkas?.totalMhs ?? '—'} mahasiswa</span>
@@ -250,7 +251,7 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
           </p>
         </KartuRingkas>
 
-        <KartuRingkas label="Tes diagnostik awal">
+        <KartuRingkas label="Tes diagnostik awal" to="/asesmen">
           <p className="text-3xl font-bold text-brown tabular-nums">
             {ringkas ? ringkas.preSelesai : '—'}
             <span className="text-sm font-medium text-brown-2"> dari {ringkas?.totalMhs ?? '—'} selesai</span>
@@ -267,7 +268,7 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
           </p>
         </KartuRingkas>
 
-        <KartuRingkas label="Posisi kelas">
+        <KartuRingkas label="Posisi kelas" to="?tab=progres">
           <p className="text-3xl font-bold text-brown tabular-nums">
             {!ringkas ? '—' : topikM === 0 ? 'Belum ada topik' : `Topik ${topikK}`}
             {topikM > 0 && <span className="text-sm font-medium text-brown-2"> dari {topikM}</span>}
@@ -284,7 +285,7 @@ export function DosenHome({ dosenId, nama }: { dosenId?: string; nama?: string }
           <p className="text-xs text-brown-3">Rata-rata topik yang sedang dikerjakan</p>
         </KartuRingkas>
 
-        <KartuRingkas label="Tes formatif">
+        <KartuRingkas label="Tes formatif" to="/asesmen">
           <p className="text-3xl font-bold text-brown tabular-nums">
             {!ringkas ? '—' : adaFormatif ? ringkas.rataFormatif : 'Belum ada'}
             {/* Data percobaan dipotong sesuai rentang, jadi "Belum ada" hanya berlaku untuk rentang itu. */}
@@ -596,7 +597,7 @@ export function DashboardMhs({
 
       <KabarTerbaruCard />
 
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
         <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik Selesai" bar="var(--sage)" to="/modul" />
         <StatCard
           icon={IconTrendingUp}
