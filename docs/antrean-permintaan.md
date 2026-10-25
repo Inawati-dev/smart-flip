@@ -413,3 +413,4 @@ Catatan mutu naskah (untuk penulis, bukan pekerjaan kode):
 - Tabel Bagian I.4: Sub CPMK 4.1 sampai 4.4 berada di bawah CPMK 3, label CPMK 4 tidak muncul di teks ekstrak (mungkin sel gabung; perlu dicek di Word).
 - Salah ketik: "Rubik" 10 kali, "Penliaian" 6 kali, "Dosendan" 2 kali, "kebermanfaatn", "beberrapa".
 - Judul BAB 3 sampai BAB 6 tidak bergaya judul seperti BAB 1 dan 2.
+| 335 | "kerjakan: abaikan berkas pratinjau video-196 dan .playwright-mcp" (25 Okt 2026, dari temuan update progress) | `.gitignore` | 14 contoh mp4/mp3 di `docs/pratinjau/video-196/` dan folder `.playwright-mcp/` tidak pernah di-commit, jadi selalu muncul di `git status` | Tambah pola `docs/pratinjau/video-196/*.mp4`, `*.mp3`, `.playwright-mcp/` ke `.gitignore`; berkas tetap di disk, berkas yang sudah dilacak di folder itu tidak berubah | kecil | SELESAI (papan #269) | langsung disetujui (kata "kerjakan") | 2026-10-25 |
