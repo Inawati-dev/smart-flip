@@ -1,4 +1,4 @@
-"""Penyusun Panduan Pemakaian SMART-FLIP (antrean #290).
+"""Penyusun Manual Book SMART-FLIP (antrean #290).
 
     python docs/panduan-smartflip/buat-pdf.py
 
@@ -26,7 +26,7 @@ KELUARAN = os.path.join(AKAR, 'public', 'panduan-smartflip.pdf')
 
 # Harus sama dengan EDISI_PANDUAN di src/components/TautanPanduan.tsx.
 EDISI = 'Edisi 4'
-TANGGAL = '25 Oktober 2026'
+TANGGAL = '26 Oktober 2026'
 SITUS = 'https://smart-flips.vercel.app'
 
 PERAMBAN = [
@@ -70,7 +70,7 @@ def rapikan(pdf: str, judul_bab: list[str]) -> int:
         if 0 < i < len(doc) - 1:  # sampul depan dan sampul belakang (#311) tanpa nomor
             w, h = hal.rect.width, hal.rect.height
             hal.insert_text((w / 2 - 6, h - 22), str(i + 1), fontsize=8.5, color=(0.42, 0.36, 0.31))
-            hal.insert_text((42, h - 22), 'Panduan Pemakaian SMART-FLIP 5.0', fontsize=7.5, color=(0.6, 0.55, 0.5))
+            hal.insert_text((42, h - 22), 'Manual Book SMART-FLIP 5.0', fontsize=7.5, color=(0.6, 0.55, 0.5))
     # Urutan awal: sampul (hal 1), Tentang SMART-FLIP (hal 2, #291), daftar isi (hal 3).
     # Daftar isi memuat semua judul, jadi bab dicari mulai halaman sesudahnya,
     # berurutan, supaya tiap judul jatuh di halaman tempat babnya dimulai.
@@ -84,7 +84,7 @@ def rapikan(pdf: str, judul_bab: list[str]) -> int:
         while sisa and sisa[0] in teks:
             toc.append([1, sisa.pop(0), i + 1])
     doc.set_toc(toc)
-    doc.set_metadata({'title': 'Panduan Pemakaian SMART-FLIP 5.0', 'author': 'Tim SMART-FLIP, Fakultas Vokasi UM', 'subject': EDISI + ', ' + TANGGAL})
+    doc.set_metadata({'title': 'Manual Book SMART-FLIP 5.0', 'author': 'Tim SMART-FLIP, Fakultas Vokasi UM', 'subject': EDISI + ', ' + TANGGAL})
     sementara = pdf + '.tmp'
     doc.save(sementara, garbage=4, deflate=True)
     n = len(doc)

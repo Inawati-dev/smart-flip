@@ -23,9 +23,9 @@ describe('TautanPanduan (antrean #290)', () => {
     expect(unduh.hasAttribute('download')).toBe(true)
   })
 
-  it('Baca Panduan membuka pembaca PDF dan Tutup menutupnya', () => {
+  it('Baca Manual Book membuka pembaca PDF dan Tutup menutupnya', () => {
     render(<TautanPanduan />)
-    fireEvent.click(screen.getByRole('button', { name: /Baca Panduan/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Baca Manual Book/ }))
     expect(screen.getByTestId('pembaca').getAttribute('data-src')).toBe(ALAMAT_PANDUAN)
     fireEvent.click(screen.getByRole('button', { name: 'Tutup' }))
     expect(screen.queryByTestId('pembaca')).toBeNull()
