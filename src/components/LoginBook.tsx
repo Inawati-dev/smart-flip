@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 // Urutan anggota sama dengan panduan (antrean #323): Johan paling akhir.
-const ANGGOTA = ['Dr. Deka Dyah Utami', 'Viola Malta Ramadhani', 'Aryadi', 'Natasya Adelia Ramadhanti', 'Johan Iriawan Akbar']
+const ANGGOTA = ['Dr. Deka Dyah Utami', 'Viola Malta Ramadhani', 'Aryadi', 'Natasya Adelia Ramadhanti', 'Johan Iriawan Akbar', 'Gulita Ngudiana, S.I.Pust.']
 
 // "Sampul Berdiri 3D" (Opsi C) — buku berdiri agak miring dengan tepi
 // halaman & punggung kelihatan; sampul depan berengsel di kiri dan membuka
