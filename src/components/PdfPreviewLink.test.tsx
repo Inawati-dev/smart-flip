@@ -39,6 +39,7 @@ describe('Pratinjau PDF dosen', () => {
     saveProgressMock.mockClear()
     setelan.watermark = false
     localStorage.clear()
+    localStorage.setItem('sfp_dua_halaman', '0') // tes ini memeriksa urutan satu halaman
   })
 
   it('PDF dibuka di pembaca flipbook (bukan iframe), di atas modal, tanpa menyimpan progres', async () => {

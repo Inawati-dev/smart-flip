@@ -511,8 +511,48 @@ button:not(:disabled):active {
 .pembaca-tunggu { font-size: 12px; color: #78716C; }
 .pembaca-cap { position: absolute; inset: 0; pointer-events: none; background-repeat: repeat; }
 .pembaca-kertas { position: relative; flex: none; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
+/* Gaya acuan iSukarno (antrean #354; sakelar GAYA_ACUAN di PembacaPdf.tsx). Gaya lama di atas tidak diubah. */
+.pembaca-buku.geser { transition: transform var(--pb-balik) cubic-bezier(.45, 0, .55, 1); }
+.pembaca-panah {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  width: 56px;
+  height: 56px;
+  margin-top: -28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--terra);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pb-bg) 70%, transparent);
+  color: var(--terra);
+  cursor: pointer;
+  transition: background-color .15s, color .15s, opacity .15s;
+}
+.pembaca-panah.kiri { left: 14px; }
+.pembaca-panah.kanan { right: 14px; }
+.pembaca-panah:hover:not(:disabled) { background: var(--terra); color: var(--pb-bg); }
+.pembaca-panah:focus-visible { outline: 2px solid var(--pb-teks); outline-offset: 2px; }
+.pembaca-panah:disabled { opacity: .25; cursor: not-allowed; }
+@media (max-width: 640px) {
+  .pembaca-panah { width: 44px; height: 44px; margin-top: -22px; border-width: 2px; }
+  .pembaca-panah.kiri { left: 6px; }
+  .pembaca-panah.kanan { right: 6px; }
+}
+.pembaca-panggung.lensa { cursor: crosshair; }
+.pembaca-lensa {
+  position: fixed;
+  z-index: 20;
+  pointer-events: none;
+  border: 3px solid var(--terra);
+  border-radius: 10px;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
+}
 @media (prefers-reduced-motion: reduce) {
-  .pembaca-lembar, .pembaca-alas { transition: none !important; }
+  .pembaca-lembar, .pembaca-alas, .pembaca-buku.geser { transition: none !important; }
 }
 
 /* Ukuran baku kartu modal (antrean #193): sempit = konfirmasi, sedang = isian,

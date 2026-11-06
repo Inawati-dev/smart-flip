@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type PointerEvent, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import * as pdfjsLib from 'pdfjs-dist'
 // Vite-bundled worker asset (mirrors legacy/ebook.html's CDN <script> worker
@@ -20,7 +20,20 @@ const ZOOM_STEP = 0.1
 const SPREAD_MIN_WIDTH = 900 // di bawah ini buku tampil satu halaman, bukan dua
 // Antrean #165 (Johan, 10 Okt 2026): "munculkan 1 page 1 page saja". Tampilan dua
 // halaman dimatikan; jalurnya dibiarkan supaya bisa dinyalakan lagi dari sini.
-const DUA_HALAMAN = false
+// Antrean #354 (Johan, 6 Nov 2026): "buat flip book nya seperti" iSukarno (dua halaman, sampul
+// di tengah, panah bulat, lensa). GAYA_ACUAN = false mengembalikan gaya lama (#165) tanpa menyentuh CSS lama.
+const GAYA_ACUAN = true
+const KUNCI_DUA = 'sfp_dua_halaman'
+function bacaDua(): boolean {
+  try {
+    return localStorage.getItem(KUNCI_DUA) !== '0'
+  } catch {
+    return true
+  }
+}
+const LEBAR_LENSA = 320
+const TINGGI_LENSA = 150
+const PERBESAR_LENSA = 3
 // ponytail: tiap halaman dirender sekali pada lebar tetap lalu diskalakan CSS;
 // kalau zoom 200% di layar besar terlihat buram, render ulang per tingkat zoom.
 const LEBAR_RENDER = 1200
@@ -143,6 +156,14 @@ function Muka({ sisi, n, src, cap }: { sisi?: 'depan' | 'belakang'; n: number | 
   )
 }
 
+function PanahBulat({ arah }: { arah: 'kiri' | 'kanan' }) {
+  return (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d={arah === 'kiri' ? 'M19 12H5M11 6l-6 6 6 6' : 'M5 12h14M13 6l6 6-6 6'} />
+    </svg>
+  )
+}
+
 export interface PembacaPdfProps {
   /** Alamat PDF (URL, path, atau blob) yang dibuka pdf.js. Kosong = tidak memuat apa pun. */
   src: string
@@ -203,6 +224,9 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
     typeof window === 'undefined' ? { w: 800, h: 600 } : { w: window.innerWidth - 32, h: Math.max(240, window.innerHeight - 180) },
   )
   const [isWide, setIsWide] = useState(() => typeof window !== 'undefined' && window.innerWidth >= SPREAD_MIN_WIDTH)
+  const [duaPilih, setDuaPilih] = useState(bacaDua)
+  const [lensa, setLensa] = useState(false)
+  const [lensaPos, setLensaPos] = useState<{ x: number; y: number; bg: string; bgSize: string; bgPos: string } | null>(null)
   const siap = status === 'ready' && srcTermuat === src
 
   useEffect(() => {
@@ -301,7 +325,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   // terlihat halaman 2s (kiri) dan 2s+1 (kanan). Layar sempit: satu halaman
   // per lembar, s = halaman - 1.
   const N = totalPages
-  const dua = DUA_HALAMAN && mode === 'flip' && isWide
+  const dua = GAYA_ACUAN && duaPilih && mode === 'flip' && isWide
   const s = dua ? Math.floor(currentPage / 2) : currentPage - 1
   const sMaks = dua ? Math.floor(N / 2) : Math.max(0, N - 1)
   const jumlahLembar = dua ? Math.ceil(N / 2) : N
@@ -311,7 +335,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   const halamanBaca = Math.max(1, Math.min(N || 1, kanan ?? kiriHal ?? 1))
   const nextDisabled = mode === 'gulir' ? currentPage >= N : s >= sMaks
   const prevDisabled = mode === 'gulir' ? currentPage <= 1 : s <= 0
-  const labelHalaman = kiriHal != null && kanan != null && dua ? `${kiriHal}-${kanan} / ${N}` : `${halamanBaca} / ${N}`
+  const labelHalaman = kiriHal != null && kanan != null && dua ? `${kiriHal}–${kanan} / ${N}` : `${halamanBaca} / ${N}`
   const persen = N > 0 ? Math.min(100, Math.round((halamanBaca / N) * 100)) : 0
 
   // ── Siapkan gambar halaman di sekitar posisi baca ──
@@ -384,7 +408,35 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   }
   // Klik panggung: tepi kiri/kanan membalik halaman, tengah menyembunyikan
   // atau menampilkan kendali (ciri arah "Imersif").
+  function gantiDua() {
+    const baru = !duaPilih
+    setDuaPilih(baru)
+    try {
+      localStorage.setItem(KUNCI_DUA, baru ? '1' : '0')
+    } catch {
+      /* penyimpanan tidak tersedia: pilihan berlaku sesi ini saja */
+    }
+  }
+  // Lensa (acuan iSukarno): kotak pembesar 3x di bawah kursor, hanya di atas gambar halaman.
+  function gerakLensa(e: PointerEvent<HTMLDivElement>) {
+    if (!lensa) return
+    const img = (e.target as HTMLElement).closest?.('.pembaca-muka')?.querySelector('img')
+    if (!img) return setLensaPos(null)
+    const r = img.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width
+    const py = (e.clientY - r.top) / r.height
+    const bw = r.width * PERBESAR_LENSA
+    const bh = r.height * PERBESAR_LENSA
+    setLensaPos({
+      x: e.clientX - LEBAR_LENSA / 2,
+      y: e.clientY - TINGGI_LENSA / 2,
+      bg: `url("${img.src}")`,
+      bgSize: `${bw}px ${bh}px`,
+      bgPos: `${LEBAR_LENSA / 2 - px * bw}px ${TINGGI_LENSA / 2 - py * bh}px`,
+    })
+  }
   function klikPanggung(e: MouseEvent<HTMLDivElement>) {
+    if (lensa) return
     if (mode === 'gulir') return setKendali((k) => !k)
     const kotak = e.currentTarget.getBoundingClientRect()
     const x = kotak.width > 0 ? (e.clientX - kotak.left) / kotak.width : 0.5
@@ -445,6 +497,8 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   const tinggiHal = lebarHal / rasio
   const lembarTampil: number[] = []
   for (let i = Math.max(0, s - 2); i <= Math.min(jumlahLembar - 1, s + 1); i++) lembarTampil.push(i)
+  // Sampul (dan sampul belakang) tampil di tengah seperti acuan, bukan separuh kosong di kiri; hanya pada zoom pas layar.
+  const geser = dua && zoom === 1 ? (s === 0 ? -lebarHal / 2 : kanan == null ? lebarHal / 2 : 0) : 0
   const bisaPenuh = typeof document !== 'undefined' && !!document.documentElement.requestFullscreen
 
   // Pemanggil yang menampilkan sendiri keadaan muat tidak butuh lapisan sebelum siap.
@@ -472,6 +526,26 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
                 </button>
               </div>
             )}
+            {siap && GAYA_ACUAN && mode === 'flip' && (
+              <div role="group" aria-label="Alat baca" className="flex items-center gap-1">
+                {isWide && (
+                  <button onClick={gantiDua} aria-pressed={duaPilih} title={duaPilih ? 'Tampil satu halaman' : 'Tampil dua halaman'} className={`pembaca-tb ${duaPilih ? 'on' : ''}`}>
+                    {duaPilih ? '2 halaman' : '1 halaman'}
+                  </button>
+                )}
+                <button
+                  onClick={() => {
+                    setLensa((v) => !v)
+                    setLensaPos(null)
+                  }}
+                  aria-pressed={lensa}
+                  title="Kaca pembesar"
+                  className={`pembaca-tb ${lensa ? 'on' : ''}`}
+                >
+                  Lensa
+                </button>
+              </div>
+            )}
             {aksi}
           </div>
         </div>
@@ -495,7 +569,14 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
       )}
 
       {siap && (
-        <div ref={panggungRef} className="pembaca-panggung" onClick={klikPanggung}>
+        <div
+          ref={panggungRef}
+          className={`pembaca-panggung${lensa ? ' lensa' : ''}`}
+          style={geser ? { overflowX: 'hidden' } : undefined}
+          onClick={klikPanggung}
+          onPointerMove={gerakLensa}
+          onPointerLeave={() => setLensaPos(null)}
+        >
           {mode === 'gulir' ? (
             <div className="flex flex-col items-center gap-4 py-5 mx-auto">
               {Array.from({ length: N }, (_, i) => i + 1).map((n) => (
@@ -505,7 +586,10 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
               ))}
             </div>
           ) : (
-            <div className="pembaca-buku" style={{ width: lebarHal * kolom, height: tinggiHal }}>
+            <div
+              className={`pembaca-buku${GAYA_ACUAN ? ' geser' : ''}`}
+              style={{ width: lebarHal * kolom, height: tinggiHal, ...(geser ? { transform: `translateX(${geser}px)` } : {}) }}
+            >
               <div className={`pembaca-alas ${dua && s === 0 ? 'awal' : ''} ${dua && kanan == null ? 'akhir' : ''}`} />
               {lembarTampil.map((i) => {
                 const balik = i < s
@@ -525,6 +609,24 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
             </div>
           )}
         </div>
+      )}
+
+      {siap && GAYA_ACUAN && mode === 'flip' && (
+        <>
+          <button onClick={goPrev} disabled={prevDisabled} aria-label="Halaman sebelumnya" className="pembaca-panah kiri">
+            <PanahBulat arah="kiri" />
+          </button>
+          <button onClick={goNext} disabled={nextDisabled} aria-label="Halaman berikutnya" className="pembaca-panah kanan">
+            <PanahBulat arah="kanan" />
+          </button>
+        </>
+      )}
+      {lensa && lensaPos && (
+        <div
+          className="pembaca-lensa"
+          aria-hidden="true"
+          style={{ left: lensaPos.x, top: lensaPos.y, width: LEBAR_LENSA, height: TINGGI_LENSA, backgroundImage: lensaPos.bg, backgroundSize: lensaPos.bgSize, backgroundPosition: lensaPos.bgPos }}
+        />
       )}
 
       {siap &&

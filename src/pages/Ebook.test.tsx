@@ -363,9 +363,24 @@ describe('Ebook', () => {
     expect(document.querySelectorAll('[data-hal]').length).toBe(3)
   })
 
-  // Antrean #165: satu halaman per layar, juga di layar lebar.
-  it('layar lebar: tetap satu halaman per balikan', async () => {
+  // Antrean #354: bawaan dua halaman berdampingan di layar lebar, sampul di tengah, penghitung "2–3 / N".
+  it('layar lebar: bawaan dua halaman, sampul digeser ke tengah, panah bulat membalik', async () => {
     lebarLayar(1280)
+    renderEbook(1)
+    await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
+    expect(document.querySelector('.pembaca-buku.geser')?.getAttribute('style')).toContain('translateX(-')
+    fireEvent.click(screen.getByRole('button', { name: 'Halaman berikutnya' }))
+    await waitFor(() => expect(screen.getAllByText('2–3 / 3').length).toBeGreaterThan(0))
+    expect(document.querySelector('.pembaca-lembar.tunggal')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: '2 halaman' }))
+    expect(screen.getByRole('button', { name: '1 halaman' })).toBeTruthy()
+    expect(localStorage.getItem('sfp_dua_halaman')).toBe('0')
+  })
+
+  // Antrean #165: satu halaman per layar; kini pilihan "1 halaman" (antrean #354).
+  it('layar lebar: pilihan 1 halaman tetap satu halaman per balikan', async () => {
+    lebarLayar(1280)
+    localStorage.setItem('sfp_dua_halaman', '0')
     renderEbook(1)
     await waitFor(() => expect(screen.getAllByText('1 / 3').length).toBeGreaterThan(0))
     fireEvent.click(screen.getByTitle('Berikutnya'))
