@@ -172,8 +172,8 @@ describe('Register — tautan konfirmasi email dan data pendaftaran', () => {
   it('dengan sesi (konfirmasi email mati): akun langsung aktif dan tombol Mulai Belajar ke dashboard', async () => {
     mockSupabase.signUp.mockResolvedValueOnce({ data: { user: null, session: { access_token: 'x' } } as never, error: null })
     isiDanKirim('MPP-2026')
-    expect(await screen.findByText(/langsung aktif, tanpa konfirmasi email/)).toBeTruthy()
-    expect(screen.queryByText(/Cek email/)).toBeNull()
+    expect(await screen.findByText('Pendaftaran berhasil! Akun Anda sudah aktif.')).toBeTruthy()
+    expect(screen.getByRole('dialog').textContent).not.toMatch(/email/i)
     expect(screen.getByRole('link', { name: 'Mulai Belajar' }).getAttribute('href')).toBe('/dashboard')
     expect(screen.queryByRole('link', { name: 'Ke Halaman Masuk' })).toBeNull()
   })

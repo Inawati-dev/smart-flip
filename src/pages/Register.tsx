@@ -118,12 +118,12 @@ export function Register() {
       // untuk menulis dari peramban.
 
       // Konfirmasi email menyala: signUp tidak memberi sesi, pengguna harus membuka tautan di email.
-      // Konfirmasi email dimatikan (antrean #348 B): signUp langsung memberi sesi, akun aktif tanpa email.
+      // Konfirmasi email dimatikan (antrean #348 B): signUp langsung memberi sesi, akun aktif; teks tanpa kata email (#349).
       const langsung = !!hasilDaftar?.session
       setLangsungAktif(langsung)
       setSuccess(
         langsung
-          ? 'Pendaftaran berhasil! Akun Anda langsung aktif, tanpa konfirmasi email.'
+          ? 'Pendaftaran berhasil! Akun Anda sudah aktif.'
           : 'Pendaftaran berhasil! Cek email untuk konfirmasi sebelum masuk.',
       )
       setFullName('')
