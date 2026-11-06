@@ -18,7 +18,7 @@ export const LANGKAH_MAHASISWA: LangkahTur[] = [
   { sasaran: '/asesmen', judul: 'Asesmen', teks: 'Tes formatif tiap topik dan hasil tes diagnostik awal. Lulus tes formatif membuka topik berikutnya.' },
   { sasaran: '/mini-projek', judul: 'Mini Projek', teks: 'Susun rancangan proposal per bab dan kirim ke dosen untuk dinilai.' },
   { sasaran: '/akun', judul: 'Akun', teks: 'Profil, kelas, gaya belajar, dan Manual Book. Tur ini bisa diulang dari sini.' },
-  { sasaran: 'lonceng', judul: 'Notifikasi', teks: 'Lonceng menampilkan pengingat dari dosen dan kabar Mini Projek. Angka merah = yang belum dibaca.' },
+  { sasaran: 'lonceng', judul: 'Notifikasi', teks: 'Lonceng menampilkan pengingat dari dosen, modul dan video yang belum selesai, jadwal terdekat, dan kabar Mini Projek. Angka merah = yang perlu perhatian.' },
   { sasaran: 'tema', judul: 'Tema dan Keluar', teks: 'Ganti tema terang atau gelap, dan keluar dari aplikasi.' },
 ]
 

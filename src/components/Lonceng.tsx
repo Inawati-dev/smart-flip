@@ -1,9 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import { usePaketMhs } from '../hooks/usePaketMhs'
+import { useModules } from '../hooks/useModules'
+import { useAllProgress } from '../hooks/useProgress'
+import { useTopikStatus } from '../lib/topik'
+import { fetchVideoProgressMap } from '../lib/videoProgress'
+import { notifikasiBelajar } from '../lib/notifBelajar'
 import { useAmbang } from '../lib/ambang'
 import { fetchSumberAktivitas, perluPerhatian, type FilterAktivitas } from '../lib/aktivitas'
 import { fetchPengingatSaya, tandaiPengingatDibaca } from '../lib/pengingat'
@@ -40,6 +45,26 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
   const { data: pengingat = [] } = useQuery({ queryKey: kunciPengingat, queryFn: () => fetchPengingatSaya(user?.id) })
   const { kabar, baru, tandaiDilihat } = usePaketMhs()
   const kunciBaru = new Set(baru.map((k) => `${k.jenis}-${k.urutan}`))
+  // Notifikasi belajar (antrean #353): dihitung dari progres baca, tonton, dan jadwal; tanpa tabel baru.
+  const { data: modules = [] } = useModules()
+  const { statusOf, bukaPada, formatifPada, loading } = useTopikStatus()
+  const { data: progress = {} } = useAllProgress()
+  const { data: video = {} } = useQuery({ queryKey: ['video-progress'], queryFn: fetchVideoProgressMap })
+  const belajar = useMemo(
+    () =>
+      loading
+        ? []
+        : notifikasiBelajar({
+            modulesUrut: [...modules].sort((a, b) => a.order_num - b.order_num),
+            statusOf,
+            progress,
+            video,
+            bukaPada,
+            formatifPada,
+            kini: new Date(),
+          }),
+    [loading, modules, statusOf, progress, video, bukaPada, formatifPada],
+  )
   const butir: ButirLonceng[] = [
     ...pengingat.map((p) => ({
       kunci: `p-${p.id}`,
@@ -53,6 +78,7 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
         navigate('/dashboard')
       },
     })),
+    ...belajar.map((b) => ({ kunci: `b-${b.kunci}`, judul: b.judul, ket: b.ket, baru: true, buka: () => navigate(b.tautan) })),
     // Semua kabar baru selalu tampil (lencana menghitungnya), ditambah kabar lama sampai 5 butir.
     ...kabar.slice(0, Math.max(5, baru.length)).map((k) => ({
       kunci: `k-${k.jenis}-${k.urutan}`,
@@ -66,7 +92,7 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
       },
     })),
   ]
-  return <PanelLonceng letak={letak} butir={butir} jumlahBaru={pengingat.length + baru.length} kosong="Belum ada notifikasi." />
+  return <PanelLonceng letak={letak} butir={butir} jumlahBaru={pengingat.length + belajar.length + baru.length} kosong="Belum ada notifikasi." />
 }
 
 function LoncengDosen({ letak }: { letak: 'rel' | 'atas' }) {
