@@ -43,6 +43,7 @@ export function Register() {
   const [courseCode, setCourseCode] = useState('')
   const [angkatan, setAngkatan] = useState('')
   const [error, setError] = useState('')
+  const [langsungAktif, setLangsungAktif] = useState(false)
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -91,7 +92,7 @@ export function Register() {
     }
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data: hasilDaftar, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
         options: {
@@ -116,7 +117,15 @@ export function Register() {
       // (antrean #178); sebelum email dikonfirmasi juga belum ada sesi
       // untuk menulis dari peramban.
 
-      setSuccess('Pendaftaran berhasil! Cek email untuk konfirmasi sebelum masuk.')
+      // Konfirmasi email menyala: signUp tidak memberi sesi, pengguna harus membuka tautan di email.
+      // Konfirmasi email dimatikan (antrean #348 B): signUp langsung memberi sesi, akun aktif tanpa email.
+      const langsung = !!hasilDaftar?.session
+      setLangsungAktif(langsung)
+      setSuccess(
+        langsung
+          ? 'Pendaftaran berhasil! Akun Anda langsung aktif, tanpa konfirmasi email.'
+          : 'Pendaftaran berhasil! Cek email untuk konfirmasi sebelum masuk.',
+      )
       setFullName('')
       setNimNidn('')
       setEmail('')
@@ -205,9 +214,15 @@ export function Register() {
                 <button type="button" onClick={() => setSuccess('')} className="btn btn-secondary flex-1">
                   Tutup
                 </button>
-                <Link to="/" className="btn btn-primary flex-1">
-                  Ke Halaman Masuk
-                </Link>
+                {langsungAktif ? (
+                  <Link to="/dashboard" className="btn btn-primary flex-1">
+                    Mulai Belajar
+                  </Link>
+                ) : (
+                  <Link to="/" className="btn btn-primary flex-1">
+                    Ke Halaman Masuk
+                  </Link>
+                )}
               </div>
             ) : (
               <button type="button" onClick={() => setError('')} className="btn btn-primary w-full">

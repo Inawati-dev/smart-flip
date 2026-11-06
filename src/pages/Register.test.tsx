@@ -160,6 +160,23 @@ describe('Register — tautan konfirmasi email dan data pendaftaran', () => {
     expect(arg.options.data).not.toHaveProperty('class_code')
     expect(arg.options.data.angkatan).toBe(ANGKATAN_UJI)
   })
+
+  // Antrean #348 B: konfirmasi email dimatikan di dasbor, signUp langsung memberi sesi.
+  it('tanpa sesi (konfirmasi email menyala): pesan cek email dan tombol ke halaman masuk', async () => {
+    isiDanKirim('MPP-2026')
+    expect(await screen.findByText(/Cek email untuk konfirmasi/)).toBeTruthy()
+    expect(screen.getByRole('link', { name: 'Ke Halaman Masuk' }).getAttribute('href')).toBe('/')
+    expect(screen.queryByRole('link', { name: 'Mulai Belajar' })).toBeNull()
+  })
+
+  it('dengan sesi (konfirmasi email mati): akun langsung aktif dan tombol Mulai Belajar ke dashboard', async () => {
+    mockSupabase.signUp.mockResolvedValueOnce({ data: { user: null, session: { access_token: 'x' } } as never, error: null })
+    isiDanKirim('MPP-2026')
+    expect(await screen.findByText(/langsung aktif, tanpa konfirmasi email/)).toBeTruthy()
+    expect(screen.queryByText(/Cek email/)).toBeNull()
+    expect(screen.getByRole('link', { name: 'Mulai Belajar' }).getAttribute('href')).toBe('/dashboard')
+    expect(screen.queryByRole('link', { name: 'Ke Halaman Masuk' })).toBeNull()
+  })
 })
 
 // Antrean #239: tahun angkatan wajib bagi mahasiswa; kelas otomatis dibentuk per angkatan.
