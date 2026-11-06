@@ -99,11 +99,12 @@ export function AuthShell({ children }: { children: ReactNode }) {
 
 // text-base (16px) — anything smaller triggers iOS Safari's auto-zoom-on-focus
 // on form inputs (CLAUDE.md mobile rules: 16px minimum for inputs).
+// Garis memakai kelas, bukan style inline (antrean #352): style inline akan menimpa hover:border-terra.
+// Hover = garis terra; fokus (kotak sedang diisi) = garis terra + cincin lembut --accent-soft.
 export const authInputClass =
-  'w-full h-[46px] rounded-[var(--radius-control)] border px-3.5 bg-transparent text-base outline-none transition-colors'
+  'w-full h-[46px] rounded-[var(--radius-control)] border border-[color:var(--border)] px-3.5 bg-transparent text-base outline-none transition-[border-color,box-shadow] duration-150 hover:border-terra focus:border-terra focus:shadow-[0_0_0_3px_var(--accent-soft)]'
 
 export const authInputStyle = {
-  borderColor: 'var(--border)',
   background: 'var(--bg3)',
   color: 'var(--brown)',
 } as const

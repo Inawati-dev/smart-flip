@@ -24,6 +24,10 @@ export function isDosenInviteCodeValid(inputCode: string, expectedCode: string |
   return inputCode.trim().length > 0 && inputCode.trim() === expectedCode
 }
 
+// Tombol peran (antrean #352): garis lewat kelas supaya hover:border-terra tidak tertimpa style inline; fokus keyboard bercincin tema.
+const PILIH_PERAN =
+  'flex-1 h-11 rounded-[var(--radius-control)] border-[1.5px] text-sm font-semibold transition-[border-color,color] duration-150 outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]'
+
 const KODE_SALAH = 'Kode mata kuliah tidak dikenali. Periksa lagi atau minta kodenya ke dosen pengampu.'
 // Sama persis dengan RAISE EXCEPTION di handle_new_user(), database/migration_v40_kelas_otomatis.sql.
 const TEKS_TOLAK_KODE = 'Kode mata kuliah tidak dikenali'
@@ -166,24 +170,18 @@ export function Register() {
         <button
           type="button"
           onClick={() => setRole('mahasiswa')}
-          className="flex-1 h-11 rounded-[var(--radius-control)] border-[1.5px] text-sm font-semibold transition-colors"
-          style={
-            role === 'mahasiswa'
-              ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--btn-text)' }
-              : { borderColor: 'var(--border)', color: 'var(--brown-2)' }
-          }
+          aria-pressed={role === 'mahasiswa'}
+          className={`${PILIH_PERAN} ${role === 'mahasiswa' ? 'border-brown' : 'border-[color:var(--border)] text-brown-2 hover:border-terra hover:text-brown'}`}
+          style={role === 'mahasiswa' ? { background: 'var(--brown)', color: 'var(--btn-text)' } : undefined}
         >
           Mahasiswa
         </button>
         <button
           type="button"
           onClick={() => setRole('dosen')}
-          className="flex-1 h-11 rounded-[var(--radius-control)] border-[1.5px] text-sm font-semibold transition-colors"
-          style={
-            role === 'dosen'
-              ? { background: 'var(--brown)', borderColor: 'var(--brown)', color: 'var(--btn-text)' }
-              : { borderColor: 'var(--border)', color: 'var(--brown-2)' }
-          }
+          aria-pressed={role === 'dosen'}
+          className={`${PILIH_PERAN} ${role === 'dosen' ? 'border-brown' : 'border-[color:var(--border)] text-brown-2 hover:border-terra hover:text-brown'}`}
+          style={role === 'dosen' ? { background: 'var(--brown)', color: 'var(--btn-text)' } : undefined}
         >
           Dosen
         </button>
