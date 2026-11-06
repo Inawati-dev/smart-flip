@@ -6,6 +6,7 @@ import { PasswordInput } from '../components/PasswordInput'
 import { LoginFlipCard, FlipPanel } from '../components/LoginFlipCard'
 import { LoginBook } from '../components/LoginBook'
 import { resetSemuaOnboarding } from '../lib/onboarding'
+import { pesanGalat } from '../lib/galatJaringan'
 
 // REVERT MODE — ganti ke 'flip' untuk balik ke tampilan kartu flip lama
 // (satu baris, tanpa hapus kode). Bisa juga dites tanpa redeploy lewat URL:
@@ -146,7 +147,7 @@ export function Login() {
       let msg = err instanceof Error ? err.message : 'Terjadi kesalahan. Coba lagi.'
       if (msg.includes('Invalid login credentials')) msg = 'Email atau kata sandi salah.'
       if (msg.includes('Email not confirmed')) msg = 'Email belum dikonfirmasi. Cek inbox kamu.'
-      setError(msg)
+      setError(pesanGalat(msg))
     } finally {
       setLoading(false)
     }

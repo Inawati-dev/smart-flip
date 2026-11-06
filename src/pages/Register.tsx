@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import { AuthShell, authInputClass, authInputStyle } from '../components/AuthShell'
 import { verifyDosenInviteCode } from '../lib/inviteCode'
 import { cekKodeMataKuliah } from '../lib/courses'
+import { pesanGalat } from '../lib/galatJaringan'
 import { Select } from '../components/Select'
 import { PasswordInput } from '../components/PasswordInput'
 
@@ -146,7 +147,7 @@ export function Register() {
       if (msg.includes('already registered')) msg = 'Email ini sudah terdaftar. Silakan masuk.'
       if (msg.includes('Email signups are disabled')) msg = 'Pendaftaran email belum diaktifkan. Hubungi admin.'
       if (msg.includes('Password should be')) msg = 'Kata sandi minimal 8 karakter.'
-      setError(msg)
+      setError(pesanGalat(msg))
     } finally {
       setLoading(false)
     }

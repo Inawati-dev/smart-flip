@@ -169,6 +169,15 @@ describe('Register — tautan konfirmasi email dan data pendaftaran', () => {
     expect(screen.queryByRole('link', { name: 'Mulai Belajar' })).toBeNull()
   })
 
+  // Antrean #350: galat jaringan peramban tampil sebagai kalimat Indonesia, bukan "Failed to fetch".
+  it('signUp gagal karena jaringan: modal Pendaftaran Gagal berisi pesan Indonesia', async () => {
+    mockSupabase.signUp.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    isiDanKirim('MPP-2026')
+    expect(await screen.findByText(/Tidak bisa terhubung ke server/)).toBeTruthy()
+    expect(screen.getByRole('dialog').textContent).not.toContain('Failed to fetch')
+    expect(screen.getByRole('button', { name: 'Coba Lagi' })).toBeTruthy()
+  })
+
   it('dengan sesi (konfirmasi email mati): akun langsung aktif dan tombol Mulai Belajar ke dashboard', async () => {
     mockSupabase.signUp.mockResolvedValueOnce({ data: { user: null, session: { access_token: 'x' } } as never, error: null })
     isiDanKirim('MPP-2026')
