@@ -17,6 +17,7 @@
     "@tanstack/react-query": "^5.101.0",
     "exceljs": "4.4.0",
     "mammoth": "^1.13.0",
+    "page-flip": "^2.0.7",
     "pdfjs-dist": "3.11.174",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",

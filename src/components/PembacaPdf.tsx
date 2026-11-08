@@ -9,6 +9,7 @@ import { useCourse } from '../contexts/CourseContext'
 import type { Course } from '../lib/courses'
 import { getReaderStyle, setReaderStyle, type ReaderStyle } from '../lib/readerStyle'
 import { IconWarning, IconSkipBack, IconSkipForward } from './icons'
+import { FlipLengkung, type FlipLengkungHandle } from './FlipLengkung'
 import { capAir, capGambar } from '../lib/capAir'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerSrc
@@ -24,6 +25,9 @@ const SPREAD_MIN_WIDTH = 900 // di bawah ini buku tampil satu halaman, bukan dua
 // Antrean #354 (Johan, 6 Nov 2026): "buat flip book nya seperti" iSukarno (dua halaman, sampul
 // di tengah, panah bulat, lensa). GAYA_ACUAN = false mengembalikan gaya lama (#165) tanpa menyentuh CSS lama.
 const GAYA_ACUAN = true
+// Antrean #374 (angket butir 5 dan 7): balikan halaman melengkung lewat page-flip (FlipLengkung.tsx) di mode Flip.
+// false = kembali ke lembar kaku berputar (CSS .pembaca-lembar), tanpa menyentuh kode lama.
+const BALIKAN_LENGKUNG = true
 const KUNCI_DUA = 'sfp_dua_halaman'
 function bacaDua(): boolean {
   try {
@@ -144,6 +148,8 @@ export interface PembacaPdfProps {
 export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, persenTercatat = null, onStatus, tampilStatus = true, diAtasModal = false, onEscape }: PembacaPdfProps) {
   const pdfRef = useRef<pdfjsLib.PDFDocumentProxy | null>(null)
   const panggungRef = useRef<HTMLDivElement>(null)
+  const lengkungRef = useRef<FlipLengkungHandle>(null)
+  const awalSentuh = useRef<{ x: number; y: number } | null>(null)
   const gambarRef = useRef<Record<number, string>>({})
   const cbRef = useRef({ onHalaman, onStatus, onEscape })
   cbRef.current = { onHalaman, onStatus, onEscape }
@@ -268,6 +274,8 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   // per lembar, s = halaman - 1.
   const N = totalPages
   const dua = GAYA_ACUAN && duaPilih && mode === 'flip' && isWide
+  // jsdom tidak punya ResizeObserver, jadi tes memakai jalur CSS lama; peramban nyata selalu memakainya.
+  const lengkung = BALIKAN_LENGKUNG && mode === 'flip' && typeof ResizeObserver !== 'undefined'
   const s = dua ? Math.floor(currentPage / 2) : currentPage - 1
   const sMaks = dua ? Math.floor(N / 2) : Math.max(0, N - 1)
   const jumlahLembar = dua ? Math.ceil(N / 2) : N
@@ -327,13 +335,17 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
     const tujuan = Math.max(1, Math.min(N || 1, n))
     setCurrentPage(tujuan)
     if (mode === 'gulir') gulirKe(tujuan)
+    if (lengkung) lengkungRef.current?.ke(tujuan)
   }
   function goPrev() {
     if (prevDisabled) return
+    // Mesin melengkung yang membalik; posisi baca menyusul lewat peristiwa flip (onHalaman).
+    if (lengkung) return lengkungRef.current?.sebelum()
     lompat(dua ? (s - 1 <= 0 ? 1 : 2 * (s - 1)) : currentPage - 1)
   }
   function goNext() {
     if (nextDisabled) return
+    if (lengkung) return lengkungRef.current?.berikut()
     lompat(dua ? 2 * (s + 1) : currentPage + 1)
   }
   function chooseMode(m: ReaderStyle) {
@@ -364,7 +376,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   // Lensa (acuan iSukarno): kotak pembesar 3x di bawah kursor, hanya di atas gambar halaman.
   function gerakLensa(e: PointerEvent<HTMLDivElement>) {
     if (!lensa) return
-    const img = (e.target as HTMLElement).closest?.('.pembaca-muka')?.querySelector('img')
+    const img = (e.target as HTMLElement).closest?.('.pembaca-muka, .lembar-lengkung')?.querySelector('img')
     if (!img) return setLensaPos(null)
     const r = img.getBoundingClientRect()
     const px = (e.clientX - r.left) / r.width
@@ -381,6 +393,9 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   }
   function klikPanggung(e: MouseEvent<HTMLDivElement>) {
     if (lensa) return
+    // Seretan sudut halaman (mesin melengkung) berakhir dengan klik; jangan dihitung sebagai ketukan zona tepi.
+    const a = awalSentuh.current
+    if (a && Math.hypot(e.clientX - a.x, e.clientY - a.y) > 8) return
     if (mode === 'gulir') return setKendali((k) => !k)
     const kotak = e.currentTarget.getBoundingClientRect()
     const x = kotak.width > 0 ? (e.clientX - kotak.left) / kotak.width : 0.5
@@ -442,7 +457,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
   const lembarTampil: number[] = []
   for (let i = Math.max(0, s - 2); i <= Math.min(jumlahLembar - 1, s + 1); i++) lembarTampil.push(i)
   // Sampul (dan sampul belakang) tampil di tengah seperti acuan, bukan separuh kosong di kiri; hanya pada zoom pas layar.
-  const geser = dua && zoom === 1 ? (s === 0 ? -lebarHal / 2 : kanan == null ? lebarHal / 2 : 0) : 0
+  const geser = !lengkung && dua && zoom === 1 ? (s === 0 ? -lebarHal / 2 : kanan == null ? lebarHal / 2 : 0) : 0
   const bisaPenuh = typeof document !== 'undefined' && !!document.documentElement.requestFullscreen
 
   // Pemanggil yang menampilkan sendiri keadaan muat tidak butuh lapisan sebelum siap.
@@ -518,6 +533,9 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
           className={`pembaca-panggung${lensa ? ' lensa' : ''}`}
           style={geser ? { overflowX: 'hidden' } : undefined}
           onClick={klikPanggung}
+          onPointerDown={(e) => {
+            awalSentuh.current = { x: e.clientX, y: e.clientY }
+          }}
           onPointerMove={gerakLensa}
           onPointerLeave={() => setLensaPos(null)}
         >
@@ -529,6 +547,19 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
                 </div>
               ))}
             </div>
+          ) : lengkung ? (
+            <FlipLengkung
+              ref={lengkungRef}
+              total={N}
+              lebar={lebarHal}
+              tinggi={tinggiHal}
+              dua={dua}
+              awal={currentPage}
+              gambar={gambar}
+              cap={cap}
+              onHalaman={(h) => setCurrentPage(Math.max(1, Math.min(N || 1, h)))}
+              durasi={typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 1 : 900}
+            />
           ) : (
             <div
               className={`pembaca-buku${GAYA_ACUAN ? ' geser' : ''}`}

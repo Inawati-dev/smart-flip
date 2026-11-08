@@ -204,5 +204,16 @@
     "sebelum": "373_sebelum.png",
     "sesudah": "373_sesudah.png",
     "catatan": "Sebelum: rel tanpa Kirim. Sesudah: halaman Kirim dengan satu laporan bug yang baru terkirim (mode contoh, tersimpan lokal). Di server nyata dipakai tabel laporan (SQL v58, sudah dijalankan Johan)."
+  },
+  {
+    "antrean": "#374 (#354 B)",
+    "papan": "#308",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Balikan halaman melengkung",
+    "ringkasan": "Balikan flipbook kini memakai mesin page-flip: halaman melengkung mengikuti sudut, dengan bayangan, dan bisa diseret dari sudut halaman (mouse atau jari). Sebelumnya lembar berputar kaku. Dua halaman berdampingan di laptop, satu halaman di telepon.",
+    "sebelum": "374_sebelum.png",
+    "sesudah": "374_sesudah.png",
+    "catatan": "Sebelum: lembar kaku saat berputar (dibekukan 450 ms). Sesudah: halaman 3 melengkung saat diseret dari sudut kanan bawah. Kembali ke balikan lama: ubah BALIKAN_LENGKUNG menjadi false di PembacaPdf.tsx."
   }
 ]
