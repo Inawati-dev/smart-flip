@@ -316,8 +316,8 @@ select:disabled {
   .baris-tombol > * { flex: 1 1 auto; justify-content: center; text-align: center; }
 }
 
-/* Tombol P1..Pn (PertemuanStepper.tsx, sapuan mahasiswa 16 Sep 2026) tetap
-   bulat 44x44, bukan .btn. Hover sudah didapat gratis dari aturan
+/* Tombol P1..Pn (PertemuanStepper.tsx, sapuan mahasiswa 16 Sep 2026) 44x44
+   (bulat sampai antrean #359 B, 8 Nov 2026; kini rounded-xl), bukan .btn. Hover sudah didapat gratis dari aturan
    `button:not(:disabled):hover` di bawah (app-wide); yang belum ada cuma
    cincin fokus, jadi disamakan dengan pola `.btn:focus-visible`. */
 .step-pill:focus-visible {
@@ -438,7 +438,7 @@ button:not(:disabled):active {
   min-height: 44px;
   padding: 0 16px;
   border: 1px solid var(--pb-garis);
-  border-radius: 999px;
+  border-radius: 12px;
   background: color-mix(in srgb, var(--pb-ctl) 88%, transparent);
   color: var(--pb-redup);
   font: inherit;
@@ -546,7 +546,7 @@ button:not(:disabled):active {
   align-items: center;
   justify-content: center;
   border: 3px solid var(--terra);
-  border-radius: 999px;
+  border-radius: 16px;
   background: color-mix(in srgb, var(--pb-bg) 70%, transparent);
   color: var(--terra);
   cursor: pointer;
@@ -558,7 +558,7 @@ button:not(:disabled):active {
 .pembaca-panah:focus-visible { outline: 2px solid var(--pb-teks); outline-offset: 2px; }
 .pembaca-panah:disabled { opacity: .25; cursor: not-allowed; }
 @media (max-width: 640px) {
-  .pembaca-panah { width: 44px; height: 44px; margin-top: -22px; border-width: 2px; }
+  .pembaca-panah { width: 44px; height: 44px; margin-top: -22px; border-width: 2px; border-radius: 12px; }
   .pembaca-panah.kiri { left: 6px; }
   .pembaca-panah.kanan { right: 6px; }
 }

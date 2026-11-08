@@ -43,7 +43,7 @@ export function PertemuanStepper({
             aria-label={`${labelNomor(sorted, i, false)} · ${labelPertemuan(indeksJadwal(sorted, i), m.minggu_mulai)}${locked ? ', terkunci' : ''}`}
             onClick={() => navigate(`${basePath}/${m.id}`)}
             aria-current={active ? 'page' : undefined}
-            className="step-pill shrink-0 w-11 h-11 rounded-full border flex items-center justify-center text-sm font-semibold"
+            className="step-pill shrink-0 w-11 h-11 rounded-xl border flex items-center justify-center text-sm font-semibold"
             style={{
               background: active ? 'var(--brown)' : status === 'done' ? 'var(--sage)' : 'var(--ivory)',
               color: active || status === 'done' ? 'var(--cream)' : 'var(--brown)',
