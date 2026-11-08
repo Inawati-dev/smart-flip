@@ -295,21 +295,23 @@ export function Ebook() {
             // sama saja untuk berkas di books/ maupun yang diunggah ke Supabase Storage.
             onHalaman={catatBaca.onHalaman}
             persenTercatat={catatBaca.tercatat}
+            aksi={null}
             kiri={
               <>
-                <Link to="/modul" className="hover:underline flex-shrink-0 pembaca-redup">Modul</Link>
-                <IconChevronRight size={12} className="flex-shrink-0 pembaca-redup" />
-                <h1 className="text-xs font-semibold truncate">
-                  <Link to={`/modul/${moduleId}`} className="hover:underline">
-                    {currentModule?.title || 'Ebook'}
-                  </Link>
-                </h1>
+                <Link to="/modul" aria-label="Kembali ke Modul" title="Kembali ke Modul" className="pembaca-tb kotak flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M15 6l-6 6 6 6" />
+                  </svg>
+                </Link>
+                <div className="min-w-0">
+                  <div className="text-[11px] uppercase tracking-wide pembaca-redup">Modul</div>
+                  <h1 className="text-[15px] font-bold truncate leading-tight">
+                    <Link to={`/modul/${moduleId}`} className="hover:underline">
+                      {currentModule?.title || 'Ebook'}
+                    </Link>
+                  </h1>
+                </div>
               </>
-            }
-            aksi={
-              <Link to="/modul" className="pembaca-tb">
-                ← Modul
-              </Link>
             }
           />
         )}

@@ -472,11 +472,11 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
       onClick={diAtasModal ? (e) => e.stopPropagation() : undefined}
     >
       {(kendali || !siap) && (
-        <div className="pembaca-bilah border-b">
+        <div className="pembaca-bilah pembaca-atas">
           <div className="flex items-center gap-1.5 text-xs min-w-0 flex-1">{kiri}</div>
           <div className="flex items-center gap-2 flex-shrink-0">
             {siap && (
-              <div role="group" aria-label="Gaya baca" className="flex items-center gap-1">
+              <div role="group" aria-label="Gaya baca" className="pembaca-seg">
                 <button onClick={() => chooseMode('flip')} aria-pressed={mode === 'flip'} className={`pembaca-tb ${mode === 'flip' ? 'on' : ''}`}>
                   Flip
                 </button>
@@ -486,7 +486,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
               </div>
             )}
             {siap && GAYA_ACUAN && mode === 'flip' && (
-              <div role="group" aria-label="Alat baca" className="flex items-center gap-1">
+              <div role="group" aria-label="Alat baca" className="pembaca-seg">
                 {isWide && (
                   <button onClick={gantiDua} aria-pressed={duaPilih} title={duaPilih ? 'Tampil satu halaman' : 'Tampil dua halaman'} className={`pembaca-tb ${duaPilih ? 'on' : ''}`}>
                     {duaPilih ? '2 halaman' : '1 halaman'}
@@ -504,6 +504,11 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
                   Lensa
                 </button>
               </div>
+            )}
+            {siap && kendali && bisaPenuh && (
+              <button onClick={gantiPenuh} aria-pressed={penuh} aria-label={penuh ? 'Keluar layar penuh' : 'Layar penuh'} title={penuh ? 'Keluar layar penuh' : 'Layar penuh'} className={`pembaca-tb kotak ${penuh ? 'on' : ''} !hidden md:!inline-flex`}>
+                <IkonPenuh keluar={penuh} />
+              </button>
             )}
             {aksi}
           </div>
@@ -606,7 +611,8 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
 
       {siap &&
         (kendali ? (
-          <div className="pembaca-bilah border-t justify-center">
+          <div className="pembaca-bawah">
+          <div className="pembaca-kapsul">
             <div className="flex items-center gap-2 w-full md:w-auto md:flex-1 md:order-2 min-w-0">
               <input
                 type="range"
@@ -629,6 +635,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
               <span className="text-sm font-semibold min-w-[84px] text-center whitespace-nowrap">{labelHalaman}</span>
             </div>
             <div className="flex items-center gap-1.5 md:order-3">
+              <div role="group" aria-label="Zoom" className="pembaca-seg">
               <button onClick={zoomOut} disabled={zoom <= ZOOM_MIN} title="Perkecil" aria-label="Perkecil" className="pembaca-tb kotak">
                 −
               </button>
@@ -644,11 +651,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
               <button onClick={zoomIn} disabled={zoom >= ZOOM_MAX} title="Perbesar" aria-label="Perbesar" className="pembaca-tb kotak">
                 +
               </button>
-              {bisaPenuh && (
-                <button onClick={gantiPenuh} aria-pressed={penuh} className={`pembaca-tb ${penuh ? 'on' : ''} !hidden md:!inline-flex`}>
-                  {penuh ? 'Keluar Layar Penuh' : 'Layar Penuh'}
-                </button>
-              )}
+              </div>
               <button onClick={goNext} disabled={nextDisabled} title="Berikutnya" aria-label="Berikutnya" className="pembaca-tb kotak on">
                 ›
               </button>
@@ -656,6 +659,7 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
                 <IconSkipForward size={16} />
               </button>
             </div>
+          </div>
           </div>
         ) : (
           <button onClick={() => setKendali(true)} className="pembaca-pil">
@@ -665,6 +669,14 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
     </div>,
     // Leluhur di Layout memakai transform, jadi position:fixed baru benar-benar selayar penuh dari body.
     document.body,
+  )
+}
+
+function IkonPenuh({ keluar }: { keluar: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {keluar ? <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" /> : <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />}
+    </svg>
   )
 }
 

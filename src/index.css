@@ -430,6 +430,16 @@ button:not(:disabled):active {
 .pembaca-tb.on { background: color-mix(in srgb, var(--terra) 24%, var(--pb-ctl)); border-color: var(--terra); }
 .pembaca-tb.kotak { width: 44px; padding: 0; font-size: 20px; }
 .pembaca-geser { height: 44px; accent-color: var(--terra); cursor: pointer; }
+/* Bilah minimal melayang (antrean #389 A, 8 Nov 2026): atas tanpa garis, bawah berupa satu kapsul; tombol datar, hanya "Berikutnya" berwarna. */
+.pembaca-atas { border: 0; padding: 10px 16px; background: linear-gradient(var(--pb-bg) 55%, transparent); position: relative; z-index: 2; }
+.pembaca-seg { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 12px; background: rgba(27, 33, 48, .85); border: 1px solid var(--pb-garis); }
+.pembaca-seg .pembaca-tb { height: 38px; border-color: transparent; background: transparent; }
+.pembaca-seg .pembaca-tb.kotak { width: 38px; }
+.pembaca-seg .pembaca-tb.on { background: var(--terra); border-color: transparent; color: #12161F; }
+.pembaca-bawah { flex: none; display: flex; justify-content: center; padding: 0 16px 16px; }
+.pembaca-kapsul { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; width: 100%; max-width: 880px; padding: 8px 10px; border-radius: 18px; background: rgba(27, 33, 48, .92); border: 1px solid var(--pb-garis); box-shadow: 0 12px 32px rgba(0, 0, 0, .45); }
+.pembaca-kapsul .pembaca-tb.kotak:not(.on) { border-color: transparent; background: transparent; }
+.pembaca-kapsul .pembaca-tb.on { background: var(--terra); border-color: transparent; color: #12161F; }
 .pembaca-pil {
   position: absolute;
   left: 50%;

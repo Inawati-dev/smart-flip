@@ -290,5 +290,16 @@
     "sebelum": "386_sebelum.png",
     "sesudah": "386_sesudah.png",
     "catatan": "Sebelum: halaman Kirim akun dosen contoh dengan avatar DP (gambar #380). Sesudah: halaman Kirim akun mahasiswa contoh, laptop 1600x1000, rel tanpa avatar."
+  },
+  {
+    "antrean": "#389",
+    "papan": "#323",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Pembaca modul: bilah minimal melayang",
+    "ringkasan": "Bilah atas tanpa garis: tombol kembali dan judul di kiri, saklar Flip/Gulir, Lensa, dan layar penuh di kanan. Bilah bawah jadi satu kapsul melayang berisi panah, nomor halaman, slider, teks progres, zoom, dan Berikutnya yang berwarna. Tombol lain datar.",
+    "sebelum": "389_sebelum.png",
+    "sesudah": "389_sesudah.png",
+    "catatan": "Sesudah memakai akun mahasiswa contoh, buku modul 1, laptop 1536x960. Warna aksen mengikuti tema aktif (biru di akun contoh)."
   }
 ]
