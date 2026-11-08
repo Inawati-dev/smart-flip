@@ -122,5 +122,14 @@
     "sebelum": "362_sebelum.png",
     "sesudah": "362_sesudah.png",
     "catatan": "Diukur: sebelum celah kanan 1 px; sesudah celah kiri, kanan, atas, dan bawah sekitar 4 px baik saat nyala maupun mati."
+  },
+  {
+    "antrean": "#360 B",
+    "papan": "#298",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Pilihan notifikasi ikut akun",
+    "ringkasan": "Pilihan saklar notifikasi kini juga tersimpan di akun (kolom profiles.notif_aktif, SQL v57), jadi sama di semua perangkat. Tersimpan lokal seketika dan disinkronkan ke akun; bila gagal terkirim dicoba lagi nanti.",
+    "tanpaDesktop": "Tidak ada perubahan di tampilan desktop: saklar tampil sama persis seperti #362; yang berubah hanya tempat penyimpanannya."
   }
 ]
