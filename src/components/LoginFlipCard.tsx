@@ -21,13 +21,33 @@ export function FlipPanel({
   back,
   faceClassName = '',
   faceStyle,
+  datar = false,
 }: {
   flipped: boolean
   front: ReactNode
   back: ReactNode
   faceClassName?: string
   faceStyle?: React.CSSProperties
+  /** Tanpa 3D: dua muka bertukar lewat pudar (opacity). Dipakai di dalam LoginBook, karena Safari iPhone menampilkan halaman kosong
+   *  bila putaran 3D bersarang di dalam konteks 3D buku (laporan Johan 8 Nov 2026). */
+  datar?: boolean
 }) {
+  if (datar) {
+    const muka = (aktif: boolean): React.CSSProperties =>
+      aktif
+        ? { opacity: 1, visibility: 'visible', transition: 'opacity 250ms ease 120ms, visibility 0s' }
+        : { opacity: 0, visibility: 'hidden', pointerEvents: 'none', transition: 'opacity 200ms ease, visibility 0s linear 200ms' }
+    return (
+      <div className="grid w-full">
+        <div inert={flipped} className={`${faceClassName} [grid-area:1/1]`} style={{ ...faceStyle, ...muka(!flipped) }}>
+          {front}
+        </div>
+        <div inert={!flipped} className={`${faceClassName} [grid-area:1/1]`} style={{ ...faceStyle, ...muka(flipped) }}>
+          {back}
+        </div>
+      </div>
+    )
+  }
   const GANTI_MUKA: React.CSSProperties = { transition: 'visibility 0s linear 300ms' }
   const faceBase = `${faceClassName} [grid-area:1/1] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]`
   return (

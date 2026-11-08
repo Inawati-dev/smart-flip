@@ -371,6 +371,7 @@ export function Login() {
                 front={loginView}
                 back={forgotView}
                 faceClassName="flex flex-col gap-5"
+                datar
               />
             }
           />

@@ -25,8 +25,8 @@ AKAR = os.path.dirname(os.path.dirname(DIR))
 KELUARAN = os.path.join(AKAR, 'public', 'panduan-smartflip.pdf')
 
 # Harus sama dengan EDISI_PANDUAN di src/components/TautanPanduan.tsx.
-EDISI = 'Edisi 4'
-TANGGAL = '26 Oktober 2026'
+EDISI = 'Edisi 5'
+TANGGAL = '8 November 2026'
 SITUS = 'https://smart-flips.vercel.app'
 
 PERAMBAN = [

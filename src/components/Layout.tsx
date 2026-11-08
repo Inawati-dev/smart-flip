@@ -55,20 +55,10 @@ export function activeTo(pathname: string, items: ReadonlyArray<{ to: string }>)
   return best
 }
 
-function initialsOf(name: string | undefined): string {
-  if (!name?.trim()) return '?'
-  const parts = name.trim().split(/\s+/)
-  return ((parts[0]?.[0] ?? '') + (parts.length > 1 ? (parts[parts.length - 1][0] ?? '') : '')).toUpperCase()
-}
-
-function roleLabel(role: 'mahasiswa' | 'dosen' | null): string {
-  return role === 'dosen' ? 'Dosen' : role === 'mahasiswa' ? 'Mahasiswa' : 'Memuat…'
-}
-
 export function Layout({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, role, profile } = useAuth()
+  const { user, role } = useAuth()
   const [logoutOpen, setLogoutOpen] = useState(false)
   const { data: preTestDone } = usePreTestDone()
   // Mahasiswa yang belum menyelesaikan tes diagnostik awal hanya melihat Asesmen dan Akun (antrean #332);
@@ -196,23 +186,8 @@ export function Layout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        {/* Identitas + Keluar — dipertahankan sesuai aturan proyek (logout
-            wajib modal konfirmasi). Rel sempit (80px) jadi hanya avatar +
-            title tooltip native, bukan nama penuh. */}
-        <Link
-          to="/akun"
-          title={`${profile?.full_name || 'Pengguna'} · ${roleLabel(role)}`}
-          className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center text-[11px] font-bold overflow-hidden mb-2"
-          style={{ background: 'var(--terra-d)', color: '#fff' }}
-        >
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            initialsOf(profile?.full_name)
-          )}
-        </Link>
-        {/* Lonceng di bawah avatar Akun (antrean #378, membalik #344): panel membuka ke atas dari dasar rel. */}
-        <div className="mb-1">
+        {/* Avatar dihapus dari rel (antrean #386): identitas sudah diwakili menu Akun. Lonceng, tema, dan Keluar tetap di dasar rel. */}
+        <div className="mb-1 mt-auto">
           <Lonceng letak="rel" />
         </div>
         <button

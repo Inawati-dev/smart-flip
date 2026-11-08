@@ -9,6 +9,7 @@
   Edisi 3 (antrean #310/#311, 24 Okt 2026): rak 8 topik dengan sampul dari PDF modul asli (Topik 0 Pendahuluan
   sampai Topik 7 Penutup), gambar baru d10 (Jadwal) dan d11 (Watermark), dan sampul belakang.
   Edisi 4 (antrean #340, diulang #341, 25 Okt 2026): Lampiran 3 Cuplikan kode sumber, lima halaman kode tampilan halaman inti, sebelum sampul belakang.
+  Edisi 5 (antrean #384, 8 Nov 2026): bab A9 Kirim saran dan laporan bug, A10 Notifikasi dan saklar, B8 Menerima saran dan laporan bug; Gambar 12-13 dan 25 baru (m09, m10, d12), Gambar B1-B7 jadi 14-24; baris Kirim di tabel menu dan dua baris di Lampiran 2.
   Gambar di gambar/ diambil ulang 24 Okt 2026 (Edisi 2, antrean #302) di server
   dev 1600x1000 (telepon 360x800) dengan peran pratinjau (VITE_UI_PREVIEW_ROLE)
   dan data contoh mode demo; halaman masuk dan daftar (u01, u01b, u02) dari situs
@@ -159,6 +160,8 @@
     <a href="#mhs-formatif">A6. Tes formatif dan remedial</a>
     <a href="#mhs-projek">A7. Mini projek dan akun</a>
     <a href="#mhs-hp">A8. Memakai SMART-FLIP di telepon</a>
+    <a href="#mhs-kirim">A9. Kirim saran dan laporan bug</a>
+    <a href="#mhs-notif">A10. Notifikasi dan saklar notifikasi</a>
     <a class="utama" href="#dos">Bagian B. Panduan Dosen</a>
     <a href="#dos-dasbor">B1. Dashboard dosen</a>
     <a href="#dos-modul">B2. Mengelola topik dan PDF modul</a>
@@ -167,6 +170,7 @@
     <a href="#dos-bank">B5. Bank soal dan mini projek</a>
     <a href="#dos-kelas">B6. Kelas dan kode mata kuliah</a>
     <a href="#dos-akun">B7. Akun dan kode undangan dosen</a>
+    <a href="#dos-kirim">B8. Menerima saran dan laporan bug</a>
     <a class="utama" href="#link">Lampiran 1. Link akses</a>
     <a class="utama" href="#masalah">Lampiran 2. Masalah yang sering muncul</a>
     <a class="utama" href="#kode">Lampiran 3. Cuplikan kode sumber</a>
@@ -201,6 +205,7 @@
     <tr><td>Asesmen</td><td>Tes diagnostik awal dan tes formatif</td><td>Hasil kelas dan per mahasiswa</td></tr>
     <tr><td>Mini Projek / Bank Soal</td><td>Mini Projek: rancangan proposal per bab</td><td>Bank Soal: soal tes dan brief mini projek</td></tr>
     <tr><td>Kelas</td><td>(tidak ada)</td><td>Kelas otomatis dan akun mahasiswa</td></tr>
+    <tr><td>Kirim</td><td>Kirim saran atau laporan bug, boleh dengan gambar</td><td>Sama, ditambah daftar semua kiriman dan penanda dibaca atau selesai</td></tr>
     <tr><td>Akun</td><td>Profil dan kata sandi</td><td>Profil, kata sandi, kode undangan dosen</td></tr>
   </table>
   <p>Di laptop, menu ada di bilah kiri. Di telepon, menu pindah ke bilah bawah layar. Tombol bulan di bawah menu mengganti tampilan terang atau gelap. Tombol keluar selalu meminta konfirmasi lebih dulu.</p>
@@ -381,6 +386,46 @@
   <div class="catatan">Di Chrome Android, menu titik tiga lalu <b>Tambahkan ke layar utama</b> memasang ikon SMART-FLIP seperti aplikasi.</div>
 </section>
 
+<section class="bab" id="mhs-kirim">
+  <h2>A9. Kirim saran dan laporan bug</h2>
+  <p>Menu <b>Kirim</b> (<a href="https://smart-flips.vercel.app/kirim">/kirim</a>) dipakai untuk menyampaikan saran atau melaporkan sesuatu yang tidak berjalan semestinya. Kiriman dibaca dosen pengelola. Daftar <b>Kirimanku</b> di bawah formulir menampilkan kirimanmu beserta statusnya: Baru, Dibaca, atau Selesai.</p>
+  <figure>
+    <div class="gb"><img src="gambar/m09-kirim.jpg" alt="">
+      <span class="pn" style="left:8.1%;top:14.3%">1</span>
+      <span class="pn" style="left:8.1%;top:24%">2</span>
+      <span class="pn" style="left:8.1%;top:51.2%">3</span>
+      <span class="pn" style="left:9.2%;top:61.2%">4</span>
+      <span class="pn" style="left:8.1%;top:69%">5</span>
+    </div>
+    <figcaption>Gambar 12. Halaman Kirim di laptop, <a href="https://smart-flips.vercel.app/kirim">/kirim</a>. Semua isian tersusun satu kolom ke bawah.</figcaption>
+    <ul class="legenda">
+      <li><b class="n">1</b>Pilih jenis kiriman: Saran atau Laporan bug.</li>
+      <li><b class="n">2</b>Tulis isinya (5 sampai 2000 karakter). Untuk laporan bug, ceritakan apa yang terjadi dan langkah sebelumnya. Tangkapan layar bisa ditempel langsung dengan Ctrl+V.</li>
+      <li><b class="n">3</b>Halaman terkait, misalnya /asesmen/formatif/1. Boleh dikosongkan.</li>
+      <li><b class="n">4</b>Lampiran gambar: pilih berkas atau seret ke kotak. Boleh PNG, JPG, atau WebP, paling besar 1 MB. Tombol Hapus lampiran membatalkannya.</li>
+      <li><b class="n">5</b>Kirim. Batasnya 10 kiriman per jam.</li>
+    </ul>
+  </figure>
+  <div class="catatan">Di daftar kiriman, gambar lampiran dibuka lewat tombol <b>Lihat lampiran</b>. Gambar tidak ditampilkan langsung agar daftar tetap ringan.</div>
+</section>
+
+<section class="bab" id="mhs-notif">
+  <h2>A10. Notifikasi dan saklar notifikasi</h2>
+  <p>Lonceng ada di dasar bilah kiri, di atas tombol bulan (di telepon: di kepala halaman). Angka merah menunjukkan jumlah hal yang perlu perhatian: modul atau video yang belum selesai, jadwal dalam 7 hari ke depan, pengingat dari dosen, dan kabar Mini Projek.</p>
+  <figure>
+    <div class="gb" style="max-width:112mm"><img src="gambar/m10-notifikasi.jpg" alt="">
+      <span class="pn" style="left:45%;top:62.1%">1</span>
+      <span class="pn ka" style="left:9%;top:78.6%">2</span>
+    </div>
+    <figcaption>Gambar 13. Panel notifikasi mahasiswa (potongan layar laptop bagian kiri bawah).</figcaption>
+    <ul class="legenda">
+      <li><b class="n">1</b>Saklar <b>Nyala/Mati</b> menghidupkan atau mematikan semua notifikasi. Pilihan ini tersimpan di akunmu, jadi berlaku juga di perangkat lain. Saat Mati, angka merah hilang dan ikon lonceng memudar.</li>
+      <li><b class="n">2</b>Lonceng. Klik untuk membuka panel, klik lagi atau tekan Esc untuk menutupnya.</li>
+    </ul>
+  </figure>
+  <p>Baris <b>Pilih jenis notifikasi</b> di panel mahasiswa membuka saklar per jenis (pengingat dosen, progres belajar, jadwal, Mini Projek), jadi hanya jenis yang kamu butuhkan yang muncul. Lonceng dosen memuat daftar mahasiswa yang perlu diperhatikan dan tombol untuk mengirim pengingat; saklar Nyala/Mati-nya sama.</p>
+</section>
+
 <!-- ============================ BAGIAN B ============================ -->
 <section class="bagian" id="dos">
   <div class="label">BAGIAN B</div>
@@ -392,7 +437,7 @@
   <h2>B1. Dashboard dosen</h2>
   <figure>
     <div class="gb"><img src="gambar/d01-dasbor.jpg" alt=""></div>
-    <figcaption>Gambar 12. Dashboard dosen, <a href="https://smart-flips.vercel.app/dashboard">/dashboard</a>.</figcaption>
+    <figcaption>Gambar 14. Dashboard dosen, <a href="https://smart-flips.vercel.app/dashboard">/dashboard</a>.</figcaption>
   </figure>
   <ul>
     <li><b>Saringan</b> di atas: mata kuliah, tahun angkatan, kelas, dan rentang waktu (7 hari, 30 hari, atau Semester).</li>
@@ -413,7 +458,7 @@
       <span class="pn ka" style="left:29%;top:43.9%">3</span>
       <span class="pn tg" style="left:41%;top:49.3%">4</span>
     </div>
-    <figcaption>Gambar 13. Rak modul dosen, <a href="https://smart-flips.vercel.app/modul">/modul</a>.</figcaption>
+    <figcaption>Gambar 15. Rak modul dosen, <a href="https://smart-flips.vercel.app/modul">/modul</a>.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Tambah Topik: jendela berisi judul, deskripsi, perkiraan waktu belajar, dan PDF topik (PDF boleh menyusul).</li>
       <li><b class="n">2</b>Menu Atur: Watermark PDF, Jadwal pertemuan (minggu buka tiap topik; label "Pertemuan a-b" di sampul mengikuti jadwal ini), Urutkan topik, dan Kelola mata kuliah.</li>
@@ -429,7 +474,7 @@
       <span class="pn" style="left:43.6%;top:44%">2</span>
       <span class="pn" style="left:71.4%;top:81.6%">3</span>
     </div>
-    <figcaption>Gambar 14. Jendela Ganti PDF Topik.</figcaption>
+    <figcaption>Gambar 16. Jendela Ganti PDF Topik.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Pratinjau halaman pertama berkas yang dipilih, dengan jumlah halaman dan ukurannya. Lihat semua halaman membuka seluruh isi PDF.</li>
       <li><b class="n">2</b>Berkas baru: seret PDF ke kotak unggah atau klik Pilih PDF, paling besar 20 MB. Langkah 1 di atasnya menyebut berkas yang terpasang sekarang. Bila mata kuliah sudah punya PDF yang pernah diunggah, di bawah kotak unggah muncul pilihan memakainya lagi (tidak tampak di gambar contoh).</li>
@@ -447,7 +492,7 @@
       <span class="pn ka" style="left:72.8%;top:43.9%">4</span>
       <span class="pn" style="left:65%;top:87.4%">5</span>
     </div>
-    <figcaption>Gambar 15. Jendela Jadwal Kuliah.</figcaption>
+    <figcaption>Gambar 17. Jendela Jadwal Kuliah.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Tanggal pertemuan pertama. Kosongkan bila topik tidak perlu dikunci tanggal.</li>
       <li><b class="n">2</b>Minggu ke-: topik dibuka di awal minggu itu. Angka kosong memakai bawaan (dua minggu per topik, minggu 7 dan 8 untuk cadangan dan UTS).</li>
@@ -466,7 +511,7 @@
       <span class="pn" style="left:27.5%;top:63.4%">4</span>
       <span class="pn" style="left:50.3%;top:77.6%">5</span>
     </div>
-    <figcaption>Gambar 16. Jendela Watermark PDF.</figcaption>
+    <figcaption>Gambar 18. Jendela Watermark PDF.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Isi watermark: Mati, Nama dan NIM pembaca (berbeda di tiap mahasiswa), Teks bebas, atau Gambar.</li>
       <li><b class="n">2</b>Ukuran: Kecil, Sedang, atau Besar.</li>
@@ -486,7 +531,7 @@
       <span class="pn tg" style="left:28.8%;top:19.5%">3</span>
       <span class="pn" style="left:7.3%;top:35.4%">4</span>
     </div>
-    <figcaption>Gambar 17. Rak video dosen, <a href="https://smart-flips.vercel.app/video">/video</a>. Tiap topik punya kotak untuk pertemuan pertama dan kedua.</figcaption>
+    <figcaption>Gambar 19. Rak video dosen, <a href="https://smart-flips.vercel.app/video">/video</a>. Tiap topik punya kotak untuk pertemuan pertama dan kedua.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Ubah video yang sudah ada.</li>
       <li><b class="n">2</b>Pratinjau video seperti yang dilihat mahasiswa.</li>
@@ -502,7 +547,7 @@
       <span class="pn" style="left:43.6%;top:63.4%">4</span>
       <span class="pn" style="left:71.4%;top:82.7%">5</span>
     </div>
-    <figcaption>Gambar 18. Jendela Ubah Video.</figcaption>
+    <figcaption>Gambar 20. Jendela Ubah Video.</figcaption>
     <ul class="legenda">
       <li><b class="n">1</b>Tab Pertemuan Pertama dan Pertemuan Kedua.</li>
       <li><b class="n">2</b>Tempel tautan YouTube, atau</li>
@@ -518,7 +563,7 @@
   <h2>B4. Hasil asesmen kelas</h2>
   <figure>
     <div class="gb"><img src="gambar/d06-asesmen.jpg" alt=""></div>
-    <figcaption>Gambar 19. Hasil Kelas, <a href="https://smart-flips.vercel.app/asesmen">/asesmen</a>.</figcaption>
+    <figcaption>Gambar 21. Hasil Kelas, <a href="https://smart-flips.vercel.app/asesmen">/asesmen</a>.</figcaption>
   </figure>
   <ul>
     <li>Tiga kartu: rata-rata tes diagnostik awal (dengan jumlah Jalur Cepat dan Belajar Mendalam), rata-rata tes formatif, dan peningkatan skor kelas dengan pita rendah (di bawah 0,3), sedang (0,3 sampai 0,7), dan tinggi (di atas 0,7).</li>
@@ -533,7 +578,7 @@
   <h2>B5. Bank soal dan mini projek</h2>
   <figure>
     <div class="gb"><img src="gambar/d07-bank-soal.jpg" alt=""></div>
-    <figcaption>Gambar 20. Bank Soal, <a href="https://smart-flips.vercel.app/asesmen/bank">/asesmen/bank</a>.</figcaption>
+    <figcaption>Gambar 22. Bank Soal, <a href="https://smart-flips.vercel.app/asesmen/bank">/asesmen/bank</a>.</figcaption>
   </figure>
   <ol>
     <li>Pilih tab <b>Soal</b> atau <b>Mini Projek</b>.</li>
@@ -547,7 +592,7 @@
   <h2>B6. Kelas dan kode mata kuliah</h2>
   <figure>
     <div class="gb"><img src="gambar/d08-kelas.jpg" alt=""></div>
-    <figcaption>Gambar 21. Kelas, <a href="https://smart-flips.vercel.app/kelas">/kelas</a>. Di aplikasi asli, kotak Kode Mata Kuliah menampilkan kodenya. Di gambar contoh tertulis "Tidak tersedia di mode demo".</figcaption>
+    <figcaption>Gambar 23. Kelas, <a href="https://smart-flips.vercel.app/kelas">/kelas</a>. Di aplikasi asli, kotak Kode Mata Kuliah menampilkan kodenya. Di gambar contoh tertulis "Tidak tersedia di mode demo".</figcaption>
   </figure>
   <ul>
     <li><b>Kode Mata Kuliah</b> dibagikan ke mahasiswa untuk diisi saat mendaftar. Pilih mata kuliah di dalam kotak itu untuk melihat kodenya.</li>
@@ -560,7 +605,7 @@
   <h2>B7. Akun dan kode undangan dosen</h2>
   <figure>
     <div class="gb"><img src="gambar/d09-akun.jpg" alt=""></div>
-    <figcaption>Gambar 22. Akun dosen, <a href="https://smart-flips.vercel.app/akun">/akun</a>.</figcaption>
+    <figcaption>Gambar 24. Akun dosen, <a href="https://smart-flips.vercel.app/akun">/akun</a>.</figcaption>
   </figure>
   <ul>
     <li><b>Kode Undangan Dosen</b>: kode yang diisi calon dosen saat mendaftar. Klik <b>Tampilkan Kode</b> untuk melihatnya.</li>
@@ -568,6 +613,27 @@
     <li><b>Kelola Akun Mahasiswa</b> ada di kotak Notifikasi.</li>
   </ul>
   <div class="catatan">Bagikan kode undangan dosen hanya ke orang yang berhak. Siapa pun yang memegang kode ini bisa membuat akun dosen.</div>
+</section>
+
+<section class="bab" id="dos-kirim">
+  <h2>B8. Menerima saran dan laporan bug</h2>
+  <p>Menu <b>Kirim</b> (<a href="https://smart-flips.vercel.app/kirim">/kirim</a>) di akun dosen punya formulir yang sama dengan mahasiswa, ditambah daftar <b>Semua kiriman</b> dari semua pengguna beserta nama pengirim.</p>
+  <figure>
+    <div class="gb"><img src="gambar/d12-kirim.jpg" alt="">
+      <span class="pn" style="left:8.1%;top:14.3%">1</span>
+      <span class="pn" style="left:8.1%;top:24%">2</span>
+      <span class="pn" style="left:8.1%;top:61.2%">3</span>
+      <span class="pn" style="left:7.6%;top:96%">4</span>
+    </div>
+    <figcaption>Gambar 25. Menu Kirim di akun dosen, dengan satu laporan bug di daftar Semua kiriman.</figcaption>
+    <ul class="legenda">
+      <li><b class="n">1</b>Jenis kiriman: Saran atau Laporan bug.</li>
+      <li><b class="n">2</b>Isi kiriman. Dosen juga bisa mengirim saran sendiri.</li>
+      <li><b class="n">3</b>Lampiran gambar paling besar 1 MB.</li>
+      <li><b class="n">4</b>Tandai dibaca atau Tandai selesai pada tiap kiriman. Status ini terlihat oleh pengirimnya di daftar Kirimanku.</li>
+    </ul>
+  </figure>
+  <div class="catatan">Hanya dosen yang bisa mengubah status. Isi dan lampiran kiriman tidak bisa diubah siapa pun setelah terkirim.</div>
 </section>
 
 <!-- ============================ LAMPIRAN 1 ============================ -->
@@ -622,6 +688,8 @@
     <tr><td>PDF tidak tampil di telepon</td><td>Muat ulang halaman. Bila masih kosong, coba Chrome atau Safari versi terbaru dan pastikan sinyal stabil.</td></tr>
     <tr><td>Tab Pertemuan Kedua tidak muncul di video</td><td>Dosen belum mengisi video pertemuan kedua untuk topik itu.</td></tr>
     <tr><td>Skor formatif di bawah syarat lulus</td><td>Status Belum Lulus. Baca ulang modul, lalu Kerjakan Ulang. Skor terbaik yang dihitung.</td></tr>
+    <tr><td>Lampiran di menu Kirim ditolak</td><td>Lampiran harus gambar PNG, JPG, atau WebP dan paling besar 1 MB. Kecilkan gambarnya atau potong tangkapan layar, lalu pilih lagi.</td></tr>
+    <tr><td>Angka merah notifikasi tidak muncul</td><td>Buka lonceng dan cek saklar di kepala panel. Bila Mati, nyalakan lagi.</td></tr>
     <tr><td>Unggah PDF atau video gagal</td><td>Periksa ukuran berkas: PDF paling besar 20 MB, video MP4/WebM paling besar 100 MB. Coba lagi dengan koneksi yang lebih stabil.</td></tr>
   </table>
   <div class="catatan">Pertanyaan lain tentang isi perkuliahan atau akun: hubungi dosen pengampu mata kuliah.</div>

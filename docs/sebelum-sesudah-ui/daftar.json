@@ -279,5 +279,16 @@
     "sebelum": "382_sebelum.png",
     "sesudah": "382_sesudah.png",
     "catatan": "Gambar tidak menangkap animasi dan bentuk kursor; keduanya diukur lewat skrip (animationDuration 0.28s, cursor pointer)."
+  },
+  {
+    "antrean": "#386",
+    "papan": "#320",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Avatar di dasar rel kiri dihapus",
+    "ringkasan": "Lingkaran avatar (inisial) di dasar rel kiri dihapus karena identitas sudah diwakili menu Akun. Di dasar rel tinggal lonceng, tombol tema, dan Keluar.",
+    "sebelum": "386_sebelum.png",
+    "sesudah": "386_sesudah.png",
+    "catatan": "Sebelum: halaman Kirim akun dosen contoh dengan avatar DP (gambar #380). Sesudah: halaman Kirim akun mahasiswa contoh, laptop 1600x1000, rel tanpa avatar."
   }
 ]
