@@ -172,13 +172,13 @@ describe('Layout: menu terbatas dan tur panduan', () => {
     localStorage.clear()
   })
 
-  it('mahasiswa belum tes diagnostik: hanya /asesmen dan /akun', () => {
+  it('mahasiswa belum tes diagnostik: hanya /asesmen, /kirim, dan /akun', () => {
     mockAuth.user = { id: 'm1', email: 'm@x' }
     mockAuth.role = 'mahasiswa'
     mockPre.data = false
     // dihitung dari butir menu (data-tur), bukan tautan logo ke /dashboard
     const menu = [...renderLayout().matchAll(/data-tur="(\/[^"]*)"/g)].map((m) => m[1])
-    expect([...new Set(menu)]).toEqual(['/asesmen', '/akun'])
+    expect([...new Set(menu)]).toEqual(['/asesmen', '/kirim', '/akun'])
   })
 
   it('mahasiswa sudah tes diagnostik: semua menu mahasiswa', () => {

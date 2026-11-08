@@ -11,7 +11,7 @@ import { LogoutModal } from './LogoutModal'
 import { Lonceng } from './Lonceng'
 import { BrandMark } from './AuthShell'
 import { useTheme } from '../hooks/useTheme'
-import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconMoon, IconSun, IconUsers, IconClipboard, IconDocument } from './icons'
+import { IconHome, IconBook, IconPlay, IconChart, IconUser, IconLogout, IconMoon, IconSun, IconUsers, IconClipboard, IconDocument, IconChat } from './icons'
 
 interface NavItem {
   to: string
@@ -38,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { to: '/asesmen/bank', icon: IconClipboard, label: 'Bank Soal', desc: 'Soal dan mini projek', dosenOnly: true },
   // Menu Berkas (/akun/pdf) disembunyikan (antrean #168): berkas kini ikut terhapus bersama topiknya. Rutenya tetap ada.
   { to: '/kelas', icon: IconUsers, label: 'Kelas', desc: 'Kelas otomatis dan akun mahasiswa', dosenOnly: true },
+  { to: '/kirim', icon: IconChat, label: 'Kirim', desc: 'Kirim saran dan laporan bug' },
   { to: '/akun', icon: IconUser, label: 'Akun', desc: 'Profil dan pengaturan' },
 ]
 
@@ -78,7 +79,7 @@ export function Layout({ children }: { children: ReactNode }) {
     (item) =>
       (!item.dosenOnly || role === 'dosen') &&
       (!item.mahasiswaOnly || role === 'mahasiswa') &&
-      (!menuTerbatas || item.to === '/asesmen' || item.to === '/akun'),
+      (!menuTerbatas || item.to === '/asesmen' || item.to === '/akun' || item.to === '/kirim'),
   )
 
   // Tur panduan (antrean #331): sekali per akun sesudah WelcomeModal ditutup; mahasiswa sesudah tes diagnostik.
@@ -278,7 +279,7 @@ export function Layout({ children }: { children: ReactNode }) {
               to={item.to}
               data-tur={item.to}
               aria-current={active ? 'page' : undefined}
-              className="flex-1 min-w-11 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold"
+              className={`flex-1 min-w-11 flex flex-col items-center justify-center gap-0.5 text-[10px] font-semibold ${navItems.length > 7 ? 'tracking-tighter' : ''}`}
               style={{ color: active ? 'var(--nav-tile-active-fg)' : 'var(--brown3)' }}
             >
               <span className={`relative ${active ? 'nav-tile nav-tile-active' : 'nav-tile'}`}>

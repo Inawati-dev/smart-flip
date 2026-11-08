@@ -6,7 +6,8 @@ import { usePreTestDone } from '../lib/topik'
 // Path yang boleh diakses mahasiswa SEBELUM pre-test selesai (spec §4.1,
 // §9 WP6 poin 3) — termasuk /asesmen/pre sendiri, VARK (tidak menggerbang),
 // dan akun/pengaturan (logout, dsb harus selalu bisa diakses).
-const PRETEST_EXEMPT_PATHS = ['/asesmen/pre', '/akun', '/pengaturan']
+// /kirim (antrean #373): mahasiswa yang macet di tes diagnostik awal tetap bisa melapor bug.
+const PRETEST_EXEMPT_PATHS = ['/asesmen/pre', '/akun', '/pengaturan', '/kirim']
 
 export function ProtectedRoute({
   roles,

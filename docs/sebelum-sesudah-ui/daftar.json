@@ -193,5 +193,16 @@
     "sebelum": "371_sebelum.png",
     "sesudah": "371_sesudah.png",
     "catatan": "Kedua gambar diambil di mesin WebKit (Playwright, Version/27.2), layar 1536x960. Di Chrome tampilan tidak berubah. Setelah Buka Buku: sampul belakang di kiri dan formulir di kanan benar; Lupa Kata Sandi: muka formulir lupa terlihat, muka masuk tersembunyi."
+  },
+  {
+    "antrean": "#373 (angket butir 11)",
+    "papan": "#307",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Menu Kirim saran dan laporan bug",
+    "ringkasan": "Menu baru \"Kirim\" di rel kiri (dan bilah bawah telepon) untuk mahasiswa dan dosen. Halaman berisi pilihan Saran atau Laporan bug, isian cerita, halaman terkait (bisa terisi otomatis lewat ?dari=), tombol Kirim, dan daftar kiriman sendiri. Dosen melihat semua kiriman dan bisa menandai dibaca atau selesai.",
+    "sebelum": "373_sebelum.png",
+    "sesudah": "373_sesudah.png",
+    "catatan": "Sebelum: rel tanpa Kirim. Sesudah: halaman Kirim dengan satu laporan bug yang baru terkirim (mode contoh, tersimpan lokal). Di server nyata dipakai tabel laporan (SQL v58, sudah dijalankan Johan)."
   }
 ]

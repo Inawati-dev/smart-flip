@@ -32,6 +32,7 @@ const MiniProjek = lazyRetry(() => import('./pages/MiniProjek'))
 const BankSoal = lazyRetry(() => import('./pages/BankSoal'))
 const TesKhusus = lazyRetry(() => import('./pages/TesKhusus'))
 const Kelas = lazyRetry(() => import('./pages/Kelas'))
+const Kirim = lazyRetry(() => import('./pages/Kirim'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -135,6 +136,7 @@ export default function App() {
               <Route path="/validasi" element={<Navigate to="/asesmen" replace />} />
               <Route path="/analitik" element={<Navigate to="/asesmen" replace />} />
               <Route path="/manajemen" element={<Navigate to="/modul" replace />} />
+              <Route path="/kirim" element={<ProtectedRoute><Kirim /></ProtectedRoute>} />
               <Route path="/kelas" element={<ProtectedRoute roles={['dosen']}><Kelas /></ProtectedRoute>} />
               {/* Changelog.tsx dihapus (antrean #80) — riwayat rilis sudah
                   tidak ditautkan dari mana pun (tautannya di footer AuthShell
