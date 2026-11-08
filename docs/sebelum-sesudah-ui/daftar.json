@@ -246,5 +246,38 @@
     "sebelum": "379_sebelum_pratinjau.png",
     "sesudah": "379_sesudah_pratinjau.png",
     "catatan": "Kedua gambar memakai data contoh (1 topik seperti data nyata, lalu 8 topik) yang dirender dari komponen GrafikBatang, bukan tangkapan halaman berisi data nyata. Tiap gambar memuat tiga keadaan: A data nyata 1 topik, B contoh 8 topik laptop, C contoh 8 topik telepon (gambar dipakai sebagai acuan laptop dan telepon)."
+  },
+  {
+    "antrean": "#378",
+    "papan": "#313",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Lonceng pindah ke bawah avatar Akun di rel kiri",
+    "ringkasan": "Lonceng notifikasi yang tadinya di bawah logo kini di antara avatar Akun dan tombol tema. Panel membuka ke atas dari dasar rel supaya tidak terpotong.",
+    "sebelum": "378_sebelum.png",
+    "sesudah": "378_sesudah.png",
+    "catatan": "Sebelum: tangkapan Johan (panel terbuka di bawah logo, dasbor dosen). Sesudah: halaman Kirim akun dosen contoh, lonceng di bawah avatar DP; panel terbuka tanpa butir."
+  },
+  {
+    "antrean": "#380",
+    "papan": "#314",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Halaman Kirim satu kolom ke bawah selebar halaman",
+    "ringkasan": "Dua kolom diganti satu kolom: jenis, kotak isi (8 baris), halaman terkait, lampiran gambar (satu baris: tombol Pilih gambar dan keterangan), lalu tombol Kirim.",
+    "sebelum": "380_sebelum.png",
+    "sesudah": "380_sesudah.png",
+    "catatan": "Sebelum: tangkapan Johan (dua kolom, tombol Kirim jauh di bawah). Sesudah: akun dosen contoh, laptop 1536x960."
+  },
+  {
+    "antrean": "#382",
+    "papan": "#315",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Menu Atur: teks lebih lega, animasi lebih pelan, kursor tangan",
+    "ringkasan": "Item menu kecil diberi padding lebih besar, menu melebar sesuai isi (satu baris), muncul dengan animasi 0,28 detik, dan sorotan hover 0,2 detik; kursor berbentuk tangan di item.",
+    "sebelum": "382_sebelum.png",
+    "sesudah": "382_sesudah.png",
+    "catatan": "Gambar tidak menangkap animasi dan bentuk kursor; keduanya diukur lewat skrip (animationDuration 0.28s, cursor pointer)."
   }
 ]

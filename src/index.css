@@ -610,6 +610,12 @@ body:has(.pembaca) .pill-koneksi { display: none; }
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* Menu kecil (MenuAksi): turun pelan supaya terlihat muncul (antrean #382). */
+@keyframes menuAksiMasuk {
+  from { opacity: 0; transform: translateY(-8px) scale(.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.menu-aksi-masuk { animation: menuAksiMasuk 0.28s cubic-bezier(.2,.8,.2,1); transform-origin: top right; }
 @keyframes slideUpModal {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }

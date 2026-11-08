@@ -17,8 +17,9 @@ export const LANGKAH_MAHASISWA: LangkahTur[] = [
   { sasaran: '/video', judul: 'Video', teks: 'Video tiap pertemuan. Tonton sesudah membaca modul.' },
   { sasaran: '/asesmen', judul: 'Asesmen', teks: 'Tes formatif tiap topik dan hasil tes diagnostik awal. Lulus tes formatif membuka topik berikutnya.' },
   { sasaran: '/mini-projek', judul: 'Mini Projek', teks: 'Susun rancangan proposal per bab dan kirim ke dosen untuk dinilai.' },
+  { sasaran: '/kirim', judul: 'Kirim', teks: 'Kirim saran atau laporkan bug. Boleh melampirkan gambar atau tangkapan layar (paling besar 1 MB). Kirimanmu dibaca dosen pengelola.' },
   { sasaran: '/akun', judul: 'Akun', teks: 'Profil, kelas, gaya belajar, dan Manual Book. Tur ini bisa diulang dari sini.' },
-  { sasaran: 'lonceng', judul: 'Notifikasi', teks: 'Lonceng menampilkan pengingat dari dosen, modul dan video yang belum selesai, jadwal terdekat, dan kabar Mini Projek. Angka merah = yang perlu perhatian.' },
+  { sasaran: 'lonceng', judul: 'Notifikasi', teks: 'Lonceng menampilkan pengingat dari dosen, modul dan video yang belum selesai, jadwal terdekat, dan kabar Mini Projek. Angka merah = yang perlu perhatian. Saklar Nyala/Mati di panel mengatur notifikasi, bisa juga per jenis.' },
   { sasaran: 'tema', judul: 'Tema dan Keluar', teks: 'Ganti tema terang atau gelap, dan keluar dari aplikasi.' },
 ]
 
@@ -29,8 +30,9 @@ export const LANGKAH_DOSEN: LangkahTur[] = [
   { sasaran: '/asesmen', judul: 'Asesmen', teks: 'Hasil tes kelas, sesi tes, dan rekap nilai.' },
   { sasaran: '/asesmen/bank', judul: 'Bank Soal', teks: 'Soal tes diagnostik dan tes formatif per Bab, bisa diimpor dari templat Excel, serta Mini Projek.' },
   { sasaran: '/kelas', judul: 'Kelas', teks: 'Kelas otomatis dari tes diagnostik dan akun mahasiswa.' },
+  { sasaran: '/kirim', judul: 'Kirim', teks: 'Saran dan laporan bug dari mahasiswa dan dosen. Tandai sudah dibaca atau selesai; lampiran gambar bisa dibuka.' },
   { sasaran: '/akun', judul: 'Akun', teks: 'Profil, mata kuliah, kode undangan, dan Manual Book. Tur ini bisa diulang dari sini.' },
-  { sasaran: 'lonceng', judul: 'Notifikasi', teks: 'Lonceng menampilkan jumlah mahasiswa yang perlu diperhatikan; klik untuk membuka daftarnya dan mengirim pengingat.' },
+  { sasaran: 'lonceng', judul: 'Notifikasi', teks: 'Lonceng menampilkan jumlah mahasiswa yang perlu diperhatikan; klik untuk membuka daftarnya dan mengirim pengingat. Saklar Nyala/Mati di panel mematikan notifikasi.' },
   { sasaran: 'tema', judul: 'Tema dan Keluar', teks: 'Ganti tema terang atau gelap, dan keluar dari aplikasi.' },
 ]
 

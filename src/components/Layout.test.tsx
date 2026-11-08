@@ -212,7 +212,7 @@ describe('Layout: menu terbatas dan tur panduan', () => {
     renderDom()
     const dialog = screen.getByRole('dialog')
     expect(dialog.textContent).toContain('Dashboard')
-    expect(dialog.textContent).toContain('1 / 9')
+    expect(dialog.textContent).toContain('1 / 10')
     fireEvent.click(screen.getByRole('button', { name: 'Lewati' }))
     expect(screen.queryByRole('dialog')).toBeNull()
     expect(localStorage.getItem('sfp_tur_v1_d1')).toBe('1')

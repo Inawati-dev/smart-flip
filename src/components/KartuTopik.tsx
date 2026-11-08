@@ -292,7 +292,7 @@ export function MenuAksi({ tombol, ariaLabel, kelasTombol, rata = 'kiri', childr
           <div
             ref={menu}
             role="menu"
-            className={`absolute z-[50] top-full mt-1 min-w-[12rem] rounded-xl border p-1 ${rata === 'kanan' ? 'right-0' : 'left-0'}`}
+            className={`menu-aksi-masuk absolute z-[50] top-full mt-1.5 w-max min-w-[14rem] max-w-[min(20rem,calc(100vw-2rem))] rounded-xl border p-1.5 ${rata === 'kanan' ? 'right-0' : 'left-0'}`}
             style={{ background: 'var(--ivory)', borderColor: 'var(--border)', boxShadow: '0 10px 28px -10px color-mix(in srgb, var(--shadow-color) 45%, transparent)' }}
           >
             {children}
@@ -314,7 +314,7 @@ export function ItemMenu({ onPilih, nonaktif, bahaya, children }: { onPilih: () 
         tutup()
         onPilih()
       }}
-      className="w-full min-h-[44px] sm:min-h-[40px] px-3 text-left text-sm rounded-lg hover:bg-[var(--bg3)] disabled:opacity-50 disabled:cursor-not-allowed"
+      className="w-full min-h-[44px] sm:min-h-[42px] px-4 py-2.5 text-left text-sm leading-snug rounded-lg cursor-pointer transition-colors duration-200 hover:bg-[var(--bg3)] focus-visible:bg-[var(--bg3)] disabled:opacity-50 disabled:cursor-not-allowed"
       style={{ color: bahaya ? 'var(--danger)' : 'var(--brown)' }}
     >
       {children}

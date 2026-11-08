@@ -137,15 +137,17 @@ export default function Kirim() {
         <h1 className="font-display text-xl font-bold text-brown mb-1">Kirim Saran dan Laporan Bug</h1>
         <p className="text-sm text-brown-3 mb-5">Ceritakan apa yang menurutmu perlu diperbaiki, atau apa yang tidak berjalan semestinya. Pesanmu dibaca dosen pengelola.</p>
 
-        <div className="bg-ivory border rounded-2xl p-5 md:p-6 mb-8 grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]" style={BORDER}>
-          <div className="flex flex-col min-w-0">
-            <div role="group" aria-label="Jenis kiriman" className="flex gap-2 mb-4 max-w-md">
-              {(['saran', 'bug'] as const).map((j) => (
-                <button key={j} type="button" aria-pressed={jenis === j} onClick={() => setJenis(j)} className={`btn flex-1 ${jenis === j ? 'btn-primary' : 'btn-secondary'}`}>
-                  {LABEL_JENIS[j]}
-                </button>
-              ))}
-            </div>
+        {/* Satu kolom ke bawah selebar halaman (antrean #380): jenis, isi, halaman terkait, lampiran, Kirim. */}
+        <div className="bg-ivory border rounded-2xl p-5 md:p-6 mb-8 flex flex-col gap-5" style={BORDER}>
+          <div role="group" aria-label="Jenis kiriman" className="flex gap-2 max-w-md">
+            {(['saran', 'bug'] as const).map((j) => (
+              <button key={j} type="button" aria-pressed={jenis === j} onClick={() => setJenis(j)} className={`btn flex-1 ${jenis === j ? 'btn-primary' : 'btn-secondary'}`}>
+                {LABEL_JENIS[j]}
+              </button>
+            ))}
+          </div>
+
+          <div>
             <label htmlFor="kirim-isi" className="block text-xs font-semibold text-brown-2 mb-1.5">
               {jenis === 'bug' ? 'Apa yang terjadi, dan langkah sebelum itu?' : 'Apa sarannya?'}
             </label>
@@ -154,25 +156,27 @@ export default function Kirim() {
               value={isi}
               onChange={(e) => setIsi(e.target.value.slice(0, ISI_MAKS))}
               onPaste={tempel}
-              rows={6}
+              rows={8}
               placeholder={jenis === 'bug' ? 'Contoh: saat saya menekan Kirim di tes formatif, halaman menjadi putih.' : 'Contoh: tampilan nilai akan lebih jelas bila ada grafik.'}
-              className={`${KELAS_ISIAN} p-3 flex-1 min-h-[180px] lg:min-h-[420px] resize-y`}
+              className={`${KELAS_ISIAN} p-3 block min-h-[220px] resize-y`}
               style={GAYA_ISIAN}
             />
             <p className="text-xs text-brown-3 mt-1 tabular-nums">{isi.length}/{ISI_MAKS} karakter · tangkapan layar bisa ditempel di sini (Ctrl+V)</p>
           </div>
 
-          <div className="flex flex-col min-w-0">
+          <div>
             <label htmlFor="kirim-halaman" className="block text-xs font-semibold text-brown-2 mb-1.5">Halaman terkait (boleh dikosongkan)</label>
             <input
               id="kirim-halaman"
               value={halaman}
               onChange={(e) => setHalaman(e.target.value.slice(0, HALAMAN_MAKS))}
               placeholder="Contoh: /asesmen/formatif/1"
-              className={`${KELAS_ISIAN} h-[46px] px-3.5 mb-5`}
+              className={`${KELAS_ISIAN} h-[46px] px-3.5`}
               style={GAYA_ISIAN}
             />
+          </div>
 
+          <div>
             <p className="text-xs font-semibold text-brown-2 mb-1.5">Lampiran gambar (boleh dikosongkan)</p>
             <div
               onDragOver={(e) => {
@@ -181,21 +185,22 @@ export default function Kirim() {
               }}
               onDragLeave={() => setSeretDi(false)}
               onDrop={lepas}
-              className="rounded-[var(--radius-control)] border-2 border-dashed p-4 text-center transition-colors"
+              className="rounded-[var(--radius-control)] border-2 border-dashed p-4 transition-colors"
               style={{ borderColor: seretDi ? 'var(--terra)' : 'var(--border)', background: seretDi ? 'var(--accent-soft)' : 'transparent' }}
             >
               {lampiran ? (
-                <div>
-                  <img src={lampiran.dataUrl} alt="Pratinjau lampiran" className="mx-auto max-h-48 max-w-full rounded-lg border object-contain bg-white" style={BORDER} />
-                  <p className="text-xs text-brown-3 mt-2 break-all">{lampiran.nama} · {(lampiran.ukuran / 1024).toFixed(0)} KB</p>
-                  <button type="button" onClick={() => setLampiran(null)} className="btn btn-secondary btn-sm mt-2">Hapus lampiran</button>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <img src={lampiran.dataUrl} alt="Pratinjau lampiran" className="max-h-40 max-w-full self-start rounded-lg border object-contain bg-white" style={BORDER} />
+                  <div className="min-w-0">
+                    <p className="text-xs text-brown-3 mb-2 break-all">{lampiran.nama} · {(lampiran.ukuran / 1024).toFixed(0)} KB</p>
+                    <button type="button" onClick={() => setLampiran(null)} className="btn btn-secondary btn-sm">Hapus lampiran</button>
+                  </div>
                 </div>
               ) : (
-                <>
-                  <p className="text-sm text-brown-2 mb-2">Seret gambar ke sini, atau</p>
-                  <button type="button" onClick={() => inputBerkas.current?.click()} className="btn btn-secondary btn-sm">Pilih gambar</button>
-                  <p className="text-xs text-brown-3 mt-2">PNG, JPG, atau WebP, paling besar 1 MB</p>
-                </>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <button type="button" onClick={() => inputBerkas.current?.click()} className="btn btn-secondary btn-sm self-start">Pilih gambar</button>
+                  <p className="text-sm text-brown-2 m-0">atau seret gambar ke sini · <span className="text-xs text-brown-3">PNG, JPG, atau WebP, paling besar 1 MB</span></p>
+                </div>
               )}
               <input
                 ref={inputBerkas}
@@ -209,17 +214,17 @@ export default function Kirim() {
                 }}
               />
             </div>
+          </div>
 
-            <div className="mt-auto pt-5">
-              {pesan && (
-                <p role="status" className={`text-sm mb-3 ${pesan.jenis === 'ok' ? 'text-success' : 'text-danger'}`}>
-                  {pesan.teks}
-                </p>
-              )}
-              <button type="button" onClick={() => void kirim()} disabled={mengirim || belumAktif} className="btn btn-primary w-full">
-                {mengirim ? 'Mengirim…' : 'Kirim'}
-              </button>
-            </div>
+          <div>
+            {pesan && (
+              <p role="status" className={`text-sm mb-3 ${pesan.jenis === 'ok' ? 'text-success' : 'text-danger'}`}>
+                {pesan.teks}
+              </p>
+            )}
+            <button type="button" onClick={() => void kirim()} disabled={mengirim || belumAktif} className="btn btn-primary w-full sm:w-auto sm:min-w-[160px]">
+              {mengirim ? 'Mengirim…' : 'Kirim'}
+            </button>
           </div>
         </div>
 
