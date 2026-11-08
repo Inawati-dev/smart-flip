@@ -225,16 +225,16 @@ export function PanelLonceng({
               aria-checked={aktif}
               aria-label={aktif ? 'Matikan notifikasi' : 'Nyalakan notifikasi'}
               onClick={() => setAktif(!aktif)}
-              className="inline-flex items-center gap-2 min-h-11 -my-1.5 pl-2 text-xs font-semibold text-brown-2 rounded-lg focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]"
+              className="inline-flex items-center gap-2.5 min-h-11 -my-1.5 pl-2 text-xs font-semibold text-brown-2 rounded-lg focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]"
             >
               {aktif ? 'Nyala' : 'Mati'}
               <span
                 aria-hidden="true"
-                className="relative w-9 h-5 rounded-full border border-[color:var(--border)] transition-colors"
+                className="relative w-10 h-6 shrink-0 box-border rounded-full border border-[color:var(--border)] transition-colors"
                 style={{ background: aktif ? 'var(--terra)' : 'var(--bg3)' }}
               >
                 <span
-                  className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform"
+                  className="absolute top-[3px] left-[3px] w-4 h-4 rounded-full transition-transform"
                   style={{ background: aktif ? 'var(--btn-text)' : 'var(--brown3)', transform: aktif ? 'translateX(16px)' : 'none' }}
                 />
               </span>

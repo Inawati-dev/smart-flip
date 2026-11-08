@@ -9,5 +9,16 @@
     "sebelum": "351_sebelum.png",
     "sesudah": "351_sesudah.png",
     "catatan": "Batas jujur: watermark tidak mencegah layar difoto dengan HP lain; ia menurunkan niat dan memberi bukti. Gambar memakai bank soal contoh dan akun pratinjau."
+  },
+  {
+    "antrean": "#362",
+    "papan": "#296",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Saklar notifikasi lebih rapi",
+    "ringkasan": "Bola saklar notifikasi di panel lonceng tadinya menempel tepi kanan lintasan (celah 1 px kiri 19 px). Lintasan diperbesar jadi 40 x 24 px dan bola 16 px diberi celah sama di empat sisi (sekitar 4 px), serta jarak ke tulisan Nyala/Mati dilonggarkan.",
+    "sebelum": "362_sebelum.png",
+    "sesudah": "362_sesudah.png",
+    "catatan": "Diukur: sebelum celah kanan 1 px; sesudah celah kiri, kanan, atas, dan bawah sekitar 4 px baik saat nyala maupun mati."
   }
 ]
