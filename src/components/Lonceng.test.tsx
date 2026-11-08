@@ -2,8 +2,12 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 import { PanelLonceng, type ButirLonceng } from './Lonceng'
+import { kunciNotif } from '../lib/notifPref'
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+  localStorage.clear()
+})
 
 function butir(n: number, buka = vi.fn()): ButirLonceng[] {
   return Array.from({ length: n }, (_, i) => ({ kunci: `b${i}`, judul: `Judul ${i}`, ket: `Ket ${i}`, baru: i === 0, buka }))
@@ -16,6 +20,28 @@ describe('PanelLonceng', () => {
     cleanup()
     render(<PanelLonceng letak="atas" butir={[]} jumlahBaru={0} kosong="Kosong" />)
     expect(screen.getByRole('button', { name: 'Notifikasi' }).textContent).toBe('')
+  })
+
+  it('saklar notifikasi (antrean #360): mati = lencana hilang, daftar diganti pesan, tersimpan; nyala lagi memulihkan', () => {
+    render(<PanelLonceng letak="rel" butir={butir(2)} jumlahBaru={4} kosong="Kosong" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Notifikasi, 4 baru' }))
+    const saklar = screen.getByRole('switch', { name: 'Matikan notifikasi' })
+    expect(saklar.getAttribute('aria-checked')).toBe('true')
+    fireEvent.click(saklar)
+    expect(localStorage.getItem(kunciNotif(undefined))).toBe('0')
+    expect(screen.getByRole('button', { name: 'Notifikasi dimatikan' }).textContent).toBe('')
+    expect(screen.getByText(/Lencana dan kabar baru tidak ditampilkan/)).toBeTruthy()
+    expect(screen.queryByText('Judul 1')).toBeNull()
+    fireEvent.click(screen.getByRole('switch', { name: 'Nyalakan notifikasi' }))
+    expect(localStorage.getItem(kunciNotif(undefined))).toBe('1')
+    expect(screen.getByText('Judul 1')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Notifikasi, 4 baru' }).textContent).toBe('4')
+  })
+
+  it('pilihan mati tersimpan: lonceng baru langsung tampil mati', () => {
+    localStorage.setItem(kunciNotif(undefined), '0')
+    render(<PanelLonceng letak="atas" butir={butir(1)} jumlahBaru={3} kosong="Kosong" />)
+    expect(screen.getByRole('button', { name: 'Notifikasi dimatikan' }).textContent).toBe('')
   })
 
   it('klik membuka panel; klik butir memanggil buka dan menutup panel; Esc menutup', () => {

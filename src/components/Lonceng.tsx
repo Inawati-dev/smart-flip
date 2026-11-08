@@ -10,6 +10,7 @@ import { useTopikStatus } from '../lib/topik'
 import { fetchVideoProgressMap } from '../lib/videoProgress'
 import { notifikasiBelajar } from '../lib/notifBelajar'
 import { useAmbang } from '../lib/ambang'
+import { useNotifAktif } from '../lib/notifPref'
 import { fetchSumberAktivitas, perluPerhatian, type FilterAktivitas } from '../lib/aktivitas'
 import { fetchPengingatSaya, tandaiPengingatDibaca } from '../lib/pengingat'
 import { timeAgo } from '../lib/forum'
@@ -135,6 +136,7 @@ export function PanelLonceng({
   kaki?: { label: string; buka: () => void }
 }) {
   const [buka, setBuka] = useState(false)
+  const { aktif, setAktif } = useNotifAktif()
   const akar = useRef<HTMLDivElement>(null)
   const tombol = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -149,7 +151,8 @@ export function PanelLonceng({
   useEffect(() => {
     if (!buka) return
     const p = panel.current
-    ;(p?.querySelector<HTMLElement>('li button, button') ?? p)?.focus()
+    // Saklar ada di kepala panel; fokus awal tetap butir pertama, lalu tombol kaki (.btn), baru panel.
+    ;(p?.querySelector<HTMLElement>('li button') ?? p?.querySelector<HTMLElement>('.btn') ?? p)?.focus()
   }, [buka])
 
   useEffect(() => {
@@ -164,7 +167,8 @@ export function PanelLonceng({
     }
   }, [buka])
 
-  const label = jumlahBaru > 0 ? `Notifikasi, ${jumlahBaru} baru` : 'Notifikasi'
+  const baru = aktif ? jumlahBaru : 0
+  const label = !aktif ? 'Notifikasi dimatikan' : baru > 0 ? `Notifikasi, ${baru} baru` : 'Notifikasi'
   const tombolKelas =
     letak === 'rel'
       ? 'w-10 h-10 rounded-[var(--radius-control)] hover:bg-bg3'
@@ -193,14 +197,14 @@ export function PanelLonceng({
         data-tur="lonceng"
         className={`${tombolKelas} relative flex items-center justify-center text-brown-2 transition-colors`}
       >
-        <IconBell size={18} />
-        {jumlahBaru > 0 && (
+        <IconBell size={18} className={aktif ? undefined : 'opacity-40'} />
+        {baru > 0 && (
           <span
             className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full text-[11px] font-bold leading-[18px] text-center tabular-nums"
             style={{ background: 'var(--danger)', color: 'var(--btn-text)', boxShadow: '0 0 0 2px var(--cream)' }}
             aria-hidden
           >
-            {jumlahBaru > 9 ? '9+' : jumlahBaru}
+            {baru > 9 ? '9+' : baru}
           </span>
         )}
       </button>
@@ -213,8 +217,32 @@ export function PanelLonceng({
           className={`${panelKelas} z-[500] outline-none rounded-2xl border border-[color:var(--border)] bg-ivory flex flex-col max-h-[min(480px,75dvh)]`}
           style={{ boxShadow: '0 8px 32px color-mix(in srgb, var(--shadow-color) 20%, transparent)', animation: 'slideUpModal 0.2s ease' }}
         >
-          <p className="px-4 pt-3.5 pb-2 text-[11px] font-semibold uppercase tracking-wide text-brown-3">Notifikasi</p>
-          {butir.length === 0 ? (
+          <div className="px-4 pt-3 pb-1 flex items-center justify-between gap-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-brown-3">Notifikasi</p>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={aktif}
+              aria-label={aktif ? 'Matikan notifikasi' : 'Nyalakan notifikasi'}
+              onClick={() => setAktif(!aktif)}
+              className="inline-flex items-center gap-2 min-h-11 -my-1.5 pl-2 text-xs font-semibold text-brown-2 rounded-lg focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]"
+            >
+              {aktif ? 'Nyala' : 'Mati'}
+              <span
+                aria-hidden="true"
+                className="relative w-9 h-5 rounded-full border border-[color:var(--border)] transition-colors"
+                style={{ background: aktif ? 'var(--terra)' : 'var(--bg3)' }}
+              >
+                <span
+                  className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full transition-transform"
+                  style={{ background: aktif ? 'var(--btn-text)' : 'var(--brown3)', transform: aktif ? 'translateX(16px)' : 'none' }}
+                />
+              </span>
+            </button>
+          </div>
+          {!aktif ? (
+            <p className="px-4 pb-4 pt-1 text-sm text-brown-3">Notifikasi dimatikan. Lencana dan kabar baru tidak ditampilkan. Nyalakan lagi kapan saja lewat saklar di atas.</p>
+          ) : butir.length === 0 ? (
             <p className="px-4 pb-4 text-sm text-brown-3">{kosong}</p>
           ) : (
             <ul className="list-none m-0 px-2 pb-2 overflow-y-auto flex flex-col gap-1">
@@ -243,7 +271,7 @@ export function PanelLonceng({
               ))}
             </ul>
           )}
-          {kaki && (
+          {aktif && kaki && (
             <button type="button" onClick={() => { tutup(true); kaki.buka() }} className="btn btn-secondary btn-sm mx-3 mb-3">
               {kaki.label}
             </button>
