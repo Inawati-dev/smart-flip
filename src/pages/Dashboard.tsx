@@ -618,7 +618,7 @@ export function DashboardMhs({
             Topik {hasil.topikAktif.orderNum} dibuka {formatTanggal(materiDibuka)}.
           </p>
         ) : (
-          <div className="flex flex-wrap gap-2">
+          <div className="baris-tombol flex flex-wrap gap-2">
             <Link to={actions[utama].to} className="btn btn-primary">
               {actions[utama].label}
             </Link>

@@ -309,6 +309,13 @@ select:disabled {
   .btn-icon.btn-sm { width: 36px; height: 36px; min-height: 36px; }
 }
 
+/* Tiga tombol aksi sebaris (antrean #358, 8 Nov 2026): di telepon satu baris bila muat; bila tidak, dua baris
+   dan tombol ketiga selebar baris. Tombol tumbuh mengisi baris (flex 1 1 auto), jadi sisa baris tidak kosong. */
+@media (max-width: 639px) {
+  .baris-tombol { display: flex; flex-wrap: wrap; gap: 8px; }
+  .baris-tombol > * { flex: 1 1 auto; justify-content: center; text-align: center; }
+}
+
 /* Tombol P1..Pn (PertemuanStepper.tsx, sapuan mahasiswa 16 Sep 2026) tetap
    bulat 44x44, bukan .btn. Hover sudah didapat gratis dari aturan
    `button:not(:disabled):hover` di bawah (app-wide); yang belum ada cuma

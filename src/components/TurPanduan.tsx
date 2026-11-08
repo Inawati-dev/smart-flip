@@ -111,19 +111,21 @@ export function TurPanduan({ langkah, onSelesai }: { langkah: LangkahTur[]; onSe
           {L.judul}
         </b>
         <p className="text-[13px] leading-relaxed text-brown-2">{L.teks}</p>
-        <div className="flex items-center gap-2 flex-wrap mt-1">
-          <span className="text-xs text-brown-3 mr-auto">
+        <div className="flex flex-col gap-2 mt-1 sm:flex-row sm:items-center">
+          <span className="text-xs text-brown-3 sm:mr-auto">
             {i + 1} / {daftar.length}
           </span>
-          <button type="button" onClick={onSelesai} className="btn btn-secondary btn-sm">
-            Lewati
-          </button>
-          <button type="button" onClick={() => setI(i - 1)} disabled={i === 0} className="btn btn-secondary btn-sm">
-            Sebelumnya
-          </button>
-          <button type="button" onClick={() => (akhir ? onSelesai() : setI(i + 1))} className="btn btn-primary btn-sm">
-            {akhir ? 'Selesai' : 'Berikutnya'}
-          </button>
+          <div className="baris-tombol flex gap-2">
+            <button type="button" onClick={onSelesai} className="btn btn-secondary btn-sm">
+              Lewati
+            </button>
+            <button type="button" onClick={() => setI(i - 1)} disabled={i === 0} className="btn btn-secondary btn-sm">
+              Sebelumnya
+            </button>
+            <button type="button" onClick={() => (akhir ? onSelesai() : setI(i + 1))} className="btn btn-primary btn-sm">
+              {akhir ? 'Selesai' : 'Berikutnya'}
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -247,14 +247,14 @@ export function Layout({ children }: { children: ReactNode }) {
               title={themeToggleLabel}
               aria-label={themeToggleLabel}
               data-tur="tema"
-              className="w-11 h-11 rounded-full border border-[color:var(--border)] flex items-center justify-center text-brown-2"
+              className="w-11 h-11 rounded-xl border border-[color:var(--border)] flex items-center justify-center text-brown-2"
             >
               {theme === 'light' ? <IconMoon size={18} /> : <IconSun size={18} />}
             </button>
             <button
               onClick={() => setLogoutOpen(true)}
               aria-label="Keluar"
-              className="w-11 h-11 rounded-full border border-[color:var(--border)] flex items-center justify-center text-red"
+              className="w-11 h-11 rounded-xl border border-[color:var(--border)] flex items-center justify-center text-red"
             >
               <IconLogout size={18} />
             </button>

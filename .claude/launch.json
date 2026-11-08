@@ -18,6 +18,12 @@
       "runtimeExecutable": "cmd",
       "runtimeArgs": ["/c", "set VITE_UI_PREVIEW_ROLE=mahasiswa&& npx vite --port 5174 --strictPort"],
       "port": 5174
+    },
+    {
+      "name": "smart-flipbook-vite-dosen",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": ["/c", "set VITE_UI_PREVIEW_ROLE=dosen&& npx vite --port 5175 --strictPort"],
+      "port": 5175
     }
   ]
 }

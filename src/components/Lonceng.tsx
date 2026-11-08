@@ -168,7 +168,7 @@ export function PanelLonceng({
   const tombolKelas =
     letak === 'rel'
       ? 'w-10 h-10 rounded-[var(--radius-control)] hover:bg-bg3'
-      : 'w-11 h-11 rounded-full border border-[color:var(--border)]'
+      : 'w-11 h-11 rounded-xl border border-[color:var(--border)]'
   // Rel laptop (lonceng di bawah logo, antrean #344): panel di kanan rel, rata atas. Telepon: panel penuh lebar di bawah kepala 58 px.
   const panelKelas =
     letak === 'rel'
