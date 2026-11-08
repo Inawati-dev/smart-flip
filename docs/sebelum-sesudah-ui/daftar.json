@@ -131,5 +131,16 @@
     "judul": "Pilihan notifikasi ikut akun",
     "ringkasan": "Pilihan saklar notifikasi kini juga tersimpan di akun (kolom profiles.notif_aktif, SQL v57), jadi sama di semua perangkat. Tersimpan lokal seketika dan disinkronkan ke akun; bila gagal terkirim dicoba lagi nanti.",
     "tanpaDesktop": "Tidak ada perubahan di tampilan desktop: saklar tampil sama persis seperti #362; yang berubah hanya tempat penyimpanannya."
+  },
+  {
+    "antrean": "#366 (angket butir 6)",
+    "papan": "#300",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Flipbook di Safari (WebKit): sampul tidak lagi tembus",
+    "ringkasan": "Di mesin Safari (WebKit), muka belakang lembar tampil terbalik seperti cermin di atas sampul karena Safari mengabaikan backface-visibility: hidden. Muka yang menghadap ke belakang kini disembunyikan lewat visibility yang berganti di tengah balikan.",
+    "sebelum": "366_sebelum.png",
+    "sesudah": "366_sesudah.png",
+    "catatan": "Kedua gambar diambil di mesin WebKit (Playwright, Version/27.2) pada layar 1536x960; tampilan di Chrome tidak berubah. Sebelum: halaman 2 terbalik di atas sampul. Sesudah: sampul Modul 01 utuh."
   }
 ]
