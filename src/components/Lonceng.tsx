@@ -8,7 +8,7 @@ import { useModules } from '../hooks/useModules'
 import { useAllProgress } from '../hooks/useProgress'
 import { useTopikStatus } from '../lib/topik'
 import { fetchVideoProgressMap } from '../lib/videoProgress'
-import { notifikasiBelajar } from '../lib/notifBelajar'
+import { notifikasiBelajar, ringkasProgres } from '../lib/notifBelajar'
 import { useAmbang } from '../lib/ambang'
 import { useNotifAktif } from '../lib/notifPref'
 import { fetchSumberAktivitas, perluPerhatian, type FilterAktivitas } from '../lib/aktivitas'
@@ -66,7 +66,13 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
           }),
     [loading, modules, statusOf, progress, video, bukaPada, formatifPada],
   )
+  // Baris ringkasan progres paling atas (angket butir 12, antrean #368): bukan kabar baru, jadi tidak menambah lencana.
+  const urut = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
+  const progres = loading ? null : ringkasProgres(urut, statusOf)
   const butir: ButirLonceng[] = [
+    ...(progres && progres.total > 0
+      ? [{ kunci: 'progres', judul: `Progres belajar ${progres.persen}% selesai`, ket: `${progres.selesai} dari ${progres.total} topik lulus tes formatif`, baru: false, buka: () => navigate('/modul') }]
+      : []),
     ...pengingat.map((p) => ({
       kunci: `p-${p.id}`,
       judul: p.title,

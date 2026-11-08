@@ -635,7 +635,7 @@ export function DashboardMhs({
       <KabarTerbaruCard />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label="Topik Selesai" bar="var(--sage)" to="/modul" />
+        <StatCard icon={IconCheck} val={`${hasil.topikSelesai}/${totalModules}`} label={`Topik Selesai · ${totalModules > 0 ? Math.round((hasil.topikSelesai / totalModules) * 100) : 0}%`} bar="var(--sage)" to="/modul" />
         <StatCard
           icon={IconTrendingUp}
           val={hasil.skorTerakhir ? `${hasil.skorTerakhir.score}%` : '—'}

@@ -1,7 +1,7 @@
 import { moduleIdToPath, type ProgressMap } from './progress'
 import type { VideoProgressMap } from './videoProgress'
 import { formatTanggal } from './jadwal'
-import { isBagian, labelNomor } from './jenisTopik'
+import { babSaja, isBagian, labelNomor } from './jenisTopik'
 import type { TopikStatus } from './topik'
 
 // Notifikasi belajar mahasiswa (antrean #353): dihitung dari keadaan belajar, bukan disimpan.
@@ -46,6 +46,14 @@ export function hariLagi(t: Date, kini: Date): number {
 
 function kataHari(n: number): string {
   return n === 1 ? 'besok' : `${n} hari lagi`
+}
+
+/** Ringkasan progres (angket butir 12, antrean #368): topik Bab yang sudah lulus tes formatif, dengan persen bulat. */
+export function ringkasProgres(modulesUrut: ModulBelajar[], statusOf: (moduleId: number) => TopikStatus): { selesai: number; total: number; persen: number } {
+  const bab = babSaja(modulesUrut)
+  const daftar = bab.length ? bab : modulesUrut
+  const selesai = daftar.filter((m) => statusOf(m.id) === 'done').length
+  return { selesai, total: daftar.length, persen: daftar.length ? Math.round((selesai / daftar.length) * 100) : 0 }
 }
 
 export function notifikasiBelajar(opts: {

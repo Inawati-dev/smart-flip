@@ -151,5 +151,16 @@
     "judul": "Pratinjau berkas Mini Projek sebelum diunduh",
     "ringkasan": "Tombol \"Lihat Berkas\", \"Lihat Bab n Terkirim\", dan \"Lihat Berkas Saya\" kini membuka pratinjau dulu: PDF di pembaca flipbook, Word (.docx) sebagai halaman bacaan di jendela, lalu tombol Unduh di dalam pratinjau. Sebelumnya langsung membuka alamat berkas di tab baru (unduhan langsung).",
     "tanpaDesktop": "Tanpa gambar sebelum/sesudah: pratinjau hanya muncul untuk berkas kiriman yang tersimpan di Supabase Storage, dan akun pratinjau lokal tidak punya berkas. Perilaku diuji dengan tes otomatis (PratinjauBerkas.test.tsx, 6 tes) dan konversi docx diuji pada berkas Word nyata."
+  },
+  {
+    "antrean": "#368 (angket butir 12)",
+    "papan": "#302",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Persen selesai di lonceng dan dashboard",
+    "ringkasan": "Panel lonceng mahasiswa punya baris pertama \"Progres belajar N% selesai\" (N dari total topik lulus tes formatif), dan kartu dashboard menjadi \"Topik Selesai · N%\". Baris progres bukan kabar baru, jadi tidak menambah angka merah.",
+    "sebelum": "368_sebelum.png",
+    "sesudah": "368_sesudah.png",
+    "catatan": "Contoh: akun pratinjau mahasiswa, 0 dari 9 topik lulus (0%). Panel terbuka di kedua gambar."
   }
 ]

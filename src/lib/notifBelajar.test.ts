@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { notifikasiBelajar, hariLagi, MAKS_MODUL, MAKS_VIDEO, MAKS_JADWAL, type ModulBelajar } from './notifBelajar'
+import { notifikasiBelajar, ringkasProgres, hariLagi, MAKS_MODUL, MAKS_VIDEO, MAKS_JADWAL, type ModulBelajar } from './notifBelajar'
 import type { TopikStatus } from './topik'
 
 const kini = new Date(2026, 10, 6, 13, 0) // 6 Nov 2026 13.00
@@ -113,5 +113,17 @@ describe('notifikasiBelajar: urutan kelompok', () => {
     })
     expect(r.map((b) => b.jenis)).toEqual(['belum-dilihat', 'belum-dilihat', 'jadwal'])
     expect(r.map((b) => b.kunci)).toEqual(['buka-1', 'video-1', 'jadwal-materi-2'])
+  })
+})
+
+describe('ringkasProgres (antrean #368)', () => {
+  it('menghitung topik Bab berstatus done, Bagian tidak ikut, persen bulat', () => {
+    const moduls = [bab(1, { jenis: 'bagian' }), bab(2), bab(3), bab(4)]
+    const r = ringkasProgres(moduls, (id): TopikStatus => (id === 2 ? 'done' : 'open'))
+    expect(r).toEqual({ selesai: 1, total: 3, persen: 33 })
+  })
+
+  it('tanpa modul: nol dan tanpa pembagian nol', () => {
+    expect(ringkasProgres([], () => 'open')).toEqual({ selesai: 0, total: 0, persen: 0 })
   })
 })
