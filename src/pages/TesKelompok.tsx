@@ -16,7 +16,6 @@ import {
   verifyGroupCode,
   joinGroup,
   fetchTeamView,
-  submitGroupAttempt,
   kelompokkanHasil,
   rataKelompok,
   UKURAN_KELOMPOK_BAWAAN,
@@ -25,6 +24,8 @@ import {
 } from '../lib/tesKelompok'
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
+import { useDraftTes, CATATAN_DILANJUTKAN } from '../hooks/useDraftTes'
+import { kunciDraft, hapusDraft, kirimKelompok } from '../lib/tesTunda'
 import { IconUsers, IconChart, IconLock, IconTrash, IconLink, IconX } from '../components/icons'
 
 // Tes kelompok (antrean #65 opsi A, keputusan Johan 16 Sep 2026). Dosen buat
@@ -484,6 +485,21 @@ function MahasiswaTesKelompok() {
   const [currentQ, setCurrentQ] = useState(0)
   const [jawaban, setJawaban] = useState<Record<number, number>>({})
   const [saving, setSaving] = useState(false)
+  const [tertunda, setTertunda] = useState(false)
+  // Draf pengerjaan (antrean #355): internet putus atau halaman dimuat ulang tidak menghapus jawaban.
+  const kunci = group ? kunciDraft(user?.id, 'kelompok', group.team_id) : null
+  const dipulihkan = useDraftTes({
+    kunci,
+    aktif: group != null && joined && !done,
+    acak,
+    currentQ,
+    jawaban,
+    pulih: (d) => {
+      setAcak(d.acak)
+      setCurrentQ(d.currentQ)
+      setJawaban(d.jawaban)
+    },
+  })
 
   const { data: soal = [] } = useQuery({
     queryKey: ['group-soal', group?.team_id, courseId],
@@ -545,12 +561,11 @@ function MahasiswaTesKelompok() {
     const jawabanTampil = acak.tampil.map((_, i) => jawaban[i] ?? -1)
     const hasilNilai = nilai(acak.tampil, jawabanTampil)
     setSaving(true)
-    try {
-      await submitGroupAttempt(group.team_id, hasilNilai.score, jawabanTampil)
-      await queryClient.invalidateQueries({ queryKey: ['group-team-view', group.team_id] })
-    } catch (e) {
-      console.warn('[tes-kelompok] submitGroupAttempt gagal:', e)
-    }
+    // Gagal karena jaringan = masuk antrean di perangkat dan dikirim otomatis (PengirimUlang); jawaban tidak hilang.
+    const kirim = await kirimKelompok(user?.id, group.team_id, hasilNilai.score, jawabanTampil)
+    if (kirim !== 'gagal' && kunci) hapusDraft(kunci)
+    setTertunda(kirim === 'tunda')
+    if (kirim === 'terkirim') await queryClient.invalidateQueries({ queryKey: ['group-team-view', group.team_id] })
     setSaving(false)
     setAcak(null)
     setJustScore(hasilNilai.score)
@@ -565,7 +580,12 @@ function MahasiswaTesKelompok() {
     <Layout>
       <div className="p-4 md:p-6 max-w-xl mx-auto">
         <h1 className="font-display text-xl font-bold text-brown mb-4">Tes Kelompok</h1>
-
+        {tertunda && (
+          <p className="text-xs mb-4 px-3 py-2 rounded-lg bg-[color:var(--accent-soft)] text-brown-2">
+            Internet terputus, jadi hasil ini belum sampai ke server. Hasilnya tersimpan di perangkat ini dan dikirim otomatis saat internet kembali.
+          </p>
+        )}
+        
         {!isSupabaseConfigured ? (
           <div className="bg-ivory border rounded-2xl p-6 text-sm text-brown-3 text-center" style={BORDER}>
             Tes kelompok butuh koneksi Supabase.
@@ -609,6 +629,8 @@ function MahasiswaTesKelompok() {
             </Link>
           </div>
         ) : acak ? (
+          <>
+          {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
           <SoalRunner
             total={acak.tampil.length}
             q={acak.tampil[currentQ]}
@@ -625,6 +647,7 @@ function MahasiswaTesKelompok() {
             onNext={() => setCurrentQ((c) => Math.min(acak.tampil.length - 1, c + 1))}
             onFinish={handleFinish}
           />
+          </>
         ) : (
           <div className="bg-ivory border rounded-xl p-7" style={BORDER}>
             <h2 className="font-display text-lg font-bold text-brown mb-1 text-center">{group.name}</h2>

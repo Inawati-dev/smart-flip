@@ -11,3 +11,10 @@ export const PESAN_JARINGAN =
 export function pesanGalat(msg: string): string {
   return POLA.test(msg) ? PESAN_JARINGAN : msg
 }
+
+/** True bila `e` galat jaringan: pesan peramban (fetch gagal) atau perangkat sedang luring (antrean #355). */
+export function galatJaringan(e: unknown): boolean {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) return true
+  const msg = e instanceof Error ? e.message : typeof e === 'string' ? e : typeof e === 'object' && e !== null && 'message' in e ? String((e as { message: unknown }).message) : ''
+  return POLA.test(msg)
+}

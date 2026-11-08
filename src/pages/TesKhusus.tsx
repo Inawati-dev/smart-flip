@@ -7,7 +7,9 @@ import { useModules } from '../hooks/useModules'
 import { useKelasByDosen } from '../hooks/useKelas'
 import { labelKelas, tahunUnik } from '../lib/kelas'
 import { fetchBankSoal, type KuisSoal } from '../lib/kuisSoal'
-import { fetchAttemptsByKind, saveQuizAttempt } from '../lib/quizAttempts'
+import { fetchAttemptsByKind } from '../lib/quizAttempts'
+import { useDraftTes, CATATAN_DILANJUTKAN } from '../hooks/useDraftTes'
+import { kunciDraft, hapusDraft, kirimAttempt } from '../lib/tesTunda'
 import { acakSoal, nilai, type AcakSoalResult, type AcakUrutSoal, type SoalTampil } from '../lib/acak'
 import { computeNGain } from '../lib/ngain'
 import { downloadCsv } from '../lib/analitik'
@@ -499,6 +501,7 @@ function urutanTanpaAcak(soal: KuisSoal[]): AcakSoalResult {
 
 function MahasiswaTesKhusus() {
   const { courseId } = useCourse()
+  const { user } = useAuth()
   const { code: codeParam } = useParams()
   const [kodeInput, setKodeInput] = useState(codeParam ?? '')
   const [verifying, setVerifying] = useState(false)
@@ -511,6 +514,21 @@ function MahasiswaTesKhusus() {
   const [jawaban, setJawaban] = useState<Record<number, number>>({})
   const [saving, setSaving] = useState(false)
   const [hasilBaru, setHasilBaru] = useState<number | null>(null)
+  const [tertunda, setTertunda] = useState(false)
+  // Draf pengerjaan (antrean #355): internet putus atau halaman dimuat ulang tidak menghapus jawaban.
+  const kunci = session ? kunciDraft(user?.id, 'khusus', session.session_id) : null
+  const dipulihkan = useDraftTes({
+    kunci,
+    aktif: session != null && existingScore == null,
+    acak,
+    currentQ,
+    jawaban,
+    pulih: (d) => {
+      setAcak(d.acak)
+      setCurrentQ(d.currentQ)
+      setJawaban(d.jawaban)
+    },
+  })
 
   const { data: soal = [] } = useQuery({
     queryKey: ['test-session-soal', session?.session_id, courseId],
@@ -569,18 +587,17 @@ function MahasiswaTesKhusus() {
     const jawabanTampil = acak.tampil.map((_, i) => jawaban[i] ?? -1)
     const hasilNilai = nilai(acak.tampil, jawabanTampil)
     setSaving(true)
-    try {
-      await saveQuizAttempt(null, {
-        score: hasilNilai.score,
-        answers: jawabanTampil,
-        kind: session.kind === 'post' ? 'post' : 'formatif',
-        questionOrder: acak.urut,
-        sessionId: session.session_id,
-        courseId,
-      })
-    } catch (e) {
-      console.warn('[tes-khusus] saveQuizAttempt gagal:', e)
-    }
+    // Gagal karena jaringan = masuk antrean di perangkat dan dikirim otomatis (PengirimUlang); jawaban tidak hilang.
+    const kirim = await kirimAttempt(user?.id, null, {
+      score: hasilNilai.score,
+      answers: jawabanTampil,
+      kind: session.kind === 'post' ? 'post' : 'formatif',
+      questionOrder: acak.urut,
+      sessionId: session.session_id,
+      courseId,
+    })
+    if (kirim !== 'gagal' && kunci) hapusDraft(kunci)
+    setTertunda(kirim === 'tunda')
     setSaving(false)
     setAcak(null)
     setHasilBaru(hasilNilai.score)
@@ -592,7 +609,12 @@ function MahasiswaTesKhusus() {
     <Layout>
       <div className="p-4 md:p-6 max-w-xl mx-auto">
         <h1 className="font-display text-xl font-bold text-brown mb-4">Tes Khusus</h1>
-
+        {tertunda && (
+          <p className="text-xs mb-4 px-3 py-2 rounded-lg bg-[color:var(--accent-soft)] text-brown-2">
+            Internet terputus, jadi hasil ini belum sampai ke server. Hasilnya tersimpan di perangkat ini dan dikirim otomatis saat internet kembali.
+          </p>
+        )}
+        
         {!session ? (
           <div className="bg-ivory border rounded-2xl p-6" style={BORDER}>
             <div className="flex items-center gap-2 mb-3 text-brown-2">
@@ -638,6 +660,8 @@ function MahasiswaTesKhusus() {
               ))}
           </div>
         ) : acak ? (
+          <>
+          {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
           <SoalRunner
             total={acak.tampil.length}
             q={acak.tampil[currentQ]}
@@ -654,6 +678,7 @@ function MahasiswaTesKhusus() {
             onNext={() => setCurrentQ((c) => Math.min(acak.tampil.length - 1, c + 1))}
             onFinish={handleFinish}
           />
+          </>
         ) : (
           <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
             <h2 className="font-display text-lg font-bold text-brown mb-2">{session.name}</h2>

@@ -5,7 +5,8 @@ import { useModule, useModules, useIkutiMataKuliah } from '../hooks/useModules'
 import { useAuth } from '../contexts/AuthContext'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { useCourse } from '../contexts/CourseContext'
-import { saveQuizAttempt } from '../lib/quizAttempts'
+import { useDraftTes, CATATAN_DILANJUTKAN } from '../hooks/useDraftTes'
+import { kunciDraft, hapusDraft, kirimAttempt, type HasilKirim } from '../lib/tesTunda'
 import { useAmbang } from '../lib/ambang'
 import { fetchBankSoal } from '../lib/kuisSoal'
 import { acakSoal, nilai, SOAL_TAMPIL_FORMATIF, type AcakSoalResult } from '../lib/acak'
@@ -27,7 +28,13 @@ import { babSaja, isBagian } from '../lib/jenisTopik'
 
 const BORDER = { borderColor: 'var(--border)' } as const
 
+// Dipasang ulang tiap topik berganti (stepper pindah topik di route yang sama), supaya soal dan draf topik lain tidak terbawa.
 export default function Formatif() {
+  const { id } = useParams()
+  return <FormatifIsi key={id} />
+}
+
+function FormatifIsi() {
   const { id } = useParams()
   const moduleId = parseInt(id ?? '1', 10) || 1
   const navigate = useNavigate()
@@ -38,7 +45,7 @@ export default function Formatif() {
   const { data: modul, isLoading: modulLoading } = useModule(moduleId)
   const { data: modules = [] } = useModules()
   const { statusOf, bukaPada, formatifPada, loading: topikLoading } = useTopikStatus()
-  const { role } = useAuth()
+  const { role, user } = useAuth()
   // Dosen tidak dipindah mata kuliahnya (temuan pemeriksa #106).
   const menyesuaikan = useIkutiMataKuliah(role === 'dosen' ? null : moduleId)
   const { data: soal = [], isLoading: soalLoading } = useQuery({
@@ -52,7 +59,23 @@ export default function Formatif() {
   const [jawaban, setJawaban] = useState<Record<number, number>>({})
   const [submitted, setSubmitted] = useState<Record<number, boolean>>({})
   const [saving, setSaving] = useState(false)
-  const [modal, setModal] = useState<{ kind: 'apresiasi' | 'remedial'; score: number } | null>(null)
+  const [modal, setModal] = useState<{ kind: 'apresiasi' | 'remedial'; score: number; kirim?: HasilKirim } | null>(null)
+  // Draf pengerjaan (antrean #355): internet putus atau halaman dimuat ulang tidak menghapus jawaban.
+  const kunci = kunciDraft(user?.id, 'formatif', moduleId)
+  const dipulihkan = useDraftTes({
+    kunci,
+    aktif: !topikLoading && !soalLoading && statusOf(moduleId) === 'open',
+    acak,
+    currentQ,
+    jawaban,
+    submitted,
+    pulih: (d) => {
+      setAcak(d.acak)
+      setCurrentQ(d.currentQ)
+      setJawaban(d.jawaban)
+      setSubmitted(d.submitted ?? {})
+    },
+  })
 
   if (modulLoading || topikLoading || soalLoading || menyesuaikan) {
     return (
@@ -99,21 +122,21 @@ export default function Formatif() {
     const jawabanTampil = acak.tampil.map((_, i) => jawaban[i] ?? -1)
     const hasil = nilai(acak.tampil, jawabanTampil)
     setSaving(true)
-    try {
-      await saveQuizAttempt(moduleId, {
-        score: hasil.score,
-        answers: jawabanTampil,
-        kind: 'formatif',
-        questionOrder: acak.urut,
-        courseId,
-      })
+    // Gagal karena jaringan = masuk antrean di perangkat dan dikirim otomatis (PengirimUlang); jawaban tidak hilang.
+    const kirim = await kirimAttempt(user?.id, moduleId, {
+      score: hasil.score,
+      answers: jawabanTampil,
+      kind: 'formatif',
+      questionOrder: acak.urut,
+      courseId,
+    })
+    if (kirim !== 'gagal') hapusDraft(kunci)
+    if (kirim === 'terkirim') {
       await queryClient.invalidateQueries({ queryKey: ['quizAttempts', moduleId] })
       await queryClient.invalidateQueries({ queryKey: ['quizAttempts', 'all'] })
-    } catch (e) {
-      console.warn('[formatif] saveQuizAttempt gagal:', e)
     }
     setSaving(false)
-    setModal({ kind: hasil.score >= ambang.formatif ? 'apresiasi' : 'remedial', score: hasil.score })
+    setModal({ kind: hasil.score >= ambang.formatif ? 'apresiasi' : 'remedial', score: hasil.score, kirim })
     setAcak(null)
   }
 
@@ -166,6 +189,8 @@ export default function Formatif() {
               <p className="text-brown-2 text-sm">Dosen belum menyiapkan soal untuk topik ini.</p>
             </div>
           ) : acak ? (
+            <>
+            {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
             <SoalRunner
               total={acak.tampil.length}
               q={acak.tampil[currentQ]}
@@ -182,6 +207,7 @@ export default function Formatif() {
               onNext={() => setCurrentQ((c) => Math.min(acak.tampil.length - 1, c + 1))}
               onFinish={handleFinish}
             />
+            </>
           ) : (
             <div className="bg-ivory border rounded-xl p-7 text-center" style={BORDER}>
               <p className="text-sm text-brown-3 mb-1">{Math.min(soal.length, SOAL_TAMPIL_FORMATIF)} soal pilihan ganda, diambil acak dari {soal.length} soal</p>
@@ -208,6 +234,11 @@ export default function Formatif() {
             className="rounded-2xl modal-sempit p-8 text-center"
             style={{ background: 'var(--ivory)', boxShadow: '0 8px 40px color-mix(in srgb, var(--shadow-color) 22%, transparent)', animation: 'slideUpModal 0.22s ease' }}
           >
+            {modal.kirim === 'tunda' && (
+              <p className="text-xs mb-4 px-3 py-2 rounded-lg bg-[color:var(--accent-soft)] text-brown-2">
+                Internet terputus, jadi hasil ini belum sampai ke server. Hasilnya tersimpan di perangkat ini dan dikirim otomatis saat internet kembali.
+              </p>
+            )}
             {modal.kind === 'apresiasi' ? (
               <>
                 <h3 className="font-display text-lg font-bold text-brown mb-2">Selamat, Skor {modal.score}</h3>

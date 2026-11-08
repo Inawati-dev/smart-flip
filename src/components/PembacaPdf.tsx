@@ -362,6 +362,8 @@ export function PembacaPdf({ src, judul, kiri, aksi, cap = null, onHalaman, pers
         }
         gambarRef.current = baru
         setGambar(baru)
+        // Jeda antar halaman supaya balikan yang sedang berjalan tidak tersendat oleh penggambaran halaman berikutnya (antrean #357).
+        await new Promise((r) => setTimeout(r, GAYA_ACUAN ? 90 : 0))
       }
     })()
     return () => {

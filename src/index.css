@@ -513,6 +513,21 @@ button:not(:disabled):active {
 .pembaca-kertas { position: relative; flex: none; box-shadow: 0 10px 30px rgba(0, 0, 0, .45); }
 /* Gaya acuan iSukarno (antrean #354; sakelar GAYA_ACUAN di PembacaPdf.tsx). Gaya lama di atas tidak diubah. */
 .pembaca-buku.geser { transition: transform var(--pb-balik) cubic-bezier(.45, 0, .55, 1); }
+/* Perhalus balikan (antrean #357, 8 Nov 2026): muka lembar menggelap saat berputar menjauh lalu terang lagi saat
+   mendarat, jadi putarannya terbaca sebagai lembar bergelombang, bukan kartu datar; lapisan GPU disiapkan lebih dulu. */
+.pembaca-buku.geser .pembaca-lembar { will-change: transform; }
+.pembaca-buku.geser .pembaca-muka::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, .55), rgba(0, 0, 0, .12) 70%, rgba(0, 0, 0, .04));
+  transition: opacity var(--pb-balik) cubic-bezier(.45, 0, .55, 1);
+}
+.pembaca-buku.geser .pembaca-lembar.balik .pembaca-muka.depan::before { opacity: 1; }
+.pembaca-buku.geser .pembaca-lembar:not(.balik) .pembaca-muka.belakang::before { opacity: 1; }
 .pembaca-panah {
   position: absolute;
   top: 50%;
@@ -551,8 +566,10 @@ button:not(:disabled):active {
   background-repeat: no-repeat;
   box-shadow: 0 10px 30px rgba(0, 0, 0, .5);
 }
+/* Penanda koneksi (PengirimUlang) tidak menutupi bilah bawah pembaca PDF layar penuh. */
+body:has(.pembaca) .pill-koneksi { display: none; }
 @media (prefers-reduced-motion: reduce) {
-  .pembaca-lembar, .pembaca-alas, .pembaca-buku.geser { transition: none !important; }
+  .pembaca-lembar, .pembaca-alas, .pembaca-buku.geser, .pembaca-buku.geser .pembaca-muka::before { transition: none !important; }
 }
 
 /* Ukuran baku kartu modal (antrean #193): sempit = konfirmasi, sedang = isian,

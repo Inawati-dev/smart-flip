@@ -200,44 +200,56 @@ export async function fetchAllQuizAttemptsOnce(): Promise<QuizAttemptWithModule[
 // Supabase when it's not 'formatif' — the DB defaults new rows to
 // 'formatif', so omitting it keeps existing formatif inserts byte-identical
 // even before migration_v17 has run.
-export async function saveQuizAttempt(
-  moduleId: number | null,
-  attempt: {
-    score: number
-    answers: unknown
-    completedAt?: string
-    date?: string
-    kind?: 'pre' | 'formatif' | 'post'
-    questionOrder?: unknown
-    sessionId?: string
-    /** Mata kuliah (v23). Wajib diisi untuk pre/post; formatif boleh ikut topiknya. */
-    courseId?: number
-  },
-): Promise<void> {
+export type IsiAttempt = {
+  score: number
+  answers: unknown
+  completedAt?: string
+  date?: string
+  kind?: 'pre' | 'formatif' | 'post'
+  questionOrder?: unknown
+  sessionId?: string
+  /** Mata kuliah (v23). Wajib diisi untuk pre/post; formatif boleh ikut topiknya. */
+  courseId?: number
+}
+
+// Satu kali tulis ke Supabase. true = tertulis; false = tidak ada sesi masuk; melempar bila server atau jaringan gagal.
+async function tulisAttemptSupabase(moduleId: number | null, attempt: IsiAttempt): Promise<boolean> {
+  const { data: userData } = await supabase.auth.getUser()
+  const uid = userData.user?.id
+  if (!uid) return false
+  const row: Record<string, unknown> = {
+    user_id: uid,
+    module_id: moduleId,
+    score: attempt.score,
+    answers: attempt.answers,
+    attempted_at: attempt.completedAt || new Date().toISOString(),
+  }
+  if (attempt.kind && attempt.kind !== 'formatif') row.kind = attempt.kind
+  if (attempt.questionOrder !== undefined) row.question_order = attempt.questionOrder
+  if (attempt.sessionId !== undefined) row.session_id = attempt.sessionId
+  if (attempt.courseId !== undefined) row.course_id = attempt.courseId
+  let { error } = await supabase.from('quiz_attempts').insert(row)
+  if (error && attempt.courseId !== undefined && (error.code === '42703' || /course_id/.test(error.message))) {
+    delete row.course_id
+    ;({ error } = await supabase.from('quiz_attempts').insert(row))
+  }
+  if (error) throw error
+  return true
+}
+
+/** Kirim ke server tanpa cadangan localStorage: melempar bila gagal, supaya pemanggil bisa mengantre ulang (antrean #355). */
+export async function kirimAttemptKetat(moduleId: number | null, attempt: IsiAttempt): Promise<void> {
+  if (!isSupabaseConfigured) {
+    await saveQuizAttempt(moduleId, attempt)
+    return
+  }
+  if (!(await tulisAttemptSupabase(moduleId, attempt))) throw new Error('Sesi masuk tidak ditemukan.')
+}
+
+export async function saveQuizAttempt(moduleId: number | null, attempt: IsiAttempt): Promise<void> {
   if (isSupabaseConfigured) {
     try {
-      const { data: userData } = await supabase.auth.getUser()
-      const uid = userData.user?.id
-      if (uid) {
-        const row: Record<string, unknown> = {
-          user_id: uid,
-          module_id: moduleId,
-          score: attempt.score,
-          answers: attempt.answers,
-          attempted_at: attempt.completedAt || new Date().toISOString(),
-        }
-        if (attempt.kind && attempt.kind !== 'formatif') row.kind = attempt.kind
-        if (attempt.questionOrder !== undefined) row.question_order = attempt.questionOrder
-        if (attempt.sessionId !== undefined) row.session_id = attempt.sessionId
-        if (attempt.courseId !== undefined) row.course_id = attempt.courseId
-        let { error } = await supabase.from('quiz_attempts').insert(row)
-        if (error && attempt.courseId !== undefined && (error.code === '42703' || /course_id/.test(error.message))) {
-          delete row.course_id
-          ;({ error } = await supabase.from('quiz_attempts').insert(row))
-        }
-        if (error) throw error
-        return
-      }
+      if (await tulisAttemptSupabase(moduleId, attempt)) return
     } catch (e) {
       console.warn('[quizAttempts] saveQuizAttempt → Supabase gagal, fallback localStorage:', e)
     }

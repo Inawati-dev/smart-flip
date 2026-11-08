@@ -4,7 +4,10 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
 import { useQuizAttempts } from '../hooks/useQuizAttempts'
 import { fetchBankSoal } from '../lib/kuisSoal'
-import { fetchAttemptsByKind, saveQuizAttempt } from '../lib/quizAttempts'
+import { fetchAttemptsByKind } from '../lib/quizAttempts'
+import { useAuth } from '../contexts/AuthContext'
+import { useDraftTes, CATATAN_DILANJUTKAN } from '../hooks/useDraftTes'
+import { kunciDraft, hapusDraft, kirimAttempt } from '../lib/tesTunda'
 import { useAmbang } from '../lib/ambang'
 import { acakSoal, nilai, type AcakSoalResult, ambilSeimbang, SOAL_TAMPIL_DIAGNOSTIK } from '../lib/acak'
 import { useTopikStatus, markPretestSkipped, markPretestDone } from '../lib/topik'
@@ -339,6 +342,22 @@ function PreTest() {
   // Benar/salah baru ditunjukkan sesudah dikirim (antrean #138). Hanya ada
   // sampai halaman ditinggalkan; pengerjaan lama tidak punya tinjauan.
   const [tinjau, setTinjau] = useState<{ soal: AcakSoalResult['tampil']; jawaban: number[] } | null>(null)
+  const [tertunda, setTertunda] = useState(false)
+  // Draf pengerjaan (antrean #355): internet putus atau halaman dimuat ulang tidak menghapus jawaban.
+  const { user } = useAuth()
+  const kunci = kunciDraft(user?.id, 'pre', courseId)
+  const dipulihkan = useDraftTes({
+    kunci,
+    aktif: !soalLoading && !attemptsLoading,
+    acak,
+    currentQ,
+    jawaban,
+    pulih: (d) => {
+      setAcak(d.acak)
+      setCurrentQ(d.currentQ)
+      setJawaban(d.jawaban)
+    },
+  })
 
   if (soalLoading || attemptsLoading) {
     return (
@@ -375,24 +394,29 @@ function PreTest() {
     const jawabanTampil = acak.tampil.map((_, i) => jawaban[i] ?? -1)
     const hasil = nilai(acak.tampil, jawabanTampil)
     setSaving(true)
-    try {
-      await saveQuizAttempt(null, {
-        score: hasil.score,
-        answers: jawabanTampil,
-        kind: 'pre',
-        questionOrder: acak.urut,
-        courseId,
-      })
+    // Gagal karena jaringan = masuk antrean di perangkat dan dikirim otomatis (PengirimUlang); jawaban tidak hilang.
+    const kirim = await kirimAttempt(user?.id, null, {
+      score: hasil.score,
+      answers: jawabanTampil,
+      kind: 'pre',
+      questionOrder: acak.urut,
+      courseId,
+    })
+    if (kirim !== 'gagal') {
+      hapusDraft(kunci)
       markPretestDone()
       simpanSkorPreDemo(courseId, hasil.score)
-      await queryClient.invalidateQueries({ queryKey: ['pretest-done'] })
+    }
+    setTertunda(kirim === 'tunda')
+    try {
+      if (kirim === 'terkirim') await queryClient.invalidateQueries({ queryKey: ['pretest-done'] })
       // Status topik ikut golongan pre-test (antrean #105), jadi hitung ulang.
       await queryClient.invalidateQueries({ queryKey: ['topik-pretest-done'] })
       await queryClient.invalidateQueries({ queryKey: ['attempts-by-kind', 'pre'] })
       // Basis data menempatkan mahasiswa ke kelas otomatis saat tes ini tersimpan (antrean #228).
       await queryClient.invalidateQueries({ queryKey: ['kelas-saya'] })
     } catch (e) {
-      console.warn('[asesmen-pre] saveQuizAttempt gagal:', e)
+      console.warn('[asesmen-pre] invalidate gagal:', e)
     }
     setSaving(false)
     setTinjau({ soal: acak.tampil, jawaban: jawabanTampil })
@@ -411,6 +435,8 @@ function PreTest() {
         </div>
 
         {acak ? (
+          <>
+          {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
           <SoalRunner
             total={acak.tampil.length}
             q={acak.tampil[currentQ]}
@@ -425,8 +451,14 @@ function PreTest() {
             onNext={() => setCurrentQ((c) => Math.min(acak.tampil.length - 1, c + 1))}
             onFinish={handleFinish}
           />
+          </>
         ) : skorFinal != null ? (
           <>
+            {tertunda && (
+              <p className="text-xs mb-4 px-3 py-2 rounded-lg bg-[color:var(--accent-soft)] text-brown-2">
+                Internet terputus, jadi hasil ini belum sampai ke server. Hasilnya tersimpan di perangkat ini dan dikirim otomatis saat internet kembali.
+              </p>
+            )}
             <HasilDiagnostik skor={skorFinal} adaTinjauan={!!tinjau} rincian={rincian} />
             {tinjau && (
               <div id="tinjauan-jawaban">

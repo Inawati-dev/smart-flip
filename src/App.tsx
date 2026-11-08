@@ -1,4 +1,6 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
+import { lazyRetry } from './lib/lazyRetry'
+import { PengirimUlang } from './components/PengirimUlang'
 import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
@@ -14,22 +16,22 @@ import { ResetPassword } from './pages/ResetPassword'
 // splitting) supaya index bundle tidak membawa semua 29 halaman sekaligus —
 // antrean #21 (optimasi kecepatan akses). Dashboard.tsx tidak punya default
 // export, jadi dibungkus .then(); sisanya sudah punya default export.
-const Dashboard = lazy(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
-const Akun = lazy(() => import('./pages/Akun'))
-const KelolaPdf = lazy(() => import('./pages/KelolaPdf'))
-const Modul = lazy(() => import('./pages/Modul'))
-const ModulList = lazy(() => import('./pages/ModulList'))
-const Video = lazy(() => import('./pages/Video'))
-const Formatif = lazy(() => import('./pages/Formatif'))
-const Ebook = lazy(() => import('./pages/Ebook'))
-const TugasAkhir = lazy(() => import('./pages/TugasAkhir'))
-const TesKelompok = lazy(() => import('./pages/TesKelompok'))
-const Asesmen = lazy(() => import('./pages/Asesmen'))
-const AsesmenMhs = lazy(() => import('./pages/AsesmenMhs'))
-const MiniProjek = lazy(() => import('./pages/MiniProjek'))
-const BankSoal = lazy(() => import('./pages/BankSoal'))
-const TesKhusus = lazy(() => import('./pages/TesKhusus'))
-const Kelas = lazy(() => import('./pages/Kelas'))
+const Dashboard = lazyRetry(() => import('./pages/Dashboard').then((m) => ({ default: m.Dashboard })))
+const Akun = lazyRetry(() => import('./pages/Akun'))
+const KelolaPdf = lazyRetry(() => import('./pages/KelolaPdf'))
+const Modul = lazyRetry(() => import('./pages/Modul'))
+const ModulList = lazyRetry(() => import('./pages/ModulList'))
+const Video = lazyRetry(() => import('./pages/Video'))
+const Formatif = lazyRetry(() => import('./pages/Formatif'))
+const Ebook = lazyRetry(() => import('./pages/Ebook'))
+const TugasAkhir = lazyRetry(() => import('./pages/TugasAkhir'))
+const TesKelompok = lazyRetry(() => import('./pages/TesKelompok'))
+const Asesmen = lazyRetry(() => import('./pages/Asesmen'))
+const AsesmenMhs = lazyRetry(() => import('./pages/AsesmenMhs'))
+const MiniProjek = lazyRetry(() => import('./pages/MiniProjek'))
+const BankSoal = lazyRetry(() => import('./pages/BankSoal'))
+const TesKhusus = lazyRetry(() => import('./pages/TesKhusus'))
+const Kelas = lazyRetry(() => import('./pages/Kelas'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -57,6 +59,7 @@ export default function App() {
         <CourseProvider>
         <BrowserRouter>
           <ErrorBoundary>
+            <PengirimUlang />
             <Suspense fallback={<div className="p-8 text-brown-3">Memuat…</div>}>
             <Routes>
               <Route path="/" element={<Login />} />

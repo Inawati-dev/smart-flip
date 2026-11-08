@@ -19,7 +19,12 @@ vi.mock('../lib/supabase', () => ({
 const saveQuizAttemptMock = vi.fn(async (_moduleId: number, _attempt: unknown) => {})
 vi.mock('../lib/quizAttempts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../lib/quizAttempts')>()
-  return { ...actual, saveQuizAttempt: (moduleId: number, attempt: unknown) => saveQuizAttemptMock(moduleId, attempt) }
+  // Halaman memakai kirimAttemptKetat (antrean #355); keduanya diarahkan ke tiruan yang sama.
+  return {
+    ...actual,
+    saveQuizAttempt: (moduleId: number, attempt: unknown) => saveQuizAttemptMock(moduleId, attempt),
+    kirimAttemptKetat: (moduleId: number, attempt: unknown) => saveQuizAttemptMock(moduleId, attempt),
+  }
 })
 
 // rng deterministik: identitas (tanpa acak) — cukup untuk menguji alur skor,
@@ -33,6 +38,12 @@ vi.mock('../lib/acak', async (importOriginal) => {
       tampil: soal.map((s) => ({ id: s.id, question: s.question, options: s.options, kunciTampil: s.answer_idx })),
     }),
   }
+})
+
+// Pengguna masuk tetap, supaya hasil yang gagal terkirim punya pemilik di antrean (antrean #355).
+vi.mock('../contexts/AuthContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../contexts/AuthContext')>()
+  return { ...actual, useAuth: () => ({ ...actual.useAuth(), role: 'mahasiswa', user: { id: 'u1' } }) }
 })
 
 vi.mock('../lib/topik', () => ({
@@ -96,6 +107,49 @@ function renderFormatif(queryClient: QueryClient) {
 }
 
 describe('Formatif', () => {
+  it('antrean #355: pengerjaan dilanjutkan dari soal terakhir saat halaman dibuka ulang', async () => {
+    localStorage.clear()
+    const queryClient = newQueryClient()
+    seedBase(queryClient, limaSoal())
+    const pertama = renderFormatif(queryClient)
+    fireEvent.click(screen.getByText('Mulai'))
+    fireEvent.click(await screen.findByText('Benar 0'))
+    fireEvent.click(screen.getByText('Selanjutnya →'))
+    expect(await screen.findByText('Soal 2 dari 5')).toBeTruthy()
+    pertama.unmount() // internet mati lalu halaman dimuat ulang
+
+    renderFormatif(queryClient)
+    expect(await screen.findByText('Soal 2 dari 5')).toBeTruthy()
+    expect(screen.queryByText('Mulai')).toBeNull()
+    expect(screen.getByText(/Pengerjaan sebelumnya dilanjutkan/)).toBeTruthy()
+    fireEvent.click(screen.getByText('← Sebelumnya'))
+    expect(await screen.findByText('Soal 1 dari 5')).toBeTruthy()
+    localStorage.clear()
+  })
+
+  it('antrean #355: internet putus saat Kirim, hasil masuk antrean dan modal memberi tahu', async () => {
+    localStorage.clear()
+    saveQuizAttemptMock.mockRejectedValueOnce(new TypeError('Failed to fetch'))
+    const queryClient = newQueryClient()
+    seedBase(queryClient, limaSoal())
+    renderFormatif(queryClient)
+    fireEvent.click(screen.getByText('Mulai'))
+    for (let i = 0; i < 4; i++) {
+      fireEvent.click(await screen.findByText(`Benar ${i}`))
+      fireEvent.click(screen.getByText('Selanjutnya →'))
+    }
+    fireEvent.click(await screen.findByText('Benar 4'))
+    fireEvent.click(screen.getByText('Lihat Hasil ✓'))
+
+    expect(await screen.findByText('Selamat, Skor 100')).toBeTruthy()
+    expect(screen.getByText(/belum sampai ke server/)).toBeTruthy()
+    const antrean = JSON.parse(localStorage.getItem('sfp_tes_kirim') ?? '[]')
+    expect(antrean).toHaveLength(1)
+    expect(antrean[0]).toMatchObject({ jenis: 'attempt', userId: 'u1', moduleId: 1, attempt: { score: 100 } })
+    expect(localStorage.getItem(Object.keys(localStorage).find((k) => k.startsWith('sfp_tes_draf:')) ?? 'tidak-ada')).toBeNull()
+    localStorage.clear()
+  })
+
   it('menampilkan pesan saat bank soal kosong (tanpa tombol mulai)', () => {
     const queryClient = newQueryClient()
     seedBase(queryClient, [])
