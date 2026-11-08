@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest'
-import { validasiLaporan, kirimLaporan, fetchLaporan, ubahStatusLaporan, ISI_MIN, ISI_MAKS, HALAMAN_MAKS } from './laporan'
+import { validasiLaporan, validasiLampiran, kirimLaporan, fetchLaporan, fetchLampiran, ubahStatusLaporan, LAMPIRAN_MAKS_BYTE, ISI_MIN, ISI_MAKS, HALAMAN_MAKS } from './laporan'
 
 beforeEach(() => localStorage.clear())
 
@@ -36,5 +36,32 @@ describe('mode demo (localStorage)', () => {
     const sesudah = await fetchLaporan({ semua: true })
     expect(sesudah.find((x) => x.id === a.id)?.status).toBe('selesai')
     expect(sesudah.find((x) => x.id === b.id)?.status).toBe('baru')
+  })
+})
+
+describe('lampiran gambar (antrean #377)', () => {
+  it('menerima png, jpeg, webp sampai tepat 1 MB; menolak jenis lain dan yang melewati 1 MB dengan ukuran dalam pesan', () => {
+    expect(validasiLampiran({ type: 'image/png', size: 1000 })).toBeNull()
+    expect(validasiLampiran({ type: 'image/webp', size: LAMPIRAN_MAKS_BYTE })).toBeNull()
+    expect(validasiLampiran({ type: 'image/gif', size: 10 })).toMatch(/PNG, JPG, atau WebP/)
+    expect(validasiLampiran({ type: 'application/pdf', size: 10 })).toMatch(/PNG, JPG, atau WebP/)
+    expect(validasiLampiran({ type: 'image/jpeg', size: LAMPIRAN_MAKS_BYTE + 1 })).toMatch(/1,0 MB|Paling besar 1 MB/)
+    expect(validasiLampiran({ type: 'image/jpeg', size: 2.5 * 1024 * 1024 })).toMatch(/2,5 MB/)
+  })
+
+  it('demo: laporan dengan lampiran memuat penanda, gambarnya diambil terpisah; tanpa lampiran tidak ada penanda', async () => {
+    const gambar = 'data:image/png;base64,iVBORw0KGgo='
+    await kirimLaporan({ jenis: 'bug', isi: 'ada lampiran gambar', lampiran: gambar })
+    await kirimLaporan({ jenis: 'saran', isi: 'tanpa lampiran sama sekali' })
+    const [tanpa, dengan] = await fetchLaporan({ semua: false })
+    expect(tanpa.adaLampiran).toBe(false)
+    expect(dengan.adaLampiran).toBe(true)
+    expect(await fetchLampiran(dengan.id)).toBe(gambar)
+    expect(await fetchLampiran(tanpa.id)).toBeNull()
+  })
+
+  it('data URL bukan gambar png, jpeg, atau webp ditolak sebelum dikirim', async () => {
+    await expect(kirimLaporan({ jenis: 'bug', isi: 'lampiran berbahaya', lampiran: 'data:text/html;base64,PGI+' })).rejects.toThrow(/PNG, JPG, atau WebP/)
+    expect(await fetchLaporan({ semua: false })).toHaveLength(0)
   })
 })

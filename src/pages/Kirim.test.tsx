@@ -62,3 +62,36 @@ describe('Kirim', () => {
     expect(screen.getByText('Selesai')).toBeTruthy()
   })
 })
+
+describe('Kirim: lampiran gambar (antrean #377)', () => {
+  const gambar = (nama: string, type: string, ukuran: number) => new File([new Uint8Array(ukuran)], nama, { type })
+
+  it('memilih gambar menampilkan pratinjau; Hapus lampiran membuangnya; terkirim bersama laporan dan bisa dilihat', async () => {
+    auth.role = 'mahasiswa'
+    tampil()
+    expect(await screen.findByText('Belum ada kiriman.')).toBeTruthy()
+    fireEvent.change(screen.getByLabelText('Pilih gambar lampiran'), { target: { files: [gambar('layar.png', 'image/png', 2048)] } })
+    expect(await screen.findByAltText('Pratinjau lampiran')).toBeTruthy()
+    fireEvent.click(screen.getByRole('button', { name: 'Hapus lampiran' }))
+    expect(screen.queryByAltText('Pratinjau lampiran')).toBeNull()
+
+    fireEvent.change(screen.getByLabelText('Pilih gambar lampiran'), { target: { files: [gambar('layar.png', 'image/png', 2048)] } })
+    await screen.findByAltText('Pratinjau lampiran')
+    fireEvent.change(screen.getByLabelText('Apa sarannya?'), { target: { value: 'Ada gambar tampilan yang rusak di sini' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Kirim' }))
+    expect(await screen.findByText('Terima kasih, laporanmu sudah terkirim.')).toBeTruthy()
+    expect(screen.queryByAltText('Pratinjau lampiran')).toBeNull()
+    fireEvent.click(await screen.findByRole('button', { name: 'Lihat lampiran' }))
+    expect(await screen.findByAltText('Lampiran laporan')).toBeTruthy()
+  })
+
+  it('gambar lebih dari 1 MB dan berkas bukan gambar ditolak dengan pesan, tanpa pratinjau', async () => {
+    auth.role = 'mahasiswa'
+    tampil()
+    fireEvent.change(screen.getByLabelText('Pilih gambar lampiran'), { target: { files: [gambar('besar.png', 'image/png', 1024 * 1024 + 1)] } })
+    expect(await screen.findByText(/Lampiran terlalu besar/)).toBeTruthy()
+    expect(screen.queryByAltText('Pratinjau lampiran')).toBeNull()
+    fireEvent.change(screen.getByLabelText('Pilih gambar lampiran'), { target: { files: [gambar('catatan.pdf', 'application/pdf', 100)] } })
+    await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/harus gambar PNG, JPG, atau WebP/))
+  })
+})

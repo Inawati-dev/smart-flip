@@ -224,5 +224,16 @@
     "judul": "Pemanasan pembaca PDF di latar",
     "ringkasan": "Saat daftar modul dibuka, paket pembaca dan pdf.worker diunduh di latar supaya modul pertama muncul lebih cepat.",
     "tanpaDesktop": "Tidak ada perubahan di tampilan desktop (hanya pemuatan di latar)."
+  },
+  {
+    "antrean": "#377",
+    "papan": "#311",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Halaman Kirim lebih lebar dan bisa melampirkan gambar",
+    "ringkasan": "Halaman Kirim memakai lebar penuh: kolom kiri untuk jenis dan isi (kotak isi lebih tinggi), kolom kanan untuk halaman terkait, lampiran gambar, dan tombol Kirim selebar kolom. Lampiran gambar paling besar 1 MB (PNG, JPG, atau WebP): pilih berkas, seret, atau tempel tangkapan layar (Ctrl+V); ada pratinjau dan tombol Hapus lampiran. Di daftar kiriman muncul tombol Lihat lampiran. Daftar kiriman memakai dua kolom di layar lebar.",
+    "sebelum": "377_sebelum.png",
+    "sesudah": "377_sesudah.png",
+    "catatan": "Sesudah: laporan bug dengan satu gambar terlampir sebelum dikirim (mode contoh). Lampiran di server memakai SQL v59."
   }
 ]
