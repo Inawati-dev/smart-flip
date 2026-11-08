@@ -215,5 +215,14 @@
     "sebelum": "374_sebelum.png",
     "sesudah": "374_sesudah.png",
     "catatan": "Sebelum: lembar kaku saat berputar (dibekukan 450 ms). Sesudah: halaman 3 melengkung saat diseret dari sudut kanan bawah. Kembali ke balikan lama: ubah BALIKAN_LENGKUNG menjadi false di PembacaPdf.tsx."
+  },
+  {
+    "antrean": "#375 (usulan #372)",
+    "papan": "#309",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Pemanasan pembaca PDF di latar",
+    "ringkasan": "Saat daftar modul dibuka, paket pembaca dan pdf.worker diunduh di latar supaya modul pertama muncul lebih cepat.",
+    "tanpaDesktop": "Tidak ada perubahan di tampilan desktop (hanya pemuatan di latar)."
   }
 ]

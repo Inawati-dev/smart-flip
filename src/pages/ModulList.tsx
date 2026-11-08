@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { siapkanPembaca } from '../lib/siapkanPembaca'
 import { Link } from 'react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useModules } from '../hooks/useModules'
@@ -947,6 +948,11 @@ export function ModulList() {
   const { data: progress = {} } = useAllProgress()
   const { statusOf, bukaPada } = useTopikStatus()
   const ambangFormatif = useAmbang().formatif
+
+  // Pemanasan pembaca PDF di latar (antrean #372): daftar modul adalah pintu menuju pembaca.
+  useEffect(() => {
+    if (role === 'mahasiswa') siapkanPembaca()
+  }, [role])
 
   const sorted = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const lanjut = useMemo(

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import * as pdfjsLib from 'pdfjs-dist'
 // Vite-bundled worker asset (mirrors legacy/ebook.html's CDN <script> worker
 // setup, but resolved from the installed pdfjs-dist package instead of a CDN).
-import pdfWorkerSrc from 'pdfjs-dist/build/pdf.worker.min.js?url'
+import pdfWorkerSrc from '../lib/pdfWorkerUrl'
 import { useAuth } from '../contexts/AuthContext'
 import { useCourse } from '../contexts/CourseContext'
 import type { Course } from '../lib/courses'
