@@ -38,6 +38,27 @@ describe('PanelLonceng', () => {
     expect(screen.getByRole('button', { name: 'Notifikasi, 4 baru' }).textContent).toBe('4')
   })
 
+  it('pilihJenis (antrean #370): panel menawarkan empat saklar jenis, tersimpan, dan hilang saat utama dimatikan', () => {
+    render(<PanelLonceng letak="rel" butir={butir(1)} jumlahBaru={1} kosong="Kosong" pilihJenis />)
+    fireEvent.click(screen.getByRole('button', { name: 'Notifikasi, 1 baru' }))
+    expect(screen.getByText('Pilih jenis notifikasi')).toBeTruthy()
+    const jadwal = screen.getByRole('switch', { name: /Jadwal terdekat/ })
+    expect(jadwal.getAttribute('aria-checked')).toBe('true')
+    fireEvent.click(jadwal)
+    expect(screen.getByRole('switch', { name: /Jadwal terdekat/ }).getAttribute('aria-checked')).toBe('false')
+    expect(JSON.parse(localStorage.getItem('sfp_notif_jenis:anon') ?? '{}')).toEqual({ pengingat: true, belajar: true, jadwal: false, mini: true })
+    expect(screen.getAllByRole('switch')).toHaveLength(5)
+    fireEvent.click(screen.getByRole('switch', { name: 'Matikan notifikasi' }))
+    expect(screen.queryByText('Pilih jenis notifikasi')).toBeNull()
+  })
+
+  it('tanpa pilihJenis (dosen) tidak ada saklar per jenis', () => {
+    render(<PanelLonceng letak="rel" butir={butir(1)} jumlahBaru={1} kosong="Kosong" />)
+    fireEvent.click(screen.getByRole('button', { name: 'Notifikasi, 1 baru' }))
+    expect(screen.queryByText('Pilih jenis notifikasi')).toBeNull()
+    expect(screen.getAllByRole('switch')).toHaveLength(1)
+  })
+
   it('pilihan mati tersimpan: lonceng baru langsung tampil mati', () => {
     localStorage.setItem(kunciNotif(undefined), '0')
     render(<PanelLonceng letak="atas" butir={butir(1)} jumlahBaru={3} kosong="Kosong" />)

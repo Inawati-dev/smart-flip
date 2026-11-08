@@ -14,7 +14,7 @@ vi.mock('./supabase', () => ({
 }))
 vi.mock('../contexts/AuthContext', () => ({ useAuth: () => ({ user: null }) }))
 
-import { tulisNotifAktif, sinkronNotifAktif, bacaNotifAktif, kunciNotif, kunciNotifTunda } from './notifPref'
+import { tulisNotifAktif, sinkronNotifAktif, bacaNotifAktif, kunciNotif, kunciNotifTunda, uraiJenisNotif, tulisJenisNotif, kunciJenisNotif } from './notifPref'
 
 beforeEach(() => {
   localStorage.clear()
@@ -73,5 +73,21 @@ describe('sinkronNotifAktif', () => {
   it('sama dengan lokal: tidak berubah', async () => {
     pilih.mockResolvedValue({ data: { notif_aktif: true }, error: null })
     expect(await sinkronNotifAktif('u1')).toBe('tetap')
+  })
+})
+
+describe('saklar per jenis (antrean #370)', () => {
+  it('bawaan semua menyala; hanya false yang mematikan; isi rusak = semua menyala', () => {
+    expect(uraiJenisNotif('')).toEqual({ pengingat: true, belajar: true, jadwal: true, mini: true })
+    expect(uraiJenisNotif('{"jadwal":false,"mini":0,"asing":false}')).toEqual({ pengingat: true, belajar: true, jadwal: false, mini: true })
+    expect(uraiJenisNotif('{bukan json')).toEqual({ pengingat: true, belajar: true, jadwal: true, mini: true })
+  })
+
+  it('menulis satu jenis tidak mengubah yang lain, per akun', () => {
+    tulisJenisNotif('u1', 'jadwal', false)
+    tulisJenisNotif('u1', 'mini', false)
+    tulisJenisNotif('u1', 'mini', true)
+    expect(uraiJenisNotif(localStorage.getItem(kunciJenisNotif('u1')) ?? '')).toEqual({ pengingat: true, belajar: true, jadwal: false, mini: true })
+    expect(localStorage.getItem(kunciJenisNotif('u2'))).toBeNull()
   })
 })

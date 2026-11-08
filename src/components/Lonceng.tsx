@@ -10,7 +10,7 @@ import { useTopikStatus } from '../lib/topik'
 import { fetchVideoProgressMap } from '../lib/videoProgress'
 import { notifikasiBelajar, ringkasProgres } from '../lib/notifBelajar'
 import { useAmbang } from '../lib/ambang'
-import { useNotifAktif } from '../lib/notifPref'
+import { useNotifAktif, useJenisNotif, JENIS_NOTIF } from '../lib/notifPref'
 import { fetchSumberAktivitas, perluPerhatian, type FilterAktivitas } from '../lib/aktivitas'
 import { fetchPengingatSaya, tandaiPengingatDibaca } from '../lib/pengingat'
 import { timeAgo } from '../lib/forum'
@@ -69,11 +69,14 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
   // Baris ringkasan progres paling atas (angket butir 12, antrean #368): bukan kabar baru, jadi tidak menambah lencana.
   const urut = useMemo(() => [...modules].sort((a, b) => a.order_num - b.order_num), [modules])
   const progres = loading ? null : ringkasProgres(urut, statusOf)
+  // Saklar per jenis (angket butir 14, antrean #370): jenis yang dimatikan tidak tampil dan tidak masuk lencana.
+  const { jenis: pilih } = useJenisNotif()
+  const belajarTampil = belajar.filter((b) => (b.jenis === 'jadwal' ? pilih.jadwal : pilih.belajar))
   const butir: ButirLonceng[] = [
-    ...(progres && progres.total > 0
+    ...(progres && progres.total > 0 && pilih.belajar
       ? [{ kunci: 'progres', judul: `Progres belajar ${progres.persen}% selesai`, ket: `${progres.selesai} dari ${progres.total} topik lulus tes formatif`, baru: false, buka: () => navigate('/modul') }]
       : []),
-    ...pengingat.map((p) => ({
+    ...(pilih.pengingat ? pengingat : []).map((p) => ({
       kunci: `p-${p.id}`,
       judul: p.title,
       ket: p.body,
@@ -85,9 +88,9 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
         navigate('/dashboard')
       },
     })),
-    ...belajar.map((b) => ({ kunci: `b-${b.kunci}`, judul: b.judul, ket: b.ket, baru: true, buka: () => navigate(b.tautan) })),
+    ...belajarTampil.map((b) => ({ kunci: `b-${b.kunci}`, judul: b.judul, ket: b.ket, baru: true, buka: () => navigate(b.tautan) })),
     // Semua kabar baru selalu tampil (lencana menghitungnya), ditambah kabar lama sampai 5 butir.
-    ...kabar.slice(0, Math.max(5, baru.length)).map((k) => ({
+    ...(pilih.mini ? kabar : []).slice(0, Math.max(5, baru.length)).map((k) => ({
       kunci: `k-${k.jenis}-${k.urutan}`,
       judul: k.judul,
       ket: k.ket,
@@ -99,7 +102,7 @@ function LoncengMhs({ letak }: { letak: 'rel' | 'atas' }) {
       },
     })),
   ]
-  return <PanelLonceng letak={letak} butir={butir} jumlahBaru={pengingat.length + belajar.length + baru.length} kosong="Belum ada notifikasi." />
+  return <PanelLonceng letak={letak} butir={butir} jumlahBaru={(pilih.pengingat ? pengingat.length : 0) + belajarTampil.length + (pilih.mini ? baru.length : 0)} kosong="Belum ada notifikasi." pilihJenis />
 }
 
 function LoncengDosen({ letak }: { letak: 'rel' | 'atas' }) {
@@ -128,21 +131,41 @@ function LoncengDosen({ letak }: { letak: 'rel' | 'atas' }) {
   )
 }
 
+/** Lintasan dan bola saklar (40 x 24 px, celah sama di semua sisi; antrean #362). */
+function TrekSaklar({ aktif }: { aktif: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className="relative w-10 h-6 shrink-0 box-border rounded-full border border-[color:var(--border)] transition-colors"
+      style={{ background: aktif ? 'var(--terra)' : 'var(--bg3)' }}
+    >
+      <span
+        className="absolute top-[3px] left-[3px] w-4 h-4 rounded-full transition-transform"
+        style={{ background: aktif ? 'var(--btn-text)' : 'var(--brown3)', transform: aktif ? 'translateX(16px)' : 'none' }}
+      />
+    </span>
+  )
+}
+
 export function PanelLonceng({
   letak,
   butir,
   jumlahBaru,
   kosong,
   kaki,
+  pilihJenis = false,
 }: {
   letak: 'rel' | 'atas'
   butir: ButirLonceng[]
   jumlahBaru: number
   kosong: string
   kaki?: { label: string; buka: () => void }
+  /** Tampilkan "Pilih jenis notifikasi" (saklar per jenis); hanya untuk mahasiswa. */
+  pilihJenis?: boolean
 }) {
   const [buka, setBuka] = useState(false)
   const { aktif, setAktif } = useNotifAktif()
+  const { jenis: pilihan, setJenis } = useJenisNotif()
   const akar = useRef<HTMLDivElement>(null)
   const tombol = useRef<HTMLButtonElement>(null)
   const panel = useRef<HTMLDivElement>(null)
@@ -234,18 +257,32 @@ export function PanelLonceng({
               className="inline-flex items-center gap-2.5 min-h-11 -my-1.5 pl-2 text-xs font-semibold text-brown-2 rounded-lg focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]"
             >
               {aktif ? 'Nyala' : 'Mati'}
-              <span
-                aria-hidden="true"
-                className="relative w-10 h-6 shrink-0 box-border rounded-full border border-[color:var(--border)] transition-colors"
-                style={{ background: aktif ? 'var(--terra)' : 'var(--bg3)' }}
-              >
-                <span
-                  className="absolute top-[3px] left-[3px] w-4 h-4 rounded-full transition-transform"
-                  style={{ background: aktif ? 'var(--btn-text)' : 'var(--brown3)', transform: aktif ? 'translateX(16px)' : 'none' }}
-                />
-              </span>
+              <TrekSaklar aktif={aktif} />
             </button>
           </div>
+          {pilihJenis && aktif && (
+            <details className="px-4 pb-1 group">
+              <summary className="cursor-pointer list-none text-xs font-semibold text-terra min-h-9 flex items-center gap-1 rounded-lg focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]">
+                Pilih jenis notifikasi
+                <span aria-hidden="true" className="transition-transform group-open:rotate-90">›</span>
+              </summary>
+              <div className="flex flex-col pt-1 pb-1">
+                {JENIS_NOTIF.map((j) => (
+                  <button
+                    key={j.kunci}
+                    type="button"
+                    role="switch"
+                    aria-checked={pilihan[j.kunci]}
+                    onClick={() => setJenis(j.kunci, !pilihan[j.kunci])}
+                    className="flex items-center justify-between gap-3 min-h-11 text-left text-[13px] text-brown-2 rounded-lg focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_var(--accent-soft)]"
+                  >
+                    <span>{j.label}</span>
+                    <TrekSaklar aktif={pilihan[j.kunci]} />
+                  </button>
+                ))}
+              </div>
+            </details>
+          )}
           {!aktif ? (
             <p className="px-4 pb-4 pt-1 text-sm text-brown-3">Notifikasi dimatikan. Lencana dan kabar baru tidak ditampilkan. Nyalakan lagi kapan saja lewat saklar di atas.</p>
           ) : butir.length === 0 ? (

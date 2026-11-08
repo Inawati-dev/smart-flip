@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useSyncExternalStore } from 'react'
+import { useCallback, useEffect, useMemo, useSyncExternalStore } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase, isSupabaseConfigured } from './supabase'
 
@@ -92,6 +92,60 @@ export async function sinkronNotifAktif(userId: string): Promise<'akun' | 'lokal
     /* kolom belum ada atau luring: pakai lokal */
   }
   return 'tetap'
+}
+
+// ── Saklar per jenis (angket butir 14, antrean #370): mahasiswa memilih jenis notifikasi mana yang tampil.
+// Disimpan di perangkat per akun (tanpa kolom baru); bawaan semua menyala. Saklar utama di atas tetap
+// mematikan semuanya.
+export const JENIS_NOTIF = [
+  { kunci: 'pengingat', label: 'Pengingat dari dosen' },
+  { kunci: 'belajar', label: 'Modul dan video belum selesai' },
+  { kunci: 'jadwal', label: 'Jadwal terdekat' },
+  { kunci: 'mini', label: 'Kabar Mini Projek' },
+] as const
+export type JenisNotif = (typeof JENIS_NOTIF)[number]['kunci']
+export type PilihanJenis = Record<JenisNotif, boolean>
+
+export const kunciJenisNotif = (userId?: string) => `sfp_notif_jenis:${userId ?? 'anon'}`
+
+function bacaJenisMentah(userId?: string): string {
+  try {
+    return localStorage.getItem(kunciJenisNotif(userId)) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+/** Uraikan isi simpanan: hanya nilai false yang mematikan; isi rusak atau kunci hilang = menyala. */
+export function uraiJenisNotif(mentah: string): PilihanJenis {
+  const hasil = Object.fromEntries(JENIS_NOTIF.map((j) => [j.kunci, true])) as PilihanJenis
+  try {
+    const o = JSON.parse(mentah) as Record<string, unknown>
+    for (const j of JENIS_NOTIF) if (o?.[j.kunci] === false) hasil[j.kunci] = false
+  } catch {
+    /* isi rusak: semua menyala */
+  }
+  return hasil
+}
+
+export function tulisJenisNotif(userId: string | undefined, kunci: JenisNotif, aktif: boolean): void {
+  const sekarang = uraiJenisNotif(bacaJenisMentah(userId))
+  sekarang[kunci] = aktif
+  try {
+    localStorage.setItem(kunciJenisNotif(userId), JSON.stringify(sekarang))
+  } catch {
+    /* penyimpanan dimatikan: pilihan berlaku sampai halaman dimuat ulang */
+  }
+  window.dispatchEvent(new Event(PERISTIWA))
+}
+
+export function useJenisNotif() {
+  const { user } = useAuth()
+  const uid = user?.id
+  const mentah = useSyncExternalStore(langgan, () => bacaJenisMentah(uid), () => '')
+  const jenis = useMemo(() => uraiJenisNotif(mentah), [mentah])
+  const setJenis = useCallback((kunci: JenisNotif, aktif: boolean) => tulisJenisNotif(uid, kunci, aktif), [uid])
+  return { jenis, setJenis }
 }
 
 function langgan(ubah: () => void) {

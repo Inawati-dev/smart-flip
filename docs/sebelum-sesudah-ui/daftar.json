@@ -171,5 +171,16 @@
     "judul": "Kartu umpan balik dosen di Mini Projek",
     "ringkasan": "Umpan balik dosen yang tadinya satu baris teks di kotak abu-abu kini kartu tersendiri: judul, lencana \"Baru\" sampai dilihat, nilai, catatan dengan baris baru dipertahankan, dan waktu dinilai.",
     "tanpaDesktop": "Tanpa gambar sebelum/sesudah: kartu hanya muncul untuk kiriman yang sudah dinilai dosen di Supabase, dan akun pratinjau lokal tidak punya kiriman. Teruji dengan tes otomatis (KartuUmpanBalik.test.tsx, 3 tes)."
+  },
+  {
+    "antrean": "#370 (angket butir 14)",
+    "papan": "#304",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Saklar notifikasi per jenis",
+    "ringkasan": "Di bawah saklar utama ada \"Pilih jenis notifikasi\" dengan empat saklar: pengingat dari dosen, modul dan video belum selesai, jadwal terdekat, dan kabar Mini Projek. Jenis yang dimatikan tidak tampil dan tidak masuk angka merah. Hanya untuk mahasiswa.",
+    "sebelum": "370_sebelum.png",
+    "sesudah": "370_sesudah.png",
+    "catatan": "Sesudah: daftar jenis terbuka dan \"Kabar Mini Projek\" dimatikan. Pilihan tersimpan di perangkat."
   }
 ]
