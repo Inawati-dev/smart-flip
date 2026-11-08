@@ -1,7 +1,7 @@
-// Grafik batang SVG murni, tanpa pustaka baru (spec asesmen §B). Dipakai di
-// halaman Asesmen dosen untuk rata-rata formatif dan persentase lulus per
-// topik. Lebar responsif lewat viewBox + width 100%, dibungkus overflow-x-auto
-// oleh pemanggil untuk layar sempit.
+// Grafik batang mendatar, HTML + CSS tanpa pustaka (antrean #379, 8 Nov 2026).
+// Nama topik tampil penuh di atas tiap batang, skala tetap 0..max (bawaan 100) supaya
+// batang 25 tidak tampak penuh, dan garis ambang selalu di dalam jalur. Tinggi mengikuti
+// jumlah topik; susunan sama di laptop dan telepon.
 export interface GrafikBatangData {
   label: string
   value: number
@@ -14,28 +14,18 @@ interface GrafikBatangProps {
   ambang?: number
   ambangLabel?: string
   warna?: (value: number) => string
-  tinggi?: number
   format?: (v: number) => string
   ariaLabel: string
 }
 
-const LABAR_BATANG = 56
-const CELAH = 24
-const PADDING_X = 16
-const PADDING_ATAS = 28
-const TINGGI_LABEL = 34
-
-function potongLabel(label: string): string {
-  return label.length > 14 ? `${label.slice(0, 14)}…` : label
-}
+const pct = (v: number, max: number) => (max <= 0 ? 0 : Math.min(100, Math.max(0, (v / max) * 100)))
 
 export function GrafikBatang({
   data,
-  max,
+  max = 100,
   ambang,
   ambangLabel,
   warna = () => 'var(--terra)',
-  tinggi = 180,
   format = (v) => String(v),
   ariaLabel,
 }: GrafikBatangProps) {
@@ -47,43 +37,27 @@ export function GrafikBatang({
     )
   }
 
-  const nilaiMax = max ?? Math.max(...data.map((d) => d.value), 1)
-  const tinggiBatangArea = tinggi
-  const H = tinggiBatangArea + PADDING_ATAS + TINGGI_LABEL
-  const W = Math.max(320, PADDING_X * 2 + data.length * (LABAR_BATANG + CELAH))
-
-  const skalaY = (v: number) => (nilaiMax === 0 ? 0 : (v / nilaiMax) * tinggiBatangArea)
-  const yAmbang = ambang != null ? PADDING_ATAS + (tinggiBatangArea - skalaY(ambang)) : null
-
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={ariaLabel}>
-      {yAmbang != null && (
-        <>
-          <line x1={PADDING_X} y1={yAmbang} x2={W - PADDING_X} y2={yAmbang} stroke="var(--brown3)" strokeWidth={1} strokeDasharray="4 4" />
-          {ambangLabel && (
-            <text x={W - PADDING_X} y={yAmbang - 4} textAnchor="end" fontSize={10} fill="var(--brown3)">
-              {ambangLabel}
-            </text>
-          )}
-        </>
-      )}
-      {data.map((d, i) => {
-        const x = PADDING_X + i * (LABAR_BATANG + CELAH)
-        const h = skalaY(d.value)
-        const y = PADDING_ATAS + (tinggiBatangArea - h)
-        return (
-          <g key={d.label}>
-            <title>{`${d.label}: ${format(d.value)}${d.sub ? ` (${d.sub})` : ''}`}</title>
-            <rect x={x} y={y} width={LABAR_BATANG} height={Math.max(h, 1)} rx={4} fill={warna(d.value)} />
-            <text x={x + LABAR_BATANG / 2} y={y - 6} textAnchor="middle" fontSize={11} fontWeight={600} fill="var(--brown)">
-              {format(d.value)}
-            </text>
-            <text x={x + LABAR_BATANG / 2} y={PADDING_ATAS + tinggiBatangArea + 16} textAnchor="middle" fontSize={10} fill="var(--brown2)">
-              {potongLabel(d.label)}
-            </text>
-          </g>
-        )
-      })}
-    </svg>
+    <div role="img" aria-label={ariaLabel} className="flex flex-col gap-3">
+      {data.map((d) => (
+        <div key={d.label} title={`${d.label}: ${format(d.value)}${d.sub ? ` (${d.sub})` : ''}`}>
+          <div className="text-xs text-brown-2 mb-1 leading-snug break-words">{d.label}</div>
+          <div className="flex items-center gap-3">
+            <div className="relative h-5 flex-1 rounded-md overflow-hidden" style={{ background: 'var(--border)' }}>
+              <div data-batang className="h-full rounded-md" style={{ width: `${pct(d.value, max)}%`, minWidth: d.value > 0 ? 4 : 0, background: warna(d.value) }} />
+              {ambang != null && (
+                <div data-ambang className="absolute inset-y-0 w-px" style={{ left: `${pct(ambang, max)}%`, background: 'var(--brown)' }} />
+              )}
+            </div>
+            <div className="w-11 shrink-0 text-right text-xs font-semibold text-brown tabular-nums">{format(d.value)}</div>
+          </div>
+        </div>
+      ))}
+      <div className="flex justify-between text-[10px] text-brown-3 tabular-nums pr-14">
+        <span>0</span>
+        {ambang != null && ambangLabel && <span>Garis tegak = {ambangLabel}</span>}
+        <span>{max}</span>
+      </div>
+    </div>
   )
 }

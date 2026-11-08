@@ -235,5 +235,16 @@
     "sebelum": "377_sebelum.png",
     "sesudah": "377_sesudah.png",
     "catatan": "Sesudah: laporan bug dengan satu gambar terlampir sebelum dikirim (mode contoh). Lampiran di server memakai SQL v59."
+  },
+  {
+    "antrean": "#379",
+    "papan": "#312",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Grafik formatif dan persentase lulus per topik jadi batang mendatar",
+    "ringkasan": "Dua grafik di halaman Asesmen dosen diganti dari batang tegak (SVG) ke batang mendatar: nama topik tampil penuh di atas tiap batang, skala tetap 0 sampai 100, garis ambang lulus selalu terlihat, tinggi mengikuti jumlah topik, dan susunan sama di telepon.",
+    "sebelum": "379_sebelum_pratinjau.png",
+    "sesudah": "379_sesudah_pratinjau.png",
+    "catatan": "Kedua gambar memakai data contoh (1 topik seperti data nyata, lalu 8 topik) yang dirender dari komponen GrafikBatang, bukan tangkapan halaman berisi data nyata. Tiap gambar memuat tiga keadaan: A data nyata 1 topik, B contoh 8 topik laptop, C contoh 8 topik telepon (gambar dipakai sebagai acuan laptop dan telepon)."
   }
 ]

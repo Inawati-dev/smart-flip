@@ -395,7 +395,6 @@ export default function Asesmen() {
                 ariaLabel="Rata-rata formatif per topik"
               />
             </div>
-            <p className="text-xs text-brown-3 mt-2">Garis putus-putus = ambang lulus {ambang.formatif}.</p>
           </div>
           <div className="bg-ivory border rounded-xl p-4 md:p-6" style={BORDER}>
             <div className="font-display text-base font-semibold text-brown mb-3">Persentase Lulus per Topik</div>
