@@ -5,10 +5,10 @@ import { Layout } from '../components/Layout'
 import { ModalBerkas, LangkahBerkas, ZonaBerkas, BilahUnggah, LencanaSiap } from '../components/ModalBerkas'
 import { IconDocument } from '../components/icons'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
+import { PratinjauBerkas } from '../components/PratinjauBerkas'
 import { usePaketMhs } from '../hooks/usePaketMhs'
 import {
   submitTugasAkhir,
-  signedFileUrl,
   cekBerkasDocx,
   lewatTenggat,
   BERKAS_ACCEPT,
@@ -65,13 +65,10 @@ export function MiniProjek() {
     setTimeout(() => setPesan(null), 2800)
   }
 
-  async function bukaBerkas(path: string | null | undefined) {
-    if (!path) return
-    try {
-      window.open(await signedFileUrl(path), '_blank')
-    } catch {
-      tampilPesan('Gagal membuka berkas')
-    }
+  // Berkas dibuka dulu di pratinjau, baru diunduh dari sana (angket butir 9, antrean #367).
+  const [berkasDibuka, setBerkasDibuka] = useState<string | null>(null)
+  function bukaBerkas(path: string | null | undefined) {
+    if (path) setBerkasDibuka(path)
   }
 
   const bab3Dinilai = !!kiriman[paket.findIndex((b) => b.urutan === 3)]?.graded_at
@@ -156,7 +153,7 @@ export function MiniProjek() {
                   terkirimBab={kiriman.slice(0, 3)}
                   onKirim={() => setKirimUrutan(brief.urutan ?? null)}
                   onRincian={() => setRincianUrutan(brief.urutan ?? null)}
-                  onBuka={(path) => void bukaBerkas(path)}
+                  onBuka={(path) => bukaBerkas(path)}
                   onUnduhTemplat={() => tampilPesan(bab.urutan === 4 ? 'Templat Rancangan Proposal diunduh' : `Templat Bab ${bab.urutan} diunduh`)}
                 />
               )
@@ -185,9 +182,11 @@ export function MiniProjek() {
           bab={babPaket(briefRincian.urutan)}
           kiriman={kiriman[paket.indexOf(briefRincian)]}
           onClose={() => setRincianUrutan(null)}
-          onBuka={(path) => void bukaBerkas(path)}
+          onBuka={(path) => bukaBerkas(path)}
         />
       )}
+
+      {berkasDibuka && <PratinjauBerkas path={berkasDibuka} onTutup={() => setBerkasDibuka(null)} />}
 
       {pesan && (
         <div
@@ -335,7 +334,7 @@ function KartuBab({
                   onClick={() => onBuka(k?.file_path)}
                   className="btn btn-secondary btn-sm"
                 >
-                  Unduh Bab {i + 1} Terkirim
+                  Lihat Bab {i + 1} Terkirim
                 </button>
               ))}
             <a href={bab.templat} download onClick={onUnduhTemplat} className="btn btn-secondary btn-sm no-underline">
@@ -586,7 +585,7 @@ function RincianModal({
       </p>
       <div className="flex gap-2.5 justify-end pt-3 border-t" style={BORDER}>
         <button type="button" onClick={() => onBuka(kiriman?.file_path)} disabled={!kiriman?.file_path} className="btn btn-secondary">
-          Unduh Berkas Saya
+          Lihat Berkas Saya
         </button>
         <button type="button" onClick={onClose} className="btn btn-primary">
           Tutup

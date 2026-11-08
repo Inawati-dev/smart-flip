@@ -142,5 +142,14 @@
     "sebelum": "366_sebelum.png",
     "sesudah": "366_sesudah.png",
     "catatan": "Kedua gambar diambil di mesin WebKit (Playwright, Version/27.2) pada layar 1536x960; tampilan di Chrome tidak berubah. Sebelum: halaman 2 terbalik di atas sampul. Sesudah: sampul Modul 01 utuh."
+  },
+  {
+    "antrean": "#367 (angket butir 9)",
+    "papan": "#301",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Pratinjau berkas Mini Projek sebelum diunduh",
+    "ringkasan": "Tombol \"Lihat Berkas\", \"Lihat Bab n Terkirim\", dan \"Lihat Berkas Saya\" kini membuka pratinjau dulu: PDF di pembaca flipbook, Word (.docx) sebagai halaman bacaan di jendela, lalu tombol Unduh di dalam pratinjau. Sebelumnya langsung membuka alamat berkas di tab baru (unduhan langsung).",
+    "tanpaDesktop": "Tanpa gambar sebelum/sesudah: pratinjau hanya muncul untuk berkas kiriman yang tersimpan di Supabase Storage, dan akun pratinjau lokal tidak punya berkas. Perilaku diuji dengan tes otomatis (PratinjauBerkas.test.tsx, 6 tes) dan konversi docx diuji pada berkas Word nyata."
   }
 ]
