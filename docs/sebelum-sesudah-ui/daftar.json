@@ -3,7 +3,7 @@
     "antrean": "#351 A",
     "papan": "#295",
     "tanggal": "8 Nov 2026",
-    "commit": "(lihat riwayat git)",
+    "commit": "c2493731",
     "judul": "Watermark di layar soal tes",
     "ringkasan": "Layar soal tes mahasiswa kini memakai watermark nama, NIM, dan jam (WIB) berulang diagonal, tipis dan abu-abu netral, di atas seluruh layar. Foto layar atau tangkapan layar yang beredar bisa dilacak ke pemiliknya dan waktunya. Dibuat tipis (opasitas 0,1) supaya soal tetap enak dibaca. Contoh: Tes Formatif Topik 1.",
     "sebelum": "351_sebelum.png",
@@ -11,10 +11,112 @@
     "catatan": "Batas jujur: watermark tidak mencegah layar difoto dengan HP lain; ia menurunkan niat dan memberi bukti. Gambar memakai bank soal contoh dan akun pratinjau."
   },
   {
+    "antrean": "#354",
+    "papan": "#287",
+    "tanggal": "8 Nov 2026",
+    "commit": "608c9304",
+    "judul": "Flipbook gaya iSukarno: sampul di tengah",
+    "ringkasan": "Pembaca PDF mahasiswa ditiru dari flipbook iSukarno: sampul tampil sendirian di tengah (sebelumnya sampul memakai satu halaman penuh di layar), panah bulat besar di kiri dan kanan, serta tombol Lensa dan pilihan 1/2 halaman di bilah atas.",
+    "sebelum": "354_sebelum_sampul.png",
+    "sesudah": "354_sesudah_sampul.png",
+    "catatan": "Contoh: Modul Topik 1 (pdf contoh 8 halaman). Gaya lama bisa dikembalikan lewat sakelar GAYA_ACUAN di PembacaPdf.tsx."
+  },
+  {
+    "antrean": "#354",
+    "papan": "#287",
+    "tanggal": "8 Nov 2026",
+    "commit": "608c9304",
+    "judul": "Flipbook gaya iSukarno: dua halaman berdampingan",
+    "ringkasan": "Setelah sampul, buku terbuka sebagai dua halaman berdampingan dengan penghitung \"2–3 / 8\" (sebelumnya satu halaman per layar). Sebelum: satu halaman per layar; sesudah: dua halaman.",
+    "sebelum": "354_sebelum_halaman.png",
+    "sesudah": "354_sesudah_halaman.png",
+    "catatan": "Sebelum menampilkan halaman 3 sendirian; sesudah menampilkan halaman 2 dan 3."
+  },
+  {
+    "antrean": "#355",
+    "papan": "#288",
+    "tanggal": "8 Nov 2026",
+    "commit": "698d8de6",
+    "judul": "Penanda internet terputus",
+    "ringkasan": "Bila internet terputus, muncul kartu \"Internet terputus. Jawaban tes tetap tersimpan di perangkat ini\" di bawah layar (juga \"N hasil tes belum terkirim\" bila ada antrean). Contoh: Dashboard mahasiswa saat internet terputus.",
+    "sebelum": "355_sebelum.png",
+    "sesudah": "355_sesudah.png",
+    "catatan": "Catatan gambar: kedua tangkapan memuat panduan tur di atas dashboard (kunjungan pertama pada peramban uji); yang dibandingkan adalah kartu \"Internet terputus\" di bagian bawah layar. Draf pengerjaan tes dan antrean kirim tidak terlihat di layar sampai ada internet putus nyata."
+  },
+  {
+    "antrean": "#356",
+    "papan": "#289",
+    "tanggal": "8 Nov 2026",
+    "commit": "698d8de6",
+    "judul": "Modal \"Koneksi Internet Tidak Stabil\"",
+    "ringkasan": "Halaman error penuh \"Terjadi Kesalahan\" diganti modal beranimasi \"Koneksi Internet Tidak Stabil\" dengan tombol Coba Lagi yang memuat ulang sendiri saat internet kembali.",
+    "tanpaDesktop": "Tidak ada tangkapan desktop: modal hanya muncul saat paket halaman gagal diunduh (internet putus nyata). Teruji di tes otomatis (ErrorBoundary.test.tsx), belum dilihat di layar."
+  },
+  {
+    "antrean": "#357",
+    "papan": "#290",
+    "tanggal": "8 Nov 2026",
+    "commit": "698d8de6",
+    "judul": "Balikan halaman flipbook lebih halus",
+    "ringkasan": "Muka lembar menggelap lalu terang saat berputar sehingga balikan terbaca seperti lembar kertas bergelombang. Bingkai di bawah dibekukan pada 450 ms dari 1,4 detik saat sampul dibuka.",
+    "sebelum": "357_sebelum.png",
+    "sesudah": "357_sesudah.png",
+    "catatan": "Perbedaan: bayangan di sampul yang sedang berputar (sesudah) dan lembar yang sama terang datar (sebelum)."
+  },
+  {
+    "antrean": "#358",
+    "papan": "#291",
+    "tanggal": "8 Nov 2026",
+    "commit": "badba5bf",
+    "judul": "Tiga tombol sebaris atau dua baris dengan tombol ketiga penuh",
+    "ringkasan": "Di telepon, tiga tombol aksi (Langkah Berikutnya di dashboard mahasiswa dan tombol tur panduan) mengisi lebar baris.",
+    "tanpaDesktop": "Tidak ada perubahan di tampilan desktop (aturan hanya berlaku di bawah 640 px)."
+  },
+  {
+    "antrean": "#359",
+    "papan": "#292",
+    "tanggal": "8 Nov 2026",
+    "commit": "badba5bf",
+    "judul": "Tombol ikon kepala telepon tidak lagi bulat",
+    "ringkasan": "Tombol lonceng, tema, dan keluar di kepala telepon memakai sudut membulat 12 px (bukan lingkaran).",
+    "tanpaDesktop": "Tidak ada perubahan di tampilan desktop (kepala telepon hanya tampil di bawah 768 px)."
+  },
+  {
+    "antrean": "#359 B",
+    "papan": "#293",
+    "tanggal": "8 Nov 2026",
+    "commit": "41159ce8",
+    "judul": "Stepper topik tidak lagi bulat",
+    "ringkasan": "Tombol P1…Pn di Tes Formatif dan Asesmen jadi persegi dengan sudut 12 px.",
+    "sebelum": "359_sebelum_stepper.png",
+    "sesudah": "359_sesudah_stepper.png"
+  },
+  {
+    "antrean": "#359 B",
+    "papan": "#293",
+    "tanggal": "8 Nov 2026",
+    "commit": "41159ce8",
+    "judul": "Panah flipbook tidak lagi bulat",
+    "ringkasan": "Panah di kiri dan kanan pembaca jadi persegi bersudut 16 px (laptop), sebelumnya lingkaran.",
+    "sebelum": "359_sebelum_panah.png",
+    "sesudah": "359_sesudah_panah.png"
+  },
+  {
+    "antrean": "#360",
+    "papan": "#294",
+    "tanggal": "8 Nov 2026",
+    "commit": "0253c35b",
+    "judul": "Saklar notifikasi nyala/mati",
+    "ringkasan": "Panel lonceng (dosen dan mahasiswa) punya saklar Nyala/Mati; mati = lencana hilang dan panel hanya memuat saklar dengan pesan.",
+    "sebelum": "360_sebelum.png",
+    "sesudah": "360_sesudah.png",
+    "catatan": "Sesudah di sini adalah versi pertama saklar; geometrinya dirapikan di #362."
+  },
+  {
     "antrean": "#362",
     "papan": "#296",
     "tanggal": "8 Nov 2026",
-    "commit": "(lihat riwayat git)",
+    "commit": "9ab0a59a",
     "judul": "Saklar notifikasi lebih rapi",
     "ringkasan": "Bola saklar notifikasi di panel lonceng tadinya menempel tepi kanan lintasan (celah 1 px kiri 19 px). Lintasan diperbesar jadi 40 x 24 px dan bola 16 px diberi celah sama di empat sisi (sekitar 4 px), serta jarak ke tulisan Nyala/Mati dilonggarkan.",
     "sebelum": "362_sebelum.png",

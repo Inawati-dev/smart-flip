@@ -55,7 +55,7 @@ for (const e of daftar) {
   if (e.sebelum || e.sesudah) {
     isi.push(new Table({ width: { size: 100, type: WidthType.PERCENTAGE }, rows: [new TableRow({ cantSplit: true, children: [sel('SEBELUM', e.sebelum, 'A33A2A'), sel('SESUDAH', e.sesudah, '1F7A3A')] })] }))
   } else {
-    isi.push(p(t('Tidak ada perubahan di tampilan desktop.', { italics: true })))
+    isi.push(p(t(e.tanpaDesktop ?? 'Tidak ada perubahan di tampilan desktop.', { italics: true })))
   }
   if (e.catatan) isi.push(p(t(e.catatan, { color: '555555', italics: true }), { spacing: { before: 60, after: 120 } }))
 }
