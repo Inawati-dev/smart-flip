@@ -162,5 +162,14 @@
     "sebelum": "368_sebelum.png",
     "sesudah": "368_sesudah.png",
     "catatan": "Contoh: akun pratinjau mahasiswa, 0 dari 9 topik lulus (0%). Panel terbuka di kedua gambar."
+  },
+  {
+    "antrean": "#369 (angket butir 8)",
+    "papan": "#303",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Kartu umpan balik dosen di Mini Projek",
+    "ringkasan": "Umpan balik dosen yang tadinya satu baris teks di kotak abu-abu kini kartu tersendiri: judul, lencana \"Baru\" sampai dilihat, nilai, catatan dengan baris baru dipertahankan, dan waktu dinilai.",
+    "tanpaDesktop": "Tanpa gambar sebelum/sesudah: kartu hanya muncul untuk kiriman yang sudah dinilai dosen di Supabase, dan akun pratinjau lokal tidak punya kiriman. Teruji dengan tes otomatis (KartuUmpanBalik.test.tsx, 3 tes)."
   }
 ]

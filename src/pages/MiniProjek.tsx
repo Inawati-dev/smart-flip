@@ -6,6 +6,7 @@ import { ModalBerkas, LangkahBerkas, ZonaBerkas, BilahUnggah, LencanaSiap } from
 import { IconDocument } from '../components/icons'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { PratinjauBerkas } from '../components/PratinjauBerkas'
+import { KartuUmpanBalik } from '../components/KartuUmpanBalik'
 import { usePaketMhs } from '../hooks/usePaketMhs'
 import {
   submitTugasAkhir,
@@ -298,18 +299,13 @@ function KartuBab({
         </div>
       )}
 
-      {kiriman && (status === 'terkirim' || status === 'dinilai') && (
+      {kiriman && status === 'dinilai' && <KartuUmpanBalik kiriman={kiriman} />}
+      {kiriman && status === 'terkirim' && (
         <div className="text-sm rounded-xl p-3" style={{ background: 'var(--bg3)' }}>
-          {status === 'dinilai' ? (
-            <p>
-              <strong>Umpan balik dosen.</strong> {kiriman.feedback || 'Belum ada catatan.'}
-            </p>
-          ) : (
-            <p>
-              <strong>Berkas terkirim.</strong> {kiriman.file_name ?? 'Tanpa berkas'} · dikirim {tglJam(kiriman.submitted_at)}
-              {kiriman.note ? ` · catatan: ${kiriman.note}` : ''}
-            </p>
-          )}
+          <p>
+            <strong>Berkas terkirim.</strong> {kiriman.file_name ?? 'Tanpa berkas'} · dikirim {tglJam(kiriman.submitted_at)}
+            {kiriman.note ? ` · catatan: ${kiriman.note}` : ''}
+          </p>
         </div>
       )}
 
