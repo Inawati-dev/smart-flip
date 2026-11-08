@@ -61,7 +61,7 @@ export function LoginBook({
           </div>
         </div>
 
-        {/* Sampul depan — engsel kiri, membuka -165° */}
+        {/* Sampul depan — engsel kiri, membuka -165°. Muka depan dan belakang bergantian lewat visibility karena WebKit mengabaikan backface-visibility (angket butir 10, antrean #371). */}
         <div
           inert={open}
           className={`absolute inset-0 origin-left transition-transform duration-[900ms] [transform-style:preserve-3d] motion-reduce:transition-none ${
@@ -73,7 +73,7 @@ export function LoginBook({
               bukan cuma tombol kecil (target sentuh jauh lebih luas) */}
           <div
             onClick={open ? undefined : onOpen}
-            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden select-none cursor-pointer"
+            className={`absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] overflow-hidden select-none cursor-pointer [transition:visibility_0s_linear_450ms] motion-reduce:[transition:none] ${open ? '[visibility:hidden]' : ''}`}
             style={{
               // Coklat sampul modul --cover-3 + tinta --cover-ink, sama dengan rak modul (antrean #325)
               background:
@@ -93,7 +93,7 @@ export function LoginBook({
               "Buka Buku" — bug yang tidak ketahuan lewat .click()
               programatik karena itu melewati hit-testing. */}
           <div
-            className="absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-between gap-4 p-5 sm:p-8 pointer-events-none"
+            className={`absolute inset-0 rounded-l-[6px] rounded-r-[14px] [backface-visibility:hidden] [-webkit-backface-visibility:hidden] [transform:rotateY(180deg)] flex flex-col justify-between gap-4 p-5 sm:p-8 pointer-events-none [transition:visibility_0s_linear_450ms] motion-reduce:[transition:none] ${open ? '' : '[visibility:hidden]'}`}
             // Sisi dalam sampul ikut coklat sampul (koreksi #325); teks tinta penuh supaya kontras >= 4,5:1
             style={{
               background: 'linear-gradient(210deg, color-mix(in srgb, var(--cover-3) 78%, #000) 0%, color-mix(in srgb, var(--cover-3) 90%, #000) 100%)',

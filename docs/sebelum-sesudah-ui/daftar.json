@@ -182,5 +182,16 @@
     "sebelum": "370_sebelum.png",
     "sesudah": "370_sesudah.png",
     "catatan": "Sesudah: daftar jenis terbuka dan \"Kabar Mini Projek\" dimatikan. Pilihan tersimpan di perangkat."
+  },
+  {
+    "antrean": "#371 (angket butir 10)",
+    "papan": "#305",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Halaman login di Safari: sampul buku tidak lagi terbalik",
+    "ringkasan": "Di Safari (WebKit), sampul belakang buku login (\"Tim Pengembang\") tampil terbalik seperti cermin di atas sampul depan, jadi halaman login terlihat berantakan. Dua muka sampul dan dua muka kartu Lupa Kata Sandi kini bergantian lewat visibility di tengah putaran, sebab Safari mengabaikan backface-visibility.",
+    "sebelum": "371_sebelum.png",
+    "sesudah": "371_sesudah.png",
+    "catatan": "Kedua gambar diambil di mesin WebKit (Playwright, Version/27.2), layar 1536x960. Di Chrome tampilan tidak berubah. Setelah Buka Buku: sampul belakang di kiri dan formulir di kanan benar; Lupa Kata Sandi: muka formulir lupa terlihat, muka masuk tersembunyi."
   }
 ]

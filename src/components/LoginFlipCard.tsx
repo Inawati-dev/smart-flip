@@ -28,6 +28,7 @@ export function FlipPanel({
   faceClassName?: string
   faceStyle?: React.CSSProperties
 }) {
+  const GANTI_MUKA: React.CSSProperties = { transition: 'visibility 0s linear 300ms' }
   const faceBase = `${faceClassName} [grid-area:1/1] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]`
   return (
     <div className="relative w-full" style={{ perspective: 1400 }}>
@@ -38,10 +39,12 @@ export function FlipPanel({
           transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
         }}
       >
-        <div className={faceBase} style={faceStyle}>
+        {/* Safari/WebKit mengabaikan backface-visibility: hidden pada muka bersusun 3D, jadi muka yang menghadap ke belakang
+            disembunyikan lewat visibility yang berganti di tengah putaran 600 ms (angket butir 10, antrean #371). */}
+        <div className={`${faceBase} ${flipped ? '[visibility:hidden]' : ''}`} style={{ ...faceStyle, ...GANTI_MUKA }}>
           {front}
         </div>
-        <div className={`${faceBase} [transform:rotateY(180deg)]`} style={faceStyle}>
+        <div className={`${faceBase} [transform:rotateY(180deg)] ${flipped ? '' : '[visibility:hidden]'}`} style={{ ...faceStyle, ...GANTI_MUKA }}>
           {back}
         </div>
       </div>
