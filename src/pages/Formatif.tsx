@@ -14,6 +14,7 @@ import { useTopikStatus } from '../lib/topik'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner } from '../components/SoalRunner'
+import { CapTes } from '../components/CapTes'
 import { IconLock } from '../components/icons'
 import { formatTanggal, nomorPertemuan } from '../lib/jadwal'
 import { ChipRak } from '../components/KartuTopik'
@@ -190,6 +191,7 @@ function FormatifIsi() {
             </div>
           ) : acak ? (
             <>
+            <CapTes />
             {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
             <SoalRunner
               total={acak.tampil.length}

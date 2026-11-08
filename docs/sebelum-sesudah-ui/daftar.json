@@ -1,0 +1,13 @@
+[
+  {
+    "antrean": "#351 A",
+    "papan": "#295",
+    "tanggal": "8 Nov 2026",
+    "commit": "(lihat riwayat git)",
+    "judul": "Watermark di layar soal tes",
+    "ringkasan": "Layar soal tes mahasiswa kini memakai watermark nama, NIM, dan jam (WIB) berulang diagonal, tipis dan abu-abu netral, di atas seluruh layar. Foto layar atau tangkapan layar yang beredar bisa dilacak ke pemiliknya dan waktunya. Dibuat tipis (opasitas 0,1) supaya soal tetap enak dibaca. Contoh: Tes Formatif Topik 1.",
+    "sebelum": "351_sebelum.png",
+    "sesudah": "351_sesudah.png",
+    "catatan": "Batas jujur: watermark tidak mencegah layar difoto dengan HP lain; ia menurunkan niat dan memberi bukti. Gambar memakai bank soal contoh dan akun pratinjau."
+  }
+]

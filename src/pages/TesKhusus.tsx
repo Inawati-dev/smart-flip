@@ -27,6 +27,7 @@ import {
 } from '../lib/testSessions'
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
+import { CapTes } from '../components/CapTes'
 import { PillGroup } from '../components/PillGroup'
 import { TanggalInput } from '../components/TanggalInput'
 import { IconTarget, IconLock, IconChart, IconX } from '../components/icons'
@@ -661,6 +662,7 @@ function MahasiswaTesKhusus() {
           </div>
         ) : acak ? (
           <>
+          <CapTes />
           {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
           <SoalRunner
             total={acak.tampil.length}

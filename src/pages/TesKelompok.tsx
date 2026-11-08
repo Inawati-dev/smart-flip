@@ -24,6 +24,7 @@ import {
 } from '../lib/tesKelompok'
 import { Layout } from '../components/Layout'
 import { SoalRunner } from '../components/SoalRunner'
+import { CapTes } from '../components/CapTes'
 import { useDraftTes, CATATAN_DILANJUTKAN } from '../hooks/useDraftTes'
 import { kunciDraft, hapusDraft, kirimKelompok } from '../lib/tesTunda'
 import { IconUsers, IconChart, IconLock, IconTrash, IconLink, IconX } from '../components/icons'
@@ -630,6 +631,7 @@ function MahasiswaTesKelompok() {
           </div>
         ) : acak ? (
           <>
+          <CapTes />
           {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
           <SoalRunner
             total={acak.tampil.length}

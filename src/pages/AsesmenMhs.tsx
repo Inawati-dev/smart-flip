@@ -18,6 +18,7 @@ import { formatTanggal, nomorPertemuan } from '../lib/jadwal'
 import { Layout } from '../components/Layout'
 import { PertemuanStepper } from '../components/PertemuanStepper'
 import { SoalRunner, TinjauanJawaban } from '../components/SoalRunner'
+import { CapTes } from '../components/CapTes'
 import { TugasAkhirMhsCard } from '../components/TugasAkhirMhsCard'
 import { MataKuliahSelect } from '../components/MataKuliahSelect'
 import { ChipRak } from '../components/KartuTopik'
@@ -436,6 +437,7 @@ function PreTest() {
 
         {acak ? (
           <>
+          <CapTes />
           {dipulihkan && <p className="text-xs text-brown-3 mb-3">{CATATAN_DILANJUTKAN}</p>}
           <SoalRunner
             total={acak.tampil.length}
@@ -462,6 +464,7 @@ function PreTest() {
             <HasilDiagnostik skor={skorFinal} adaTinjauan={!!tinjau} rincian={rincian} />
             {tinjau && (
               <div id="tinjauan-jawaban">
+                <CapTes />
                 <TinjauanJawaban soal={tinjau.soal} jawaban={tinjau.jawaban} />
               </div>
             )}
