@@ -135,6 +135,14 @@ Kata Johan: "gutter nya seragam pakai 2px seragamkan dengan desain web".
 - Isian tanggal memakai `src/components/TanggalInput.tsx`, bukan `<input type="date">` atau `datetime-local` bawaan peramban.
 - Cek: `grep -rn "scrollbar" src --include=*.tsx --include=*.css` hanya menemukan aturan global di `src/index.css`; `grep -rn 'type="date"\|type="datetime-local"' src --include=*.tsx | grep -v test` kosong.
 
+## Sebelum dan Sesudah UI di Word (WAJIB, antrean #361, 8 Nov 2026)
+Kata Johan: "setiap ada perubah UI buatkan before dan afternya dalam bentuk screenshot di word, update terus jika ada perubahan, dibatasi tampilan desktop saja, meskipun script nya juga kerjakan dari mobile."
+- Tiap perubahan UI yang tayang punya tangkapan layar **sebelum** dan **sesudah**, hanya desktop (laptop `1536x960x1.25`). Perubahan yang dikerjakan dari sapuan telepon tetap diverifikasi di telepon, tapi hanya gambar desktopnya yang masuk Word.
+- Tangkapan "sebelum" diambil SEBELUM kode disunting; bila terlambat, dari commit sebelumnya lewat `git worktree`. "Sesudah" dari halaman dan keadaan yang sama.
+- Satu berkas Word, diperbarui (ditambah, bukan dibuat ulang): `docs/sebelum-sesudah-ui/Sebelum-Sesudah-UI.docx`; gambar sumber di `docs/sebelum-sesudah-ui/gambar/`. Tiap perubahan satu bagian: nomor antrean dan papan, tanggal, apa yang berubah, gambar sebelum dan sesudah berdampingan.
+- Perubahan tanpa beda di desktop (hanya telepon, atau logika tanpa tampilan) dicatat satu baris "tidak ada perubahan desktop", tanpa gambar.
+- Laporan penutup menyebut bagian Word yang ditambah. Cek: bagian baru ada di berkas Word dan nomor papannya sama dengan `docs/jejak-permintaan.md`.
+
 ## Design Tokens (CSS Variables)
 ```css
 --cream:#F5F2E9   /* background utama */
