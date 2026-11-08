@@ -21,3 +21,7 @@ Sumber: `C:/Users/Johan/Downloads/Rekap Saran Perbaikan Setelah Uji Coba.docx` (
 | 15 | Tes asesmen awal menyimpan jawaban agar tidak mengulang dari awal saat lag atau refresh | Simpan jawaban | Selesai #355 | Tidak ada |
 
 Butir kembar: 1, 13, dan 15 (simpan jawaban); 5 dan 7 (animasi flipbook); 12 dan 14 (notifikasi). Jumlah masukan unik 11 sampai 12.
+
+## Keputusan Johan 8 Nov 2026
+
+Butir 6 (Safari mobile) aman setelah uji iPhone nyata; butir 1 (responsif) cukup; butir 3 (loading lambat) belum ada bukti jaringan nyata. Ketiganya ditutup, `docs/pertanyaan-penguji.md` tidak dikirim. Batas yang diketahui: iOS di bawah 16.4 tidak diuji dan kemungkinan tidak jalan (Tailwind 4.3). Butir 4 (video ilustrasi) tetap ditutup sampai tahap video. Butir 8 dan 9 menunggu uji Johan dengan data nyata.
