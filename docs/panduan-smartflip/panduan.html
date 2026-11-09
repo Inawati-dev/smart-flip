@@ -10,6 +10,7 @@
   sampai Topik 7 Penutup), gambar baru d10 (Jadwal) dan d11 (Watermark), dan sampul belakang.
   Edisi 4 (antrean #340, diulang #341, 25 Okt 2026): Lampiran 3 Cuplikan kode sumber, lima halaman kode tampilan halaman inti, sebelum sampul belakang.
   Edisi 5 (antrean #384, 8 Nov 2026): bab A9 Kirim saran dan laporan bug, A10 Notifikasi dan saklar, B8 Menerima saran dan laporan bug; Gambar 12-13 dan 25 baru (m09, m10, d12), Gambar B1-B7 jadi 14-24; baris Kirim di tabel menu dan dua baris di Lampiran 2.
+  Pembaca baru (antrean #393, 9 Nov 2026): bab A4 ditulis ulang untuk bilah minimal melayang (#389); m04-baca dan h02-baca diambil ulang.
   Gambar di gambar/ diambil ulang 24 Okt 2026 (Edisi 2, antrean #302) di server
   dev 1600x1000 (telepon 360x800) dengan peran pratinjau (VITE_UI_PREVIEW_ROLE)
   dan data contoh mode demo; halaman masuk dan daftar (u01, u01b, u02) dari situs
@@ -309,22 +310,29 @@
   <h2>A4. Membaca modul sebagai flipbook</h2>
   <figure>
     <div class="gb"><img src="gambar/m04-baca.jpg" alt="">
-      <span class="pn" style="left:85.8%;top:3.1%">1</span>
-      <span class="pn" style="left:4.2%;top:96.8%">2</span>
-      <span class="pn tg" style="left:40%;top:96.8%">3</span>
-      <span class="pn" style="left:76.3%;top:96.8%">4</span>
-      <span class="pn" style="left:85.8%;top:96.8%">5</span>
+      <span class="pn ka" style="left:4.8%;top:3.3%">1</span>
+      <span class="pn" style="left:77%;top:3.3%">2</span>
+      <span class="pn bw" style="left:90.5%;top:6.5%">3</span>
+      <span class="pn bw" style="left:97.5%;top:6.5%">4</span>
+      <span class="pn" style="left:22.5%;top:95.2%">5</span>
+      <span class="pn bw" style="left:45%;top:91.5%">6</span>
+      <span class="pn bw" style="left:65.8%;top:91.5%">7</span>
+      <span class="pn bw" style="left:72.5%;top:91.5%">8</span>
     </div>
-    <figcaption>Gambar 7. Pembaca flipbook, <a href="https://smart-flips.vercel.app/ebook?book=1">/ebook?book=1</a>.</figcaption>
+    <figcaption>Gambar 7. Pembaca flipbook, <a href="https://smart-flips.vercel.app/ebook?book=1">/ebook?book=1</a>. Bilah atas dan bawah sengaja minimal supaya halaman buku mendapat ruang terluas.</figcaption>
     <ul class="legenda">
-      <li><b class="n">1</b>Flip: halaman dibalik seperti buku. Gulir: halaman disusun ke bawah. Tombol Modul kembali ke rak.</li>
-      <li><b class="n">2</b>Ke halaman pertama atau halaman sebelumnya. Tombol di kanan bawah membuka halaman berikutnya atau terakhir.</li>
-      <li><b class="n">3</b>Nomor halaman dan penggeser untuk melompat ke halaman mana pun.</li>
-      <li><b class="n">4</b>Perbesar atau perkecil tampilan.</li>
-      <li><b class="n">5</b>Layar Penuh.</li>
+      <li><b class="n">1</b>Tombol panah kembali ke rak Modul. Di sebelahnya tertulis nama topik; klik nama topik untuk membuka halaman topik.</li>
+      <li><b class="n">2</b>Gaya baca. Flip: halaman dibalik melengkung seperti buku. Gulir: halaman disusun ke bawah.</li>
+      <li><b class="n">3</b>Alat baca (hanya di mode Flip): 1 halaman atau 2 halaman, dan Lensa untuk memperbesar bagian halaman yang ditunjuk kursor.</li>
+      <li><b class="n">4</b>Layar penuh. Tombolnya hanya berupa ikon; di telepon tombol ini tidak ada.</li>
+      <li><b class="n">5</b>Ke halaman pertama atau halaman sebelumnya. Di sebelah kanan kapsul: halaman berikutnya dan halaman terakhir.</li>
+      <li><b class="n">6</b>Nomor halaman dan penggeser untuk melompat ke halaman mana pun. Tulisan "Tercatat dibaca" di sebelahnya menunjukkan persentase halaman yang sudah dibuka.</li>
+      <li><b class="n">7</b>Perkecil, Pas (kembali ke ukuran pas layar), dan Perbesar.</li>
+      <li><b class="n">8</b>Halaman berikutnya. Tombol ini satu-satunya yang berwarna di kapsul bawah.</li>
     </ul>
   </figure>
-  <p>Tulisan "Tercatat dibaca" di bawah menunjukkan persentase halaman yang sudah Anda buka. Angka ini tersimpan otomatis, tampil sebagai Posisi Baca di halaman topik, dan dilihat dosen di laporan progres.</p>
+  <p>Persentase "Tercatat dibaca" tersimpan otomatis, tampil sebagai Posisi Baca di halaman topik, dan dilihat dosen di laporan progres. Halaman juga bisa dibalik dengan panah besar di tepi kiri dan kanan layar, atau dengan menggeser halaman.</p>
+  <div class="catatan">Bilah atas dan bawah bisa tersembunyi di telepon sampai layar diketuk di bagian tengah. Ketuk lagi di tengah untuk menyembunyikannya.</div>
 </section>
 
 <section class="bab" id="mhs-video">
@@ -375,7 +383,7 @@
 
 <section class="bab" id="mhs-hp">
   <h2>A8. Memakai SMART-FLIP di telepon</h2>
-  <p>SMART-FLIP bisa dibuka di peramban telepon (Chrome, Safari) dengan alamat yang sama. Menu pindah ke bilah bawah, dan flipbook menampilkan satu halaman selebar layar. Tombol halaman berikutnya ada di bilah bawah pembaca.</p>
+  <p>SMART-FLIP bisa dibuka di peramban telepon (Chrome, Safari) dengan alamat yang sama. Menu pindah ke bilah bawah, dan flipbook menampilkan satu halaman selebar layar. Di pembaca, panah, nomor halaman, penggeser, dan zoom ada di kapsul melayang di bagian bawah.</p>
   <figure>
     <div class="hp">
       <div class="gb"><img src="gambar/h01-dasbor.jpg" alt=""></div>

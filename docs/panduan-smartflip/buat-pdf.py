@@ -26,7 +26,7 @@ KELUARAN = os.path.join(AKAR, 'public', 'panduan-smartflip.pdf')
 
 # Harus sama dengan EDISI_PANDUAN di src/components/TautanPanduan.tsx.
 EDISI = 'Edisi 5'
-TANGGAL = '8 November 2026'
+TANGGAL = '9 November 2026'
 SITUS = 'https://smart-flips.vercel.app'
 
 PERAMBAN = [
