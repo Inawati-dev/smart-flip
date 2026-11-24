@@ -51,7 +51,7 @@ li b{flex:0 0 12px;height:12px;border-radius:50%;background:#F2B544;margin-top:9
 <li><b></b>Modul PDF dibaca seperti buku, video untuk dua pertemuan per topik</li>
 <li><b></b>Tes formatif tiap topik dan peningkatan skor kelas otomatis</li>
 </ul>
-<div class="kaki"><div>Fakultas Vokasi, Universitas Negeri Malang</div><div class="url">smart-flips.vercel.app</div></div>
+<div class="kaki"><div>Fakultas Vokasi, Universitas Negeri Malang</div><div class="url">smart-flips.my.id</div></div>
 </div></body></html>"""
 
 
