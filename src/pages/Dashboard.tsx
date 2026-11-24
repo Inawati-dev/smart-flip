@@ -1,7 +1,7 @@
 import { KabarTerbaruCard } from '../components/KabarPaket'
 import { IngatkanModal, PengingatMhsCard, type SasaranPengingat } from '../components/Pengingat'
 import { dalamJeda, fetchPengingatTerakhir } from '../lib/pengingat'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { useAuth } from '../contexts/AuthContext'
@@ -497,7 +497,10 @@ export function Dashboard() {
   const { golongan, skorPre, bukaPada, formatifPada } = useTopikStatus()
   const ambang = useAmbang()
   const { data: kelasSaya = null } = useQuery({ queryKey: ['kelas-saya'], queryFn: fetchMyKelas, enabled: role === 'mahasiswa' })
-  const [showWelcome, setShowWelcome] = useState(false)
+  const [sambutanDitutup, setSambutanDitutup] = useState(false)
+  // Dihitung saat render (bukan lewat useEffect): modal terpasang di bingkai yang sama
+  // dengan sidebar dan dashboard, jadi tidak ada kilatan halaman tanpa modal (antrean #398).
+  const showWelcome = !loading && !!role && !sambutanDitutup && !hasSeenOnboarding(role)
 
   // Gerbang pre-test menggantikan gerbang diagnostik lama (D4 = A, spec §4.1):
   // mahasiswa tanpa quiz_attempts kind='pre' dialihkan ke /asesmen/pre. Belum
@@ -506,10 +509,6 @@ export function Dashboard() {
   // First-visit onboarding — same trigger point as the legacy dashboard,
   // ported to React (see Changelog v0.9.4). Re-triggerable from Profil,
   // which just clears the localStorage flag and navigates back here.
-  useEffect(() => {
-    if (!loading && role && !hasSeenOnboarding(role)) setShowWelcome(true)
-  }, [loading, role])
-
   return (
     <Layout>
       {showWelcome && role && (
@@ -518,7 +517,7 @@ export function Dashboard() {
           userName={profile?.full_name}
           onClose={() => {
             markOnboardingSeen(role)
-            setShowWelcome(false)
+            setSambutanDitutup(true)
           }}
         />
       )}
