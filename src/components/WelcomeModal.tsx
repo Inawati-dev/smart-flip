@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from 'react'
+import { createPortal } from 'react-dom'
 import type { OnboardingRole } from '../lib/onboarding'
 import { IconBook, IconTarget, IconCompass, IconUsers, IconLightbulb, IconChevronRight } from './icons'
 
@@ -76,7 +77,9 @@ export function WelcomeModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step])
 
-  return (
+  // Portal ke body: .page-fadein (transform) membuat <main> jadi wadah untuk elemen fixed selama
+  // 0,38 dtk, sehingga lapisan modal tidak menutup sidebar saat halaman dimuat (antrean #398).
+  return createPortal(
     <div
       className="fixed inset-0 z-[600] flex items-center justify-center p-4"
       style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)', animation: 'fadeInBg 0.18s ease' }}
@@ -160,6 +163,7 @@ export function WelcomeModal({
           />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
